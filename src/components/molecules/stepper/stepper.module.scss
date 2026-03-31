@@ -1,0 +1,87 @@
+$primary: #8c6fae;
+$primary-70: rgba(140, 111, 174, 0.7);
+$neutral-border: rgba(140, 111, 174, 0.45);
+$neutral-line: rgba(140, 111, 174, 0.25);
+$white: #ffffff;
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 30px 0;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.stepCircle {
+  width: 54px;
+  height: 54px;
+  min-width: 54px;
+  border-radius: 999px;
+  border: 2px solid $primary-70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $primary;
+  background: transparent;
+}
+
+.active {
+  background: $primary-70;
+  border-color: $primary-70;
+  color: $white;
+}
+
+.completed {
+  background: transparent;
+  border-color: $primary-70;
+  color: $primary;
+}
+
+.upcoming {
+  background: transparent;
+  border-color: $primary-70;
+  color: $primary;
+}
+
+.connector {
+  width: 64px;
+  height: 8px;
+  margin: 0 12px;
+  border: 1.5px solid rgba(140, 111, 174, 0.7);
+  border-radius: 999px;
+  background: transparent;
+  overflow: hidden;
+}
+
+.connectorFill {
+  width: 0%;
+  height: 100%;
+  background: $primary-70;
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.filled {
+  width: 50%;
+}
+
+@media (min-width: 481px) {
+  .stepCircle {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+  }
+
+  @media (min-width: 481px) {
+    .connector {
+      width: 76px;
+    }
+  }
+}
