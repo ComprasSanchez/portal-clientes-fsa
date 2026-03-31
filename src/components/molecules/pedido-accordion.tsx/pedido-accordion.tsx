@@ -9,7 +9,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Switch } from "@/components/ui/switch";
-import styles from "./PedidoAccordion.module.scss";
+import styles from "./pedidoAccordion.module.scss";
 
 export type PedidoItem = {
   id: string;
@@ -52,7 +52,7 @@ export default function PedidoAccordion({
       <AccordionItem value="pedido" className={styles.item}>
         <AccordionTrigger className={styles.trigger}>
           <div className={styles.triggerLeft}>
-            <ShoppingCart className={styles.cartIcon} size={20} />
+            <ShoppingCart className={styles.cartIcon} size={22} />
             <span className={styles.title}>{title}</span>
           </div>
         </AccordionTrigger>

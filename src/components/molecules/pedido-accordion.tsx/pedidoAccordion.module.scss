@@ -1,0 +1,161 @@
+$purple: #8c6faf;
+$purple-soft: rgba(140, 111, 175, 0.12);
+$purple-line: rgba(140, 111, 175, 0.18);
+$text-dark: #2f2a43;
+$text-soft: rgba(47, 42, 67, 0.58);
+$border-soft: #d8d8de;
+$bg-white: #ffffff;
+
+.accordion {
+  width: 100%;
+}
+
+.item {
+  border: 1.5px solid $purple-line;
+  border-radius: 24px;
+  background: $bg-white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.trigger {
+  padding: 20px 22px 16px 22px;
+  text-decoration: none !important;
+
+  &:hover {
+    text-decoration: none !important;
+  }
+
+  :global(svg) {
+    color: rgba(47, 42, 67, 0.45);
+  }
+}
+
+.triggerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cartIcon {
+  color: $purple;
+}
+
+.title {
+  color: $purple;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.content {
+  padding: 0 22px 22px 22px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 14px;
+  padding: 10px 0;
+}
+
+.iconBox {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: $purple-soft;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.productIcon {
+  color: $purple;
+}
+
+.info {
+  min-width: 0;
+}
+
+.name {
+  margin: 0 0 8px 0;
+  color: $text-dark;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.brand {
+  margin: 0 0 8px 0;
+  color: $text-soft;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.qty {
+  margin: 0;
+  color: $purple;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.switchWrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 2px;
+
+  :global(button[data-slot="switch"]) {
+    background-color: rgba(140, 111, 175, 0.35);
+    border: 1px solid rgba(140, 111, 175, 0.2);
+    width: 56px;
+    height: 32px;
+  }
+
+  :global(button[data-state="checked"][data-slot="switch"]) {
+    background-color: $purple;
+  }
+
+  :global(span[data-slot="switch-thumb"]) {
+    background-color: #ffffff;
+  }
+}
+
+.divider {
+  height: 1px;
+  background: $border-soft;
+  margin: 8px 0;
+}
+
+@media (min-width: 481px) {
+  .trigger {
+    padding: 22px 24px 18px 24px;
+  }
+
+  .content {
+    padding: 0 24px 24px 24px;
+  }
+
+  .row {
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    gap: 16px;
+  }
+
+  .iconBox {
+    width: 52px;
+    height: 52px;
+  }
+
+  .name {
+    font-size: 1.05rem;
+  }
+}
