@@ -1,55 +1,25 @@
 "use client";
-import PortalPedido from "@/components/organisms/portal-pedido/portal-pedido";
 import Header from "@/components/molecules/header/header";
-import React from "react";
-import PortalStepper from "@/components/molecules/stepper/stepper";
-import PedidoAccordion, {
-  PedidoItem,
-} from "@/components/molecules/pedido-accordion.tsx/pedido-accordion";
+import { useState } from "react";
+import PedidosStep1 from "@/components/molecules/pedidos-steps/pedidos-step-1/pedidos-step-1";
+import PedidosStep2 from "@/components/molecules/pedidos-steps/pedidos-step-2/pedidos-step-2";
+import PedidosStep3 from "@/components/molecules/pedidos-steps/pedidos-step-3/pedidos-step-3";
+import { Metadata } from "next";
+
 
 const PortalCliente = () => {
-  const items: PedidoItem[] = [
-    {
-      id: "1",
-      nombre: "AMOXIDAL 1 g comp. x 16",
-      laboratorio: "ROEMMERS",
-      cantidad: 1,
-      checked: true,
-    },
-    {
-      id: "2",
-      nombre: "AMOXIDAL 1 g iny. x 1 dosis",
-      laboratorio: "ROEMMERS",
-      cantidad: 1,
-      checked: false,
-    },
-  ];
+  const [step, setStep] = useState(1);
 
   return (
     <>
-      <Header />
-      <div className="w-full">
-        <h4 className="flex items-center justify-center pt-[40px] text-[#8C6FAF] text-bold text-[22px]">
-          Preparación de tu pedido
-        </h4>
-        <PortalStepper currentStep={1} />
-        <div className="flex flex-col">
-          <p className="flex items-center justify-center text-[#8C6FAF] text-bold text-[22px]">
-            ¡Farid!
-          </p>
-          <p className="flex items-center justify-center text-[#8C6FAF] text-bold text-[18px]">
-            Estos son los productos que usás habitualmente:
-          </p>
-        </div>
-        <div className="max-w-[420px] mx-auto p-6">
-          <PedidoAccordion
-            items={items}
-            onToggle={(id, checked) => {
-              console.log("toggle:", id, checked);
-            }}
-          />
-        </div>
-      </div>
+      <Header
+        showBackButton={step > 1}
+        onBack={() => setStep((prev) => Math.max(1, prev - 1))}
+      />
+
+      {step === 1 && <PedidosStep1 setStep={setStep} />}
+      {step === 2 && <PedidosStep2 setStep={setStep} />}
+      {step === 3 && <PedidosStep3 setStep={setStep} />}
     </>
   );
 };

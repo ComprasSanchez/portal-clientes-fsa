@@ -8,12 +8,15 @@ type PortalHeaderProps = {
   cartCount?: number;
   showBackButton?: boolean;
   onCartClick?: () => void;
+  onBack?: () => void;
 };
+
 
 export default function PortalHeader({
   cartCount = 0,
   showBackButton = true,
   onCartClick,
+  onBack,
 }: PortalHeaderProps) {
   const router = useRouter();
 
@@ -25,7 +28,7 @@ export default function PortalHeader({
             <button
               type="button"
               className={styles.iconButton}
-              onClick={() => router.back()}
+              onClick={onBack ? onBack : () => router.back()}
               aria-label="Volver"
             >
               <ArrowLeft size={20} />
