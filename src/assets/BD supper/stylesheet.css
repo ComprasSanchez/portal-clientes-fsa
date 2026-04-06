@@ -1,0 +1,26 @@
+@font-face {
+    font-family: 'BD Supper';
+    src: url('BDSupperRegular.eot');
+    src: local('BD Supper'), local('BDSupperRegular'),
+        url('BDSupperRegular.eot?#iefix') format('embedded-opentype'),
+        url('BDSupperRegular.woff2') format('woff2'),
+        url('BDSupperRegular.woff') format('woff'),
+        url('BDSupperRegular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'BD Supper';
+    src: url('BDSupperBold.eot');
+    src: local('BD Supper Bold'), local('BDSupperBold'),
+        url('BDSupperBold.eot?#iefix') format('embedded-opentype'),
+        url('BDSupperBold.woff2') format('woff2'),
+        url('BDSupperBold.woff') format('woff'),
+        url('BDSupperBold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
