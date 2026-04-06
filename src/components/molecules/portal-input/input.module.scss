@@ -2,20 +2,44 @@ $purple: #8c6faf;
 $gray-icon: #9b97ad;
 $white: #ffffff;
 $shadow: rgba(0, 0, 0, 0.08);
+$border: rgba(140, 111, 175, 0.18);
+$focus-ring: rgba(140, 111, 175, 0.2);
 
 .wrapper {
   width: 100%;
+}
+
+.label {
+  display: block;
+  margin: 0 0 8px 6px;
+  color: rgba(140, 111, 175, 0.92);
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .inputBox {
   height: 56px;
   border-radius: 16px;
   background: $white;
-  box-shadow: 0 4px 12px $shadow;
+  border: 1px solid $border;
+  box-shadow: 0 6px 18px $shadow;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 10px 0 16px;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+
+  &:focus-within {
+    border-color: rgba(140, 111, 175, 0.42);
+    box-shadow:
+      0 10px 22px rgba(67, 28, 112, 0.1),
+      0 0 0 4px $focus-ring;
+    transform: translateY(-1px);
+  }
 }
 
 .left {
@@ -40,15 +64,19 @@ $shadow: rgba(0, 0, 0, 0.08);
   background: transparent;
   color: $purple;
   font-size: 1rem;
-  font-weight: 400;
+  font-weight: 500;
+  caret-color: $purple;
+  cursor: text;
 
   &::placeholder {
-    color: $purple;
+    color: rgba(140, 111, 175, 0.72);
     opacity: 1;
+    font-weight: 400;
   }
 
   &:disabled {
     cursor: not-allowed;
+    opacity: 0.75;
   }
 }
 
@@ -57,11 +85,16 @@ $shadow: rgba(0, 0, 0, 0.08);
   height: 36px;
   border: 0;
   background: transparent;
-  color: $gray-icon;
+  color: rgba(140, 111, 175, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: color 0.18s ease;
+
+  &:hover:not(:disabled) {
+    color: $purple;
+  }
 
   &:disabled {
     cursor: not-allowed;
@@ -70,6 +103,10 @@ $shadow: rgba(0, 0, 0, 0.08);
 }
 
 @media (min-width: 481px) {
+  .label {
+    font-size: 0.92rem;
+  }
+
   .inputBox {
     height: 60px;
     padding: 0 12px 0 18px;

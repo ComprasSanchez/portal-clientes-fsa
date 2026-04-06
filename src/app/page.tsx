@@ -5,7 +5,7 @@ import { Button } from "../components/atoms/Button";
 import { InputWithLabel } from "../components/molecules/InputWithLabel";
 import { OrderList } from "../components/organisms/OrderList";
 import { MainLayout } from "../components/templates/MainLayout";
-import { Loader } from "@/components/atoms/Loader";
+import { Loader } from "@/components/atoms/loader/loader";
 
 export default function Home() {
   return (

@@ -34,6 +34,10 @@ export default function PedidoAccordion({
 }: PedidoAccordionProps) {
   const [localItems, setLocalItems] = React.useState(items);
 
+  React.useEffect(() => {
+    setLocalItems(items);
+  }, [items]);
+
   const handleToggle = (id: string, checked: boolean) => {
     setLocalItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, checked } : item)),

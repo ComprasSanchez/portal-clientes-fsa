@@ -1,0 +1,166 @@
+$purple: #8c6faf;
+$cream: #f5f0df;
+$textPurple: #9a83c2;
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  background: $purple;
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.backgroundImage {
+  object-fit: cover;
+  opacity: 0.22;
+}
+
+.centerContent {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 24px 110px;
+}
+
+.hero {
+  position: relative;
+  width: min(310px, 82vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.logoImageWrap {
+  position: relative;
+  width: min(94px, 24vw);
+  z-index: 2;
+}
+
+.logoImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+  object-fit: contain;
+  animation: pulseSoft 2s ease-in-out infinite;
+}
+
+.title {
+  position: relative;
+  z-index: 2;
+  margin: -2px 0 0;
+  color: $cream;
+  font-size: clamp(4rem, 18vw, 5.4rem);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.bubble {
+  position: absolute;
+  z-index: 3;
+  top: 25px;
+  left: calc(50% + 60px);
+  width: min(148px, 30vw);
+  padding: 12px 13px 10px;
+  border-radius: 14px;
+  background: $cream;
+  color: $textPurple;
+  font-size: clamp(0.82rem, 2.8vw, 0.98rem);
+  line-height: 1.05;
+  font-weight: 600;
+  box-shadow: 0 10px 24px rgba(67, 28, 112, 0.14);
+}
+
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  bottom: -10px;
+  width: 16px;
+  height: 16px;
+  background: $cream;
+  clip-path: polygon(0 0, 100% 0, 28% 100%);
+}
+
+.footer {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.footerImage {
+  display: block;
+  width: min(170px, 44vw);
+  height: auto;
+  opacity: 0.98;
+}
+
+@keyframes pulseSoft {
+  0% {
+    opacity: 0.92;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.025);
+  }
+
+  100% {
+    opacity: 0.92;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 380px) {
+  .hero {
+    width: min(280px, 84vw);
+  }
+
+  .bubble {
+    top: 12px;
+    left: calc(50% + 40px);
+    width: min(132px, 41vw);
+    padding: 10px 11px 9px;
+    font-size: 0.76rem;
+  }
+
+  .title {
+    font-size: clamp(3.6rem, 17vw, 4.6rem);
+  }
+}
+
+@media (min-width: 481px) {
+  .hero {
+    width: 340px;
+  }
+
+  .logoImageWrap {
+    width: 102px;
+  }
+
+  .bubble {
+    top: 10px;
+    left: calc(60% + 38px);
+    width: 156px;
+    font-size: 0.95rem;
+  }
+
+  .footerImage {
+    width: 182px;
+  }
+}
