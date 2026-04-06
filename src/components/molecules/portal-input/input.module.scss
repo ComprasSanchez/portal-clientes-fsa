@@ -1,0 +1,81 @@
+$purple: #8c6faf;
+$gray-icon: #9b97ad;
+$white: #ffffff;
+$shadow: rgba(0, 0, 0, 0.08);
+
+.wrapper {
+  width: 100%;
+}
+
+.inputBox {
+  height: 56px;
+  border-radius: 16px;
+  background: $white;
+  box-shadow: 0 4px 12px $shadow;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 16px;
+}
+
+.left {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.plus {
+  color: $purple;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: $purple;
+  font-size: 1rem;
+  font-weight: 400;
+
+  &::placeholder {
+    color: $purple;
+    opacity: 1;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.iconButton {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: $gray-icon;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+@media (min-width: 481px) {
+  .inputBox {
+    height: 60px;
+    padding: 0 12px 0 18px;
+  }
+
+  .input {
+    font-size: 1.05rem;
+  }
+}

@@ -1,0 +1,209 @@
+$purple: #8c6faf;
+$purple-dark: #6f5a8e;
+$purple-shadow: rgba(140, 111, 175, 0.28);
+$purple-line: rgba(140, 111, 175, 0.22);
+$cream: #e7e3d4;
+$text-soft: rgba(47, 42, 67, 0.62);
+$white: #ffffff;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(140, 111, 175, 0.96);
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.container {
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(40px);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.overlay.open .container {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.titleWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cartIcon {
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.title {
+  margin: 0;
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.closeButton {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.card {
+  position: relative;
+  background: $white;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 4px 6px 14px $purple-shadow;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 18px;
+    height: 18px;
+    background: rgba(140, 111, 175, 0.96);
+    clip-path: polygon(0 100%, 100% 100%, 100% 0);
+  }
+}
+
+.itemWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.itemRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 20px 16px;
+}
+
+.itemInfo {
+  min-width: 0;
+}
+
+.itemName {
+  margin: 0 0 6px 0;
+  color: $purple;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.itemBrand {
+  margin: 0;
+  color: $text-soft;
+  font-size: 0.88rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.itemQty {
+  margin: 6px 0 0;
+  color: $purple-dark;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.removeButton {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: #9b97ad;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.divider {
+  height: 1px;
+  background: $purple-line;
+  box-shadow: 0 3px 6px rgba(140, 111, 175, 0.2);
+}
+
+.chatWrap {
+  :global(button) {
+    background: $cream;
+    box-shadow: none;
+  }
+}
+
+.emptyState {
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0 0 8px;
+  color: $purple;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.emptyText {
+  margin: 0;
+  color: $text-soft;
+  font-size: 0.94rem;
+  line-height: 1.4;
+}
+
+@media (min-width: 481px) {
+  .container {
+    padding: 28px 20px 40px;
+  }
+
+  .title {
+    font-size: 2.15rem;
+  }
+
+  .itemRow {
+    padding: 22px 18px;
+  }
+
+  .itemName {
+    font-size: 1.05rem;
+  }
+}
