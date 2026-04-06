@@ -1,0 +1,98 @@
+$purple: #8c6faf;
+$purple-shadow: rgba(140, 111, 175, 0.28);
+$purple-line: rgba(140, 111, 175, 0.18);
+$text-soft: rgba(47, 42, 67, 0.7);
+$white: #ffffff;
+
+.accordion {
+  width: 100%;
+}
+
+.item {
+  border: 1px solid $purple-line;
+  border-radius: 22px;
+  background: $white;
+  box-shadow: 4px 6px 14px $purple-shadow;
+  overflow: hidden;
+}
+
+.trigger {
+  padding: 18px 18px 14px;
+  text-decoration: none !important;
+
+  &:hover {
+    text-decoration: none !important;
+  }
+
+  :global(svg) {
+    color: rgba(47, 42, 67, 0.45);
+  }
+}
+
+.triggerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  color: $purple;
+  flex-shrink: 0;
+}
+
+.title {
+  color: $purple;
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.content {
+  padding: 0 18px 18px;
+}
+
+.addressRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.smallIcon {
+  color: rgba(140, 111, 175, 0.75);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.texts {
+  min-width: 0;
+}
+
+.address {
+  margin: 0;
+  color: $purple;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.detail {
+  margin: 4px 0 0;
+  color: $text-soft;
+  font-size: 0.98rem;
+  line-height: 1.2;
+}
+
+@media (min-width: 481px) {
+  .trigger {
+    padding: 20px 20px 14px;
+  }
+
+  .content {
+    padding: 0 20px 20px;
+  }
+
+  .title {
+    font-size: 1.1rem;
+  }
+}
