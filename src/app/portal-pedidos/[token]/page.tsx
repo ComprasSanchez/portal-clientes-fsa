@@ -1,4 +1,4 @@
-import { Loader } from "@/components/atoms/Loader";
+import { Loader } from "@/components/atoms/loader/loader";
 import React from "react";
 
 const PortalPedidos = () => {
