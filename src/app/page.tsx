@@ -1,17 +1,19 @@
-"use client";
-
-import Image from "next/image";
-import { Button } from "../components/atoms/Button";
-import { InputWithLabel } from "../components/molecules/InputWithLabel";
-import { OrderList } from "../components/organisms/OrderList";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { MainLayout } from "../components/templates/MainLayout";
-import { Loader } from "@/components/atoms/loader/loader";
+import { Login } from "@/components/organisms/login/login";
 
-export default function Home() {
+export default async function Home() {
+  const cookieStore = await cookies();
+
+  if (cookieStore.get("sid")?.value) {
+    redirect("/home");
+  }
+
   return (
     <MainLayout>
-      <div style={{ padding: 32 }}>
-        <Loader />
+      <div>
+        <Login />
       </div>
     </MainLayout>
   );
