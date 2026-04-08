@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { InputOTP } from "@heroui/react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useFormik } from "formik";
-import { Check, LogIn, UserPlus } from "lucide-react";
+import { Check, Eye, EyeOff, LogIn, UserPlus } from "lucide-react";
 import * as Yup from "yup";
 import googleLogo from "@/assets/google-logo.svg";
 import mobileLogo from "@/assets/logo-celeste.png";
@@ -15,11 +16,15 @@ import styles from "./login.module.scss";
 import { InputMFA } from "@/components/molecules/input-otp/input-otp";
 import {
   AuthCardView,
+  ForgotPasswordFormValues,
+  ForgotPasswordResponse,
   LoginFormValues,
   LoginProps,
   LoginResponse,
   MfaState,
+  PasswordRecoveryState,
   RegisterFormValues,
+  ResetPasswordFormValues,
 } from "@/types/login";
 import { getErrorMessage } from "@/helpers/error-message";
 import { getSafeRedirectPath } from "@/lib/auth";
@@ -43,6 +48,19 @@ const registerValidationSchema = Yup.object({
   lastName: Yup.string().trim().required("Ingresá tu apellido."),
 });
 
+const verifyEmailValidationSchema = Yup.object({
+  email: Yup.string().trim().email("Ingresá un email válido.").required("Ingresá un email."),
+});
+
+const forgotPasswordValidationSchema = Yup.object({
+  identifier: Yup.string().trim().email("Ingresá un email válido.").required("Ingresá un email."),
+});
+
+const resetPasswordValidationSchema = Yup.object({
+  code: Yup.string().trim().length(6, "Ingresá el código de 6 dígitos.").required("Ingresá el código de verificación."),
+  newPassword: Yup.string().min(8, "La contraseña debe tener al menos 8 caracteres.").required("Ingresá una nueva contraseña."),
+});
+
 export function Login({ onLogin }: LoginProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -51,6 +69,131 @@ export function Login({ onLogin }: LoginProps) {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [mfaState, setMfaState] = useState<MfaState | null>(null);
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false);
+  const [resendEmailTarget, setResendEmailTarget] = useState<string | null>(null);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
+  const [shouldPromptVerifyEmail, setShouldPromptVerifyEmail] = useState(false);
+  const [hideEmailResendActions, setHideEmailResendActions] = useState(false);
+  const [hasProcessedVerificationToken, setHasProcessedVerificationToken] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [passwordRecoveryState, setPasswordRecoveryState] = useState<PasswordRecoveryState | null>(null);
+
+  const getErrorCode = (payload: LoginResponse | null) => {
+    if (payload && typeof payload.error === "object" && payload.error !== null && "code" in payload.error) {
+      return payload.error.code ?? null;
+    }
+
+    if (typeof payload?.error === "string") {
+      return payload.error;
+    }
+
+    return null;
+  };
+
+  const getErrorDetailEmail = (payload: LoginResponse | null) => {
+    if (payload && typeof payload.error === "object" && payload.error !== null && "details" in payload.error) {
+      return payload.error.details?.email ?? null;
+    }
+
+    return null;
+  };
+
+  const getResendEmailFromInput = (candidate: string) => {
+    const normalizedValue = candidate.trim();
+    return normalizedValue.includes("@") ? normalizedValue : null;
+  };
+
+  const handleResendVerificationEmail = async () => {
+    if (!resendEmailTarget) {
+      return;
+    }
+
+    setIsResendingEmail(true);
+
+    try {
+      await axios.post(
+        "/api/auth/verify-email/resend",
+        {
+          email: resendEmailTarget,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      setErrorMessage(null);
+      setInfoMessage(`Te reenviamos el email de verificación a ${resendEmailTarget}.`);
+      setHideEmailResendActions(true);
+    } catch (error) {
+      if (axios.isAxiosError<LoginResponse>(error)) {
+        setErrorMessage(
+          getErrorMessage(
+            error.response?.data ?? null,
+            "No pudimos reenviar el email de verificación. Intentá nuevamente.",
+          ),
+        );
+      } else {
+        setErrorMessage("No pudimos reenviar el email de verificación. Intentá nuevamente.");
+      }
+    } finally {
+      setIsResendingEmail(false);
+    }
+  };
+
+  useEffect(() => {
+    const token = searchParams.get("token");
+
+    if (!token || hasProcessedVerificationToken) {
+      return;
+    }
+
+    const verifyEmailByToken = async () => {
+      setHasProcessedVerificationToken(true);
+      setCardView("login");
+      setErrorMessage(null);
+      setInfoMessage(null);
+      setResendEmailTarget(null);
+      setShouldPromptVerifyEmail(false);
+      setHideEmailResendActions(false);
+
+      try {
+        await axios.post(
+          "/api/auth/verify-email",
+          {
+            token,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        setInfoMessage("Tu email fue validado correctamente. Ahora podés iniciar sesión normalmente.");
+      } catch (error) {
+        if (axios.isAxiosError<LoginResponse>(error)) {
+          setErrorMessage(
+            getErrorMessage(
+              error.response?.data ?? null,
+              "No pudimos validar tu email. Solicitá un nuevo enlace de verificación.",
+            ),
+          );
+        } else {
+          setErrorMessage("No pudimos validar tu email. Solicitá un nuevo enlace de verificación.");
+        }
+      } finally {
+        const nextSearchParams = new URLSearchParams(searchParams.toString());
+        nextSearchParams.delete("token");
+        const nextQuery = nextSearchParams.toString();
+        router.replace(nextQuery ? `/?${nextQuery}` : "/");
+      }
+    };
+
+    void verifyEmailByToken();
+  }, [hasProcessedVerificationToken, router, searchParams]);
 
   const formik = useFormik<LoginFormValues>({
     initialValues: {
@@ -64,6 +207,9 @@ export function Login({ onLogin }: LoginProps) {
       setErrorMessage(null);
       setInfoMessage(null);
       setMfaState(null);
+      setResendEmailTarget(null);
+      setShouldPromptVerifyEmail(false);
+      setHideEmailResendActions(false);
 
       try {
         const { data } = await axios.post<LoginResponse>(
@@ -119,9 +265,25 @@ export function Login({ onLogin }: LoginProps) {
         router.refresh();
       } catch (error) {
         if (axios.isAxiosError<LoginResponse>(error)) {
+          const payload = error.response?.data ?? null;
+          const errorCode = getErrorCode(payload);
+          const errorEmail = getErrorDetailEmail(payload);
+
+          if (errorCode === "AUTH_EMAIL_NOT_VERIFIED") {
+            const resendCandidate = errorEmail ?? getResendEmailFromInput(values.username);
+
+            if (resendCandidate) {
+              setResendEmailTarget(resendCandidate);
+              setHideEmailResendActions(false);
+            } else {
+              setShouldPromptVerifyEmail(true);
+              setHideEmailResendActions(false);
+            }
+          }
+
           setErrorMessage(
             getErrorMessage(
-              error.response?.data ?? null,
+              payload,
               "No pudimos iniciar sesión. Verificá tus datos e intentá nuevamente.",
             ),
           );
@@ -150,6 +312,9 @@ export function Login({ onLogin }: LoginProps) {
     onSubmit: async (values, helpers) => {
       setErrorMessage(null);
       setInfoMessage(null);
+      setResendEmailTarget(null);
+      setShouldPromptVerifyEmail(false);
+      setHideEmailResendActions(false);
 
       try {
         await axios.post<LoginResponse>(
@@ -170,12 +335,22 @@ export function Login({ onLogin }: LoginProps) {
 
         helpers.resetForm();
         setCardView("login");
-        setInfoMessage("Cuenta creada correctamente. Ya podés iniciar sesión.");
+        setInfoMessage("Te enviamos un correo electrónico para verificar tu email.");
+        setResendEmailTarget(values.email);
+        setHideEmailResendActions(false);
       } catch (error) {
         if (axios.isAxiosError<LoginResponse>(error)) {
+          const payload = error.response?.data ?? null;
+          const errorCode = getErrorCode(payload);
+
+          if (errorCode === "AUTH_REGISTER_EMAIL_SEND_FAILED") {
+            setResendEmailTarget(values.email);
+            setHideEmailResendActions(false);
+          }
+
           setErrorMessage(
             getErrorMessage(
-              error.response?.data ?? null,
+              payload,
               "No pudimos crear tu cuenta. Revisá los datos e intentá nuevamente.",
             ),
           );
@@ -183,6 +358,164 @@ export function Login({ onLogin }: LoginProps) {
           setErrorMessage("No pudimos conectar con el servicio de registro. Intentá nuevamente.");
         }
       } finally {
+        helpers.setSubmitting(false);
+      }
+    },
+  });
+
+  const forgotPasswordFormik = useFormik<ForgotPasswordFormValues>({
+    initialValues: {
+      identifier: "",
+    },
+    validationSchema: forgotPasswordValidationSchema,
+    validateOnBlur: true,
+    validateOnChange: false,
+    onSubmit: async (values, helpers) => {
+      setErrorMessage(null);
+      setInfoMessage(null);
+
+      try {
+        const { data } = await axios.post<ForgotPasswordResponse>(
+          "/api/auth/forgot-password",
+          {
+            identifier: values.identifier,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (data.challenge?.id) {
+          setPasswordRecoveryState({
+            challengeId: data.challenge.id,
+            identifier: values.identifier,
+            expiresAt: data.challenge.expiresAt,
+          });
+          setCardView("reset-password");
+          setInfoMessage("Te enviamos un código de 6 dígitos al email indicado.");
+          helpers.resetForm();
+          return;
+        }
+
+        setInfoMessage(data.message && typeof data.message === "string" ? data.message : "Si la cuenta existe, enviaremos instrucciones de recuperación al canal configurado.");
+      } catch (error) {
+        if (axios.isAxiosError<LoginResponse>(error)) {
+          setErrorMessage(
+            getErrorMessage(
+              error.response?.data ?? null,
+              "No pudimos iniciar la recuperación de contraseña. Intentá nuevamente.",
+            ),
+          );
+        } else {
+          setErrorMessage("No pudimos iniciar la recuperación de contraseña. Intentá nuevamente.");
+        }
+      } finally {
+        helpers.setSubmitting(false);
+      }
+    },
+  });
+
+  const resetPasswordFormik = useFormik<ResetPasswordFormValues>({
+    initialValues: {
+      code: "",
+      newPassword: "",
+    },
+    validationSchema: resetPasswordValidationSchema,
+    validateOnBlur: true,
+    validateOnChange: false,
+    onSubmit: async (values, helpers) => {
+      if (!passwordRecoveryState?.challengeId) {
+        setErrorMessage("No encontramos una solicitud activa para restablecer la contraseña.");
+        helpers.setSubmitting(false);
+        return;
+      }
+
+      setErrorMessage(null);
+      setInfoMessage(null);
+
+      try {
+        await axios.post<LoginResponse>(
+          "/api/auth/reset-password",
+          {
+            challengeId: passwordRecoveryState.challengeId,
+            code: values.code,
+            newPassword: values.newPassword,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        helpers.resetForm();
+        setPasswordRecoveryState(null);
+        setCardView("login");
+        setInfoMessage("Tu contraseña fue actualizada correctamente. Iniciá sesión con la nueva clave.");
+      } catch (error) {
+        if (axios.isAxiosError<LoginResponse>(error)) {
+          setErrorMessage(
+            getErrorMessage(
+              error.response?.data ?? null,
+              "No pudimos restablecer tu contraseña. Verificá el código e intentá nuevamente.",
+            ),
+          );
+        } else {
+          setErrorMessage("No pudimos restablecer tu contraseña. Intentá nuevamente.");
+        }
+      } finally {
+        helpers.setSubmitting(false);
+      }
+    },
+  });
+
+  const verifyEmailFormik = useFormik<{ email: string }>({
+    initialValues: {
+      email: "",
+    },
+    validationSchema: verifyEmailValidationSchema,
+    validateOnBlur: true,
+    validateOnChange: false,
+    onSubmit: async (values, helpers) => {
+      setErrorMessage(null);
+      setInfoMessage(null);
+      setIsResendingEmail(true);
+      setHideEmailResendActions(false);
+
+      try {
+        await axios.post(
+          "/api/auth/verify-email/resend",
+          {
+            email: values.email,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        setCardView("login");
+        setShouldPromptVerifyEmail(false);
+        setResendEmailTarget(values.email);
+        setInfoMessage(`Te reenviamos el email de verificación a ${values.email}.`);
+        setHideEmailResendActions(true);
+        helpers.resetForm();
+      } catch (error) {
+        if (axios.isAxiosError<LoginResponse>(error)) {
+          setErrorMessage(
+            getErrorMessage(
+              error.response?.data ?? null,
+              "No pudimos reenviar el email de verificación. Intentá nuevamente.",
+            ),
+          );
+        } else {
+          setErrorMessage("No pudimos reenviar el email de verificación. Intentá nuevamente.");
+        }
+      } finally {
+        setIsResendingEmail(false);
         helpers.setSubmitting(false);
       }
     },
@@ -208,6 +541,18 @@ export function Login({ onLogin }: LoginProps) {
   );
   const registerLastNameHasError = Boolean(
     registerFormik.touched.lastName && registerFormik.errors.lastName,
+  );
+  const verifyEmailHasError = Boolean(
+    verifyEmailFormik.touched.email && verifyEmailFormik.errors.email,
+  );
+  const forgotPasswordHasError = Boolean(
+    forgotPasswordFormik.touched.identifier && forgotPasswordFormik.errors.identifier,
+  );
+  const resetPasswordCodeHasError = Boolean(
+    resetPasswordFormik.touched.code && resetPasswordFormik.errors.code,
+  );
+  const resetPasswordHasError = Boolean(
+    resetPasswordFormik.touched.newPassword && resetPasswordFormik.errors.newPassword,
   );
 
   return (
@@ -279,6 +624,31 @@ export function Login({ onLogin }: LoginProps) {
                     {errorMessage}
                   </div>
                 ) : null}
+                {resendEmailTarget && !hideEmailResendActions ? (
+                  <div className={styles.feedbackActions}>
+                    <button
+                      type="button"
+                      className={styles.resendButton}
+                      onClick={handleResendVerificationEmail}
+                      disabled={isResendingEmail}
+                    >
+                      {isResendingEmail ? "Reenviando..." : "Reenviar email"}
+                    </button>
+                  </div>
+                ) : shouldPromptVerifyEmail && !hideEmailResendActions ? (
+                  <div className={styles.feedbackActions}>
+                    <button
+                      type="button"
+                      className={styles.resendButton}
+                      onClick={() => {
+                        setCardView("verify-email");
+                        setInfoMessage(null);
+                      }}
+                    >
+                      Validar email
+                    </button>
+                  </div>
+                ) : null}
                 <form
                   onSubmit={formik.handleSubmit}
                   className={styles.form}
@@ -309,22 +679,47 @@ export function Login({ onLogin }: LoginProps) {
                       <label className={styles.fieldLabel} htmlFor="login-password">
                         Contraseña
                       </label>
-                      <a href="#" className={styles.inlineLink}>
+                      <button
+                        type="button"
+                        className={styles.inlineButton}
+                        onClick={() => {
+                          setCardView("forgot-password");
+                          setErrorMessage(null);
+                          setInfoMessage(null);
+                          setResendEmailTarget(null);
+                          setShouldPromptVerifyEmail(false);
+                          setHideEmailResendActions(false);
+                          setPasswordRecoveryState(null);
+                          forgotPasswordFormik.resetForm();
+                          resetPasswordFormik.resetForm();
+                        }}
+                      >
                         ¿Olvidaste tu contraseña?
-                      </a>
+                      </button>
                     </div>
-                    <input
-                      id="login-password"
-                      name="password"
-                      type="password"
-                      placeholder="Ingresá tu contraseña"
-                      value={formik.values.password}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      autoComplete="current-password"
-                      required
-                      className={`${styles.input} ${passwordHasError ? styles.inputError : ""}`}
-                    />
+                    <div className={styles.passwordField}>
+                      <input
+                        id="login-password"
+                        name="password"
+                        type={showLoginPassword ? "text" : "password"}
+                        placeholder="Ingresá tu contraseña"
+                        value={formik.values.password}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        autoComplete="current-password"
+                        required
+                        className={`${styles.input} ${styles.passwordInput} ${passwordHasError ? styles.inputError : ""}`}
+                      />
+                      <button
+                        type="button"
+                        className={styles.passwordToggle}
+                        aria-label={showLoginPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        aria-pressed={showLoginPassword}
+                        onClick={() => setShowLoginPassword((currentValue) => !currentValue)}
+                      >
+                        {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                     {passwordHasError ? (
                       <p className={styles.fieldError}>{formik.errors.password}</p>
                     ) : null}
@@ -347,6 +742,9 @@ export function Login({ onLogin }: LoginProps) {
                       setCardView("register");
                       setErrorMessage(null);
                       setInfoMessage(null);
+                      setResendEmailTarget(null);
+                      setShouldPromptVerifyEmail(false);
+                      setHideEmailResendActions(false);
                     }}
                   >
                     <UserPlus size={20} />
@@ -398,6 +796,23 @@ export function Login({ onLogin }: LoginProps) {
                     {errorMessage}
                   </div>
                 ) : null}
+                {infoMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                    {infoMessage}
+                  </div>
+                ) : null}
+                {resendEmailTarget && !hideEmailResendActions ? (
+                  <div className={styles.feedbackActions}>
+                    <button
+                      type="button"
+                      className={styles.resendButton}
+                      onClick={handleResendVerificationEmail}
+                      disabled={isResendingEmail}
+                    >
+                      {isResendingEmail ? "Reenviando..." : "Reenviar email"}
+                    </button>
+                  </div>
+                ) : null}
                 <form onSubmit={registerFormik.handleSubmit} className={styles.form} noValidate>
                   <div className={styles.fieldRow}>
                     <div className={styles.fieldGroup}>
@@ -443,17 +858,28 @@ export function Login({ onLogin }: LoginProps) {
                     <label className={styles.fieldLabel} htmlFor="register-password">
                       Contraseña
                     </label>
-                    <input
-                      id="register-password"
-                      name="password"
-                      type="password"
-                      placeholder="Creá una contraseña"
-                      value={registerFormik.values.password}
-                      onChange={registerFormik.handleChange}
-                      onBlur={registerFormik.handleBlur}
-                      autoComplete="new-password"
-                      className={`${styles.input} ${registerPasswordHasError ? styles.inputError : ""}`}
-                    />
+                    <div className={styles.passwordField}>
+                      <input
+                        id="register-password"
+                        name="password"
+                        type={showRegisterPassword ? "text" : "password"}
+                        placeholder="Creá una contraseña"
+                        value={registerFormik.values.password}
+                        onChange={registerFormik.handleChange}
+                        onBlur={registerFormik.handleBlur}
+                        autoComplete="new-password"
+                        className={`${styles.input} ${styles.passwordInput} ${registerPasswordHasError ? styles.inputError : ""}`}
+                      />
+                      <button
+                        type="button"
+                        className={styles.passwordToggle}
+                        aria-label={showRegisterPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        aria-pressed={showRegisterPassword}
+                        onClick={() => setShowRegisterPassword((currentValue) => !currentValue)}
+                      >
+                        {showRegisterPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                     {registerPasswordHasError ? (
                       <p className={styles.fieldError}>{registerFormik.errors.password}</p>
                     ) : null}
@@ -514,6 +940,9 @@ export function Login({ onLogin }: LoginProps) {
                       setCardView("login");
                       setErrorMessage(null);
                       setInfoMessage(null);
+                      setResendEmailTarget(null);
+                      setShouldPromptVerifyEmail(false);
+                      setHideEmailResendActions(false);
                       registerFormik.resetForm();
                     }}
                   >
@@ -600,10 +1029,287 @@ export function Login({ onLogin }: LoginProps) {
                     setMfaState(null);
                     setErrorMessage(null);
                     setInfoMessage(null);
+                    setResendEmailTarget(null);
+                    setShouldPromptVerifyEmail(false);
+                    setHideEmailResendActions(false);
                   }}
                 >
                   Volver atrás
                 </button>
+                <div className={styles.legalLinks}>
+                  <a href="#" className={styles.inlineLink}>
+                    Términos de uso
+                  </a>
+                  {" · "}
+                  <a href="#" className={styles.inlineLink}>
+                    Política de privacidad
+                  </a>
+                </div>
+              </motion.div>
+            ) : null}
+
+            {cardView === "forgot-password" ? (
+              <motion.div
+                key="forgot-password-form"
+                initial={{ opacity: 0, y: 32 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -32 }}
+                transition={{ duration: 0.32, ease: "easeInOut" }}
+              >
+                <header className={styles.formHeader}>
+                  <h2 className={styles.formTitle}>Recuperar contraseña</h2>
+                  <p className={styles.formSubtitle}>Ingresá tu email para recibir el código de verificación</p>
+                </header>
+                {infoMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                    {infoMessage}
+                  </div>
+                ) : null}
+                {errorMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackError}`}>
+                    {errorMessage}
+                  </div>
+                ) : null}
+                <form onSubmit={forgotPasswordFormik.handleSubmit} className={styles.form} noValidate>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel} htmlFor="forgot-password-identifier">
+                      Email
+                    </label>
+                    <input
+                      id="forgot-password-identifier"
+                      name="identifier"
+                      type="email"
+                      placeholder="Ingresá tu email"
+                      value={forgotPasswordFormik.values.identifier}
+                      onChange={forgotPasswordFormik.handleChange}
+                      onBlur={forgotPasswordFormik.handleBlur}
+                      autoComplete="email"
+                      className={`${styles.input} ${forgotPasswordHasError ? styles.inputError : ""}`}
+                    />
+                    {forgotPasswordHasError ? (
+                      <p className={styles.fieldError}>{forgotPasswordFormik.errors.identifier}</p>
+                    ) : null}
+                  </div>
+                  <button
+                    type="submit"
+                    className={styles.primaryButton}
+                    disabled={forgotPasswordFormik.isSubmitting}
+                  >
+                    <span>{forgotPasswordFormik.isSubmitting ? "Enviando..." : "Enviar código"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.secondaryButton}
+                    disabled={forgotPasswordFormik.isSubmitting}
+                    onClick={() => {
+                      setCardView("login");
+                      setErrorMessage(null);
+                      setInfoMessage(null);
+                      setPasswordRecoveryState(null);
+                      forgotPasswordFormik.resetForm();
+                    }}
+                  >
+                    Volver atrás
+                  </button>
+                </form>
+                <div className={styles.legalLinks}>
+                  <a href="#" className={styles.inlineLink}>
+                    Términos de uso
+                  </a>
+                  {" · "}
+                  <a href="#" className={styles.inlineLink}>
+                    Política de privacidad
+                  </a>
+                </div>
+              </motion.div>
+            ) : null}
+
+            {cardView === "reset-password" ? (
+              <motion.div
+                key="reset-password-form"
+                initial={{ opacity: 0, y: 32 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -32 }}
+                transition={{ duration: 0.32, ease: "easeInOut" }}
+              >
+                <header className={styles.formHeader}>
+                  <h2 className={styles.formTitle}>Nueva contraseña</h2>
+                  <p className={styles.formSubtitle}>
+                    Ingresá el código enviado a {passwordRecoveryState?.identifier} y definí tu nueva contraseña.
+                  </p>
+                </header>
+                {infoMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                    {infoMessage}
+                  </div>
+                ) : null}
+                {errorMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackError}`}>
+                    {errorMessage}
+                  </div>
+                ) : null}
+                <form onSubmit={resetPasswordFormik.handleSubmit} className={styles.form} noValidate>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel} htmlFor="reset-password-code">
+                      Código
+                    </label>
+                    <div className={styles.otpField}>
+                      <InputOTP
+                        aria-describedby={resetPasswordCodeHasError ? "reset-password-code-error" : undefined}
+                        isInvalid={resetPasswordCodeHasError}
+                        maxLength={6}
+                        name="code"
+                        value={resetPasswordFormik.values.code}
+                        onChange={(value) => {
+                          void resetPasswordFormik.setFieldValue("code", value);
+                        }}
+                      >
+                        <InputOTP.Group>
+                          <InputOTP.Slot index={0} />
+                          <InputOTP.Slot index={1} />
+                          <InputOTP.Slot index={2} />
+                        </InputOTP.Group>
+                        <InputOTP.Separator />
+                        <InputOTP.Group>
+                          <InputOTP.Slot index={3} />
+                          <InputOTP.Slot index={4} />
+                          <InputOTP.Slot index={5} />
+                        </InputOTP.Group>
+                      </InputOTP>
+                    </div>
+                    {resetPasswordCodeHasError ? (
+                      <p className={styles.fieldError} id="reset-password-code-error">{resetPasswordFormik.errors.code}</p>
+                    ) : null}
+                  </div>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel} htmlFor="reset-password-new-password">
+                      Nueva contraseña
+                    </label>
+                    <div className={styles.passwordField}>
+                      <input
+                        id="reset-password-new-password"
+                        name="newPassword"
+                        type={showResetPassword ? "text" : "password"}
+                        placeholder="Ingresá tu nueva contraseña"
+                        value={resetPasswordFormik.values.newPassword}
+                        onChange={resetPasswordFormik.handleChange}
+                        onBlur={resetPasswordFormik.handleBlur}
+                        autoComplete="new-password"
+                        className={`${styles.input} ${styles.passwordInput} ${resetPasswordHasError ? styles.inputError : ""}`}
+                      />
+                      <button
+                        type="button"
+                        className={styles.passwordToggle}
+                        aria-label={showResetPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        aria-pressed={showResetPassword}
+                        onClick={() => setShowResetPassword((currentValue) => !currentValue)}
+                      >
+                        {showResetPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    {resetPasswordHasError ? (
+                      <p className={styles.fieldError}>{resetPasswordFormik.errors.newPassword}</p>
+                    ) : null}
+                  </div>
+                  <button
+                    type="submit"
+                    className={styles.primaryButton}
+                    disabled={resetPasswordFormik.isSubmitting}
+                  >
+                    <span>{resetPasswordFormik.isSubmitting ? "Actualizando..." : "Actualizar contraseña"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.secondaryButton}
+                    disabled={resetPasswordFormik.isSubmitting}
+                    onClick={() => {
+                      setCardView("forgot-password");
+                      setErrorMessage(null);
+                      setInfoMessage(null);
+                      setPasswordRecoveryState(null);
+                      resetPasswordFormik.resetForm();
+                    }}
+                  >
+                    Volver atrás
+                  </button>
+                </form>
+                <div className={styles.legalLinks}>
+                  <a href="#" className={styles.inlineLink}>
+                    Términos de uso
+                  </a>
+                  {" · "}
+                  <a href="#" className={styles.inlineLink}>
+                    Política de privacidad
+                  </a>
+                </div>
+              </motion.div>
+            ) : null}
+
+            {cardView === "verify-email" ? (
+              <motion.div
+                key="verify-email-form"
+                initial={{ opacity: 0, y: 32 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -32 }}
+                transition={{ duration: 0.32, ease: "easeInOut" }}
+              >
+                <header className={styles.formHeader}>
+                  <h2 className={styles.formTitle}>Validar email</h2>
+                  <p className={styles.formSubtitle}>Ingresá tu email para reenviar la verificación</p>
+                </header>
+                {infoMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                    {infoMessage}
+                  </div>
+                ) : null}
+                {errorMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackError}`}>
+                    {errorMessage}
+                  </div>
+                ) : null}
+                <form onSubmit={verifyEmailFormik.handleSubmit} className={styles.form} noValidate>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel} htmlFor="verify-email-address">
+                      Email
+                    </label>
+                    <input
+                      id="verify-email-address"
+                      name="email"
+                      type="email"
+                      placeholder="Ingresá tu email"
+                      value={verifyEmailFormik.values.email}
+                      onChange={verifyEmailFormik.handleChange}
+                      onBlur={verifyEmailFormik.handleBlur}
+                      autoComplete="email"
+                      className={`${styles.input} ${verifyEmailHasError ? styles.inputError : ""}`}
+                    />
+                    {verifyEmailHasError ? (
+                      <p className={styles.fieldError}>{verifyEmailFormik.errors.email}</p>
+                    ) : null}
+                  </div>
+                  <button
+                    type="submit"
+                    className={styles.primaryButton}
+                    disabled={verifyEmailFormik.isSubmitting || isResendingEmail}
+                  >
+                    <span>{isResendingEmail ? "Enviando..." : "Enviar verificación"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.secondaryButton}
+                    disabled={verifyEmailFormik.isSubmitting || isResendingEmail}
+                    onClick={() => {
+                      setCardView("login");
+                      setErrorMessage(null);
+                      setInfoMessage(null);
+                      setShouldPromptVerifyEmail(false);
+                      setHideEmailResendActions(false);
+                      verifyEmailFormik.resetForm();
+                    }}
+                  >
+                    Volver atrás
+                  </button>
+                </form>
                 <div className={styles.legalLinks}>
                   <a href="#" className={styles.inlineLink}>
                     Términos de uso

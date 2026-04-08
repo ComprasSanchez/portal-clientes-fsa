@@ -175,6 +175,32 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   color: $brand-blue-dark;
 }
 
+.feedbackActions {
+  margin: -6px 0 18px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.resendButton {
+  border: 0;
+  background: transparent;
+  color: $brand-blue;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.72;
+    text-decoration: none;
+  }
+}
+
 .formTitle {
   margin: 0;
   color: $text-strong;
@@ -210,12 +236,30 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   gap: 12px;
 }
 
+.inlineButton {
+  border: 0;
+  background: transparent;
+  color: $brand-blue;
+  font-size: inherit;
+  font-weight: inherit;
+  padding: 0;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .fieldLabel {
   color: rgba(31, 41, 55, 0.8);
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.passwordField {
+  position: relative;
 }
 
 .input {
@@ -244,6 +288,35 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 }
 
+.passwordInput {
+  padding-right: 52px;
+}
+
+.passwordToggle {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: rgba(102, 112, 133, 0.88);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 4px;
+
+  &:hover {
+    color: $brand-blue;
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-radius: 999px;
+    box-shadow: 0 0 0 4px $focus-ring;
+  }
+}
+
 .inputError {
   border-color: rgba(180, 35, 24, 0.34);
   box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.08);
@@ -254,6 +327,11 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   color: #b42318;
   font-size: 0.84rem;
   line-height: 1.4;
+}
+
+.otpField {
+  display: flex;
+  justify-content: center;
 }
 
 .primaryButton,
