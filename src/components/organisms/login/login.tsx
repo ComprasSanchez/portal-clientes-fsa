@@ -74,6 +74,7 @@ export function Login({ onLogin }: LoginProps) {
   const [shouldPromptVerifyEmail, setShouldPromptVerifyEmail] = useState(false);
   const [hideEmailResendActions, setHideEmailResendActions] = useState(false);
   const [hasProcessedVerificationToken, setHasProcessedVerificationToken] = useState(false);
+  const [hasProcessedGoogleAuthError, setHasProcessedGoogleAuthError] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -194,6 +195,22 @@ export function Login({ onLogin }: LoginProps) {
 
     void verifyEmailByToken();
   }, [hasProcessedVerificationToken, router, searchParams]);
+
+  useEffect(() => {
+    const googleAuthError = searchParams.get("googleAuthError");
+
+    if (!googleAuthError || hasProcessedGoogleAuthError) {
+      return;
+    }
+
+    setHasProcessedGoogleAuthError(true);
+    setErrorMessage("No pudimos completar el inicio de sesión con Google. Intentá nuevamente.");
+
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    nextSearchParams.delete("googleAuthError");
+    const nextQuery = nextSearchParams.toString();
+    router.replace(nextQuery ? `/?${nextQuery}` : "/");
+  }, [hasProcessedGoogleAuthError, router, searchParams]);
 
   const formik = useFormik<LoginFormValues>({
     initialValues: {
@@ -759,7 +776,8 @@ export function Login({ onLogin }: LoginProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    console.log("Iniciar sesión con Google");
+                    const redirectTo = getSafeRedirectPath(searchParams.get("redirectTo"));
+                    window.location.assign(`/api/auth/providers/google/start?redirectTo=${encodeURIComponent(redirectTo)}`);
                   }}
                   className={styles.googleButton}
                   disabled={formik.isSubmitting}
