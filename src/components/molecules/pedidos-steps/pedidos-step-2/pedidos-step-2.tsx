@@ -259,7 +259,7 @@ const PedidosStep2 = ({
           </p>
         </div>
 
-        <div className="max-w-105 mx-auto py-6">
+        <div className="mx-auto py-6">
           <div style={{ display: "flex", flexDirection: "row", gap: 14 }}>
             <PortalButton
               variant={deliveryMethod === "domicilio" ? "primary" : "secondary"}

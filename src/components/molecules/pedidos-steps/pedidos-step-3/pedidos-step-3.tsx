@@ -169,7 +169,7 @@ const PedidosStep3 = ({
   if (orderConfirmed) {
     return (
       <div className="w-full p-5">
-        <div className="mx-auto flex max-w-105 flex-col gap-5 rounded-3xl bg-white p-6 text-center shadow-sm">
+        <div className="mx-auto flex flex-col gap-5 rounded-3xl bg-white p-6 text-center shadow-sm">
           <div className="flex justify-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#8C6FAF]/12 text-[#8C6FAF]">
               <CheckCircle2 size={42} />

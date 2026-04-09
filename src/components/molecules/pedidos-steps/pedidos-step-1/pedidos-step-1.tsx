@@ -63,7 +63,7 @@ const PedidosStep1 = ({
           </p>
         </div>
 
-        <div className="max-w-105 mx-auto py-6">
+        <div className="mx-auto py-6">
           {items.length > 0 ? (
             <PedidoAccordion items={items} onToggle={onToggleItem} />
           ) : (

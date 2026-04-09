@@ -1,0 +1,103 @@
+.quickAccessCard {
+  border: 1px solid #e5dbf4;
+  border-radius: 1rem;
+  background: #ffffff;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 6px 22px rgba(48, 26, 95, 0.05);
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.quickAccessIconWrap {
+  margin: 0 auto 0.75rem;
+  display: flex;
+  height: 2.75rem;
+  width: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #f0e9fb;
+  color: #8f63d9;
+}
+
+.quickAccessLabel {
+  font-weight: 600;
+  color: #2f3042;
+}
+
+.detailButton {
+  margin-top: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #8f63d9;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.orderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.5rem;
+}
+
+.orderRowBorder {
+  border-bottom: 1px solid #ebe6f4;
+}
+
+.orderLabel {
+  color: #777892;
+}
+
+.orderValue {
+  font-weight: 600;
+  color: #303144;
+}
+
+.profileField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.profileFieldLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #70728a;
+}
+
+.profileFieldValue {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #2f3042;
+}
+
+.profileFieldInput {
+  width: 100%;
+  border: 1px solid #e5dbf4;
+  border-radius: 0.85rem;
+  background: #ffffff;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  color: #2f3042;
+  box-shadow: 0 4px 18px rgba(48, 26, 95, 0.04);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #bf9cf0;
+    box-shadow: 0 0 0 4px rgba(159, 116, 229, 0.12);
+  }
+}

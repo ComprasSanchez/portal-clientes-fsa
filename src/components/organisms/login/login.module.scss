@@ -678,3 +678,144 @@ $focus-ring: rgba(0, 124, 152, 0.18);
     padding: 0px 48px;
   }
 }
+
+@media (min-width: 1366px) {
+  .heroContent {
+    padding: 60px 60px 52px;
+  }
+
+  .heroLogo {
+    width: 204px;
+    margin-bottom: 68px;
+  }
+
+  .heroTitle,
+  .heroAccent {
+    font-size: clamp(2.7rem, 3.2vw, 4rem);
+  }
+
+  .heroDescription {
+    max-width: 35rem;
+    margin-top: 34px;
+    font-size: 1.18rem;
+    line-height: 1.74;
+  }
+
+  .benefitsList {
+    margin-top: 46px;
+    gap: 22px;
+  }
+
+  .benefitItem {
+    font-size: 1.12rem;
+  }
+
+  .benefitIcon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .heroFooter {
+    padding: 0 60px 46px;
+    font-size: 1rem;
+  }
+
+  .contentPanel {
+    padding: 28px 72px;
+  }
+
+  .formCard {
+    width: min(100%, 40rem);
+    padding: 48px;
+    border-radius: 34px;
+  }
+
+  .formHeader {
+    margin-bottom: 34px;
+  }
+
+  .feedback {
+    margin-bottom: 22px;
+    border-radius: 18px;
+    padding: 17px 19px;
+    font-size: 1.02rem;
+  }
+
+  .feedbackActions {
+    margin: -2px 0 20px;
+  }
+
+  .resendButton,
+  .inlineButton,
+  .inlineLink,
+  .legalLinks {
+    font-size: 1rem;
+  }
+
+  .formTitle {
+    font-size: 2.9rem;
+  }
+
+  .formSubtitle {
+    margin-top: 12px;
+    font-size: 1.12rem;
+  }
+
+  .form {
+    gap: 24px;
+  }
+
+  .fieldGroup {
+    gap: 13px;
+  }
+
+  .fieldRow {
+    gap: 24px;
+  }
+
+  .fieldLabel,
+  .separatorText {
+    font-size: 0.86rem;
+  }
+
+  .input {
+    min-height: 62px;
+    border-radius: 18px;
+    padding: 0 19px;
+    font-size: 1.08rem;
+  }
+
+  .passwordInput {
+    padding-right: 60px;
+  }
+
+  .passwordToggle {
+    right: 17px;
+  }
+
+  .fieldError {
+    font-size: 0.9rem;
+  }
+
+  .primaryButton,
+  .secondaryButton,
+  .googleButton {
+    min-height: 62px;
+    border-radius: 18px;
+    gap: 12px;
+    font-size: 1.08rem;
+
+    svg {
+      width: 21px;
+      height: 21px;
+    }
+  }
+
+  .separator {
+    margin: 28px 0;
+  }
+
+  .legalLinks {
+    margin-top: 32px;
+  }
+}
