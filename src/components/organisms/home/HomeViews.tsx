@@ -9,7 +9,7 @@ import {
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
 import { QuickAccessCard, type QuickAccessItem } from "@/components/molecules/home/QuickAccessCard";
-import { ProfileView } from "@/components/organisms/home/ProfileView";
+import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { HomeView } from "@/types/home";
 import styles from "./HomeViews.module.scss";
 

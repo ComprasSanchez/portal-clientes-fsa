@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,6 +17,8 @@ import {
   X,
 } from "lucide-react";
 import { type HomeView } from "@/types/home";
+import coraWordmark from "@/assets/cora-morado.svg";
+import coraIcon from "@/assets/cora-icono.svg";
 
 interface SidebarProps {
   currentView: HomeView;
@@ -60,7 +63,22 @@ export function Sidebar({
     <>
       <div className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-border bg-white px-4 lg:hidden">
         <div className="flex items-center gap-3">
-          <span className="text-lg font-semibold text-[#2a2a3b]">Portal Clientes</span>
+          <Image
+            src={coraWordmark}
+            alt="CORA"
+            width={70}
+            height={20}
+            className="h-5 w-auto"
+            priority
+          />
+          <Image
+            src={coraIcon}
+            alt="CORA icono"
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-xl"
+            priority
+          />
         </div>
         <button
           onClick={() => setIsMobileOpen((prev) => !prev)}
@@ -87,26 +105,51 @@ export function Sidebar({
         <div className="flex h-full flex-col">
           <div className="hidden border-b border-[#e6e1ef] p-4 lg:block">
             <div className="mb-4 flex items-center justify-between">
-              {!isCollapsed && (
-                <span className="text-sm font-semibold uppercase tracking-wide text-[#8b8ca4]">
-                  Navegacion
-                </span>
-              )}
+              <div className="flex items-center gap-3 overflow-hidden">
+                {!isCollapsed && (
+                  <>
+                    <Image
+                      src={coraWordmark}
+                      alt="CORA"
+                      width={84}
+                      height={24}
+                      className="h-6 w-auto shrink-0"
+                      priority
+                    />
+                    <Image
+                      src={coraIcon}
+                      alt="CORA icono"
+                      width={40}
+                      height={40}
+                      className="h-10 w-10 shrink-0 rounded-xl"
+                      priority
+                    />
+                  </>
+                )}
+
+                {isCollapsed && (
+                  <Image
+                    src={coraIcon}
+                    alt="CORA icono"
+                    width={36}
+                    height={36}
+                    className="h-9 w-9 shrink-0 rounded-xl"
+                    priority
+                  />
+                )}
+              </div>
               <button
                 onClick={() => setIsCollapsed((prev) => !prev)}
                 className="rounded-lg p-1 text-[#7d7e96] transition-colors hover:bg-[#ece7f6]"
                 aria-label="Colapsar menu"
               >
-                {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                {isCollapsed ? (
+                  <ChevronRight size={20} />
+                ) : (
+                  <ChevronLeft size={20} />
+                )}
               </button>
             </div>
-
-            {!isCollapsed && (
-              <div className="text-sm">
-                <p className="text-[#8b8ca4]">Hola,</p>
-                <p className="truncate font-medium text-[#2c2d40]">{userName}</p>
-              </div>
-            )}
           </div>
 
           <div className="border-b border-[#e6e1ef] p-4 lg:hidden">
@@ -135,8 +178,16 @@ export function Sidebar({
                       title={isCollapsed ? item.label : undefined}
                     >
                       <Icon size={18} className="shrink-0" />
-                      {!isCollapsed && <span className="text-[15px] font-semibold">{item.label}</span>}
-                      {isCollapsed && <span className="text-[15px] font-semibold lg:hidden">{item.label}</span>}
+                      {!isCollapsed && (
+                        <span className="text-[15px] font-semibold">
+                          {item.label}
+                        </span>
+                      )}
+                      {isCollapsed && (
+                        <span className="text-[15px] font-semibold lg:hidden">
+                          {item.label}
+                        </span>
+                      )}
                     </button>
                   </li>
                 );
@@ -151,8 +202,14 @@ export function Sidebar({
               title={isCollapsed ? "Cerrar sesion" : undefined}
             >
               <LogOut size={20} className="shrink-0" />
-              {!isCollapsed && <span className="text-sm font-semibold">Cerrar sesion</span>}
-              {isCollapsed && <span className="text-sm font-semibold lg:hidden">Cerrar sesion</span>}
+              {!isCollapsed && (
+                <span className="text-sm font-semibold">Cerrar sesion</span>
+              )}
+              {isCollapsed && (
+                <span className="text-sm font-semibold lg:hidden">
+                  Cerrar sesion
+                </span>
+              )}
             </button>
           </div>
         </div>

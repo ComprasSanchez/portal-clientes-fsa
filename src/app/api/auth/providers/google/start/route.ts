@@ -12,6 +12,7 @@ type CookieOptions = {
 };
 
 const SOCIAL_REDIRECT_COOKIE = "social_auth_redirect";
+const SOCIAL_POPUP_COOKIE = "social_auth_popup";
 
 const getSetCookieHeaders = (headers: Headers) => {
   const withGetSetCookie = headers as Headers & {
@@ -105,8 +106,15 @@ export async function GET(req: NextRequest) {
       return jsonError("missing_upstream_base", 500);
     }
 
+    const upstreamUrl = new URL(`${base}/providers/google/start`);
+    const mode = req.nextUrl.searchParams.get("mode");
+
+    if (mode) {
+      upstreamUrl.searchParams.set("mode", mode);
+    }
+
     const cookieHeader = req.headers.get("cookie");
-    const upstream = await fetch(`${base}/providers/google/start`, {
+    const upstream = await fetch(upstreamUrl.toString(), {
       method: "GET",
       headers: {
         Accept: "application/json",
@@ -144,6 +152,8 @@ export async function GET(req: NextRequest) {
     }
 
     const redirectTo = getSafeRedirectPath(req.nextUrl.searchParams.get("redirectTo"));
+    const isPopupMode = req.nextUrl.searchParams.get("mode") === "popup";
+
     response.cookies.set(SOCIAL_REDIRECT_COOKIE, redirectTo, {
       httpOnly: true,
       path: "/",
@@ -151,6 +161,18 @@ export async function GET(req: NextRequest) {
       secure: isSecureContext,
       maxAge: 60 * 10,
     });
+
+    if (isPopupMode) {
+      response.cookies.set(SOCIAL_POPUP_COOKIE, "1", {
+        httpOnly: true,
+        path: "/",
+        sameSite: "lax",
+        secure: isSecureContext,
+        maxAge: 60 * 10,
+      });
+    } else {
+      response.cookies.delete(SOCIAL_POPUP_COOKIE);
+    }
 
     return response;
   } catch {

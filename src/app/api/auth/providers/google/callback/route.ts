@@ -12,7 +12,9 @@ type CookieOptions = {
 };
 
 const SOCIAL_REDIRECT_COOKIE = "social_auth_redirect";
+const SOCIAL_POPUP_COOKIE = "social_auth_popup";
 const GOOGLE_AUTH_ERROR_QUERY = "googleAuthError";
+const DEFAULT_POPUP_ERROR = "AUTH_GOOGLE_FAILED";
 
 const getSetCookieHeaders = (headers: Headers) => {
   const withGetSetCookie = headers as Headers & {
@@ -111,10 +113,65 @@ const getCallbackRedirectResponse = (req: NextRequest, hasError: boolean) => {
   return NextResponse.redirect(redirectUrl);
 };
 
+const getPopupErrorCode = (req: NextRequest) => {
+  return (
+    req.nextUrl.searchParams.get("error") ||
+    req.nextUrl.searchParams.get("error_code") ||
+    DEFAULT_POPUP_ERROR
+  );
+};
+
+const getPopupResponse = (req: NextRequest, payload: { type: "SOCIAL_AUTH_SUCCESS" } | { type: "SOCIAL_AUTH_ERROR"; error: string }) => {
+  const html = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Google login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <script>
+      (function () {
+        var payload = ${JSON.stringify(payload)};
+        var targetOrigin = ${JSON.stringify(req.nextUrl.origin)};
+
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(payload, targetOrigin);
+          }
+        } finally {
+          window.close();
+        }
+      })();
+    </script>
+  </body>
+</html>`;
+
+  return new NextResponse(html, {
+    status: 200,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store",
+    },
+  });
+};
+
 export async function GET(req: NextRequest) {
   try {
     const base = getRequiredBaseUrl("NEXT_PUBLIC_FSA_AUTH");
+    const isPopupMode = req.cookies.get(SOCIAL_POPUP_COOKIE)?.value === "1";
+
     if (!base) {
+      if (isPopupMode) {
+        const response = getPopupResponse(req, {
+          type: "SOCIAL_AUTH_ERROR",
+          error: DEFAULT_POPUP_ERROR,
+        });
+        response.cookies.delete(SOCIAL_REDIRECT_COOKIE);
+        response.cookies.delete(SOCIAL_POPUP_COOKIE);
+        return response;
+      }
+
       return NextResponse.redirect(new URL(`/?${GOOGLE_AUTH_ERROR_QUERY}=1`, req.url));
     }
 
@@ -138,7 +195,17 @@ export async function GET(req: NextRequest) {
     });
 
     const hasError = upstream.status >= 400;
-    const response = getCallbackRedirectResponse(req, hasError);
+    const response = isPopupMode
+      ? getPopupResponse(
+          req,
+          hasError
+            ? {
+                type: "SOCIAL_AUTH_ERROR",
+                error: getPopupErrorCode(req),
+              }
+            : { type: "SOCIAL_AUTH_SUCCESS" },
+        )
+      : getCallbackRedirectResponse(req, hasError);
     const isSecureContext = req.nextUrl.protocol === "https:";
 
     for (const cookie of getSetCookieHeaders(upstream.headers)) {
@@ -152,8 +219,19 @@ export async function GET(req: NextRequest) {
     }
 
     response.cookies.delete(SOCIAL_REDIRECT_COOKIE);
+    response.cookies.delete(SOCIAL_POPUP_COOKIE);
     return response;
   } catch {
+    if (req.cookies.get(SOCIAL_POPUP_COOKIE)?.value === "1") {
+      const response = getPopupResponse(req, {
+        type: "SOCIAL_AUTH_ERROR",
+        error: DEFAULT_POPUP_ERROR,
+      });
+      response.cookies.delete(SOCIAL_REDIRECT_COOKIE);
+      response.cookies.delete(SOCIAL_POPUP_COOKIE);
+      return response;
+    }
+
     return NextResponse.redirect(new URL(`/?${GOOGLE_AUTH_ERROR_QUERY}=1`, req.url));
   }
 }

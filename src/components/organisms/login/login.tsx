@@ -79,6 +79,11 @@ export function Login({ onLogin }: LoginProps) {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [passwordRecoveryState, setPasswordRecoveryState] = useState<PasswordRecoveryState | null>(null);
+  const [isGooglePopupLoading, setIsGooglePopupLoading] = useState(false);
+
+  type SocialAuthMessage =
+    | { type: "SOCIAL_AUTH_SUCCESS" }
+    | { type: "SOCIAL_AUTH_ERROR"; error: string };
 
   const getErrorCode = (payload: LoginResponse | null) => {
     if (payload && typeof payload.error === "object" && payload.error !== null && "code" in payload.error) {
@@ -211,6 +216,122 @@ export function Login({ onLogin }: LoginProps) {
     const nextQuery = nextSearchParams.toString();
     router.replace(nextQuery ? `/?${nextQuery}` : "/");
   }, [hasProcessedGoogleAuthError, router, searchParams]);
+
+  const startGooglePopupLogin = () => {
+    if (isGooglePopupLoading) {
+      return;
+    }
+
+    setErrorMessage(null);
+    setInfoMessage(null);
+    setResendEmailTarget(null);
+    setShouldPromptVerifyEmail(false);
+    setHideEmailResendActions(false);
+    setIsGooglePopupLoading(true);
+
+    const redirectTo = getSafeRedirectPath(searchParams.get("redirectTo"));
+    const backendBaseUrl = process.env.NEXT_PUBLIC_FSA_AUTH?.replace(/\/$/, "") ?? "";
+
+    if (!backendBaseUrl) {
+      setIsGooglePopupLoading(false);
+      setErrorMessage("Falta configurar NEXT_PUBLIC_FSA_AUTH para iniciar sesión con Google.");
+      return;
+    }
+
+    const backendOrigin = new URL(backendBaseUrl).origin;
+    const popupUrl = `${backendBaseUrl}/providers/google/start?mode=popup`;
+    const popup = window.open(
+      popupUrl,
+      "googleLogin",
+      "width=520,height=720,menubar=no,toolbar=no,status=no,scrollbars=yes,resizable=yes",
+    );
+
+    if (!popup) {
+      setIsGooglePopupLoading(false);
+      setErrorMessage("El navegador bloqueó la ventana de Google. Habilitá popups e intentá nuevamente.");
+      return;
+    }
+
+    const timeoutMs = 60_000;
+    const startedAt = Date.now();
+    let completed = false;
+
+    const cleanup = () => {
+      window.clearInterval(poll);
+      window.clearTimeout(timer);
+      window.removeEventListener("message", onMessage);
+      setIsGooglePopupLoading(false);
+    };
+
+    const finishWithError = (message: string) => {
+      if (completed) {
+        return;
+      }
+
+      completed = true;
+      cleanup();
+      setErrorMessage(message);
+    };
+
+    const finishWithSuccess = () => {
+      if (completed) {
+        return;
+      }
+
+      completed = true;
+      cleanup();
+      onLogin?.("google", "");
+      router.push(redirectTo);
+      router.refresh();
+    };
+
+    function onMessage(event: MessageEvent) {
+      if (event.origin !== window.location.origin && event.origin !== backendOrigin) {
+        return;
+      }
+
+      const data = event.data as SocialAuthMessage | null;
+      if (!data || typeof data !== "object" || !("type" in data)) {
+        return;
+      }
+
+      if (data.type === "SOCIAL_AUTH_SUCCESS") {
+        finishWithSuccess();
+        return;
+      }
+
+      if (data.type === "SOCIAL_AUTH_ERROR") {
+        finishWithError("No pudimos completar el inicio de sesión con Google. Intentá nuevamente.");
+      }
+    }
+
+    const poll = window.setInterval(() => {
+      if (!popup.closed) {
+        return;
+      }
+
+      if (completed) {
+        cleanup();
+        return;
+      }
+
+      if (Date.now() - startedAt < timeoutMs) {
+        finishWithError("La ventana de Google se cerró antes de completar la autenticación.");
+      }
+    }, 500);
+
+    const timer = window.setTimeout(() => {
+      try {
+        popup.close();
+      } catch {
+        // Ignore popup close errors.
+      }
+
+      finishWithError("La autenticación con Google tardó demasiado. Intentá nuevamente.");
+    }, timeoutMs);
+
+    window.addEventListener("message", onMessage);
+  };
 
   const formik = useFormik<LoginFormValues>({
     initialValues: {
@@ -775,15 +896,12 @@ export function Login({ onLogin }: LoginProps) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    const redirectTo = getSafeRedirectPath(searchParams.get("redirectTo"));
-                    window.location.assign(`/api/auth/providers/google/start?redirectTo=${encodeURIComponent(redirectTo)}`);
-                  }}
+                  onClick={startGooglePopupLogin}
                   className={styles.googleButton}
-                  disabled={formik.isSubmitting}
+                  disabled={formik.isSubmitting || isGooglePopupLoading}
                 >
                   <Image src={googleLogo} alt="Google" width={20} height={20} />
-                  <span>Continuar con Google</span>
+                  <span>{isGooglePopupLoading ? "Conectando con Google..." : "Continuar con Google"}</span>
                 </button>
                 <div className={styles.legalLinks}>
                   <a href="#" className={styles.inlineLink}>
