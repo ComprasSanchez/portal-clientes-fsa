@@ -212,6 +212,9 @@ export async function GET(req: NextRequest) {
     const callbackSetCookieHeaders: string[] = [];
     const backendOrigin = new URL(base).origin;
 
+    console.log("LO ENVIO?", req.headers.get("host") ?? req.nextUrl.host);
+    
+
     let upstream = await fetch(upstreamUrl.toString(), {
       method: "GET",
       headers: {

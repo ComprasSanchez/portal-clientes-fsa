@@ -137,7 +137,9 @@ export async function GET(req: NextRequest) {
       return jsonError("missing_redirect_location", 502);
     }
 
-    const callbackUrl = `${req.nextUrl.origin}/api/auth/providers/google/callback`;
+    const callbackUrl =
+      process.env.FSA_AUTH_GOOGLE_REDIRECT_URI?.trim() ||
+      `${req.nextUrl.origin}/api/auth/providers/google/callback`;
     let proxiedLocation = location;
 
     try {
