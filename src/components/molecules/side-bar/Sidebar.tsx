@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
+  ArrowLeftRight,
   ChevronLeft,
   ChevronRight,
   CreditCard,
@@ -28,7 +30,7 @@ interface SidebarProps {
 }
 
 const menuItems: Array<{
-  id: HomeView;
+  id: HomeView | "socios";
   label: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }> = [
@@ -43,6 +45,7 @@ const menuItems: Array<{
     label: "Historial completo",
     icon: TrendingUp,
   },
+  { id: "socios", label: "Socios", icon: ArrowLeftRight },
 ];
 
 export function Sidebar({
@@ -51,10 +54,17 @@ export function Sidebar({
   userName,
   onLogout,
 }: SidebarProps) {
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const handleNavigate = (view: HomeView) => {
+  const handleNavigate = (view: HomeView | "socios") => {
+    if (view === "socios") {
+      router.push("/socios");
+      setIsMobileOpen(false);
+      return;
+    }
+
     onNavigate(view);
     setIsMobileOpen(false);
   };
@@ -163,7 +173,7 @@ export function Sidebar({
             <ul className="space-y-1 px-3">
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = currentView === item.id;
+                const isActive = item.id !== "socios" && currentView === item.id;
 
                 return (
                   <li key={item.id}>

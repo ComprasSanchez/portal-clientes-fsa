@@ -1,4 +1,5 @@
 import {
+  ArrowLeftRight,
   Box,
   CreditCard,
   FileText,
@@ -6,6 +7,7 @@ import {
   TrendingUp,
   User,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
 import { QuickAccessCard, type QuickAccessItem } from "@/components/molecules/home/QuickAccessCard";
@@ -55,17 +57,22 @@ const viewContent: Record<
   },
 };
 
-const quickAccessItems: QuickAccessItem[] = [
-  { label: "Mi perfil", view: "mi-cuenta", icon: User },
-  { label: "Productos", view: "productos", icon: Box },
-  { label: "Mis Pedidos", view: "pedidos", icon: Package },
-  { label: "Facturas", view: "facturas", icon: CreditCard },
-  { label: "Expediente", view: "expediente-actual", icon: FileText },
-  { label: "Historial", view: "expediente-completo", icon: TrendingUp },
-];
-
 export function HomeViews({ currentView, onNavigate }: HomeViewsProps) {
+  const router = useRouter();
   const active = viewContent[currentView];
+  const quickAccessItems: QuickAccessItem[] = [
+    {
+      label: "Socios",
+      icon: ArrowLeftRight,
+      onClick: () => router.push("/socios"),
+    },
+    { label: "Mi perfil", view: "mi-cuenta", icon: User },
+    { label: "Productos", view: "productos", icon: Box },
+    { label: "Mis Pedidos", view: "pedidos", icon: Package },
+    { label: "Facturas", view: "facturas", icon: CreditCard },
+    { label: "Expediente", view: "expediente-actual", icon: FileText },
+    { label: "Historial", view: "expediente-completo", icon: TrendingUp },
+  ];
 
   if (currentView === "mi-cuenta") {
     return (
@@ -101,7 +108,7 @@ export function HomeViews({ currentView, onNavigate }: HomeViewsProps) {
 
         <div className={styles.quickAccessGrid}>
           {quickAccessItems.map((item) => (
-            <QuickAccessCard key={item.view} item={item} onNavigate={onNavigate} />
+            <QuickAccessCard key={item.view ?? item.label} item={item} onNavigate={onNavigate} />
           ))}
         </div>
 

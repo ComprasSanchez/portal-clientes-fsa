@@ -7,7 +7,7 @@ export default async function Home() {
   const cookieStore = await cookies();
 
   if (cookieStore.get("sid")?.value) {
-    redirect("/home");
+    redirect("/socios");
   }
 
   return (

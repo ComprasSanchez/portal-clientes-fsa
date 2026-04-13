@@ -1,6 +1,6 @@
 export const getSafeRedirectPath = (candidate: string | null) => {
   if (!candidate || !candidate.startsWith("/") || candidate.startsWith("//")) {
-    return "/home";
+    return "/socios";
   }
 
   return candidate;

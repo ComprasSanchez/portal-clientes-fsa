@@ -1,16 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Poppins } from "next/font/google";
 import { HomeViews } from "@/components/organisms/home/HomeViews";
 import { Sidebar } from "@/components/molecules/side-bar/Sidebar";
 import { HomeView } from "@/types/home";
 
 const DEFAULT_VIEW: HomeView = "dashboard";
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
 
 const HomePage = () => {
   const [currentView, setCurrentView] = useState<HomeView>(DEFAULT_VIEW);
@@ -20,7 +15,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className={`${poppins.className} min-h-screen bg-linear-to-br from-muted/30 to-white`}>
+    <div className="min-h-screen bg-linear-to-br from-muted/30 to-white">
       <Sidebar
         currentView={currentView}
         onNavigate={setCurrentView}

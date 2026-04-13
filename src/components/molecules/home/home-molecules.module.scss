@@ -12,6 +12,15 @@
   }
 }
 
+.quickAccessCardSocios {
+  border-color: #d5e4e8;
+  box-shadow: 0 10px 24px rgba(0, 83, 102, 0.08);
+
+  &:hover {
+    box-shadow: 0 16px 32px rgba(0, 83, 102, 0.12);
+  }
+}
+
 .quickAccessIconWrap {
   margin: 0 auto 0.75rem;
   display: flex;
@@ -22,6 +31,11 @@
   border-radius: 9999px;
   background: #f0e9fb;
   color: #8f63d9;
+}
+
+.quickAccessIconWrapSocios {
+  background: #e6f3f6;
+  color: #007c98;
 }
 
 .quickAccessLabel {
@@ -42,6 +56,10 @@
   &:hover {
     opacity: 0.8;
   }
+}
+
+.detailButtonSocios {
+  color: #007c98;
 }
 
 .orderRow {
