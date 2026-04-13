@@ -80,6 +80,7 @@ export function Login({ onLogin }: LoginProps) {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [passwordRecoveryState, setPasswordRecoveryState] = useState<PasswordRecoveryState | null>(null);
   const [isGooglePopupLoading, setIsGooglePopupLoading] = useState(false);
+  const [shouldSuggestGoogleAccountRetry, setShouldSuggestGoogleAccountRetry] = useState(false);
 
   type SocialAuthMessage =
     | { type: "SOCIAL_AUTH_SUCCESS" }
@@ -217,7 +218,7 @@ export function Login({ onLogin }: LoginProps) {
     router.replace(nextQuery ? `/?${nextQuery}` : "/");
   }, [hasProcessedGoogleAuthError, router, searchParams]);
 
-  const startGooglePopupLogin = () => {
+  const startGooglePopupLogin = (forceAccountSelection = false) => {
     if (isGooglePopupLoading) {
       return;
     }
@@ -228,9 +229,13 @@ export function Login({ onLogin }: LoginProps) {
     setShouldPromptVerifyEmail(false);
     setHideEmailResendActions(false);
     setIsGooglePopupLoading(true);
+    setShouldSuggestGoogleAccountRetry(false);
 
-    const redirectTo = getSafeRedirectPath(searchParams.get("redirectTo"));
-    const popupUrl = `/api/auth/providers/google/start?mode=popup&redirectTo=${encodeURIComponent(redirectTo)}`;
+    const redirectTo = "/home";
+    const promptParam = forceAccountSelection
+      ? `&prompt=${encodeURIComponent("select_account consent")}`
+      : "";
+    const popupUrl = `/api/auth/providers/google/start?mode=popup&redirectTo=${encodeURIComponent(redirectTo)}${promptParam}`;
     const popup = window.open(
       popupUrl,
       "googleLogin",
@@ -276,6 +281,25 @@ export function Login({ onLogin }: LoginProps) {
       router.refresh();
     };
 
+    const verifySessionAfterPopupClose = async () => {
+      try {
+        const { data } = await axios.get<{ ok: boolean; authenticated: boolean }>("/api/auth/session", {
+          headers: {
+            Accept: "application/json",
+          },
+        });
+
+        if (data?.authenticated) {
+          finishWithSuccess();
+          return;
+        }
+      } catch {
+        // Ignore session check errors and fallback to generic popup close message.
+      }
+
+      finishWithError("La ventana de Google se cerró antes de completar la autenticación.");
+    };
+
     function onMessage(event: MessageEvent) {
       if (event.origin !== window.location.origin) {
         return;
@@ -293,6 +317,7 @@ export function Login({ onLogin }: LoginProps) {
 
       if (data.type === "SOCIAL_AUTH_ERROR") {
         if (data.error === "AUTH_GOOGLE_SESSION_MISSING") {
+          setShouldSuggestGoogleAccountRetry(true);
           finishWithError("Google autenticó, pero el backend no devolvió cookie de sesión (sid). Contactá al equipo backend.");
           return;
         }
@@ -312,7 +337,7 @@ export function Login({ onLogin }: LoginProps) {
       }
 
       if (Date.now() - startedAt < timeoutMs) {
-        finishWithError("La ventana de Google se cerró antes de completar la autenticación.");
+        void verifySessionAfterPopupClose();
       }
     }, 500);
 
@@ -892,13 +917,25 @@ export function Login({ onLogin }: LoginProps) {
                 </div>
                 <button
                   type="button"
-                  onClick={startGooglePopupLogin}
+                  onClick={() => startGooglePopupLogin()}
                   className={styles.googleButton}
                   disabled={formik.isSubmitting || isGooglePopupLoading}
                 >
                   <Image src={googleLogo} alt="Google" width={20} height={20} />
                   <span>{isGooglePopupLoading ? "Conectando con Google..." : "Continuar con Google"}</span>
                 </button>
+                {shouldSuggestGoogleAccountRetry ? (
+                  <div className={styles.feedbackActions}>
+                    <button
+                      type="button"
+                      className={styles.resendButton}
+                      disabled={isGooglePopupLoading}
+                      onClick={() => startGooglePopupLogin(true)}
+                    >
+                      Reintentar con otra cuenta de Google
+                    </button>
+                  </div>
+                ) : null}
                 <div className={styles.legalLinks}>
                   <a href="#" className={styles.inlineLink}>
                     Términos de uso

@@ -12,7 +12,10 @@ const getSetCookieList = (headers: Headers): string[] => {
   return single ? [single] : [];
 };
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ segments: string[] }> },
+) {
   try {
     const base = getRequiredBaseUrl("NEXT_PUBLIC_FSA_AUTH");
 
@@ -20,7 +23,10 @@ export async function GET(req: NextRequest) {
       return jsonError("missing_upstream_base", 500);
     }
 
-    const upstreamUrl = new URL(`${base}/providers/google/start`);
+    const resolvedParams = await params;
+    const suffix = resolvedParams.segments.join("/");
+    const upstreamUrl = new URL(`${base}/providers/google/${suffix}`);
+
     req.nextUrl.searchParams.forEach((value, key) => {
       upstreamUrl.searchParams.set(key, value);
     });
@@ -38,23 +44,6 @@ export async function GET(req: NextRequest) {
       redirect: "manual",
     });
 
-    const redirectOverride = process.env.FSA_AUTH_GOOGLE_REDIRECT_URI_OVERRIDE?.trim();
-    const upstreamLocation = upstream.headers.get("location");
-    let rewrittenLocation: string | null = null;
-
-    if (redirectOverride && upstreamLocation) {
-      try {
-        const locationUrl = new URL(upstreamLocation);
-        if (locationUrl.searchParams.has("redirect_uri")) {
-          locationUrl.searchParams.set("redirect_uri", redirectOverride);
-          rewrittenLocation = locationUrl.toString();
-          console.log("[GOOGLE_START] redirect_uri override applied:", redirectOverride);
-        }
-      } catch {
-        // Keep upstream location untouched when not parseable.
-      }
-    }
-
     const body = await upstream.arrayBuffer();
     const response = new NextResponse(body, { status: upstream.status });
 
@@ -62,10 +51,6 @@ export async function GET(req: NextRequest) {
       const lower = key.toLowerCase();
       if (lower === "set-cookie" || lower === "transfer-encoding") continue;
       response.headers.set(key, value);
-    }
-
-    if (rewrittenLocation) {
-      response.headers.set("location", rewrittenLocation);
     }
 
     for (const cookie of getSetCookieList(upstream.headers)) {
