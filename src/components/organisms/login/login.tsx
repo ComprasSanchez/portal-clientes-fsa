@@ -230,16 +230,7 @@ export function Login({ onLogin }: LoginProps) {
     setIsGooglePopupLoading(true);
 
     const redirectTo = getSafeRedirectPath(searchParams.get("redirectTo"));
-    const backendBaseUrl = process.env.NEXT_PUBLIC_FSA_AUTH?.replace(/\/$/, "") ?? "";
-
-    if (!backendBaseUrl) {
-      setIsGooglePopupLoading(false);
-      setErrorMessage("Falta configurar NEXT_PUBLIC_FSA_AUTH para iniciar sesión con Google.");
-      return;
-    }
-
-    const backendOrigin = new URL(backendBaseUrl).origin;
-    const popupUrl = `${backendBaseUrl}/providers/google/start?mode=popup`;
+    const popupUrl = `/api/auth/providers/google/start?mode=popup&redirectTo=${encodeURIComponent(redirectTo)}`;
     const popup = window.open(
       popupUrl,
       "googleLogin",
@@ -286,7 +277,7 @@ export function Login({ onLogin }: LoginProps) {
     };
 
     function onMessage(event: MessageEvent) {
-      if (event.origin !== window.location.origin && event.origin !== backendOrigin) {
+      if (event.origin !== window.location.origin) {
         return;
       }
 
@@ -301,6 +292,11 @@ export function Login({ onLogin }: LoginProps) {
       }
 
       if (data.type === "SOCIAL_AUTH_ERROR") {
+        if (data.error === "AUTH_GOOGLE_SESSION_MISSING") {
+          finishWithError("Google autenticó, pero el backend no devolvió cookie de sesión (sid). Contactá al equipo backend.");
+          return;
+        }
+
         finishWithError("No pudimos completar el inicio de sesión con Google. Intentá nuevamente.");
       }
     }

@@ -15,6 +15,29 @@ const SOCIAL_REDIRECT_COOKIE = "social_auth_redirect";
 const SOCIAL_POPUP_COOKIE = "social_auth_popup";
 const GOOGLE_AUTH_ERROR_QUERY = "googleAuthError";
 const DEFAULT_POPUP_ERROR = "AUTH_GOOGLE_FAILED";
+const SESSION_MISSING_ERROR = "AUTH_GOOGLE_SESSION_MISSING";
+const MAX_CALLBACK_REDIRECTS = 5;
+
+const splitCombinedSetCookieHeader = (setCookieHeader: string) => {
+  return setCookieHeader
+    .split(/,(?=[^;=]+=[^;]+)/g)
+    .map((value) => value.trim())
+    .filter(Boolean);
+};
+
+const mergeCookieHeaders = (baseCookieHeader: string | null, cookieJar: Map<string, string>) => {
+  const parts: string[] = [];
+
+  if (baseCookieHeader) {
+    parts.push(baseCookieHeader);
+  }
+
+  for (const [name, value] of cookieJar.entries()) {
+    parts.push(`${name}=${value}`);
+  }
+
+  return parts.join("; ");
+};
 
 const getSetCookieHeaders = (headers: Headers) => {
   const withGetSetCookie = headers as Headers & {
@@ -26,7 +49,7 @@ const getSetCookieHeaders = (headers: Headers) => {
   }
 
   const setCookieHeader = headers.get("set-cookie");
-  return setCookieHeader ? [setCookieHeader] : [];
+  return setCookieHeader ? splitCombinedSetCookieHeader(setCookieHeader) : [];
 };
 
 const parseSetCookieHeader = (cookieHeader: string, isSecureContext: boolean) => {
@@ -92,6 +115,10 @@ const parseSetCookieHeader = (cookieHeader: string, isSecureContext: boolean) =>
 
   if (hasSecureAttribute) {
     options.secure = isSecureContext;
+  }
+
+  if (!isSecureContext && options.sameSite === "none") {
+    options.sameSite = "lax";
   }
 
   return {
@@ -180,12 +207,16 @@ export async function GET(req: NextRequest) {
       upstreamUrl.searchParams.set(key, value);
     });
 
-    const cookieHeader = req.headers.get("cookie");
-    const upstream = await fetch(upstreamUrl.toString(), {
+    const baseCookieHeader = req.headers.get("cookie");
+    const callbackCookieJar = new Map<string, string>();
+    const callbackSetCookieHeaders: string[] = [];
+    const backendOrigin = new URL(base).origin;
+
+    let upstream = await fetch(upstreamUrl.toString(), {
       method: "GET",
       headers: {
         Accept: "application/json",
-        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+        ...(baseCookieHeader ? { Cookie: baseCookieHeader } : {}),
         "x-forwarded-host": req.headers.get("host") ?? req.nextUrl.host,
         "x-forwarded-proto": req.nextUrl.protocol.replace(":", ""),
         "x-forwarded-port": req.nextUrl.port || (req.nextUrl.protocol === "https:" ? "443" : "80"),
@@ -194,7 +225,49 @@ export async function GET(req: NextRequest) {
       redirect: "manual",
     });
 
-    const hasError = upstream.status >= 400;
+    for (let redirectCount = 0; redirectCount < MAX_CALLBACK_REDIRECTS; redirectCount += 1) {
+      const setCookieHeaders = getSetCookieHeaders(upstream.headers);
+      callbackSetCookieHeaders.push(...setCookieHeaders);
+
+      for (const setCookieHeader of setCookieHeaders) {
+        const parsedCookie = parseSetCookieHeader(setCookieHeader, req.nextUrl.protocol === "https:");
+        if (parsedCookie) {
+          callbackCookieJar.set(parsedCookie.name, parsedCookie.value);
+        }
+      }
+
+      const status = upstream.status;
+      const isRedirect = status === 301 || status === 302 || status === 303 || status === 307 || status === 308;
+      const location = upstream.headers.get("location");
+
+      if (!isRedirect || !location) {
+        break;
+      }
+
+      const redirectTarget = new URL(location, upstream.url);
+      if (redirectTarget.origin !== backendOrigin) {
+        console.log("[GOOGLE_CALLBACK] Stop following redirect to different origin:", redirectTarget.toString());
+        break;
+      }
+
+      const redirectCookieHeader = mergeCookieHeaders(baseCookieHeader, callbackCookieJar);
+      upstream = await fetch(redirectTarget.toString(), {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          ...(redirectCookieHeader ? { Cookie: redirectCookieHeader } : {}),
+          "x-forwarded-host": req.headers.get("host") ?? req.nextUrl.host,
+          "x-forwarded-proto": req.nextUrl.protocol.replace(":", ""),
+          "x-forwarded-port": req.nextUrl.port || (req.nextUrl.protocol === "https:" ? "443" : "80"),
+        },
+        cache: "no-store",
+        redirect: "manual",
+      });
+    }
+
+    console.log("[GOOGLE_CALLBACK] Final upstream status:", upstream.status);
+    let hasError = upstream.status >= 400;
+    let sidWasSet = false;
     const response = isPopupMode
       ? getPopupResponse(
           req,
@@ -208,14 +281,44 @@ export async function GET(req: NextRequest) {
       : getCallbackRedirectResponse(req, hasError);
     const isSecureContext = req.nextUrl.protocol === "https:";
 
-    for (const cookie of getSetCookieHeaders(upstream.headers)) {
-      const parsedCookie = parseSetCookieHeader(cookie, isSecureContext);
+    console.log("[GOOGLE_CALLBACK] Set-Cookie headers from backend:", callbackSetCookieHeaders);
+
+    for (const cookieHeader of callbackSetCookieHeaders) {
+      const parsedCookie = parseSetCookieHeader(cookieHeader, isSecureContext);
 
       if (!parsedCookie) {
+        console.log("[GOOGLE_CALLBACK] Failed to parse cookie header:", cookieHeader);
         continue;
       }
 
+      parsedCookie.options.path = "/";
+      console.log("[GOOGLE_CALLBACK] Setting cookie:", parsedCookie.name, "with options:", parsedCookie.options);
+
+      if (parsedCookie.name === "sid") {
+        sidWasSet = true;
+      }
+
       response.cookies.set(parsedCookie.name, parsedCookie.value, parsedCookie.options);
+    }
+
+    if (!hasError && !sidWasSet && !req.cookies.get("sid")?.value) {
+      hasError = true;
+      if (isPopupMode) {
+        const popupErrorResponse = getPopupResponse(req, {
+          type: "SOCIAL_AUTH_ERROR",
+          error: SESSION_MISSING_ERROR,
+        });
+        popupErrorResponse.cookies.delete(SOCIAL_REDIRECT_COOKIE);
+        popupErrorResponse.cookies.delete(SOCIAL_POPUP_COOKIE);
+        return popupErrorResponse;
+      }
+    }
+
+    if (hasError && !isPopupMode) {
+      const redirectErrorResponse = getCallbackRedirectResponse(req, true);
+      redirectErrorResponse.cookies.delete(SOCIAL_REDIRECT_COOKIE);
+      redirectErrorResponse.cookies.delete(SOCIAL_POPUP_COOKIE);
+      return redirectErrorResponse;
     }
 
     response.cookies.delete(SOCIAL_REDIRECT_COOKIE);

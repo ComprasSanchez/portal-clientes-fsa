@@ -17,6 +17,13 @@ type CookieOptions = {
   maxAge?: number;
 };
 
+const splitCombinedSetCookieHeader = (setCookieHeader: string) => {
+  return setCookieHeader
+    .split(/,(?=[^;=]+=[^;]+)/g)
+    .map((value) => value.trim())
+    .filter(Boolean);
+};
+
 const getSetCookieHeaders = (headers: Headers) => {
   const withGetSetCookie = headers as Headers & {
     getSetCookie?: () => string[];
@@ -27,7 +34,7 @@ const getSetCookieHeaders = (headers: Headers) => {
   }
 
   const setCookieHeader = headers.get("set-cookie");
-  return setCookieHeader ? [setCookieHeader] : [];
+  return setCookieHeader ? splitCombinedSetCookieHeader(setCookieHeader) : [];
 };
 
 const parseSetCookieHeader = (cookieHeader: string, isSecureContext: boolean) => {
@@ -95,6 +102,10 @@ const parseSetCookieHeader = (cookieHeader: string, isSecureContext: boolean) =>
     options.secure = isSecureContext;
   }
 
+  if (!isSecureContext && options.sameSite === "none") {
+    options.sameSite = "lax";
+  }
+
   return {
     name,
     value,
@@ -160,12 +171,19 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json(data ?? { ok: true }, { status: upstream.status });
     const isSecureContext = req.nextUrl.protocol === "https:";
 
-    for (const cookieHeader of getSetCookieHeaders(upstream.headers)) {
+    const setCookieHeaders = getSetCookieHeaders(upstream.headers);
+    console.log("[MFA_VERIFY] Set-Cookie headers from backend:", setCookieHeaders);
+
+    for (const cookieHeader of setCookieHeaders) {
       const parsedCookie = parseSetCookieHeader(cookieHeader, isSecureContext);
 
       if (!parsedCookie) {
+        console.log("[MFA_VERIFY] Failed to parse cookie header:", cookieHeader);
         continue;
       }
+
+      parsedCookie.options.path = "/";
+      console.log("[MFA_VERIFY] Setting cookie:", parsedCookie.name, "with options:", parsedCookie.options);
 
       response.cookies.set(parsedCookie.name, parsedCookie.value, parsedCookie.options);
     }

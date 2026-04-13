@@ -92,6 +92,10 @@ const parseSetCookieHeader = (cookieHeader: string, isSecureContext: boolean) =>
     options.secure = isSecureContext;
   }
 
+  if (!isSecureContext && options.sameSite === "none") {
+    options.sameSite = "lax";
+  }
+
   return {
     name,
     value,
@@ -133,20 +137,42 @@ export async function GET(req: NextRequest) {
       return jsonError("missing_redirect_location", 502);
     }
 
+    const callbackUrl = `${req.nextUrl.origin}/api/auth/providers/google/callback`;
+    let proxiedLocation = location;
+
+    try {
+      const redirectUrl = new URL(location);
+      if (redirectUrl.searchParams.has("redirect_uri")) {
+        console.log("[GOOGLE_START] Original redirect_uri:", redirectUrl.searchParams.get("redirect_uri"));
+        redirectUrl.searchParams.set("redirect_uri", callbackUrl);
+        console.log("[GOOGLE_START] Rewritten redirect_uri:", callbackUrl);
+        proxiedLocation = redirectUrl.toString();
+      }
+    } catch {
+      // Keep original location when URL cannot be parsed.
+    }
+
     const response = new NextResponse(null, {
       status: upstream.status,
       headers: {
-        Location: location,
+        Location: proxiedLocation,
       },
     });
     const isSecureContext = req.nextUrl.protocol === "https:";
 
-    for (const cookie of getSetCookieHeaders(upstream.headers)) {
-      const parsedCookie = parseSetCookieHeader(cookie, isSecureContext);
+    const setCookieHeaders = getSetCookieHeaders(upstream.headers);
+    console.log("[GOOGLE_START] Set-Cookie headers from backend:", setCookieHeaders);
+
+    for (const cookieHeader of setCookieHeaders) {
+      const parsedCookie = parseSetCookieHeader(cookieHeader, isSecureContext);
 
       if (!parsedCookie) {
+        console.log("[GOOGLE_START] Failed to parse cookie header:", cookieHeader);
         continue;
       }
+
+      parsedCookie.options.path = "/";
+      console.log("[GOOGLE_START] Setting cookie:", parsedCookie.name, "with options:", parsedCookie.options);
 
       response.cookies.set(parsedCookie.name, parsedCookie.value, parsedCookie.options);
     }
