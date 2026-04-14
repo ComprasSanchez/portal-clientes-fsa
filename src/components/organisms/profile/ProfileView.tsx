@@ -17,14 +17,14 @@ type ProfileData = {
 };
 
 const initialProfile: ProfileData = {
-  fullName: "Solh Marlyn",
-  birthDate: "20/02/1954",
-  identification: "27-13892565-3",
-  legalAddress: "Jorge ohm 5424, Ituzaingo, Capital, Cordoba",
-  phone: "+54 93515157021",
-  residenceAddress: "Jorge ohm 5424, Ituzaingo, Capital, Cordoba",
-  email: "solh.marlyn@example.com",
-  affiliateNumber: "27-13892565-3",
+  fullName: "Luciana Ferreyra",
+  birthDate: "14/09/1987",
+  identification: "31.482.907",
+  legalAddress: "Av. Colon 1845, Piso 3, Depto. B, Cordoba Capital, Cordoba",
+  phone: "+54 9 351 612-4387",
+  residenceAddress: "Pasaje Los Aromos 742, Barrio General Paz, Cordoba",
+  email: "luciana.ferreyra@example.com",
+  affiliateNumber: "AF-548213-09",
 };
 
 export function ProfileView() {

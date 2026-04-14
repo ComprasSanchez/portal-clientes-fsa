@@ -9,6 +9,7 @@ import {
   ChevronRight,
   CreditCard,
   FileText,
+  Heart,
   Home,
   LogOut,
   Menu,
@@ -16,6 +17,7 @@ import {
   ShoppingBag,
   TrendingUp,
   User,
+  Users,
   X,
 } from "lucide-react";
 import { type HomeView } from "@/types/home";
@@ -45,7 +47,7 @@ const menuItems: Array<{
     label: "Historial completo",
     icon: TrendingUp,
   },
-  { id: "socios", label: "Socios", icon: ArrowLeftRight },
+  { id: "socios", label: "SocioSA", icon: Users },
 ];
 
 export function Sidebar({

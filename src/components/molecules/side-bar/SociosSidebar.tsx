@@ -8,6 +8,7 @@ import {
   ChevronRight,
   CreditCard,
   Gift,
+  Heart,
   LayoutGrid,
   LogOut,
   Menu,
@@ -31,7 +32,7 @@ const menuItems: Array<{
   { id: "dashboard", label: "Inicio", icon: LayoutGrid },
   { id: "facturas", label: "Facturas", icon: CreditCard },
   { id: "puntos", label: "Puntos", icon: Gift },
-  { id: "cora", label: "CORA", icon: ChevronRight },
+  { id: "cora", label: "CORA", icon: Heart },
 ];
 
 export function SociosSidebar({ currentView, onNavigate, userName, onLogout }: SociosSidebarProps) {

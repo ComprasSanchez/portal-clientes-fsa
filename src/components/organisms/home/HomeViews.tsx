@@ -1,11 +1,11 @@
 import {
-  ArrowLeftRight,
   Box,
   CreditCard,
   FileText,
   Package,
   TrendingUp,
   User,
+  Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
@@ -62,8 +62,8 @@ export function HomeViews({ currentView, onNavigate }: HomeViewsProps) {
   const active = viewContent[currentView];
   const quickAccessItems: QuickAccessItem[] = [
     {
-      label: "Socios",
-      icon: ArrowLeftRight,
+      label: "SocioSA",
+      icon: Users,
       onClick: () => router.push("/socios"),
     },
     { label: "Mi perfil", view: "mi-cuenta", icon: User },
@@ -102,7 +102,7 @@ export function HomeViews({ currentView, onNavigate }: HomeViewsProps) {
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
         <div>
-          <h1 className={styles.welcomeTitle}>Hola, Solh</h1>
+          <h1 className={styles.welcomeTitle}>Hola, Luciana</h1>
           <p className={styles.welcomeSubtitle}>Bienvenido a tu panel de gestion de pedidos</p>
         </div>
 
@@ -118,10 +118,10 @@ export function HomeViews({ currentView, onNavigate }: HomeViewsProps) {
             <p className={styles.panelSubtitle}>Numero de afiliacion</p>
             <div className={styles.credentialGradient}>
               <p className={styles.credentialLabel}>Titular</p>
-              <p className={styles.credentialValue}>Solh Marlyn</p>
+              <p className={styles.credentialValue}>Luciana Ferreyra</p>
               <div className={styles.separator} />
               <p className={styles.credentialLabel}>N de afiliacion</p>
-              <p className={styles.credentialNumber}>27-13892565-3</p>
+              <p className={styles.credentialNumber}>AF-548213-09</p>
             </div>
             <DetailButton />
           </article>

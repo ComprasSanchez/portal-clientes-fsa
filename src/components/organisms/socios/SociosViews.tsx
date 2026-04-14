@@ -1,4 +1,4 @@
-import { ArrowRight, CreditCard, Gift, LayoutGrid } from "lucide-react";
+import { ArrowRight, CreditCard, Gift, Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
@@ -29,7 +29,7 @@ export function SociosViews({ currentView, onNavigate }: SociosViewsProps) {
     { label: "Puntos", view: "puntos", icon: Gift, tone: "socios" },
     {
       label: "CORA",
-      icon: LayoutGrid,
+      icon: Heart,
       onClick: () => router.push("/home"),
       tone: "socios",
     },
@@ -57,7 +57,7 @@ export function SociosViews({ currentView, onNavigate }: SociosViewsProps) {
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
         <div>
-          <h1 className={styles.welcomeTitle}>Hola, Solh</h1>
+          <h1 className={styles.welcomeTitle}>Hola, Luciana</h1>
           <p className={styles.welcomeSubtitle}>Bienvenido a tu panel de socios</p>
         </div>
 
@@ -73,10 +73,10 @@ export function SociosViews({ currentView, onNavigate }: SociosViewsProps) {
             <p className={styles.panelSubtitle}>Numero de afiliacion</p>
             <div className={styles.credentialGradient}>
               <p className={styles.credentialLabel}>Titular</p>
-              <p className={styles.credentialValue}>Solh Marlyn</p>
+              <p className={styles.credentialValue}>Luciana Ferreyra</p>
               <div className={styles.separator} />
               <p className={styles.credentialLabel}>N de afiliacion</p>
-              <p className={styles.credentialNumber}>27-13892565-3</p>
+              <p className={styles.credentialNumber}>AF-548213-09</p>
             </div>
             <DetailButton tone="socios" />
           </article>

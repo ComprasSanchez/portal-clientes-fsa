@@ -32,7 +32,7 @@ export function QuickAccessCard<TView extends string>({ item, onNavigate }: Quic
 
   return (
     <button
-      className={`${styles.quickAccessCard} ${isSociosTone ? styles.quickAccessCardSocios : ""}`}
+      className={`${styles.quickAccessCard} ${isSociosTone ? styles.quickAccessCardSocios : ""} cursor-pointer`}
       onClick={handleClick}
       type="button"
     >
