@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  applyUserTokenCookies,
+  clearUserTokenCookies,
   fetchUpstream,
   getForwardAuthorizationHeader,
   getRequiredBaseUrl,
@@ -7,15 +9,18 @@ import {
 } from "@/app/api/_lib/proxy";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 
-const buildForwardHeaders = async (req: NextRequest): Promise<HeadersInit> => {
-  const authorization = await getForwardAuthorizationHeader(req.headers.get("authorization"));
+const buildForwardHeaders = async (req: NextRequest) => {
+  const auth = await getForwardAuthorizationHeader(req, req.headers.get("authorization"));
   const cookie = req.headers.get("cookie");
   const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
 
   return {
-    "x-request-id": requestId,
-    Authorization: authorization,
-    ...(cookie ? { Cookie: cookie } : {}),
+    auth,
+    headers: {
+      "x-request-id": requestId,
+      Authorization: auth.authorization,
+      ...(cookie ? { Cookie: cookie } : {}),
+    } satisfies HeadersInit,
   };
 };
 
@@ -26,16 +31,32 @@ export async function GET(req: NextRequest) {
       return jsonError("missing_upstream_base", 500);
     }
 
+    const { auth, headers } = await buildForwardHeaders(req);
+
     const result = await fetchUpstream<PortalPerfilResponse>({
       url: `${base}/api/v1/portal/me/perfil`,
-      headers: await buildForwardHeaders(req),
+      headers,
     });
 
     if (!result.ok) {
+      if (auth.refreshedUserTokens) {
+        applyUserTokenCookies(result.response, auth.refreshedUserTokens, req.nextUrl.protocol === "https:");
+      }
+      if (auth.shouldClearUserTokens) {
+        clearUserTokenCookies(result.response);
+      }
       return result.response;
     }
 
-    return NextResponse.json(result.data, { status: result.status });
+    const response = NextResponse.json(result.data, { status: result.status });
+    if (auth.refreshedUserTokens) {
+      applyUserTokenCookies(response, auth.refreshedUserTokens, req.nextUrl.protocol === "https:");
+    }
+    if (auth.shouldClearUserTokens) {
+      clearUserTokenCookies(response);
+    }
+
+    return response;
   } catch (error) {
     return jsonError("proxy_failure", 500, String(error));
   }

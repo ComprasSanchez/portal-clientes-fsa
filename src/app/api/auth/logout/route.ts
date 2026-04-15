@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clearUserTokenCookies } from "@/app/api/_lib/proxy";
 
 const clearCookie = (response: NextResponse, name: string) => {
   response.cookies.set({
@@ -14,6 +15,7 @@ export async function POST() {
 
   clearCookie(response, "sid");
   clearCookie(response, "trusted_device_token");
+  clearUserTokenCookies(response);
 
   return response;
 }

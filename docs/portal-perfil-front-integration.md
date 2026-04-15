@@ -285,6 +285,28 @@ Ahora el front ya puede resolver ese Bearer tecnico contra `FSA_AUTH_TOKEN_URL` 
 
 En otras palabras: la integracion de UI ya esta hecha y el Bearer tecnico cubre el caso actual, pero la autenticacion backend puede requerir ajuste si luego se exige impersonacion o token por usuario.
 
+## Deuda tecnica explicita
+
+El uso actual de `FSA_AUTH_TOKEN_URL`, `FSA_AUTH_TOKEN_USERNAME` y `FSA_AUTH_TOKEN_PASSWORD` debe considerarse transitorio.
+
+Hoy esos valores permiten que los proxies server-side del front consuman perfil, expedientes y logistica aunque la request del navegador no traiga un bearer reutilizable. Eso destraba la integracion, pero no representa la identidad real del usuario autenticado.
+
+El objetivo final no es reemplazar la cookie `sid`, sino complementarla con tokens del usuario:
+
+- `sid` para sostener la sesion web y el middleware
+- `access_token` del usuario para llamar al BFF protegido
+- `refresh_token` del usuario para renovar el bearer sin volver a pedir credenciales
+
+La migracion esperada es esta:
+
+1. Mantener `sid` como sesion principal de la app.
+2. En login con credenciales, guardar `access_token` y `refresh_token` del usuario en cookies `httpOnly`.
+3. En login con Google, obtener esos tokens desde el callback OAuth exitoso y guardarlos igual en cookies `httpOnly`.
+4. Hacer que los proxies prioricen el bearer del usuario antes del token tecnico compartido.
+5. Dejar el token tecnico solo como fallback temporal o removerlo cuando el flujo por usuario quede estable.
+
+Mientras esa migracion no exista, cualquier verificacion de roles y permisos puede quedar atada al usuario tecnico configurado en `.env` y no al usuario real de la sesion.
+
 ## Error encontrado durante la implementacion
 
 Se encontro este problema:
@@ -331,8 +353,9 @@ Quedaron warnings preexistentes y no relacionados en el repo:
 
 Si se retoma este trabajo despues, los siguientes pasos mas naturales son:
 
-1. Confirmar en ambiente si la autenticacion hacia el BFF funciona solo con cookie o si necesita Bearer explicito.
-2. Si hace falta, implementar el puente de sesion a token para el proxy `/api/portal/me/perfil`.
-3. Si existe endpoint de afiliaciones, conectar el modal de `SocioSA` para persistir altas reales.
-4. Si el producto lo pide, agregar loading visible o mensaje de error en UI cuando falle la carga del perfil.
-5. Si existe endpoint de update en backend, volver a habilitar edicion real de `Mi perfil` con persistencia.
+1. Implementar bearer por usuario sin eliminar `sid`, guardando `access_token` y `refresh_token` en cookies `httpOnly`.
+2. Hacer que login tradicional y login con Google converjan en el mismo mecanismo de cookies de token de usuario.
+3. Cambiar los proxies para priorizar el token del usuario y dejar el token tecnico solo como fallback temporal.
+4. Si existe endpoint de afiliaciones, conectar el modal de `SocioSA` para persistir altas reales.
+5. Si el producto lo pide, agregar loading visible o mensaje de error en UI cuando falle la carga del perfil.
+6. Si existe endpoint de update en backend, volver a habilitar edicion real de `Mi perfil` con persistencia.
