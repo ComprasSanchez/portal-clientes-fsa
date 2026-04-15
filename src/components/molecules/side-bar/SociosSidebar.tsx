@@ -12,6 +12,7 @@ import {
   LayoutGrid,
   LogOut,
   Menu,
+  User,
   X,
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
@@ -30,6 +31,7 @@ const menuItems: Array<{
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }> = [
   { id: "dashboard", label: "Inicio", icon: LayoutGrid },
+  { id: "mi-cuenta", label: "Mi perfil", icon: User },
   { id: "facturas", label: "Facturas", icon: CreditCard },
   { id: "puntos", label: "Puntos", icon: Gift },
   { id: "cora", label: "CORA", icon: Heart },

@@ -1,12 +1,13 @@
-import { Loader } from "@/components/atoms/loader/loader";
-import React from "react";
+import PortalPedido from "@/components/organisms/portal-pedido/portal-pedido";
 
-const PortalPedidos = () => {
-  return (
-    <div>
-      <Loader />
-    </div>
-  );
+type PortalPedidosPageProps = {
+  params: Promise<{
+    token: string;
+  }>;
 };
 
-export default PortalPedidos;
+export default async function PortalPedidosPage({ params }: PortalPedidosPageProps) {
+  const { token } = await params;
+
+  return <PortalPedido token={token} />;
+}

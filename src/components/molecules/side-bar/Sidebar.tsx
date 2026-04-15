@@ -4,12 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeftRight,
   ChevronLeft,
   ChevronRight,
-  CreditCard,
   FileText,
-  Heart,
   Home,
   LogOut,
   Menu,
@@ -39,8 +36,7 @@ const menuItems: Array<{
   { id: "dashboard", label: "Inicio", icon: Home },
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
   { id: "productos", label: "Productos", icon: ShoppingBag },
-  { id: "pedidos", label: "Mis pedidos", icon: Package },
-  { id: "facturas", label: "Facturas", icon: CreditCard },
+  { id: "pedidos", label: "Segui tu pedido", icon: Package },
   { id: "expediente-actual", label: "Expediente actual", icon: FileText },
   {
     id: "expediente-completo",

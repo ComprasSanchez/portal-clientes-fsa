@@ -8,6 +8,14 @@ import ConfirmProductsAccordion, {
 import ConfirmDeliveryAccordion, {
   ConfirmDeliveryData,
 } from "../../confirm-delivery/confirm-delivery";
+import {
+  getTrackingStatus,
+  PARENT_ORDER_STATUS_LABELS,
+  ParentOrder,
+  TRACKING_LABELS,
+  TRACKING_STATUS_SEQUENCE,
+  TrackingOrderStatus,
+} from "@/lib/order-tracking";
 
 type PedidosStep3Props = {
   productos: ConfirmProductItem[];
@@ -19,90 +27,6 @@ type PedidosStep3Props = {
   cicloId?: string;
   onConfirm: () => void;
   onContactAdvisor: () => void;
-};
-
-type ParentOrder = {
-  id: string;
-  code?: string | null;
-  status?: string | null;
-  orders?: Array<{
-    nroPedido?: string | null;
-    pedidoEstadoDescripcion?: string | null;
-    movements?: Array<{
-      idEstado?: number;
-      estadoNombre?: string;
-      fecha?: string;
-    }>;
-  }>;
-};
-
-type TrackingOrderStatus =
-  | "pendiente"
-  | "aceptado"
-  | "confirmado"
-  | "en_preparacion"
-  | "listo_para_envio"
-  | "en_camino"
-  | "entregado";
-
-const getTrackingStatus = (parentOrder: ParentOrder): TrackingOrderStatus => {
-  if (parentOrder.status === "ACCEPTED") {
-    return "aceptado";
-  }
-
-  if (parentOrder.status === "CONFIRMED") {
-    return "confirmado";
-  }
-
-  if (parentOrder.status === "IN_PREPARATION") {
-    return "en_preparacion";
-  }
-
-  if (parentOrder.status === "PREPARED" || parentOrder.status === "PREPARED_PARTIAL") {
-    return "listo_para_envio";
-  }
-
-  let highestChildStatus = 0;
-  parentOrder.orders?.forEach((order) => {
-    const lastMovement = order.movements?.[0];
-    if ((lastMovement?.idEstado ?? 0) > highestChildStatus) {
-      highestChildStatus = lastMovement?.idEstado ?? 0;
-    }
-  });
-
-  if (highestChildStatus === 7) {
-    return "entregado";
-  }
-
-  if (highestChildStatus === 6) {
-    return "en_camino";
-  }
-
-  if (highestChildStatus === 4 || highestChildStatus === 5) {
-    return "listo_para_envio";
-  }
-
-  return "pendiente";
-};
-
-const TRACKING_LABELS: Record<TrackingOrderStatus, string> = {
-  pendiente: "Pendiente de gestión",
-  aceptado: "Pedido aceptado",
-  confirmado: "Pedido confirmado",
-  en_preparacion: "En preparación",
-  listo_para_envio: "Listo para entrega o retiro",
-  en_camino: "En camino",
-  entregado: "Entregado",
-};
-
-const PARENT_ORDER_STATUS_LABELS: Record<string, string> = {
-  ACCEPTED: "Aceptado",
-  CONFIRMED: "Confirmado",
-  IN_PREPARATION: "En preparación",
-  PREPARED_PARTIAL: "Preparado parcial",
-  PREPARED: "Preparado",
-  CANCELLED: "Cancelado",
-  REJECTED: "Rechazado",
 };
 
 const PedidosStep3 = ({
@@ -246,34 +170,10 @@ const PedidosStep3 = ({
               </div>
 
               <div className="space-y-3">
-                {[
-                  "aceptado",
-                  "confirmado",
-                  "en_preparacion",
-                  "listo_para_envio",
-                  "en_camino",
-                  "entregado",
-                ].map((statusKey) => {
-                  const status = statusKey as TrackingOrderStatus;
+                {TRACKING_STATUS_SEQUENCE.slice(1).map((status) => {
                   const active =
-                    [
-                      "pendiente",
-                      "aceptado",
-                      "confirmado",
-                      "en_preparacion",
-                      "listo_para_envio",
-                      "en_camino",
-                      "entregado",
-                    ].indexOf(trackingStatus) >=
-                    [
-                      "pendiente",
-                      "aceptado",
-                      "confirmado",
-                      "en_preparacion",
-                      "listo_para_envio",
-                      "en_camino",
-                      "entregado",
-                    ].indexOf(status);
+                    TRACKING_STATUS_SEQUENCE.indexOf(trackingStatus) >=
+                    TRACKING_STATUS_SEQUENCE.indexOf(status);
 
                   return (
                     <div key={status} className="flex items-center gap-3">

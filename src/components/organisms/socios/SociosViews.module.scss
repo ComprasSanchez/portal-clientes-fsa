@@ -83,6 +83,14 @@
   letter-spacing: 0.05em;
 }
 
+.credentialHint {
+  margin-top: 0.75rem;
+  max-width: 22rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.86);
+}
+
 .orderList {
   margin-top: 1rem;
   display: flex;

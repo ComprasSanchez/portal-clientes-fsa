@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const isPublicRoute = (pathname: string) => {
-  return pathname === "/" || pathname === "/portal-cliente" || pathname.startsWith("/portal-cliente/");
+  return (
+    pathname === "/" ||
+    pathname === "/portal-cliente" ||
+    pathname.startsWith("/portal-cliente/") ||
+    pathname === "/portal-pedidos" ||
+    pathname.startsWith("/portal-pedidos/")
+  );
 };
 
 export function middleware(request: NextRequest) {

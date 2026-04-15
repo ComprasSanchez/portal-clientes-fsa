@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { Poppins } from "next/font/google";
+import { useRouter } from "next/navigation";
 import { SociosSidebar } from "@/components/molecules/side-bar/SociosSidebar";
 import { SociosViews } from "@/components/organisms/socios/SociosViews";
+import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { type SociosView } from "@/types/socios";
 
 const DEFAULT_VIEW: SociosView = "dashboard";
@@ -14,9 +16,20 @@ const poppins = Poppins({
 
 const SociosPage = () => {
   const [currentView, setCurrentView] = useState<SociosView>(DEFAULT_VIEW);
+  const router = useRouter();
+  const { perfil, summary } = usePortalPerfilContext();
 
   const handleLogout = () => {
-    setCurrentView(DEFAULT_VIEW);
+    void (async () => {
+      try {
+        await fetch("/api/auth/logout", {
+          method: "POST",
+        });
+      } finally {
+        setCurrentView(DEFAULT_VIEW);
+        router.replace("/");
+      }
+    })();
   };
 
   return (
@@ -25,11 +38,20 @@ const SociosPage = () => {
         currentView={currentView}
         onNavigate={setCurrentView}
         onLogout={handleLogout}
-        userName="Usuario"
+        userName={summary.displayName}
       />
 
       <div className="flex min-h-[calc(100vh-4rem)] flex-col pt-16 transition-all duration-300 lg:ml-64 lg:min-h-screen lg:pt-0">
-        <SociosViews currentView={currentView} onNavigate={setCurrentView} />
+        <SociosViews
+          currentView={currentView}
+          onNavigate={setCurrentView}
+          userName={summary.displayName}
+          affiliateNumber={summary.affiliateNumber}
+          documentNumber={summary.documentNumber}
+          email={summary.email}
+          phone={summary.phone}
+          perfil={perfil}
+        />
 
         <footer className="relative left-1/2 mt-auto -translate-x-1/2 border-t border-[#d3dee2] bg-white py-6">
           <div className="mx-auto max-w-7xl px-4 text-center text-sm text-[#627880] sm:px-6 lg:px-8">
