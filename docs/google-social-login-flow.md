@@ -1,5 +1,7 @@
 # Flujo Google Social Login
 
+> Documento de soporte. Para reconstruir contexto general, leer primero `docs/frontend-handoff-auth-profile-logistics.md`.
+
 ## Objetivo
 
 Dejar claro qué hace cada capa del sistema en el login social con Google usando popup:
@@ -18,10 +20,12 @@ El objetivo final del flujo no es solo autenticar en Google/Keycloak, sino tambi
 
 Hay dos cierres distintos en el flujo:
 
-1. Cierre federado
+1. Cierre federado.
+
 - Google y Keycloak validan la identidad del usuario.
 
-2. Cierre de sesión local
+1. Cierre de sesión local.
+
 - El backend procesa `code` y `state`, crea la sesión propia y responde `Set-Cookie: sid=...`.
 
 Sin el segundo, no hay login usable en la app aunque Google haya autenticado bien.
@@ -39,13 +43,15 @@ El frontend abre un popup hacia:
 ```
 
 Archivo involucrado:
+
 - `src/components/organisms/login/login.tsx`
 
 Responsabilidad del frontend:
-- Abrir popup
-- Escuchar `postMessage`
-- Verificar sesión después del cierre del popup
-- Redirigir a `/home` si existe sesión local
+
+- abrir popup
+- escuchar `postMessage`
+- verificar sesión después del cierre del popup
+- redirigir a `/home` si existe sesión local
 
 ---
 
@@ -64,13 +70,15 @@ reenvía la request al backend BFF:
 ```
 
 Archivo involucrado:
+
 - `src/app/api/auth/providers/google/start/route.ts`
 
 Responsabilidad del proxy:
-- Reenviar query params
-- Reenviar headers `x-forwarded-host`, `x-forwarded-proto`, `x-forwarded-for`
-- Propagar status, headers y `Set-Cookie`
-- En local, opcionalmente reescribir `redirect_uri` con `FSA_AUTH_GOOGLE_REDIRECT_URI_OVERRIDE`
+
+- reenviar query params
+- reenviar headers `x-forwarded-host`, `x-forwarded-proto`, `x-forwarded-for`
+- propagar status, headers y `Set-Cookie`
+- en local, opcionalmente reescribir `redirect_uri` con `FSA_AUTH_GOOGLE_REDIRECT_URI_OVERRIDE`
 
 ---
 
@@ -79,14 +87,16 @@ Responsabilidad del proxy:
 El backend construye una URL de autorización hacia Keycloak.
 
 En este punto se generan o resuelven datos como:
+
 - `state`
-- PKCE (si corresponde)
+- PKCE, si corresponde
 - metadatos de popup
 - contexto para cerrar el flujo después
 
 Importante:
-- Esto lo hace el backend, no el frontend.
-- El frontend no debe generar `state`, `code`, `session_state` ni `iss`.
+
+- esto lo hace el backend, no el frontend
+- el frontend no debe generar `state`, `code`, `session_state` ni `iss`
 
 ---
 
@@ -94,12 +104,11 @@ Importante:
 
 Secuencia:
 
-- Keycloak muestra/login broker
+- Keycloak muestra o resuelve el broker de login
 - Google autentica al usuario
 - Google devuelve el resultado a Keycloak
 
-Esto es autenticación federada.
-Todavía no existe sesión local de la app.
+Esto es autenticación federada. Todavía no existe sesión local de la app.
 
 ---
 
@@ -107,7 +116,7 @@ Todavía no existe sesión local de la app.
 
 Keycloak redirige al `redirect_uri` configurado en el flujo.
 
-Puede ser uno de estos dos esquemas:
+Puede ser uno de estos dos esquemas.
 
 #### Opción A: callback directo a backend
 
@@ -124,6 +133,7 @@ https://sociosa.../api/v2/auth/providers/google/callback?state=...&code=...&sess
 En ambos casos, el callback backend real debe terminar ejecutándose.
 
 Archivos involucrados del lado Next:
+
 - `src/app/api/auth/providers/google/callback/route.ts`
 - `src/app/api/v2/auth/providers/google/callback/route.ts`
 - `src/app/api/v2/auth/providers/google/[...segments]/route.ts`
@@ -158,23 +168,25 @@ Después de crear la sesión local, el backend o el proxy debe devolver una resp
 - `window.close()`
 
 El frontend principal recibe:
+
 - `SOCIAL_AUTH_SUCCESS`
-- o `SOCIAL_AUTH_ERROR`
+- `SOCIAL_AUTH_ERROR`
 
 Y después puede verificar sesión con un endpoint como:
 
 ```txt
-/api/auth/session
+GET /api/auth/session
 ```
 
 Archivo involucrado:
+
 - `src/app/api/auth/session/route.ts`
 
 ---
 
 ### 8. El frontend valida que exista sesión local
 
-El frontend no debería asumir que Google autenticó = login completo.
+El frontend no debería asumir que Google autenticó igual a login completo.
 
 Debe verificar si existe sesión real.
 
@@ -185,9 +197,11 @@ GET /api/auth/session
 ```
 
 Si `authenticated: true`:
+
 - redirigir a `/home`
 
 Si `authenticated: false`:
+
 - mostrar error
 - permitir reintentar con `prompt=select_account consent`
 
@@ -195,23 +209,27 @@ Si `authenticated: false`:
 
 ## Parámetros del callback: de dónde salen
 
-Estos parámetros no los genera el frontend:
+Estos parámetros no los genera el frontend.
 
 ### `state`
-- Lo genera el backend/BFF al iniciar OAuth.
-- Sirve para correlación y protección CSRF.
+
+- lo genera el backend/BFF al iniciar OAuth
+- sirve para correlación y protección CSRF
 
 ### `session_state`
-- Lo agrega Keycloak.
-- Representa la sesión del IdP.
+
+- lo agrega Keycloak
+- representa la sesión del IdP
 
 ### `iss`
-- Es el issuer.
-- Indica el realm/servidor que emitió la respuesta.
+
+- es el issuer
+- indica el realm o servidor que emitió la respuesta
 
 ### `code`
-- Es el authorization code de OAuth.
-- Lo devuelve Keycloak para que el backend haga el intercambio.
+
+- es el authorization code de OAuth
+- lo devuelve Keycloak para que el backend haga el intercambio
 
 El frontend proxy solo los reenvía tal cual.
 
@@ -220,31 +238,36 @@ El frontend proxy solo los reenvía tal cual.
 ## Qué hace cada capa
 
 ### Frontend
+
 - abre popup
 - escucha `postMessage`
 - verifica sesión
 - redirige a `/home`
-- no genera `code`, `state`, `session_state`, `iss`
+- no genera `code`, `state`, `session_state` ni `iss`
 
 ### Next proxy
+
 - reenvía requests al backend
 - preserva query params y headers
 - preserva `Set-Cookie`
 - puede exponer callbacks en `/api/auth/...` y `/api/v2/auth/...`
 
 ### Backend BFF
+
 - inicia OAuth
 - valida callback
 - crea sesión local
 - emite `sid`
-- devuelve HTML popup success/error
+- devuelve HTML popup success o error
 
 ### Keycloak
+
 - broker federado
 - delega login a Google
 - devuelve `code`, `state`, `session_state`, `iss`
 
 ### Google
+
 - autentica identidad externa
 
 ---
@@ -257,27 +280,18 @@ Con la implementación actual del frontend:
 - el `redirect_uri` local puede ser reescrito a localhost
 - el callback llega al frontend proxy
 - el callback responde `200`
-- pero el backend está devolviendo:
+- el backend debe emitir `Set-Cookie: sid` para cerrar el flujo correctamente
 
-```txt
-[GOOGLE_CALLBACK] Upstream Set-Cookie: []
-```
-
-Eso significa:
-- el flujo federado termina
-- pero no se crea sesión local en navegador
-- `/api/auth/session` devuelve `authenticated: false`
+Eso significa que el criterio real de éxito no es solo completar OAuth, sino también dejar sesión local utilizable en la app.
 
 ---
 
-## Diagnóstico actual
+## Diagnóstico operativo
 
-El problema actual no es que falte llamar al callback.
-El callback sí está siendo ejecutado.
-
-El problema actual es que el callback exitoso no está emitiendo la cookie de sesión `sid`.
+Si el callback sí se ejecuta pero no aparece `sid`, el problema no está en la apertura del popup sino en el cierre de sesión local del backend o en la propagación de cookies.
 
 Sin eso:
+
 - no hay sesión local
 - no hay redirect útil a `/home`
 - el popup puede cerrarse, pero la app sigue no autenticada
@@ -289,7 +303,7 @@ Sin eso:
 El login social recién debe considerarse correcto cuando se cumplen estas condiciones:
 
 1. El popup abre el flujo OAuth.
-2. Google/Keycloak autentican correctamente.
+2. Google y Keycloak autentican correctamente.
 3. El callback backend se ejecuta.
 4. El callback backend responde `Set-Cookie: sid=...`.
 5. El navegador guarda `sid` para el dominio del frontend.

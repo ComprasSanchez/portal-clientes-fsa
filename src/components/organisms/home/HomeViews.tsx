@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import {
   Box,
   FileText,
@@ -11,6 +12,7 @@ import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
 import { QuickAccessCard, type QuickAccessItem } from "@/components/molecules/home/QuickAccessCard";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
+import { useGlobalToast } from "../../ui/global-toast";
 import { OrderTrackingPanel } from "@/components/organisms/portal-pedido/order-tracking-panel";
 import {
   PARENT_ORDER_STATUS_LABELS,
@@ -82,6 +84,8 @@ export function HomeViews({
 }: HomeViewsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { pushToast } = useGlobalToast();
+  const hasShownValidationToastRef = useRef(false);
   const active = viewContent[currentView];
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
   const quickAccessItems: QuickAccessItem[] = [
@@ -107,6 +111,31 @@ export function HomeViews({
     error: expedientesError,
   } = usePortalExpedientes();
   const cicloId = queryCicloId || currentCycleId;
+  const requiresAccountValidation =
+    expedientesError?.includes("Valida tu cuenta") ?? false;
+  const latestOrderSubtitle = requiresAccountValidation
+    ? "Valida tu usuario para habilitar el seguimiento"
+    : "Estado actual";
+
+  useEffect(() => {
+    if (!requiresAccountValidation || !expedientesError) {
+      hasShownValidationToastRef.current = false;
+      return;
+    }
+
+    if (hasShownValidationToastRef.current) {
+      return;
+    }
+
+    pushToast({
+      id: "portal-expedientes-account-validation",
+      title: "Validá tu usuario",
+      description: expedientesError,
+      variant: "error",
+      duration: 8000,
+    });
+    hasShownValidationToastRef.current = true;
+  }, [expedientesError, pushToast, requiresAccountValidation]);
 
   const {
     isLoading: isPedidoTrackingLoading,
@@ -150,7 +179,11 @@ export function HomeViews({
 
           {!shouldShowTrackingLoading && expedientesError ? (
             <div className={`${styles.trackingMessageCard} ${styles.trackingMessageError}`}>
-              <p className={styles.trackingMessageTitle}>No pudimos cargar los expedientes</p>
+              <p className={styles.trackingMessageTitle}>
+                {requiresAccountValidation
+                  ? "Necesitamos validar tu usuario"
+                  : "No pudimos cargar los expedientes"}
+              </p>
               <p className={styles.trackingMessageText}>{expedientesError}</p>
             </div>
           ) : null}
@@ -273,7 +306,7 @@ export function HomeViews({
 
           <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Ultimo pedido</h2>
-            <p className={styles.panelSubtitle}>Estado actual</p>
+            <p className={styles.panelSubtitle}>{latestOrderSubtitle}</p>
             <dl className={styles.orderList}>
               <OrderRow label="Pedido" value={resolvedOrderNumber ? `#${resolvedOrderNumber}` : "Sin dato"} />
               <OrderRow
@@ -284,7 +317,9 @@ export function HomeViews({
                 label="Estado"
                 value={
                   <span className={styles.statusBadge}>
-                    {!hasCicloId
+                    {requiresAccountValidation
+                      ? "Validar usuario"
+                      : !hasCicloId
                       ? "No disponible"
                       : shouldShowTrackingLoading
                         ? "Consultando"
@@ -296,7 +331,15 @@ export function HomeViews({
               />
               <OrderRow
                 label="Logística"
-                value={<span className={styles.totalAmount}>{hasCicloId ? TRACKING_LABELS[trackingStatus] : "Sin seguimiento"}</span>}
+                value={
+                  <span className={styles.totalAmount}>
+                    {requiresAccountValidation
+                      ? "Validacion requerida"
+                      : hasCicloId
+                        ? TRACKING_LABELS[trackingStatus]
+                        : "Sin seguimiento"}
+                  </span>
+                }
                 hasBorder={false}
               />
             </dl>

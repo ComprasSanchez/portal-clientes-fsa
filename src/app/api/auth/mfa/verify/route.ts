@@ -1,6 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { getRequiredBaseUrl, jsonError, readJsonBody } from "@/app/api/_lib/proxy";
+import {
+  getRequiredBaseUrl,
+  jsonError,
+  readJsonBody,
+} from "@/app/api/_lib/proxy";
 
 type MfaVerifyBody = {
   loginTicket?: string;

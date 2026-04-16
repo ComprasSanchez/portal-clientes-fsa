@@ -1,5 +1,7 @@
 # Integracion de portal/me/perfil en el front
 
+> Documento de soporte. Para reconstruir contexto general, leer primero `docs/frontend-handoff-auth-profile-logistics.md`.
+
 ## Objetivo
 
 Se agrego en `portal-clientes-fsa` la integracion necesaria para consumir el endpoint del BFF:
@@ -31,21 +33,23 @@ Ahora esos datos salen de una llamada interna del front a:
 
 Y esa ruta del front hace proxy al BFF real:
 
-- `${NEXT_PUBLIC_FSA_BFF_CLIENTE_URL}/api/v1/portal/me/perfil`
+- `${NEXT_PUBLIC_FSA_SOCIOSA}/portal/me/perfil`
 
 ## Flujo implementado
 
 El flujo actual es este:
 
 1. La UI cliente llama a `/api/portal/me/perfil`.
-2. El Route Handler de Next obtiene un Bearer server-side si la request no trae `Authorization`.
-3. El Route Handler reenvia la request al BFF.
-4. El Route Handler reenvia headers utiles:
-  - `Authorization: Bearer ...`
-  - `Cookie` si existe
-   - `x-request-id`
-5. La respuesta del BFF se normaliza en helpers del front.
-6. La UI consume un resumen simple del perfil y renderiza fallbacks cuando falta informacion.
+1. El Route Handler de Next reenvia la sesion web actual al gateway.
+1. El Route Handler reenvia la request al upstream.
+1. El Route Handler reenvia headers utiles.
+
+- `Cookie` si existe
+- `Authorization` solo si ya venia en la request
+- `x-request-id`
+
+1. La respuesta del BFF se normaliza en helpers del front.
+1. La UI consume un resumen simple del perfil y renderiza fallbacks cuando falta informacion.
 
 ## Archivos creados
 
@@ -56,21 +60,20 @@ El flujo actual es este:
 Responsabilidad:
 
 - exponer `/api/portal/me/perfil` en el front
-- leer `NEXT_PUBLIC_FSA_BFF_CLIENTE_URL`
-- resolver un Bearer tecnico server-side cuando hace falta
+- leer `NEXT_PUBLIC_FSA_SOCIOSA`
 - reenviar headers relevantes al BFF
 - devolver la respuesta JSON tal cual llega del upstream
 
-### Helper de token tecnico
+### Helper compartido de proxy
 
 - `src/app/api/_lib/proxy.ts`
 
 Responsabilidad:
 
-- pedir `access_token` a `FSA_AUTH_TOKEN_URL`
-- enviar `grant_type=password` como `application/x-www-form-urlencoded`
-- cachear el token en memoria hasta cerca de su vencimiento
-- devolver `Authorization: Bearer ...` a los proxies que lo necesiten
+- sanear base URLs desde `.env`
+- centralizar errores JSON
+- copiar query params a upstream
+- uniformar llamadas `fetch` a upstream
 
 ### Logout local del front
 
@@ -155,7 +158,7 @@ Se endurecio `getRequiredBaseUrl` para que haga:
 - remocion de comillas simples o dobles accidentales
 - remocion del slash final
 
-Esto se hizo porque la variable `NEXT_PUBLIC_FSA_BFF_CLIENTE_URL` estaba mal cargada con comillas en `.env` y eso generaba:
+Esto se hizo porque las variables de entorno pueden venir con comillas o slash final y eso generaba:
 
 - `TypeError: Failed to parse URL from ...`
 
@@ -227,16 +230,12 @@ Esto se hizo porque habia perfiles donde `afiliaciones` venia vacio y la UI term
 La variable necesaria para esta integracion es:
 
 ```env
-NEXT_PUBLIC_FSA_BFF_CLIENTE_URL=https://bff-cliente-web-develop.up.railway.app
-FSA_AUTH_TOKEN_URL=https://fsa-dev.up.railway.app/api/v1/auth/token
-FSA_AUTH_TOKEN_USERNAME=faridd
-FSA_AUTH_TOKEN_PASSWORD=12345678
+NEXT_PUBLIC_FSA_SOCIOSA=https://api.dev.sanchezantoniolli.com.ar/api/v2/sociosa/api/v1/
 ```
 
 Importante:
 
 - no debe tener comillas extra
-- las credenciales del token deben quedar en variables server-side y no en `NEXT_PUBLIC_*`
 - si se cambia el `.env`, hay que reiniciar el server de Next
 
 ## Fallbacks definidos
@@ -268,44 +267,14 @@ Para evitar que la UI se rompa si faltan datos en el perfil, se usan estos fallb
 - dentro de `Mi perfil`, permite abrir el modal `Agregar Nueva Afiliacion`
 - el guardado del modal hoy solo actualiza la UI local y no persiste
 
-## Riesgo tecnico pendiente
+## Criterio actual de autenticacion
 
-Hay un punto importante a validar en ambiente:
+El criterio vigente es el definido en `docs/bff-docs/frontend-integration.md`:
 
-- este front maneja sesion principalmente con cookie `sid`
-- el BFF de cliente usa autenticacion protegida del lado backend
+- deploy via gateway: preferir cookies de sesion
+- pruebas locales directas al BFF: usar bearer solo si realmente se prueba ese escenario
 
-El proxy actual reenvia:
-
-- `Authorization`
-- `Cookie`
-- `x-request-id`
-
-Ahora el front ya puede resolver ese Bearer tecnico contra `FSA_AUTH_TOKEN_URL` cuando la request original no trae uno. Si en algun ambiente el BFF necesita identidad del usuario final y no un token tecnico compartido, va a hacer falta un puente adicional entre la sesion del front y un token por usuario.
-
-En otras palabras: la integracion de UI ya esta hecha y el Bearer tecnico cubre el caso actual, pero la autenticacion backend puede requerir ajuste si luego se exige impersonacion o token por usuario.
-
-## Deuda tecnica explicita
-
-El uso actual de `FSA_AUTH_TOKEN_URL`, `FSA_AUTH_TOKEN_USERNAME` y `FSA_AUTH_TOKEN_PASSWORD` debe considerarse transitorio.
-
-Hoy esos valores permiten que los proxies server-side del front consuman perfil, expedientes y logistica aunque la request del navegador no traiga un bearer reutilizable. Eso destraba la integracion, pero no representa la identidad real del usuario autenticado.
-
-El objetivo final no es reemplazar la cookie `sid`, sino complementarla con tokens del usuario:
-
-- `sid` para sostener la sesion web y el middleware
-- `access_token` del usuario para llamar al BFF protegido
-- `refresh_token` del usuario para renovar el bearer sin volver a pedir credenciales
-
-La migracion esperada es esta:
-
-1. Mantener `sid` como sesion principal de la app.
-2. En login con credenciales, guardar `access_token` y `refresh_token` del usuario en cookies `httpOnly`.
-3. En login con Google, obtener esos tokens desde el callback OAuth exitoso y guardarlos igual en cookies `httpOnly`.
-4. Hacer que los proxies prioricen el bearer del usuario antes del token tecnico compartido.
-5. Dejar el token tecnico solo como fallback temporal o removerlo cuando el flujo por usuario quede estable.
-
-Mientras esa migracion no exista, cualquier verificacion de roles y permisos puede quedar atada al usuario tecnico configurado en `.env` y no al usuario real de la sesion.
+Para este frontend, los proxies internos de perfil, expedientes y logistica quedaron alineados al escenario principal de deploy via gateway.
 
 ## Error encontrado durante la implementacion
 
@@ -316,7 +285,7 @@ Se encontro este problema:
 
 Causa:
 
-- `NEXT_PUBLIC_FSA_BFF_CLIENTE_URL` estaba escrita con comillas incorrectas en `.env`
+- una base URL estaba escrita con formato invalido en `.env`
 
 Correccion aplicada:
 
@@ -336,8 +305,8 @@ Quedaron warnings preexistentes y no relacionados en el repo:
 
 ## Como probar rapido
 
-1. Configurar `NEXT_PUBLIC_FSA_BFF_CLIENTE_URL`.
-2. Configurar `FSA_AUTH_TOKEN_URL`, `FSA_AUTH_TOKEN_USERNAME` y `FSA_AUTH_TOKEN_PASSWORD`.
+1. Configurar `NEXT_PUBLIC_FSA_SOCIOSA`.
+2. Iniciar sesion para obtener `sid` y, si corresponde, `trusted_device_token`.
 3. Reiniciar el front.
 4. Iniciar sesion.
 5. Abrir `/home`.
@@ -353,9 +322,7 @@ Quedaron warnings preexistentes y no relacionados en el repo:
 
 Si se retoma este trabajo despues, los siguientes pasos mas naturales son:
 
-1. Implementar bearer por usuario sin eliminar `sid`, guardando `access_token` y `refresh_token` en cookies `httpOnly`.
-2. Hacer que login tradicional y login con Google converjan en el mismo mecanismo de cookies de token de usuario.
-3. Cambiar los proxies para priorizar el token del usuario y dejar el token tecnico solo como fallback temporal.
-4. Si existe endpoint de afiliaciones, conectar el modal de `SocioSA` para persistir altas reales.
-5. Si el producto lo pide, agregar loading visible o mensaje de error en UI cuando falle la carga del perfil.
-6. Si existe endpoint de update en backend, volver a habilitar edicion real de `Mi perfil` con persistencia.
+1. Validar perfil, expedientes y logistica en todos los entornos donde exista gateway con sesion activa.
+2. Si existe endpoint de afiliaciones, conectar el modal de `SocioSA` para persistir altas reales.
+3. Si el producto lo pide, agregar loading visible o mensaje de error en UI cuando falle la carga del perfil.
+4. Si existe endpoint de update en backend, volver a habilitar edicion real de `Mi perfil` con persistencia.

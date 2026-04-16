@@ -1,9 +1,12 @@
+import { useEffect, useRef } from "react";
 import { ArrowRight, CreditCard, Gift, Heart, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
 import { QuickAccessCard, type QuickAccessItem } from "@/components/molecules/home/QuickAccessCard";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
+import { useGlobalToast } from "../../ui/global-toast";
+import { usePortalExpedientes } from "@/lib/use-portal-expedientes";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 import { type SociosView } from "@/types/socios";
 import styles from "./SociosViews.module.scss";
@@ -45,7 +48,33 @@ export function SociosViews({
   perfil,
 }: SociosViewsProps) {
   const router = useRouter();
+  const { pushToast } = useGlobalToast();
+  const hasShownValidationToastRef = useRef(false);
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
+  const { error: expedientesError } = usePortalExpedientes();
+  const requiresAccountValidation =
+    expedientesError?.includes("Valida tu cuenta") ?? false;
+
+  useEffect(() => {
+    if (!requiresAccountValidation || !expedientesError) {
+      hasShownValidationToastRef.current = false;
+      return;
+    }
+
+    if (hasShownValidationToastRef.current) {
+      return;
+    }
+
+    pushToast({
+      id: "portal-expedientes-account-validation",
+      title: "Validá tu usuario",
+      description: expedientesError,
+      variant: "error",
+      duration: 8000,
+    });
+    hasShownValidationToastRef.current = true;
+  }, [expedientesError, pushToast, requiresAccountValidation]);
+
   const quickAccessItems: QuickAccessItem<SociosView>[] = [
     { label: "Mi perfil", view: "mi-cuenta", icon: User, tone: "socios" },
     { label: "Facturas", view: "facturas", icon: CreditCard, tone: "socios" },

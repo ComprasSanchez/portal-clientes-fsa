@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  applyUserTokenCookies,
-  exchangeUserCredentialsForTokens,
   getRequiredBaseUrl,
   jsonError,
   readJsonBody,
@@ -200,25 +198,6 @@ export async function POST(req: NextRequest) {
       console.log("[LOGIN] Setting cookie:", parsedCookie.name, "with options:", parsedCookie.options);
 
       response.cookies.set(parsedCookie.name, parsedCookie.value, parsedCookie.options);
-    }
-
-    const requiresMfa =
-      typeof data === "object" &&
-      data !== null &&
-      "mfa" in data &&
-      (data as { mfa?: { required?: boolean } }).mfa?.required === true;
-
-    if (!requiresMfa) {
-      try {
-        const userTokenBundle = await exchangeUserCredentialsForTokens({
-          username: body.username,
-          password: body.password,
-        });
-
-        applyUserTokenCookies(response, userTokenBundle, isSecureContext);
-      } catch (tokenError) {
-        console.error("[LOGIN] user token exchange failed:", tokenError);
-      }
     }
 
     return response;

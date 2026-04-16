@@ -10,18 +10,52 @@ type UsePortalExpedientesOptions = {
   enabled?: boolean;
 };
 
+const MISSING_CLIENT_LINK_MESSAGE =
+  "Tu usuario no tiene un cliente vinculado. Valida tu cuenta o comunicate con soporte para habilitar su cuenta.";
+
+type ExpedientesErrorPayload = {
+  error?: string;
+  message?: string;
+};
+
+const getFriendlyErrorMessage = (
+  response: Response,
+  payload: ExpedientesErrorPayload | null,
+  fallback: string,
+) => {
+  const rawMessage = payload?.message || payload?.error || fallback;
+
+  if (
+    response.status === 403 &&
+    /usuario sin v[i\u00ed]nculo de cliente/i.test(rawMessage)
+  ) {
+    return MISSING_CLIENT_LINK_MESSAGE;
+  }
+
+  return rawMessage || "No se pudieron cargar los expedientes.";
+};
+
 const readErrorMessage = async (response: Response) => {
   const contentType = response.headers.get("content-type") || "";
 
   if (contentType.includes("application/json")) {
-    const data = (await response.json().catch(() => null)) as
-      | { error?: string; message?: string }
-      | null;
+    const data = (await response
+      .json()
+      .catch(() => null)) as ExpedientesErrorPayload | null;
 
-    return data?.message || data?.error || "No se pudieron cargar los expedientes.";
+    return getFriendlyErrorMessage(
+      response,
+      data,
+      "No se pudieron cargar los expedientes.",
+    );
   }
 
-  return (await response.text().catch(() => "")) || "No se pudieron cargar los expedientes.";
+  return getFriendlyErrorMessage(
+    response,
+    null,
+    (await response.text().catch(() => "")) ||
+      "No se pudieron cargar los expedientes.",
+  );
 };
 
 const isActiveExpediente = (item: PortalExpedienteItem) => {
@@ -30,8 +64,11 @@ const isActiveExpediente = (item: PortalExpedienteItem) => {
   return normalizedState.includes("ACT") || normalizedState.includes("ABIER");
 };
 
-export const usePortalExpedientes = ({ enabled = true }: UsePortalExpedientesOptions = {}) => {
-  const [expedientes, setExpedientes] = useState<PortalExpedientesResponse | null>(null);
+export const usePortalExpedientes = ({
+  enabled = true,
+}: UsePortalExpedientesOptions = {}) => {
+  const [expedientes, setExpedientes] =
+    useState<PortalExpedientesResponse | null>(null);
   const [isLoading, setIsLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,13 +93,22 @@ export const usePortalExpedientes = ({ enabled = true }: UsePortalExpedientesOpt
           offset: "0",
         });
 
-        const response = await fetch(`/api/portal/me/expedientes?${params.toString()}`, {
-          cache: "no-store",
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          `/api/portal/me/expedientes?${params.toString()}`,
+          {
+            cache: "no-store",
+            signal: controller.signal,
+          },
+        );
 
-        if (response.status === 401 || response.status === 403) {
+        if (response.status === 401) {
           setExpedientes(null);
+          return;
+        }
+
+        if (response.status === 403) {
+          setExpedientes(null);
+          setError(await readErrorMessage(response));
           return;
         }
 

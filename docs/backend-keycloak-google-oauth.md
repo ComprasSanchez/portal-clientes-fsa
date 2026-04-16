@@ -1,10 +1,12 @@
 # Configuración requerida en Keycloak para Google OAuth con proxy frontend
 
+> Documento de soporte. Para reconstruir contexto general, leer primero `docs/frontend-handoff-auth-profile-logistics.md`.
+
 ## Contexto
 
 El flujo de login social con Google pasa ahora por el proxy del frontend antes de llegar al BFF:
 
-```
+```text
 Usuario → Frontend (popup) → /api/auth/providers/google/start
        → BFF inicia OAuth con Keycloak
        → Keycloak redirige a Google
@@ -29,19 +31,19 @@ En el panel de **Keycloak Admin Console**, dentro del realm `FSA`, abrir el clie
 
 ### Desarrollo local
 
-```
+```text
 http://localhost:3000/api/auth/providers/google/callback
 ```
 
 ### Ambiente dev/staging
 
-```
+```text
 https://sociosa.dev.sanchezantoniolli.com.ar/api/v2/auth/providers/google/callback
 ```
 
 ### Producción (cuando corresponda)
 
-```
+```text
 https://<dominio-frontend-produccion>/api/auth/providers/google/callback
 ```
 
@@ -59,7 +61,7 @@ KC_REDIRECT_URI=https://<FRONT_DOMAIN>/api/auth/providers/google/callback
 
 El proxy frontend envía siempre estos headers al BFF:
 
-```
+```text
 x-forwarded-host: localhost:3000          (o el dominio del frontend)
 x-forwarded-proto: http                   (o https en producción)
 x-forwarded-for: <IP del cliente>
@@ -83,7 +85,7 @@ x-forwarded-for: <IP del cliente>
 
 El popup abre la pantalla de Google, pero al volver Keycloak muestra error similar a:
 
-```
+```text
 Invalid parameter: redirect_uri
 ```
 
