@@ -2,6 +2,7 @@ export type PortalPerfilContacto = {
   id?: string;
   tipo?: "EMAIL" | "TELEFONO" | string;
   valor?: string;
+  regionIso2?: string | null;
   principal?: boolean;
   verificado?: boolean;
   fechaVerificacion?: string | null;
@@ -22,8 +23,13 @@ export type PortalPerfilDomicilio = {
   numero?: string | null;
   piso?: string | null;
   depto?: string | null;
+  referencia?: string | null;
   ciudad?: string;
   provincia?: string;
+  codPostal?: string | null;
+  pais?: string | null;
+  lat?: number | null;
+  long?: number | null;
   principal?: boolean;
 };
 

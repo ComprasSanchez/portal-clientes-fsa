@@ -7,7 +7,7 @@ import type {
   PortalPerfilSummary,
 } from "@/types/portal-profile";
 
-const normalizeText = (value?: string | null) => {
+export const normalizeText = (value?: string | null) => {
   if (typeof value !== "string") {
     return null;
   }
@@ -16,7 +16,7 @@ const normalizeText = (value?: string | null) => {
   return normalized.length > 0 ? normalized : null;
 };
 
-const pickPreferredContacto = (
+export const pickPreferredContacto = (
   contactos: PortalPerfilContacto[] | undefined,
   tipo: "EMAIL" | "TELEFONO",
 ) => {
@@ -39,7 +39,7 @@ const pickPreferredAfiliacion = (afiliaciones: PortalPerfilAfiliacion[] | undefi
   );
 };
 
-const pickPreferredDomicilio = (domicilios: PortalPerfilDomicilio[] | undefined) => {
+export const pickPreferredDomicilio = (domicilios: PortalPerfilDomicilio[] | undefined) => {
   const candidates = Array.isArray(domicilios) ? domicilios : [];
 
   return candidates.find((domicilio) => domicilio.principal) ?? candidates[0] ?? null;
@@ -73,7 +73,7 @@ const formatDate = (value?: string | null) => {
   return new Intl.DateTimeFormat("es-AR").format(date);
 };
 
-const formatAddress = (domicilio: PortalPerfilDomicilio | null) => {
+export const formatAddress = (domicilio: PortalPerfilDomicilio | null) => {
   if (!domicilio) {
     return "Sin dato";
   }

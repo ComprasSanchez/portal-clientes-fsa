@@ -89,6 +89,21 @@
   color: #8f63d9;
 }
 
+.profileFeedbackSuccess,
+.profileFeedbackError {
+  margin-top: 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.profileFeedbackSuccess {
+  color: #247a52;
+}
+
+.profileFeedbackError {
+  color: #b24141;
+}
+
 .sectionsGrid {
   display: grid;
   gap: 1.5rem;
@@ -104,6 +119,178 @@
 .fieldsGrid {
   display: grid;
   gap: 1rem;
+}
+
+.selectorGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-top: -0.35rem;
+}
+
+.selectorLabel {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #25313d;
+}
+
+.selectorRow {
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.selectorInput {
+  width: 100%;
+  border: 1px solid #dce4e7;
+  border-radius: 0.8rem;
+  background: #ffffff;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  color: #2b3340;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #96b9c2;
+    box-shadow: 0 0 0 4px rgba(0, 124, 152, 0.12);
+  }
+}
+
+.selectorActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  border-radius: 0.8rem;
+  background: #8f63d9;
+  padding: 0.9rem 1rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+  }
+}
+
+.contactInlineHint {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #6f7188;
+}
+
+.addressFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.addressInlineAction {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.addressInlineHint {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #6f7188;
+}
+
+.addressGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.contactTypeGrid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.contactTypeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: 5.5rem;
+  border: 1px solid #d7dde8;
+  border-radius: 1rem;
+  background: #ffffff;
+  color: #1f2940;
+  font-size: 1rem;
+  font-weight: 700;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+
+  &:hover {
+    border-color: #8fc6ca;
+  }
+}
+
+.contactTypeCardActive {
+  border-color: #00a7a0;
+  background: #eaf8f7;
+  box-shadow: inset 0 0 0 1px rgba(0, 167, 160, 0.15);
+  color: #0f6766;
+}
+
+.contactSwitchList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.contactSwitchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.contactSwitchLabel {
+  font-size: 1rem;
+  color: #293440;
+}
+
+.switchWrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  :global(button[data-slot="switch"]) {
+    background-color: rgba(140, 111, 175, 0.35);
+    border: 1px solid rgba(140, 111, 175, 0.2);
+    width: 56px;
+    height: 32px;
+  }
+
+  :global(button[data-state="checked"][data-slot="switch"]) {
+    background-color: #8f63d9;
+  }
+
+  :global(span[data-slot="switch-thumb"]) {
+    background-color: #ffffff;
+  }
 }
 
 .divider {
@@ -422,7 +609,20 @@
     align-items: center;
   }
 
+  .contactTypeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .selectorRow {
+    grid-template-columns: minmax(0, 1fr) 180px;
+    align-items: center;
+  }
+
   .dateGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .addressGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

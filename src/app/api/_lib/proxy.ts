@@ -43,6 +43,18 @@ export const readJsonBody = async <T>(req: NextRequest): Promise<T | null> => {
   }
 };
 
+export const buildForwardHeaders = (req: NextRequest) => {
+  const authorization = req.headers.get("authorization")?.trim() || null;
+  const cookie = req.headers.get("cookie");
+  const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
+
+  return {
+    authorization,
+    cookie,
+    requestId,
+  };
+};
+
 export const withQueryParams = (request: NextRequest, upstreamPath: string) => {
   const upstreamUrl = new URL(upstreamPath);
   const { searchParams } = new URL(request.url);
