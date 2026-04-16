@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Search, UserRound, X } from "lucide-react";
+import { ProfileViewSkeleton } from "@/components/organisms/loading/ViewSkeletons";
 import { ProfileField } from "@/components/molecules/home/ProfileField";
 import { getPortalPerfilDetails } from "@/lib/portal-profile";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
@@ -21,6 +22,7 @@ type ProfileData = {
 type ProfileViewProps = {
   perfil: PortalPerfilResponse | null;
   variant?: "cora" | "socios";
+  isLoading?: boolean;
 };
 
 type AffiliationFormData = {
@@ -50,10 +52,14 @@ const initialAffiliationForm: AffiliationFormData = {
   isPrimary: false,
 };
 
-export function ProfileView({ perfil, variant = "socios" }: ProfileViewProps) {
+export function ProfileView({ perfil, variant = "socios", isLoading = false }: ProfileViewProps) {
   const [isAffiliationModalOpen, setIsAffiliationModalOpen] = useState(false);
   const [affiliationForm, setAffiliationForm] = useState<AffiliationFormData>(initialAffiliationForm);
   const [localAffiliationPreview, setLocalAffiliationPreview] = useState<LocalAffiliationPreview | null>(null);
+  const [editableProfile, setEditableProfile] = useState<ProfileData | null>(null);
+  const [profileDraft, setProfileDraft] = useState<ProfileData | null>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [hasLocalProfileChanges, setHasLocalProfileChanges] = useState(false);
 
   const profile = useMemo<ProfileData>(() => {
     const details = getPortalPerfilDetails(perfil);
@@ -70,21 +76,32 @@ export function ProfileView({ perfil, variant = "socios" }: ProfileViewProps) {
     };
   }, [perfil]);
 
-  const displayedAffiliateNumber = localAffiliationPreview?.affiliateNumber ?? profile.affiliateNumber;
+  useEffect(() => {
+    setEditableProfile(profile);
+    setProfileDraft(profile);
+  }, [profile]);
+
+  const currentProfile = editableProfile ?? profile;
+  const displayedAffiliateNumber = localAffiliationPreview?.affiliateNumber ?? currentProfile.affiliateNumber;
   const hasAffiliateNumber = Boolean(displayedAffiliateNumber?.trim());
   const hasPendingAffiliationPreview = Boolean(localAffiliationPreview);
   const isSociosVariant = variant === "socios";
+  const isCoraVariant = variant === "cora";
   const isAffiliationFormValid =
     affiliationForm.providerName.trim().length > 0 && affiliationForm.affiliateNumber.trim().length > 0;
 
   const initials = useMemo(() => {
-    return profile.fullName
+    return currentProfile.fullName
       .split(" ")
       .filter(Boolean)
       .slice(0, 2)
       .map((name) => name[0]?.toUpperCase() ?? "")
       .join("");
-  }, [profile.fullName]);
+  }, [currentProfile.fullName]);
+
+  if (isLoading) {
+    return <ProfileViewSkeleton variant={variant} />;
+  }
 
   const handleOpenAffiliationModal = () => {
     setIsAffiliationModalOpen(true);
@@ -119,13 +136,84 @@ export function ProfileView({ perfil, variant = "socios" }: ProfileViewProps) {
     handleCloseAffiliationModal();
   };
 
+  const handleProfileFieldChange = <T extends keyof ProfileData>(
+    field: T,
+    value: ProfileData[T],
+  ) => {
+    setProfileDraft((current) => {
+      const base = current ?? currentProfile;
+      return {
+        ...base,
+        [field]: value,
+      };
+    });
+  };
+
+  const handleStartProfileEditing = () => {
+    setProfileDraft(currentProfile);
+    setIsEditingProfile(true);
+  };
+
+  const handleCancelProfileEditing = () => {
+    setProfileDraft(editableProfile ?? profile);
+    setIsEditingProfile(false);
+  };
+
+  const handleSaveProfileEditing = () => {
+    if (!profileDraft) {
+      return;
+    }
+
+    setEditableProfile(profileDraft);
+    setHasLocalProfileChanges(true);
+    setIsEditingProfile(false);
+  };
+
+  const profileValues = isEditingProfile ? profileDraft ?? currentProfile : currentProfile;
+
   return (
     <section className={styles.profileView}>
       <header className={styles.header}>
         <div className={styles.headerText}>
           <h1 className={styles.title}>Mis datos</h1>
           <p className={styles.subtitle}>Informacion personal y de contacto</p>
+          {isCoraVariant ? (
+            <p className={styles.localEditHint}>
+              Podés editar estos datos desde CORA, pero por ahora los cambios se guardan solo en esta sesión.
+            </p>
+          ) : null}
         </div>
+
+        {isCoraVariant ? (
+          <div className={styles.profileActions}>
+            {isEditingProfile ? (
+              <>
+                <button
+                  type="button"
+                  className={styles.secondaryAction}
+                  onClick={handleCancelProfileEditing}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className={styles.primaryAction}
+                  onClick={handleSaveProfileEditing}
+                >
+                  Guardar cambios
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className={styles.primaryAction}
+                onClick={handleStartProfileEditing}
+              >
+                Editar perfil
+              </button>
+            )}
+          </div>
+        ) : null}
       </header>
 
       <article className={styles.card}>
@@ -135,7 +223,11 @@ export function ProfileView({ perfil, variant = "socios" }: ProfileViewProps) {
           </div>
 
           <div className={styles.identityInfo}>
-            <h2 className={styles.fullName}>{profile.fullName}</h2>
+            <h2 className={styles.fullName}>{profileValues.fullName}</h2>
+
+            {isCoraVariant && hasLocalProfileChanges && !isEditingProfile ? (
+              <p className={styles.localEditSaved}>Cambios aplicados en pantalla para esta sesión.</p>
+            ) : null}
 
             <div className={styles.sectionsGrid}>
               <section>
@@ -143,16 +235,22 @@ export function ProfileView({ perfil, variant = "socios" }: ProfileViewProps) {
                 <div className={styles.fieldsGrid}>
                   <ProfileField
                     label="Nombre"
-                    value={profile.fullName}
+                    value={profileValues.fullName}
+                    isEditing={isCoraVariant && isEditingProfile}
+                    onChange={(value) => handleProfileFieldChange("fullName", value)}
                   />
                   <ProfileField
                     label="Fecha de nacimiento"
-                    value={profile.birthDate}
+                    value={profileValues.birthDate}
+                    isEditing={isCoraVariant && isEditingProfile}
+                    onChange={(value) => handleProfileFieldChange("birthDate", value)}
                   />
-                  <ProfileField label="Identificacion" value={profile.identification} readOnly />
+                  <ProfileField label="Identificacion" value={profileValues.identification} readOnly />
                   <ProfileField
                     label="Domicilio Legal"
-                    value={profile.legalAddress}
+                    value={profileValues.legalAddress}
+                    isEditing={isCoraVariant && isEditingProfile}
+                    onChange={(value) => handleProfileFieldChange("legalAddress", value)}
                   />
                 </div>
               </section>
@@ -162,17 +260,23 @@ export function ProfileView({ perfil, variant = "socios" }: ProfileViewProps) {
                 <div className={styles.fieldsGrid}>
                   <ProfileField
                     label="Numero de telefono"
-                    value={profile.phone}
+                    value={profileValues.phone}
                     type="tel"
+                    isEditing={isCoraVariant && isEditingProfile}
+                    onChange={(value) => handleProfileFieldChange("phone", value)}
                   />
                   <ProfileField
                     label="Domicilio de residencia"
-                    value={profile.residenceAddress}
+                    value={profileValues.residenceAddress}
+                    isEditing={isCoraVariant && isEditingProfile}
+                    onChange={(value) => handleProfileFieldChange("residenceAddress", value)}
                   />
                   <ProfileField
                     label="Mail de notificacion"
-                    value={profile.email}
+                    value={profileValues.email}
                     type="email"
+                    isEditing={isCoraVariant && isEditingProfile}
+                    onChange={(value) => handleProfileFieldChange("email", value)}
                   />
                 </div>
               </section>

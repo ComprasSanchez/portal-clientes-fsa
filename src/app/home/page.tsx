@@ -22,7 +22,7 @@ const HomeViewsFallback = () => {
 const HomePage = () => {
   const [currentView, setCurrentView] = useState<HomeView>(DEFAULT_VIEW);
   const router = useRouter();
-  const { perfil, summary } = usePortalPerfilContext();
+  const { perfil, summary, isLoading } = usePortalPerfilContext();
 
   const handleLogout = () => {
     void (async () => {
@@ -57,6 +57,7 @@ const HomePage = () => {
             email={summary.email}
             phone={summary.phone}
             perfil={perfil}
+            isProfileLoading={isLoading}
           />
         </Suspense>
 

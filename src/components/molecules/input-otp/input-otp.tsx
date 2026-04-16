@@ -10,16 +10,24 @@ export function InputMFA({ onSubmit, isLoading }: {
   const [value, setValue] = React.useState("");
   const [isInvalid, setIsInvalid] = React.useState(false);
   const [rememberDevice, setRememberDevice] = React.useState(true);
+  const lastAutoSubmittedCodeRef = React.useRef<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (value.length !== 6) return;
+  const submitCode = React.useCallback(async () => {
+    if (value.length !== 6 || isLoading) {
+      return;
+    }
+
     try {
       await onSubmit(value, rememberDevice);
       setIsInvalid(false);
     } catch {
       setIsInvalid(true);
     }
+  }, [isLoading, onSubmit, rememberDevice, value]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await submitCode();
   };
 
   const handleChange = (val: string) => {
@@ -27,9 +35,23 @@ export function InputMFA({ onSubmit, isLoading }: {
     setIsInvalid(false);
   };
 
+  React.useEffect(() => {
+    if (value.length < 6) {
+      lastAutoSubmittedCodeRef.current = null;
+      return;
+    }
+
+    if (isLoading || lastAutoSubmittedCodeRef.current === value) {
+      return;
+    }
+
+    lastAutoSubmittedCodeRef.current = value;
+    void submitCode();
+  }, [isLoading, submitCode, value]);
+
   return (
-    <div className="flex w-70 flex-col gap-2">
-      <Form className="flex flex-col gap-2" onSubmit={handleSubmit}>
+    <div className="flex w-full flex-col gap-3">
+      <Form className="flex w-full flex-col gap-3" onSubmit={handleSubmit}>
         <Label>Ingresá el código de 6 dígitos</Label>
         <InputOTP
           aria-describedby={isInvalid ? "code-error" : undefined}
@@ -64,7 +86,11 @@ export function InputMFA({ onSubmit, isLoading }: {
           />
           Recordar esta sesión en este dispositivo
         </label>
-        <Button isDisabled={value.length !== 6 || isLoading} type="submit">
+        <Button
+          className="mt-2 h-14 w-full rounded-2xl bg-[#007c98] text-base font-bold text-white shadow-[0_10px_24px_rgba(0,124,152,0.18)] hover:bg-[#005f76]"
+          isDisabled={value.length !== 6 || isLoading}
+          type="submit"
+        >
           {isLoading ? "Verificando..." : "Validar código"}
         </Button>
       </Form>

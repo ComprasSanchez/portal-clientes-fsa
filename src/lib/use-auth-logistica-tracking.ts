@@ -25,15 +25,50 @@ type UseAuthLogisticaTrackingOptions = {
   cicloId?: string | null;
 };
 
-export const useAuthLogisticaTracking = ({ cicloId }: UseAuthLogisticaTrackingOptions) => {
-  const [isLoading, setIsLoading] = useState(Boolean(cicloId));
-  const [error, setError] = useState<string | null>(null);
-  const [parentOrders, setParentOrders] = useState<ParentOrder[]>([]);
+type TrackingCacheEntry = {
+  data: ParentOrder[];
+  error: string | null;
+  promise: Promise<ParentOrder[]> | null;
+};
 
-  const refresh = useCallback(async () => {
+const trackingCache = new Map<string, TrackingCacheEntry>();
+
+const getTrackingCacheEntry = (cicloId: string) => {
+  const existing = trackingCache.get(cicloId);
+
+  if (existing) {
+    return existing;
+  }
+
+  const created: TrackingCacheEntry = {
+    data: [],
+    error: null,
+    promise: null,
+  };
+
+  trackingCache.set(cicloId, created);
+  return created;
+};
+
+export const useAuthLogisticaTracking = ({ cicloId }: UseAuthLogisticaTrackingOptions) => {
+  const cachedEntry = cicloId ? getTrackingCacheEntry(cicloId) : null;
+  const [isLoading, setIsLoading] = useState(Boolean(cicloId) && !cachedEntry?.data.length && !cachedEntry?.error);
+  const [error, setError] = useState<string | null>(cachedEntry?.error ?? null);
+  const [parentOrders, setParentOrders] = useState<ParentOrder[]>(cachedEntry?.data ?? []);
+
+  const refresh = useCallback(async (force = false) => {
     if (!cicloId) {
       setParentOrders([]);
       setError(null);
+      setIsLoading(false);
+      return;
+    }
+
+    const cacheEntry = getTrackingCacheEntry(cicloId);
+
+    if (!force && (cacheEntry.data.length > 0 || cacheEntry.error)) {
+      setParentOrders(cacheEntry.data);
+      setError(cacheEntry.error);
       setIsLoading(false);
       return;
     }
@@ -42,24 +77,35 @@ export const useAuthLogisticaTracking = ({ cicloId }: UseAuthLogisticaTrackingOp
     setError(null);
 
     try {
-      const response = await fetch(`/api/logistica/${cicloId}/parent-orders`, {
-        cache: "no-store",
-      });
+      if (!cacheEntry.promise || force) {
+        cacheEntry.promise = fetch(`/api/logistica/${cicloId}/parent-orders`, {
+          cache: "no-store",
+        }).then(async (response) => {
+          if (!response.ok) {
+            throw new Error(await readErrorMessage(response));
+          }
 
-      if (!response.ok) {
-        throw new Error(await readErrorMessage(response));
+          const data = (await response.json()) as ParentOrder[];
+          return Array.isArray(data) ? data : [];
+        });
       }
 
-      const data = (await response.json()) as ParentOrder[];
-      setParentOrders(Array.isArray(data) ? data : []);
+      const data = await cacheEntry.promise;
+      cacheEntry.data = data;
+      cacheEntry.error = null;
+      setParentOrders(data);
     } catch (requestError) {
-      setParentOrders([]);
-      setError(
+      const nextError =
         requestError instanceof Error
           ? requestError.message
-          : "No pudimos consultar el estado del pedido.",
-      );
+          : "No pudimos consultar el estado del pedido.";
+
+      cacheEntry.data = [];
+      cacheEntry.error = nextError;
+      setParentOrders([]);
+      setError(nextError);
     } finally {
+      cacheEntry.promise = null;
       setIsLoading(false);
     }
   }, [cicloId]);
@@ -75,33 +121,55 @@ export const useAuthLogisticaTracking = ({ cicloId }: UseAuthLogisticaTrackingOp
         return;
       }
 
+      const cacheEntry = getTrackingCacheEntry(cicloId);
+
+      if (cacheEntry.data.length > 0 || cacheEntry.error) {
+        setParentOrders(cacheEntry.data);
+        setError(cacheEntry.error);
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
 
       try {
-        const response = await fetch(`/api/logistica/${cicloId}/parent-orders`, {
-          cache: "no-store",
-        });
+        if (!cacheEntry.promise) {
+          cacheEntry.promise = fetch(`/api/logistica/${cicloId}/parent-orders`, {
+            cache: "no-store",
+          }).then(async (response) => {
+            if (!response.ok) {
+              throw new Error(await readErrorMessage(response));
+            }
 
-        if (!response.ok) {
-          throw new Error(await readErrorMessage(response));
+            const data = (await response.json()) as ParentOrder[];
+            return Array.isArray(data) ? data : [];
+          });
         }
 
-        const data = (await response.json()) as ParentOrder[];
+        const data = await cacheEntry.promise;
+        cacheEntry.data = data;
+        cacheEntry.error = null;
 
         if (!cancelled) {
-          setParentOrders(Array.isArray(data) ? data : []);
+          setParentOrders(data);
           setError(null);
         }
       } catch (requestError) {
+        const nextError =
+          requestError instanceof Error
+            ? requestError.message
+            : "No pudimos consultar el estado del pedido.";
+
+        cacheEntry.data = [];
+        cacheEntry.error = nextError;
+
         if (!cancelled) {
           setParentOrders([]);
-          setError(
-            requestError instanceof Error
-              ? requestError.message
-              : "No pudimos consultar el estado del pedido.",
-          );
+          setError(nextError);
         }
       } finally {
+        cacheEntry.promise = null;
+
         if (!cancelled) {
           setIsLoading(false);
         }
@@ -133,6 +201,6 @@ export const useAuthLogisticaTracking = ({ cicloId }: UseAuthLogisticaTrackingOp
     trackingStatus,
     resolvedOrderNumber,
     hasCicloId: Boolean(cicloId),
-    refresh,
+    refresh: () => refresh(true),
   };
 };

@@ -51,6 +51,20 @@ const formatDate = (value?: string | null) => {
     return "Sin dato";
   }
 
+  const plainDateMatch = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (plainDateMatch) {
+    const [, year, month, day] = plainDateMatch;
+    const localDate = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+    );
+
+    if (!Number.isNaN(localDate.getTime())) {
+      return new Intl.DateTimeFormat("es-AR").format(localDate);
+    }
+  }
+
   const date = new Date(normalized);
   if (Number.isNaN(date.getTime())) {
     return normalized;

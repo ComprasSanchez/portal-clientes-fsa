@@ -66,14 +66,18 @@ Upstream final:
 Se mantiene la integracion de:
 
 - `/api/portal/me/expedientes`
+- `/api/portal/me/expediente-actual`
 
 Upstream final:
 
 - `${NEXT_PUBLIC_FSA_SOCIOSA}/portal/me/expedientes`
+- `${NEXT_PUBLIC_FSA_SOCIOSA}/portal/me/expediente-actual`
 
 La UI sigue derivando `cicloId` desde:
 
 - `data.items[].cicloActual.cicloId`
+
+Ademas, CORA ya consume el nuevo endpoint de expediente actual para evitar combinar manualmente listado + detalle en frontend.
 
 ### Logistica
 
@@ -111,6 +115,7 @@ Se alineo el frontend al comportamiento real del gateway:
 - `src/app/api/_lib/proxy.ts`
 - `src/app/api/portal/me/perfil/route.ts`
 - `src/app/api/portal/me/expedientes/route.ts`
+- `src/app/api/portal/me/expediente-actual/route.ts`
 - `src/app/api/logistica/[cicloId]/parent-orders/route.ts`
 - `src/app/api/auth/login/route.ts`
 - `src/app/api/auth/mfa/verify/route.ts`
@@ -244,8 +249,11 @@ Comportamiento:
 ### Expedientes y logistica
 
 - `src/app/api/portal/me/expedientes/route.ts`
+- `src/app/api/portal/me/expediente-actual/route.ts`
 - `src/app/api/logistica/[cicloId]/parent-orders/route.ts`
+- `src/lib/use-portal-expediente-actual.ts`
 - `src/lib/use-portal-expedientes.ts`
+- `src/types/portal-expediente-actual.ts`
 - `src/lib/use-auth-logistica-tracking.ts`
 - `src/lib/order-tracking.ts`
 - `src/components/organisms/home/HomeViews.tsx`
@@ -266,6 +274,7 @@ Hay que validar en ambiente real:
 
 - perfil
 - expedientes
+- expediente actual
 - logistica por `cicloId`
 - login tradicional
 - MFA

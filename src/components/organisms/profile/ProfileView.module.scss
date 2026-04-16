@@ -16,6 +16,12 @@
   gap: 0.35rem;
 }
 
+.profileActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .title {
   font-size: clamp(2rem, 4vw, 2.25rem);
   font-weight: 700;
@@ -25,6 +31,13 @@
 .subtitle {
   font-size: 1.0625rem;
   color: #70728a;
+}
+
+.localEditHint {
+  max-width: 38rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #7f718f;
 }
 
 .card {
@@ -67,6 +80,13 @@
   font-size: clamp(1.8rem, 3.5vw, 2.1rem);
   font-weight: 700;
   color: #2f3042;
+}
+
+.localEditSaved {
+  margin-top: 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #8f63d9;
 }
 
 .sectionsGrid {

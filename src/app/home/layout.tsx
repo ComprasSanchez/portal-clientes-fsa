@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PortalExpedientesProvider } from "@/lib/portal-expedientes-context";
 import { PortalPerfilProvider } from "@/lib/portal-perfil-context";
 
 export const metadata: Metadata = {
@@ -15,5 +16,9 @@ export default function HomeLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <PortalPerfilProvider>{children}</PortalPerfilProvider>;
+  return (
+    <PortalPerfilProvider>
+      <PortalExpedientesProvider>{children}</PortalExpedientesProvider>
+    </PortalPerfilProvider>
+  );
 }

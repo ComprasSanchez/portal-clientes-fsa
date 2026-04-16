@@ -17,7 +17,7 @@ const poppins = Poppins({
 const SociosPage = () => {
   const [currentView, setCurrentView] = useState<SociosView>(DEFAULT_VIEW);
   const router = useRouter();
-  const { perfil, summary } = usePortalPerfilContext();
+  const { perfil, summary, isLoading } = usePortalPerfilContext();
 
   const handleLogout = () => {
     void (async () => {
@@ -51,6 +51,7 @@ const SociosPage = () => {
           email={summary.email}
           phone={summary.phone}
           perfil={perfil}
+          isProfileLoading={isLoading}
         />
 
         <footer className="relative left-1/2 mt-auto -translate-x-1/2 border-t border-[#d3dee2] bg-white py-6">

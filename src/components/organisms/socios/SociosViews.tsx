@@ -5,8 +5,8 @@ import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
 import { QuickAccessCard, type QuickAccessItem } from "@/components/molecules/home/QuickAccessCard";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
+import { usePortalExpedientesContext } from "@/lib/portal-expedientes-context";
 import { useGlobalToast } from "../../ui/global-toast";
-import { usePortalExpedientes } from "@/lib/use-portal-expedientes";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 import { type SociosView } from "@/types/socios";
 import styles from "./SociosViews.module.scss";
@@ -20,6 +20,7 @@ interface SociosViewsProps {
   email: string | null;
   phone: string | null;
   perfil: PortalPerfilResponse | null;
+  isProfileLoading?: boolean;
 }
 
 const viewContent: Record<Exclude<SociosView, "dashboard">, { title: string; description: string }> = {
@@ -46,12 +47,13 @@ export function SociosViews({
   email,
   phone,
   perfil,
+  isProfileLoading = false,
 }: SociosViewsProps) {
   const router = useRouter();
   const { pushToast } = useGlobalToast();
   const hasShownValidationToastRef = useRef(false);
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
-  const { error: expedientesError } = usePortalExpedientes();
+  const { error: expedientesError } = usePortalExpedientesContext();
   const requiresAccountValidation =
     expedientesError?.includes("Valida tu cuenta") ?? false;
 
@@ -90,7 +92,7 @@ export function SociosViews({
   if (currentView === "mi-cuenta") {
     return (
       <main className={styles.container}>
-        <ProfileView perfil={perfil} variant="socios" />
+        <ProfileView perfil={perfil} variant="socios" isLoading={isProfileLoading} />
       </main>
     );
   }

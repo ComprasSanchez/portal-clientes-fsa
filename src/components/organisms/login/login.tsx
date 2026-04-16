@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useFormik } from "formik";
-import { Check, Eye, EyeOff, LogIn, UserPlus } from "lucide-react";
+import { ArrowLeft, Check, Eye, EyeOff, LogIn, UserPlus } from "lucide-react";
 import * as Yup from "yup";
 import googleLogo from "@/assets/google-logo.svg";
 import mobileLogo from "@/assets/logo-celeste.png";
@@ -62,6 +62,7 @@ const resetPasswordValidationSchema = Yup.object({
 });
 
 export function Login({ onLogin }: LoginProps) {
+  const MFA_RESEND_COOLDOWN_SECONDS = 30;
   const router = useRouter();
   const searchParams = useSearchParams();
   const [cardView, setCardView] = useState<AuthCardView>("login");
@@ -69,6 +70,8 @@ export function Login({ onLogin }: LoginProps) {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [mfaState, setMfaState] = useState<MfaState | null>(null);
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false);
+  const [isResendingMfaCode, setIsResendingMfaCode] = useState(false);
+  const [mfaResendCooldownSeconds, setMfaResendCooldownSeconds] = useState(0);
   const [resendEmailTarget, setResendEmailTarget] = useState<string | null>(null);
   const [isResendingEmail, setIsResendingEmail] = useState(false);
   const [shouldPromptVerifyEmail, setShouldPromptVerifyEmail] = useState(false);
@@ -149,6 +152,72 @@ export function Login({ onLogin }: LoginProps) {
       setIsResendingEmail(false);
     }
   };
+
+  const handleResendMfaCode = async () => {
+    if (
+      mfaResendCooldownSeconds > 0 ||
+      !mfaState?.loginTicket ||
+      !mfaState?.challengeChannel
+    ) {
+      setErrorMessage("No pudimos reenviar el código. Volvé a iniciar sesión.");
+      return;
+    }
+
+    setIsResendingMfaCode(true);
+    setErrorMessage(null);
+    setInfoMessage(null);
+
+    try {
+      const { data } = await axios.post<LoginResponse>(
+        "/api/auth/mfa/challenge",
+        {
+          loginTicket: mfaState.loginTicket,
+          channel: mfaState.challengeChannel,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      setInfoMessage(
+        typeof data?.message === "string"
+          ? data.message
+          : `Te enviamos un nuevo código por ${mfaState.challengeChannel}.`,
+      );
+      setMfaResendCooldownSeconds(MFA_RESEND_COOLDOWN_SECONDS);
+    } catch (error) {
+      if (axios.isAxiosError<LoginResponse>(error)) {
+        setErrorMessage(
+          getErrorMessage(
+            error.response?.data ?? null,
+            "No pudimos reenviar el código. Intentá nuevamente.",
+          ),
+        );
+      } else {
+        setErrorMessage("No pudimos reenviar el código. Intentá nuevamente.");
+      }
+    } finally {
+      setIsResendingMfaCode(false);
+    }
+  };
+
+  useEffect(() => {
+    if (cardView !== "mfa" || mfaResendCooldownSeconds <= 0) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setMfaResendCooldownSeconds((currentValue) =>
+        currentValue > 0 ? currentValue - 1 : 0,
+      );
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [cardView, mfaResendCooldownSeconds]);
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -231,7 +300,7 @@ export function Login({ onLogin }: LoginProps) {
     setIsGooglePopupLoading(true);
     setShouldSuggestGoogleAccountRetry(false);
 
-    const redirectTo = "/home";
+    const redirectTo = getSafeRedirectPath(searchParams.get("redirectTo"));
     const promptParam = forceAccountSelection
       ? `&prompt=${encodeURIComponent("select_account consent")}`
       : "";
@@ -405,6 +474,7 @@ export function Login({ onLogin }: LoginProps) {
               ...data.mfa,
               challengeChannel: selectedChannel,
             });
+            setMfaResendCooldownSeconds(MFA_RESEND_COOLDOWN_SECONDS);
             setCardView("mfa");
             return;
           } catch (challengeError: unknown) {
@@ -1140,7 +1210,26 @@ export function Login({ onLogin }: LoginProps) {
                 style={{ width: "100%" }}
               >
                 <header className={styles.formHeader}>
-                  <h2 className={styles.formTitle}>Validación MFA</h2>
+                  <div className={styles.mfaHeaderRow}>
+                    <h2 className={styles.formTitle}>Validación MFA</h2>
+                    <button
+                      type="button"
+                      className={styles.mfaBackIconButton}
+                      onClick={() => {
+                        setCardView("login");
+                        setMfaState(null);
+                        setMfaResendCooldownSeconds(0);
+                        setErrorMessage(null);
+                        setInfoMessage(null);
+                        setResendEmailTarget(null);
+                        setShouldPromptVerifyEmail(false);
+                        setHideEmailResendActions(false);
+                      }}
+                      aria-label="Volver al inicio de sesión"
+                    >
+                      <ArrowLeft size={20} />
+                    </button>
+                  </div>
                   <p className={styles.formSubtitle}>
                     Ingresá el código enviado por {mfaState?.challengeChannel || "tu canal seleccionado"}.
                   </p>
@@ -1150,11 +1239,17 @@ export function Login({ onLogin }: LoginProps) {
                     {errorMessage}
                   </div>
                 ) : null}
+                {infoMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                    {infoMessage}
+                  </div>
+                ) : null}
                 <InputMFA
                   key={mfaState?.loginTicket}
                   onSubmit={async (code: string, rememberDevice: boolean) => {
                     setIsVerifyingMfa(true);
                     setErrorMessage(null);
+                    setInfoMessage(null);
                     try {
                       const { data } = await axios.post<LoginResponse>(
                         "/api/auth/mfa/verify",
@@ -1189,22 +1284,27 @@ export function Login({ onLogin }: LoginProps) {
                   }}
                   isLoading={isVerifyingMfa}
                 />
-                <button
-                  type="button"
-                  className={styles.secondaryButton}
-                  style={{ marginTop: 16 }}
-                  onClick={() => {
-                    setCardView("login");
-                    setMfaState(null);
-                    setErrorMessage(null);
-                    setInfoMessage(null);
-                    setResendEmailTarget(null);
-                    setShouldPromptVerifyEmail(false);
-                    setHideEmailResendActions(false);
-                  }}
-                >
-                  Volver atrás
-                </button>
+                <div className={styles.feedbackActions}>
+                  {mfaResendCooldownSeconds > 0 ? (
+                    <span className={styles.resendCooldownText}>
+                      Podés reenviar el código en {mfaResendCooldownSeconds}s
+                    </span>
+                  ) : null}
+                  <button
+                    type="button"
+                    className={styles.resendButton}
+                    onClick={() => {
+                      void handleResendMfaCode();
+                    }}
+                    disabled={
+                      isResendingMfaCode ||
+                      isVerifyingMfa ||
+                      mfaResendCooldownSeconds > 0
+                    }
+                  >
+                    {isResendingMfaCode ? "Reenviando código..." : "Reenviar código"}
+                  </button>
+                </div>
                 <div className={styles.legalLinks}>
                   <a href="#" className={styles.inlineLink}>
                     Términos de uso

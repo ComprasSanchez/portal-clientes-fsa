@@ -1,28 +1,102 @@
 import { useEffect, useRef } from "react";
-import {
-  Box,
-  FileText,
-  Package,
-  TrendingUp,
-  User,
-  Users,
-} from "lucide-react";
+import { Box, FileText, Package, TrendingUp, User, Users } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
-import { QuickAccessCard, type QuickAccessItem } from "@/components/molecules/home/QuickAccessCard";
+import {
+  QuickAccessCard,
+  type QuickAccessItem,
+} from "@/components/molecules/home/QuickAccessCard";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
+import {
+  ExpedienteViewSkeleton,
+  TrackingViewSkeleton,
+} from "@/components/organisms/loading/ViewSkeletons";
 import { useGlobalToast } from "../../ui/global-toast";
 import { OrderTrackingPanel } from "@/components/organisms/portal-pedido/order-tracking-panel";
 import {
   PARENT_ORDER_STATUS_LABELS,
   TRACKING_LABELS,
 } from "@/lib/order-tracking";
+import { usePortalExpedientesContext } from "@/lib/portal-expedientes-context";
 import { useAuthLogisticaTracking } from "@/lib/use-auth-logistica-tracking";
-import { usePortalExpedientes } from "@/lib/use-portal-expedientes";
+import { usePortalExpedienteActual } from "@/lib/use-portal-expediente-actual";
+import {
+  CICLOS_STATE_TYPE_LABELS,
+  formatContactLabel,
+  formatFriendlyLabel,
+  getMappedLabel,
+  PAY_TYPE_LABELS,
+  SEND_TYPE_LABELS,
+  TIME_CONTACT_LABELS,
+} from "@/lib/domain-labels";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 import { HomeView } from "@/types/home";
 import styles from "./HomeViews.module.scss";
+
+const formatOptionalDate = (value: string | null | undefined) => {
+  if (!value) {
+    return "Sin dato";
+  }
+
+  const parsedDate = new Date(value);
+  return Number.isNaN(parsedDate.getTime())
+    ? value
+    : parsedDate.toLocaleDateString("es-AR");
+};
+
+
+const formatDeliveryLocation = ({
+  medioEntrega,
+  domicilioEntrega,
+  sucursalEntrega,
+}: {
+  medioEntrega: string | null | undefined;
+  domicilioEntrega:
+    | {
+        calle: string | null;
+        numero: string | null;
+        piso: string | null;
+        departamento: string | null;
+        localidad: string | null;
+        provincia: string | null;
+      }
+    | null
+    | undefined;
+  sucursalEntrega:
+    | {
+        nombre: string;
+        direccion: string;
+      }
+    | null
+    | undefined;
+}) => {
+  if (
+    (medioEntrega === "RETIRA_SUCURSAL" || medioEntrega === "SUCURSAL") &&
+    sucursalEntrega
+  ) {
+    return `${sucursalEntrega.nombre} - ${sucursalEntrega.direccion}`;
+  }
+
+  if (domicilioEntrega) {
+    const street = [domicilioEntrega.calle, domicilioEntrega.numero]
+      .filter(Boolean)
+      .join(" ");
+    const extra = [domicilioEntrega.piso, domicilioEntrega.departamento]
+      .filter(Boolean)
+      .join(" ");
+    const area = [domicilioEntrega.localidad, domicilioEntrega.provincia]
+      .filter(Boolean)
+      .join(", ");
+    return [street, extra, area].filter(Boolean).join(" - ") || "Sin dato";
+  }
+
+  if (sucursalEntrega) {
+    return `${sucursalEntrega.nombre} - ${sucursalEntrega.direccion}`;
+  }
+
+  return "Sin dato";
+};
 
 interface HomeViewsProps {
   currentView: HomeView;
@@ -33,6 +107,7 @@ interface HomeViewsProps {
   email: string | null;
   phone: string | null;
   perfil: PortalPerfilResponse | null;
+  isProfileLoading?: boolean;
 }
 
 const viewContent: Record<
@@ -63,8 +138,9 @@ const viewContent: Record<
     description: "Consulta y descarga de comprobantes.",
   },
   "expediente-actual": {
-    title: "Expediente actual",
-    description: "Vista del expediente activo con su estado actual.",
+    title: "Tu pedido actual",
+    description:
+      "Acá podés ver cómo viene tu pedido, cómo te vamos a contactar y qué medicamentos incluye.",
   },
   "expediente-completo": {
     title: "Historial completo",
@@ -81,6 +157,7 @@ export function HomeViews({
   email,
   phone,
   perfil,
+  isProfileLoading = false,
 }: HomeViewsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -109,13 +186,37 @@ export function HomeViews({
     warnings: expedienteWarnings,
     isLoading: isExpedientesLoading,
     error: expedientesError,
-  } = usePortalExpedientes();
+  } = usePortalExpedientesContext();
   const cicloId = queryCicloId || currentCycleId;
   const requiresAccountValidation =
     expedientesError?.includes("Valida tu cuenta") ?? false;
   const latestOrderSubtitle = requiresAccountValidation
     ? "Valida tu usuario para habilitar el seguimiento"
     : "Estado actual";
+  const {
+    expedienteData: expedienteActualData,
+    expediente: expedienteActual,
+    cliente: expedienteActualCliente,
+    contacto: expedienteActualContacto,
+    domicilioEntrega: expedienteActualDomicilio,
+    sucursalEntrega: expedienteActualSucursal,
+    medico: expedienteActualMedico,
+    cycleEvents: expedienteActualEvents,
+    cycleItems: expedienteActualCycleItems,
+    expedienteItems: expedienteActualItems,
+    currentCycle: expedienteActualCycle,
+    pastCycles,
+    cicloItemsCount,
+    warnings: expedienteActualWarnings,
+    isLoading: isExpedienteActualLoading,
+    error: expedienteActualError,
+    isNotFound: expedienteActualNotFound,
+    refresh: refreshExpedienteActual,
+  } = usePortalExpedienteActual({
+    enabled: currentView === "expediente-actual",
+  });
+  const expedienteActualRequiresAccountValidation =
+    expedienteActualError?.includes("Valida tu cuenta") ?? false;
 
   useEffect(() => {
     if (!requiresAccountValidation || !expedientesError) {
@@ -147,15 +248,18 @@ export function HomeViews({
     refresh,
   } = useAuthLogisticaTracking({ cicloId });
   const trackingBlockedByExpedientes = !queryCicloId && !currentCycleId;
-  const shouldShowTrackingLoading = isExpedientesLoading || isPedidoTrackingLoading;
-  const cicloWarningMessage = expedienteWarnings.includes("expediente_cycles_unavailable")
+  const shouldShowTrackingLoading =
+    isExpedientesLoading || isPedidoTrackingLoading;
+  const cicloWarningMessage = expedienteWarnings.includes(
+    "expediente_cycles_unavailable",
+  )
     ? "El BFF devolvio expedientes, pero no pudo enriquecer los ciclos. Revisa permisos de cliente:read en el bearer final."
     : null;
 
   if (currentView === "mi-cuenta") {
     return (
       <main className={styles.container}>
-        <ProfileView perfil={perfil} variant="cora" />
+        <ProfileView perfil={perfil} variant="cora" isLoading={isProfileLoading} />
       </main>
     );
   }
@@ -169,16 +273,13 @@ export function HomeViews({
           <p className={styles.activeViewDescription}>{active.description}</p>
 
           {shouldShowTrackingLoading ? (
-            <div className={styles.trackingMessageCard}>
-              <p className={styles.trackingMessageTitle}>Consultando estado actual</p>
-              <p className={styles.trackingMessageText}>
-                Estamos recuperando el expediente activo y la informacion de logistica del pedido.
-              </p>
-            </div>
+            <TrackingViewSkeleton variant="cora" />
           ) : null}
 
           {!shouldShowTrackingLoading && expedientesError ? (
-            <div className={`${styles.trackingMessageCard} ${styles.trackingMessageError}`}>
+            <div
+              className={`${styles.trackingMessageCard} ${styles.trackingMessageError}`}
+            >
               <p className={styles.trackingMessageTitle}>
                 {requiresAccountValidation
                   ? "Necesitamos validar tu usuario"
@@ -188,32 +289,49 @@ export function HomeViews({
             </div>
           ) : null}
 
-          {!shouldShowTrackingLoading && !expedientesError && trackingBlockedByExpedientes ? (
+          {!shouldShowTrackingLoading &&
+          !expedientesError &&
+          trackingBlockedByExpedientes ? (
             <div className={styles.trackingMessageCard}>
-              <p className={styles.trackingMessageTitle}>Seguimiento no disponible por ahora</p>
+              <p className={styles.trackingMessageTitle}>
+                Seguimiento no disponible por ahora
+              </p>
               <p className={styles.trackingMessageText}>
-                No encontramos un `cicloActual` en `/portal/me/expedientes`, por lo que todavia no podemos consultar la logistica autenticada.
+                No encontramos un `cicloActual` en `/portal/me/expedientes`, por
+                lo que todavia no podemos consultar la logistica autenticada.
               </p>
             </div>
           ) : null}
 
           {!shouldShowTrackingLoading && expedientesPartial ? (
             <div className={styles.trackingMessageCard}>
-              <p className={styles.trackingMessageTitle}>Los expedientes llegaron con datos parciales</p>
+              <p className={styles.trackingMessageTitle}>
+                Los expedientes llegaron con datos parciales
+              </p>
               <p className={styles.trackingMessageText}>
-                {cicloWarningMessage || "La pantalla sigue mostrando la informacion disponible, pero algunos ciclos pueden no estar enriquecidos."}
+                {cicloWarningMessage ||
+                  "La pantalla sigue mostrando la informacion disponible, pero algunos ciclos pueden no estar enriquecidos."}
               </p>
             </div>
           ) : null}
 
           {!shouldShowTrackingLoading && hasCicloId && pedidoTrackingError ? (
-            <div className={`${styles.trackingMessageCard} ${styles.trackingMessageError}`}>
-              <p className={styles.trackingMessageTitle}>No pudimos consultar el seguimiento</p>
-              <p className={styles.trackingMessageText}>{pedidoTrackingError}</p>
+            <div
+              className={`${styles.trackingMessageCard} ${styles.trackingMessageError}`}
+            >
+              <p className={styles.trackingMessageTitle}>
+                No pudimos consultar el seguimiento
+              </p>
+              <p className={styles.trackingMessageText}>
+                {pedidoTrackingError}
+              </p>
             </div>
           ) : null}
 
-          {!shouldShowTrackingLoading && hasCicloId && !pedidoTrackingError && latestParentOrder ? (
+          {!shouldShowTrackingLoading &&
+          hasCicloId &&
+          !pedidoTrackingError &&
+          latestParentOrder ? (
             <div className={styles.trackingPanelWrap}>
               <OrderTrackingPanel
                 latestParentOrder={latestParentOrder}
@@ -230,6 +348,262 @@ export function HomeViews({
     );
   }
 
+  if (currentView === "expediente-actual") {
+    return (
+      <main className={styles.container}>
+        <section className={styles.activeViewCard}>
+          <p className={styles.activeViewLabel}>Vista activa</p>
+          <h1 className={styles.activeViewTitle}>{active.title}</h1>
+          <p className={styles.activeViewDescription}>{active.description}</p>
+
+          {isExpedienteActualLoading ? (
+            <ExpedienteViewSkeleton variant="cora" />
+          ) : null}
+
+          {!isExpedienteActualLoading && expedienteActualError ? (
+            <div
+              className={`${styles.trackingMessageCard} ${styles.trackingMessageError}`}
+            >
+              <p className={styles.trackingMessageTitle}>
+                {expedienteActualRequiresAccountValidation
+                  ? "Necesitamos validar tu usuario"
+                  : "No pudimos cargar el expediente actual"}
+              </p>
+              <p className={styles.trackingMessageText}>
+                {expedienteActualError}
+              </p>
+            </div>
+          ) : null}
+
+          {!isExpedienteActualLoading &&
+          !expedienteActualError &&
+          expedienteActualNotFound ? (
+            <div className={styles.trackingMessageCard}>
+              <p className={styles.trackingMessageTitle}>
+                Todavía no tenés un pedido activo
+              </p>
+              <p className={styles.trackingMessageText}>
+                Cuando haya un pedido en curso, lo vas a ver acá con su estado,
+                la forma de entrega y el detalle de los medicamentos.
+              </p>
+            </div>
+          ) : null}
+
+          {!isExpedienteActualLoading &&
+          !expedienteActualError &&
+          !expedienteActualNotFound &&
+          expedienteActualData ? (
+            <div className={styles.detailCardsGrid}>
+              <article className={styles.cycleSummaryCard}>
+                <p className={styles.cycleSummaryEyebrow}>Tu pedido</p>
+                <div className={styles.cycleSummaryGrid}>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Nombre</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {expedienteActual?.titulo ?? "Sin dato"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Forma de entrega</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {getMappedLabel(SEND_TYPE_LABELS, expedienteActual?.medioEntrega)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Creado el</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {formatOptionalDate(expedienteActual?.createdAt)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Actualizado</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {formatOptionalDate(expedienteActual?.updatedAt)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Paciente</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {expedienteActualCliente
+                        ? `${expedienteActualCliente.nombre} ${expedienteActualCliente.apellido}`
+                        : "Sin dato"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Documento</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {expedienteActualCliente?.documento.numero ?? "Sin dato"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* {expedienteActualGeneratedAt ? (
+                  <p className={styles.trackingMessageText}>
+                    Respuesta generada el {formatOptionalDate(expedienteActualGeneratedAt)}.
+                  </p>
+                ) : null} */}
+              </article>
+
+              <article className={styles.cycleSummaryCard}>
+                <p className={styles.cycleSummaryEyebrow}>Próxima entrega</p>
+                {expedienteActualCycle ? (
+                  <div className={styles.cycleSummaryGrid}>
+                    <div>
+                      <p className={styles.cycleSummaryLabel}>Pedido</p>
+                      <p className={styles.cycleSummaryValue}>
+                        {expedienteActualCycle.titulo}
+                      </p>
+                    </div>
+                    <div>
+                      <p className={styles.cycleSummaryLabel}>Estado</p>
+                      <p className={styles.cycleSummaryValue}>
+                        {getMappedLabel(CICLOS_STATE_TYPE_LABELS, expedienteActualCycle.estado)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className={styles.cycleSummaryLabel}>Fecha estimada</p>
+                      <p className={styles.cycleSummaryValue}>
+                        {formatOptionalDate(
+                          expedienteActualCycle.fechaEntregaObjetivo,
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className={styles.cycleSummaryLabel}>Empezamos a prepararlo</p>
+                      <p className={styles.cycleSummaryValue}>
+                        {formatOptionalDate(
+                          expedienteActualCycle.fechaInicioGestion,
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className={styles.cycleSummaryLabel}>Movimientos registrados</p>
+                      <p className={styles.cycleSummaryValue}>
+                        {expedienteActualEvents.length}
+                      </p>
+                    </div>
+                    <div>
+                      <p className={styles.cycleSummaryLabel}>Medicamentos en este pedido</p>
+                      <p className={styles.cycleSummaryValue}>
+                        {expedienteActualCycleItems.length}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className={styles.summaryMuted}>
+                    Todavía no tenemos el detalle de la próxima entrega.
+                  </p>
+                )}
+              </article>
+
+              <article className={styles.cycleSummaryCard}>
+                <p className={styles.cycleSummaryEyebrow}>Cómo seguimos</p>
+                <div className={styles.cycleSummaryGrid}>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Canal de contacto</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {expedienteActualContacto
+                        ? `${formatContactLabel(expedienteActualContacto.tipo)}: ${expedienteActualContacto.valor}`
+                        : "Sin dato"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Horario de contacto</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {getMappedLabel(
+                        TIME_CONTACT_LABELS,
+                        expedienteActual?.politicaContacto ?? "",
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Lo recibís en</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {formatDeliveryLocation({
+                        medioEntrega: expedienteActual?.medioEntrega,
+                        domicilioEntrega: expedienteActualDomicilio,
+                        sucursalEntrega: expedienteActualSucursal,
+                      })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Médico</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {expedienteActualMedico?.nombre ??
+                        expedienteActual?.medicoNombre ??
+                        "Sin dato"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Forma de pago</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {getMappedLabel(PAY_TYPE_LABELS, expedienteActual?.medioPago)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Medicamentos de este pedido</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {cicloItemsCount}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Medicamentos del tratamiento</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {expedienteActualItems.length}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={styles.cycleSummaryLabel}>Entregas anteriores</p>
+                    <p className={styles.cycleSummaryValue}>
+                      {pastCycles.length}
+                    </p>
+                  </div>
+                </div>
+
+                <div className={styles.itemsSection}>
+                  <p className={styles.itemsSectionTitle}>Medicamentos de este pedido</p>
+                {expedienteActualCycleItems.length > 0 ? (
+                  <div className={styles.itemsGrid}>
+                    {expedienteActualCycleItems.map((item) => (
+                      <article key={item.id} className={styles.itemCard}>
+                        <p className={styles.itemTitle}>{item.productoNombre}</p>
+
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className={styles.summaryMuted}>
+                    Todavía no tenemos el detalle de los medicamentos de este pedido.
+                  </p>
+                )}
+                </div>
+
+                {expedienteActualWarnings.length > 0 ? (
+                  <div className={styles.warningList}>
+                    {expedienteActualWarnings.map((warning) => (
+                      <span key={warning} className={styles.warningItem}>
+                        {warning}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </article>
+            </div>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => {
+              void refreshExpedienteActual();
+            }}
+            className={styles.primaryButton}
+          >
+            Actualizar página
+          </button>
+        </section>
+      </main>
+    );
+  }
+
   if (currentView !== "dashboard") {
     return (
       <main className={styles.container}>
@@ -238,7 +612,10 @@ export function HomeViews({
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 
-          <button onClick={() => onNavigate("dashboard")} className={styles.primaryButton}>
+          <button
+            onClick={() => onNavigate("dashboard")}
+            className={styles.primaryButton}
+          >
             Volver a Inicio
           </button>
         </section>
@@ -251,12 +628,18 @@ export function HomeViews({
       <section className={styles.dashboardSection}>
         <div>
           <h1 className={styles.welcomeTitle}>Hola, {userName}</h1>
-          <p className={styles.welcomeSubtitle}>Bienvenido a tu panel de gestion de pedidos</p>
+          <p className={styles.welcomeSubtitle}>
+            Bienvenido a tu panel de gestion de pedidos
+          </p>
         </div>
 
         <div className={styles.quickAccessGrid}>
           {quickAccessItems.map((item) => (
-            <QuickAccessCard key={item.view ?? item.label} item={item} onNavigate={onNavigate} />
+            <QuickAccessCard
+              key={item.view ?? item.label}
+              item={item}
+              onNavigate={onNavigate}
+            />
           ))}
         </div>
 
@@ -264,7 +647,9 @@ export function HomeViews({
           <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi credencial</h2>
             <p className={styles.panelSubtitle}>
-              {hasAffiliateNumber ? "Numero de afiliacion" : "Todavia no tenes una obra social asociada"}
+              {hasAffiliateNumber
+                ? "Numero de afiliacion"
+                : "Todavia no tenes una obra social asociada"}
             </p>
             <div className={styles.credentialGradient}>
               <p className={styles.credentialLabel}>Titular</p>
@@ -274,11 +659,14 @@ export function HomeViews({
                 {hasAffiliateNumber ? "N de afiliacion" : "Estado"}
               </p>
               <p className={styles.credentialNumber}>
-                {hasAffiliateNumber ? affiliateNumber : "Sin numero de afiliado"}
+                {hasAffiliateNumber
+                  ? affiliateNumber
+                  : "Sin numero de afiliado"}
               </p>
               {!hasAffiliateNumber ? (
                 <p className={styles.credentialHint}>
-                  Completa tu obra social desde Mi perfil para ver tu credencial y la cobertura asociada.
+                  Completa tu obra social desde Mi perfil para ver tu credencial
+                  y la cobertura asociada.
                 </p>
               ) : null}
             </div>
@@ -290,14 +678,23 @@ export function HomeViews({
 
           <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi perfil</h2>
-            <p className={styles.panelSubtitle}>Datos personales y de contacto</p>
+            <p className={styles.panelSubtitle}>
+              Datos personales y de contacto
+            </p>
             <dl className={styles.orderList}>
               <OrderRow label="Afiliado" value={userName} />
-              <OrderRow label="Documento" value={documentNumber ?? "Sin dato"} />
+              <OrderRow
+                label="Documento"
+                value={documentNumber ?? "Sin dato"}
+              />
               <OrderRow label="Mail" value={email ?? "Sin dato"} />
               <OrderRow
                 label="Telefono"
-                value={<span className={styles.totalAmount}>{phone ?? "Sin dato"}</span>}
+                value={
+                  <span className={styles.totalAmount}>
+                    {phone ?? "Sin dato"}
+                  </span>
+                }
                 hasBorder={false}
               />
             </dl>
@@ -308,10 +705,20 @@ export function HomeViews({
             <h2 className={styles.panelTitle}>Ultimo pedido</h2>
             <p className={styles.panelSubtitle}>{latestOrderSubtitle}</p>
             <dl className={styles.orderList}>
-              <OrderRow label="Pedido" value={resolvedOrderNumber ? `#${resolvedOrderNumber}` : "Sin dato"} />
+              <OrderRow
+                label="Pedido"
+                value={
+                  resolvedOrderNumber ? `#${resolvedOrderNumber}` : "Sin dato"
+                }
+              />
               <OrderRow
                 label="Fecha"
-                value={hasCicloId ? (activeCycle?.fechaEntregaObjetivo ?? new Date().toLocaleDateString("es-AR")) : "Sin ciclo"}
+                value={
+                  hasCicloId
+                    ? (activeCycle?.fechaEntregaObjetivo ??
+                      new Date().toLocaleDateString("es-AR"))
+                    : "Sin ciclo"
+                }
               />
               <OrderRow
                 label="Estado"
@@ -320,12 +727,14 @@ export function HomeViews({
                     {requiresAccountValidation
                       ? "Validar usuario"
                       : !hasCicloId
-                      ? "No disponible"
-                      : shouldShowTrackingLoading
-                        ? "Consultando"
-                        : latestParentOrder?.status
-                          ? (PARENT_ORDER_STATUS_LABELS[latestParentOrder.status] ?? latestParentOrder.status)
-                          : TRACKING_LABELS[trackingStatus]}
+                        ? "No disponible"
+                        : shouldShowTrackingLoading
+                          ? "Consultando"
+                          : latestParentOrder?.status
+                            ? (PARENT_ORDER_STATUS_LABELS[
+                                latestParentOrder.status
+                              ] ?? latestParentOrder.status)
+                            : TRACKING_LABELS[trackingStatus]}
                   </span>
                 }
               />
@@ -349,8 +758,13 @@ export function HomeViews({
 
         <section className={styles.promoBanner}>
           <h3 className={styles.promoTitle}>Nuevos productos disponibles</h3>
-          <p className={styles.promoDescription}>Descubre nuestra nueva seleccion de productos premium</p>
-          <button onClick={() => onNavigate("productos")} className={styles.promoButton}>
+          <p className={styles.promoDescription}>
+            Descubre nuestra nueva seleccion de productos premium
+          </p>
+          <button
+            onClick={() => onNavigate("productos")}
+            className={styles.promoButton}
+          >
             Ver productos
           </button>
         </section>

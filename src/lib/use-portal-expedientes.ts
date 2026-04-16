@@ -18,6 +18,18 @@ type ExpedientesErrorPayload = {
   message?: string;
 };
 
+type ExpedientesCacheEntry = {
+  payload: PortalExpedientesResponse | null;
+  error: string | null;
+  promise: Promise<PortalExpedientesResponse | null> | null;
+};
+
+const expedientesCache: ExpedientesCacheEntry = {
+  payload: null,
+  error: null,
+  promise: null,
+};
+
 const getFriendlyErrorMessage = (
   response: Response,
   payload: ExpedientesErrorPayload | null,
@@ -68,67 +80,87 @@ export const usePortalExpedientes = ({
   enabled = true,
 }: UsePortalExpedientesOptions = {}) => {
   const [expedientes, setExpedientes] =
-    useState<PortalExpedientesResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(enabled);
-  const [error, setError] = useState<string | null>(null);
+    useState<PortalExpedientesResponse | null>(expedientesCache.payload);
+  const [isLoading, setIsLoading] = useState(
+    enabled && !expedientesCache.payload && !expedientesCache.error,
+  );
+  const [error, setError] = useState<string | null>(expedientesCache.error);
 
   useEffect(() => {
     if (!enabled) {
-      setExpedientes(null);
-      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
+    if (expedientesCache.payload || expedientesCache.error) {
+      setExpedientes(expedientesCache.payload);
+      setError(expedientesCache.error);
       setIsLoading(false);
       return;
     }
 
     const controller = new AbortController();
 
+    const fetchExpedientes = async () => {
+      const params = new URLSearchParams({
+        accountKind: "CLIENTE",
+        limit: "20",
+        offset: "0",
+      });
+
+      const response = await fetch(
+        `/api/portal/me/expedientes?${params.toString()}`,
+        {
+          cache: "no-store",
+          signal: controller.signal,
+        },
+      );
+
+      if (response.status === 401) {
+        return null;
+      }
+
+      if (response.status === 403) {
+        throw new Error(await readErrorMessage(response));
+      }
+
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response));
+      }
+
+      return (await response.json()) as PortalExpedientesResponse;
+    };
+
     const loadExpedientes = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        const params = new URLSearchParams({
-          accountKind: "CLIENTE",
-          limit: "20",
-          offset: "0",
-        });
-
-        const response = await fetch(
-          `/api/portal/me/expedientes?${params.toString()}`,
-          {
-            cache: "no-store",
-            signal: controller.signal,
-          },
-        );
-
-        if (response.status === 401) {
-          setExpedientes(null);
-          return;
+        if (!expedientesCache.promise) {
+          expedientesCache.promise = fetchExpedientes();
         }
 
-        if (response.status === 403) {
-          setExpedientes(null);
-          setError(await readErrorMessage(response));
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error(await readErrorMessage(response));
-        }
-
-        const data = (await response.json()) as PortalExpedientesResponse;
+        const data = await expedientesCache.promise;
+        expedientesCache.payload = data;
+        expedientesCache.error = null;
         setExpedientes(data);
       } catch (requestError) {
         if (controller.signal.aborted) {
           return;
         }
 
-        setError(
+        const nextError =
           requestError instanceof Error
             ? requestError.message
-            : "No se pudieron cargar los expedientes.",
-        );
+            : "No se pudieron cargar los expedientes.";
+
+        expedientesCache.payload = null;
+        expedientesCache.error = nextError;
+        setError(nextError);
+        setExpedientes(null);
       } finally {
+        expedientesCache.promise = null;
+
         if (!controller.signal.aborted) {
           setIsLoading(false);
         }
