@@ -1,7 +1,39 @@
 .profileView {
+  --profile-accent: #8f63d9;
+  --profile-accent-strong: #7d53c9;
+  --profile-accent-soft: rgba(143, 99, 217, 0.14);
+  --profile-accent-soft-border: rgba(143, 99, 217, 0.22);
+  --profile-switch-bg: rgba(140, 111, 175, 0.35);
+  --profile-switch-border: rgba(140, 111, 175, 0.2);
+  --profile-focus-ring: rgba(143, 99, 217, 0.14);
+  --profile-modal-tint: rgba(143, 99, 217, 0.08);
+  --profile-affiliation-action-bg: rgba(255, 255, 255, 0.18);
+  --profile-affiliation-action-hover: rgba(255, 255, 255, 0.24);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.profileViewSocios {
+  --profile-accent: #007c98;
+  --profile-accent-strong: #0b667e;
+  --profile-accent-soft: rgba(0, 124, 152, 0.12);
+  --profile-accent-soft-border: rgba(0, 124, 152, 0.2);
+  --profile-switch-bg: rgba(0, 124, 152, 0.22);
+  --profile-switch-border: rgba(0, 124, 152, 0.18);
+  --profile-focus-ring: rgba(0, 124, 152, 0.14);
+  --profile-modal-tint: rgba(0, 124, 152, 0.06);
+}
+
+.profileViewCora {
+  --profile-accent: #8f63d9;
+  --profile-accent-strong: #7d53c9;
+  --profile-accent-soft: rgba(143, 99, 217, 0.14);
+  --profile-accent-soft-border: rgba(143, 99, 217, 0.22);
+  --profile-switch-bg: rgba(140, 111, 175, 0.35);
+  --profile-switch-border: rgba(140, 111, 175, 0.2);
+  --profile-focus-ring: rgba(143, 99, 217, 0.14);
+  --profile-modal-tint: rgba(143, 99, 217, 0.08);
 }
 
 .header {
@@ -146,7 +178,7 @@
   border: 1px solid #dce4e7;
   border-radius: 0.8rem;
   background: #ffffff;
-  padding: 0.9rem 1rem;
+  padding: 0.6rem 1rem;
   font-size: 1rem;
   color: #2b3340;
   transition:
@@ -155,8 +187,8 @@
 
   &:focus {
     outline: none;
-    border-color: #96b9c2;
-    box-shadow: 0 0 0 4px rgba(0, 124, 152, 0.12);
+    border-color: var(--profile-accent);
+    box-shadow: 0 0 0 4px var(--profile-focus-ring);
   }
 }
 
@@ -167,7 +199,7 @@
   width: 100%;
   min-width: 0;
   border-radius: 0.8rem;
-  background: #8f63d9;
+  background: var(--profile-accent);
   padding: 0.9rem 1rem;
   font-size: 0.92rem;
   font-weight: 700;
@@ -247,10 +279,10 @@
 }
 
 .contactTypeCardActive {
-  border-color: #00a7a0;
-  background: #eaf8f7;
-  box-shadow: inset 0 0 0 1px rgba(0, 167, 160, 0.15);
-  color: #0f6766;
+  border-color: var(--profile-accent);
+  background: var(--profile-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--profile-accent-soft-border);
+  color: var(--profile-accent-strong);
 }
 
 .contactSwitchList {
@@ -278,14 +310,14 @@
   justify-content: flex-end;
 
   :global(button[data-slot="switch"]) {
-    background-color: rgba(140, 111, 175, 0.35);
-    border: 1px solid rgba(140, 111, 175, 0.2);
+    background-color: var(--profile-switch-bg);
+    border: 1px solid var(--profile-switch-border);
     width: 56px;
     height: 32px;
   }
 
   :global(button[data-state="checked"][data-slot="switch"]) {
-    background-color: #8f63d9;
+    background-color: var(--profile-accent);
   }
 
   :global(span[data-slot="switch-thumb"]) {
@@ -347,12 +379,12 @@
   margin-top: 0.35rem;
   font-size: clamp(1.5rem, 3vw, 1.75rem);
   font-weight: 700;
-  color: #9a6ce2;
+  color: var(--profile-accent);
 }
 
 .affiliationIconCora {
   flex-shrink: 0;
-  color: #9a6ce2;
+  color: var(--profile-accent);
 }
 
 .affiliationHint {
@@ -363,14 +395,41 @@
   color: rgba(255, 255, 255, 0.88);
 }
 
-.affiliationAction {
+.affiliationHintCora {
+  margin-top: 0.75rem;
+  max-width: 28rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #7b6898;
+}
+
+.affiliationSelectorGroup {
   margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.affiliationSelectorLabel {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.affiliationSelectorLabelCora {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #5f5575;
+}
+
+.affiliationAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 0.8rem;
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--profile-affiliation-action-bg);
   padding: 0.75rem 1rem;
+  white-space: nowrap;
   font-size: 0.95rem;
   font-weight: 700;
   color: #ffffff;
@@ -379,7 +438,28 @@
     transform 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.24);
+    background: var(--profile-affiliation-action-hover);
+    transform: translateY(-1px);
+  }
+}
+
+.affiliationActionCora {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.8rem;
+  background: var(--profile-accent);
+  padding: 0.75rem 1rem;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    background: var(--profile-accent-strong);
     transform: translateY(-1px);
   }
 }
@@ -403,6 +483,17 @@
   background: #ffffff;
   padding: 1.5rem;
   box-shadow: 0 24px 70px rgba(20, 49, 58, 0.25);
+  border: 1px solid transparent;
+}
+
+.modalDialogSocios {
+  border-color: rgba(0, 124, 152, 0.12);
+  box-shadow: 0 24px 70px rgba(8, 80, 99, 0.18);
+}
+
+.modalDialogCora {
+  border-color: rgba(143, 99, 217, 0.12);
+  box-shadow: 0 24px 70px rgba(66, 38, 114, 0.18);
 }
 
 .modalHeader {
@@ -437,6 +528,16 @@
   &:hover {
     background: #f3f6f7;
   }
+}
+
+.modalCloseButtonSocios:hover {
+  background: rgba(0, 124, 152, 0.08);
+  color: #0b667e;
+}
+
+.modalCloseButtonCora:hover {
+  background: rgba(143, 99, 217, 0.08);
+  color: #7d53c9;
 }
 
 .modalForm {
@@ -479,8 +580,8 @@
 
   &:focus {
     outline: none;
-    border-color: #96b9c2;
-    box-shadow: 0 0 0 4px rgba(0, 124, 152, 0.12);
+    border-color: var(--profile-accent);
+    box-shadow: 0 0 0 4px var(--profile-focus-ring);
   }
 }
 
@@ -516,8 +617,12 @@
 }
 
 .searchButton {
-  background: #c6b4e2;
+  background: var(--profile-accent);
   color: #ffffff;
+}
+
+.searchButton:hover:not(:disabled) {
+  background: var(--profile-accent-strong);
 }
 
 .dateGrid {
@@ -560,7 +665,7 @@
   input {
     height: 1rem;
     width: 1rem;
-    accent-color: #8f63d9;
+    accent-color: var(--profile-accent);
   }
 }
 
@@ -585,8 +690,12 @@
 }
 
 .primaryAction {
-  background: #8f63d9;
+  background: var(--profile-accent);
   color: #ffffff;
+}
+
+.primaryAction:hover:not(:disabled) {
+  background: var(--profile-accent-strong);
 }
 
 @media (min-width: 768px) {

@@ -10,10 +10,12 @@ import {
   formatAddress,
   getPortalPerfilDetails,
   normalizeText,
+  pickPreferredAfiliacion,
   pickPreferredContacto,
   pickPreferredDomicilio,
 } from "@/lib/portal-profile";
 import type {
+  PortalPerfilAfiliacion,
   PortalPerfilContacto,
   PortalPerfilDomicilio,
   PortalPerfilResponse,
@@ -46,7 +48,9 @@ type ProfileViewProps = {
 };
 
 type AffiliationFormData = {
-  providerName: string;
+  searchTerm: string;
+  obraSocialId: string;
+  planId: string;
   affiliateNumber: string;
   startsAt: string;
   endsAt: string;
@@ -57,8 +61,29 @@ type AffiliationFormData = {
 };
 
 type LocalAffiliationPreview = {
+  mode: "saved";
   providerName: string;
   affiliateNumber: string;
+  planName?: string | null;
+};
+
+type ObraSocialPlan = {
+  id: string;
+  obraSocialId?: string;
+  nombre: string;
+  activo?: boolean;
+};
+
+type ObraSocialCatalogItem = {
+  id: string;
+  nombre: string;
+  codigoSssalud?: string;
+  activo?: boolean;
+  planes?: ObraSocialPlan[];
+};
+
+type ObrasSocialesCatalogResponse = {
+  items?: ObraSocialCatalogItem[];
 };
 
 type ProfileFeedback = {
@@ -89,7 +114,9 @@ type DomicilioFormData = {
 };
 
 const initialAffiliationForm: AffiliationFormData = {
-  providerName: "",
+  searchTerm: "",
+  obraSocialId: "",
+  planId: "",
   affiliateNumber: "",
   startsAt: "",
   endsAt: "",
@@ -128,6 +155,11 @@ const getContactTypeLabel = (tipo: ContactType) => {
   return tipo === "TELEFONO" ? "Teléfono" : "Email";
 };
 
+const normalizeOptionalString = (value: string) => {
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+};
+
 const getContactOptionValue = (contacto: PortalPerfilContacto) => {
   return contacto.id ?? `${contacto.tipo}:${contacto.valor ?? ""}`;
 };
@@ -144,6 +176,74 @@ const getDomicilioOptionValue = (domicilio: PortalPerfilDomicilio) => {
 const getDomicilioOptionLabel = (domicilio: PortalPerfilDomicilio) => {
   const formatted = formatAddress(domicilio);
   return domicilio.principal ? `${formatted} (Principal)` : formatted;
+};
+
+const getAffiliationOptionValue = (afiliacion: PortalPerfilAfiliacion) => {
+  return (
+    afiliacion.id ??
+    [
+      normalizeText(afiliacion.obraSocialId),
+      normalizeText(afiliacion.planId),
+      normalizeText(afiliacion.nroAfiliado),
+    ]
+      .filter(Boolean)
+      .join("|")
+  );
+};
+
+const getAffiliationOptionLabel = (afiliacion: PortalPerfilAfiliacion) => {
+  const obraSocial = normalizeText(afiliacion.obraSocialNombre);
+  const plan = normalizeText(afiliacion.planNombre);
+  const affiliateNumber = normalizeText(afiliacion.nroAfiliado);
+  const parts = [obraSocial, plan].filter(Boolean);
+  const prefix = parts.length > 0 ? parts.join(" - ") : "Afiliación";
+
+  if (affiliateNumber) {
+    return `${prefix} (${affiliateNumber})`;
+  }
+
+  return prefix;
+};
+
+const setPortalAfiliacionAsPrincipal = async (
+  afiliacion: PortalPerfilAfiliacion,
+) => {
+  const obraSocialId = normalizeText(afiliacion.obraSocialId);
+
+  if (!obraSocialId) {
+    throw new Error(
+      "La afiliación seleccionada no tiene obra social y no se puede actualizar.",
+    );
+  }
+
+  const response = await fetch("/api/portal/me/afiliaciones/principal", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      obraSocialId,
+      planId: normalizeOptionalString(afiliacion.planId ?? ""),
+      nroAfiliado: normalizeOptionalString(afiliacion.nroAfiliado ?? ""),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readMutationError(response));
+  }
+};
+
+const unsetPortalAfiliacionPrincipal = async () => {
+  const response = await fetch("/api/portal/me/afiliaciones/principal/unset", {
+    method: "PATCH",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(await readMutationError(response));
+  }
 };
 
 const readMutationError = async (response: Response) => {
@@ -369,6 +469,12 @@ export function ProfileView({
   const [affiliationForm, setAffiliationForm] = useState<AffiliationFormData>(
     initialAffiliationForm,
   );
+  const [obraSocialSearchResults, setObraSocialSearchResults] = useState<
+    ObraSocialCatalogItem[]
+  >([]);
+  const [isSearchingObrasSociales, setIsSearchingObrasSociales] =
+    useState(false);
+  const [isSavingAffiliation, setIsSavingAffiliation] = useState(false);
   const [contactForm, setContactForm] = useState<ContactFormData>(
     buildContactFormData("TELEFONO", null),
   );
@@ -404,6 +510,10 @@ export function ProfileView({
     () => (Array.isArray(perfil?.domicilios) ? perfil.domicilios : []),
     [perfil],
   );
+  const afiliaciones = useMemo(
+    () => (Array.isArray(perfil?.afiliaciones) ? perfil.afiliaciones : []),
+    [perfil],
+  );
   const preferredEmail = useMemo(
     () => pickPreferredContacto(perfil?.contactos, "EMAIL"),
     [perfil],
@@ -414,6 +524,10 @@ export function ProfileView({
   );
   const preferredDomicilio = useMemo(
     () => pickPreferredDomicilio(perfil?.domicilios),
+    [perfil],
+  );
+  const preferredAfiliacion = useMemo(
+    () => pickPreferredAfiliacion(perfil?.afiliaciones),
     [perfil],
   );
   const profile = useMemo<ProfileData>(
@@ -430,15 +544,34 @@ export function ProfileView({
   }, [preferredDomicilio]);
 
   const currentProfile = editableProfile ?? profile;
-  const displayedAffiliateNumber =
-    localAffiliationPreview?.affiliateNumber ?? currentProfile.affiliateNumber;
+  const displayedAffiliateNumber = currentProfile.affiliateNumber;
   const hasAffiliateNumber = Boolean(displayedAffiliateNumber?.trim());
   const hasPendingAffiliationPreview = Boolean(localAffiliationPreview);
   const hasSavedDomicilio = Boolean(preferredDomicilio);
   const isSociosVariant = variant === "socios";
+  const isCoraVariant = variant === "cora";
   const isAffiliationFormValid =
-    affiliationForm.providerName.trim().length > 0 &&
+    affiliationForm.obraSocialId.trim().length > 0 &&
     affiliationForm.affiliateNumber.trim().length > 0;
+  const selectedObraSocial = useMemo(
+    () =>
+      obraSocialSearchResults.find(
+        (obraSocial) => obraSocial.id === affiliationForm.obraSocialId,
+      ) ?? null,
+    [affiliationForm.obraSocialId, obraSocialSearchResults],
+  );
+  const availablePlanes = useMemo(
+    () => (selectedObraSocial?.planes ?? []).filter((plan) => plan.activo !== false),
+    [selectedObraSocial],
+  );
+  const requiresPlanSelection = availablePlanes.length > 0;
+  const isAffiliationSubmitDisabled =
+    !isAffiliationFormValid ||
+    isSavingAffiliation ||
+    (requiresPlanSelection && affiliationForm.planId.trim().length === 0);
+  const selectedAffiliationValue = preferredAfiliacion
+    ? getAffiliationOptionValue(preferredAfiliacion)
+    : "";
 
   const initials = useMemo(() => {
     return currentProfile.fullName
@@ -458,8 +591,13 @@ export function ProfileView({
   };
 
   const handleCloseAffiliationModal = () => {
+    if (isSavingAffiliation) {
+      return;
+    }
+
     setIsAffiliationModalOpen(false);
     setAffiliationForm(initialAffiliationForm);
+    setObraSocialSearchResults([]);
   };
 
   const handleOpenContactoModal = (
@@ -504,18 +642,178 @@ export function ProfileView({
     }));
   };
 
-  const handleAffiliationSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!isAffiliationFormValid) {
+  const handleSearchObrasSociales = async () => {
+    const term = affiliationForm.searchTerm.trim();
+    if (!term) {
+      setObraSocialSearchResults([]);
       return;
     }
 
-    setLocalAffiliationPreview({
-      providerName: affiliationForm.providerName.trim(),
-      affiliateNumber: affiliationForm.affiliateNumber.trim(),
-    });
-    handleCloseAffiliationModal();
+    try {
+      setIsSearchingObrasSociales(true);
+      setProfileFeedback(null);
+
+      const response = await fetch(
+        `/api/portal/me/obras-sociales?term=${encodeURIComponent(term)}&limit=20`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(await readMutationError(response));
+      }
+
+      const data = (await response.json()) as ObrasSocialesCatalogResponse;
+      const items = Array.isArray(data.items)
+        ? data.items.filter((obraSocial) => obraSocial?.activo !== false)
+        : [];
+
+      setObraSocialSearchResults(items);
+      setAffiliationForm((current) => {
+        const hasSelectedItem = items.some(
+          (obraSocial) => obraSocial.id === current.obraSocialId,
+        );
+
+        if (hasSelectedItem) {
+          return current;
+        }
+
+        return {
+          ...current,
+          obraSocialId: "",
+          planId: "",
+        };
+      });
+
+      if (items.length === 0) {
+        setProfileFeedback({
+          type: "error",
+          message: "No encontramos obras sociales para esa búsqueda.",
+        });
+      }
+    } catch (error) {
+      setProfileFeedback({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "No pudimos buscar obras sociales.",
+      });
+    } finally {
+      setIsSearchingObrasSociales(false);
+    }
+  };
+
+  const handleAffiliationSubmit = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+
+    if (isAffiliationSubmitDisabled || !selectedObraSocial) {
+      return;
+    }
+
+    try {
+      setIsSavingAffiliation(true);
+      setProfileFeedback(null);
+
+      const response = await fetch("/api/portal/me/afiliaciones", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          obraSocialId: affiliationForm.obraSocialId,
+          planId: normalizeOptionalString(affiliationForm.planId),
+          nroAfiliado: normalizeOptionalString(affiliationForm.affiliateNumber),
+          desde: normalizeOptionalString(affiliationForm.startsAt),
+          hasta: normalizeOptionalString(affiliationForm.endsAt),
+          notas: normalizeOptionalString(affiliationForm.notes),
+          vigente: affiliationForm.isCurrent,
+          titular: affiliationForm.isHolder,
+          principal: affiliationForm.isPrimary,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await readMutationError(response));
+      }
+
+      const selectedPlan = availablePlanes.find(
+        (plan) => plan.id === affiliationForm.planId,
+      );
+
+      setLocalAffiliationPreview({
+        mode: "saved",
+        providerName: selectedObraSocial.nombre,
+        affiliateNumber: affiliationForm.affiliateNumber.trim(),
+        planName: selectedPlan?.nombre ?? null,
+      });
+      setProfileFeedback({
+        type: "success",
+        message: "La afiliación se guardó correctamente.",
+      });
+      await refresh();
+      handleCloseAffiliationModal();
+    } catch (error) {
+      setProfileFeedback({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "No se pudo guardar la afiliación.",
+      });
+    } finally {
+      setIsSavingAffiliation(false);
+    }
+  };
+
+  const handleSelectPrincipalAffiliacion = async (nextValue: string) => {
+    try {
+      setIsSavingAffiliation(true);
+      setProfileFeedback(null);
+
+      if (!nextValue) {
+        await unsetPortalAfiliacionPrincipal();
+        setLocalAffiliationPreview(null);
+        setProfileFeedback({
+          type: "success",
+          message: "Se quitó la afiliación principal del perfil.",
+        });
+        await refresh();
+        return;
+      }
+
+      const selected = afiliaciones.find(
+        (afiliacion) => getAffiliationOptionValue(afiliacion) === nextValue,
+      );
+
+      if (!selected) {
+        return;
+      }
+
+      await setPortalAfiliacionAsPrincipal(selected);
+      setLocalAffiliationPreview(null);
+      setProfileFeedback({
+        type: "success",
+        message: "Afiliación principal actualizada.",
+      });
+      await refresh();
+    } catch (error) {
+      setProfileFeedback({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "No se pudo actualizar la afiliación principal.",
+      });
+    } finally {
+      setIsSavingAffiliation(false);
+    }
   };
 
   const handleDomicilioFieldChange = <T extends keyof DomicilioFormData>(
@@ -719,7 +1017,11 @@ export function ProfileView({
   const profileValues = currentProfile;
 
   return (
-    <section className={styles.profileView}>
+    <section
+      className={`${styles.profileView} ${
+        isSociosVariant ? styles.profileViewSocios : styles.profileViewCora
+      }`}
+    >
       <header className={styles.header}>
         <div className={styles.headerText}>
           <h1 className={styles.title}>Mis datos</h1>
@@ -960,7 +1262,10 @@ export function ProfileView({
                 {hasPendingAffiliationPreview ? (
                   <p className={styles.affiliationHint}>
                     Obra social cargada: {localAffiliationPreview?.providerName}
-                    . Esta actualizacion es local hasta conectar el backend.
+                    {localAffiliationPreview?.planName
+                      ? ` - ${localAffiliationPreview.planName}`
+                      : ""}
+                    .
                   </p>
                 ) : null}
                 {!hasAffiliateNumber ? (
@@ -969,15 +1274,44 @@ export function ProfileView({
                     perfil.
                   </p>
                 ) : null}
-                <button
-                  type="button"
-                  className={styles.affiliationAction}
-                  onClick={handleOpenAffiliationModal}
-                >
-                  {hasAffiliateNumber
-                    ? "Agregar nueva afiliacion"
-                    : "Agregar obra social"}
-                </button>
+                <div className={styles.affiliationSelectorGroup}>
+                  <label
+                    className={styles.affiliationSelectorLabel}
+                    htmlFor="affiliation-select"
+                  >
+                    Elegir afiliación principal
+                  </label>
+                  <div className={styles.selectorRow}>
+                    <select
+                      id="affiliation-select"
+                      className={styles.selectorInput}
+                      value={selectedAffiliationValue}
+                      onChange={(event) =>
+                        void handleSelectPrincipalAffiliacion(event.target.value)
+                      }
+                      disabled={isSavingAffiliation}
+                    >
+                      <option value="">Sin afiliación principal</option>
+                      {afiliaciones.map((afiliacion) => (
+                        <option
+                          key={getAffiliationOptionValue(afiliacion)}
+                          value={getAffiliationOptionValue(afiliacion)}
+                        >
+                          {getAffiliationOptionLabel(afiliacion)}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className={styles.affiliationAction}
+                      onClick={handleOpenAffiliationModal}
+                    >
+                      {hasAffiliateNumber
+                        ? "Agregar nueva afiliación"
+                        : "Agregar obra social"}
+                    </button>
+                  </div>
+                </div>
               </>
             ) : (
               <>
@@ -989,6 +1323,53 @@ export function ProfileView({
                     ? displayedAffiliateNumber
                     : "Sin numero de afiliado"}
                 </p>
+                {hasPendingAffiliationPreview ? (
+                  <p className={styles.affiliationHintCora}>
+                    Obra social cargada: {localAffiliationPreview?.providerName}
+                    {localAffiliationPreview?.planName
+                      ? ` - ${localAffiliationPreview.planName}`
+                      : ""}
+                    .
+                  </p>
+                ) : null}
+                <div className={styles.affiliationSelectorGroup}>
+                  <label
+                    className={styles.affiliationSelectorLabelCora}
+                    htmlFor="affiliation-select-cora"
+                  >
+                    Elegir afiliación principal
+                  </label>
+                  <div className={styles.selectorRow}>
+                    <select
+                      id="affiliation-select-cora"
+                      className={styles.selectorInput}
+                      value={selectedAffiliationValue}
+                      onChange={(event) =>
+                        void handleSelectPrincipalAffiliacion(event.target.value)
+                      }
+                      disabled={isSavingAffiliation}
+                    >
+                      <option value="">Sin afiliación principal</option>
+                      {afiliaciones.map((afiliacion) => (
+                        <option
+                          key={getAffiliationOptionValue(afiliacion)}
+                          value={getAffiliationOptionValue(afiliacion)}
+                        >
+                          {getAffiliationOptionLabel(afiliacion)}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className={styles.affiliationActionCora}
+                      onClick={handleOpenAffiliationModal}
+                    >
+                      {hasAffiliateNumber
+                        ? "Agregar nueva afiliación"
+                        : "Agregar obra social"}
+                    </button>
+                  </div>
+                </div>
               </>
             )}
           </div>
@@ -1357,13 +1738,15 @@ export function ProfileView({
         </div>
       ) : null}
 
-      {isSociosVariant && isAffiliationModalOpen ? (
+      {isAffiliationModalOpen ? (
         <div
           className={styles.modalOverlay}
           onClick={handleCloseAffiliationModal}
         >
           <div
-            className={styles.modalDialog}
+            className={`${styles.modalDialog} ${
+              isCoraVariant ? styles.modalDialogCora : styles.modalDialogSocios
+            }`}
             onClick={(event) => event.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -1381,7 +1764,11 @@ export function ProfileView({
 
               <button
                 type="button"
-                className={styles.modalCloseButton}
+                className={`${styles.modalCloseButton} ${
+                  isCoraVariant
+                    ? styles.modalCloseButtonCora
+                    : styles.modalCloseButtonSocios
+                }`}
                 onClick={handleCloseAffiliationModal}
                 aria-label="Cerrar formulario de afiliacion"
               >
@@ -1401,22 +1788,93 @@ export function ProfileView({
                   <input
                     id="providerName"
                     type="text"
-                    value={affiliationForm.providerName}
+                    value={affiliationForm.searchTerm}
                     onChange={(event) =>
                       handleAffiliationInputChange(
-                        "providerName",
+                        "searchTerm",
                         event.target.value,
                       )
                     }
                     className={styles.fieldInput}
                     placeholder="Ej: OSDE, Swiss Medical, PAMI..."
                   />
-                  <button type="button" className={styles.searchButton}>
+                  <button
+                    type="button"
+                    className={styles.searchButton}
+                    onClick={() => {
+                      void handleSearchObrasSociales();
+                    }}
+                    disabled={
+                      isSearchingObrasSociales ||
+                      affiliationForm.searchTerm.trim().length === 0
+                    }
+                  >
                     <Search size={16} />
-                    Buscar
+                    {isSearchingObrasSociales ? "Buscando..." : "Buscar"}
                   </button>
                 </div>
               </div>
+
+              {obraSocialSearchResults.length > 0 ? (
+                <div className={styles.fieldBlock}>
+                  <label className={styles.fieldLabel} htmlFor="obraSocialId">
+                    Seleccionar Obra Social *
+                  </label>
+                  <select
+                    id="obraSocialId"
+                    className={styles.selectorInput}
+                    value={affiliationForm.obraSocialId}
+                    onChange={(event) => {
+                      const obraSocialId = event.target.value;
+                      const obraSocial = obraSocialSearchResults.find(
+                        (item) => item.id === obraSocialId,
+                      );
+                      const activePlanes = (obraSocial?.planes ?? []).filter(
+                        (plan) => plan.activo !== false,
+                      );
+
+                      setAffiliationForm((current) => ({
+                        ...current,
+                        obraSocialId,
+                        planId:
+                          activePlanes.some((plan) => plan.id === current.planId)
+                            ? current.planId
+                            : "",
+                      }));
+                    }}
+                  >
+                    <option value="">Seleccione una obra social</option>
+                    {obraSocialSearchResults.map((obraSocial) => (
+                      <option key={obraSocial.id} value={obraSocial.id}>
+                        {obraSocial.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+
+              {requiresPlanSelection ? (
+                <div className={styles.fieldBlock}>
+                  <label className={styles.fieldLabel} htmlFor="planId">
+                    Seleccionar Plan *
+                  </label>
+                  <select
+                    id="planId"
+                    className={styles.selectorInput}
+                    value={affiliationForm.planId}
+                    onChange={(event) =>
+                      handleAffiliationInputChange("planId", event.target.value)
+                    }
+                  >
+                    <option value="">Seleccione un plan</option>
+                    {availablePlanes.map((plan) => (
+                      <option key={plan.id} value={plan.id}>
+                        {plan.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
 
               <div className={styles.fieldBlock}>
                 <label className={styles.fieldLabel} htmlFor="affiliateNumber">
@@ -1445,7 +1903,7 @@ export function ProfileView({
                   <div className={styles.inputWithIcon}>
                     <input
                       id="startsAt"
-                      type="text"
+                      type="date"
                       value={affiliationForm.startsAt}
                       onChange={(event) =>
                         handleAffiliationInputChange(
@@ -1454,7 +1912,6 @@ export function ProfileView({
                         )
                       }
                       className={styles.fieldInput}
-                      placeholder="dd/mm/aaaa"
                     />
                     <CalendarDays size={18} className={styles.fieldIcon} />
                   </div>
@@ -1467,7 +1924,7 @@ export function ProfileView({
                   <div className={styles.inputWithIcon}>
                     <input
                       id="endsAt"
-                      type="text"
+                      type="date"
                       value={affiliationForm.endsAt}
                       onChange={(event) =>
                         handleAffiliationInputChange(
@@ -1476,7 +1933,6 @@ export function ProfileView({
                         )
                       }
                       className={styles.fieldInput}
-                      placeholder="dd/mm/aaaa"
                     />
                     <CalendarDays size={18} className={styles.fieldIcon} />
                   </div>
@@ -1541,25 +1997,21 @@ export function ProfileView({
                 </label>
               </div>
 
-              <p className={styles.modalNote}>
-                Esta carga se refleja solo en pantalla hasta conectar el
-                guardado con backend.
-              </p>
-
               <footer className={styles.modalFooter}>
                 <button
                   type="button"
                   className={styles.secondaryAction}
                   onClick={handleCloseAffiliationModal}
+                  disabled={isSavingAffiliation}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   className={styles.primaryAction}
-                  disabled={!isAffiliationFormValid}
+                  disabled={isAffiliationSubmitDisabled}
                 >
-                  Guardar Afiliacion
+                  {isSavingAffiliation ? "Guardando..." : "Guardar Afiliacion"}
                 </button>
               </footer>
             </form>

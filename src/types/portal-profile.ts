@@ -10,6 +10,10 @@ export type PortalPerfilContacto = {
 
 export type PortalPerfilAfiliacion = {
   id?: string;
+  obraSocialId?: string | null;
+  obraSocialNombre?: string | null;
+  planId?: string | null;
+  planNombre?: string | null;
   nroAfiliado?: string | null;
   titular?: boolean;
   principal?: boolean;

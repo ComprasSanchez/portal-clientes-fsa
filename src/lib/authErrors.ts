@@ -23,6 +23,13 @@ export type AuthErrorCode =
   | 'AUTH_UNKNOWN'
   | 'AUTH_EMAIL_NOT_VERIFIED'
   | 'AUTH_EMAIL_VERIFY_RESEND_LIMIT'
+  | 'AUTH_ONBOARDING_INVALID'
+  | 'AUTH_ONBOARDING_EXPIRED'
+  | 'AUTH_ONBOARDING_TOKEN_INVALID'
+  | 'AUTH_ONBOARDING_TOKEN_EXPIRED'
+  | 'AUTH_ONBOARDING_ALREADY_COMPLETED'
+  | 'AUTH_ONBOARDING_IDENTITY_LINK_CONFLICT'
+  | 'AUTH_ONBOARDING_COMPLETE_FAILED'
   | string;
 
 export function mapAuthError(code: AuthErrorCode): string {
@@ -64,6 +71,20 @@ export function mapAuthError(code: AuthErrorCode): string {
       return 'Tu email no ha sido verificado. Por favor, revisá tu bandeja de entrada.';
     case 'AUTH_EMAIL_VERIFY_RESEND_LIMIT':
       return 'Has alcanzado el límite de reenvíos de email de verificación. Por favor, intentá nuevamente más tarde.';
+    case 'AUTH_ONBOARDING_INVALID':
+      return 'El onboarding solicitado no es válido.';
+    case 'AUTH_ONBOARDING_EXPIRED':
+      return 'El onboarding expiró. Volvé a iniciar el registro.';
+    case 'AUTH_ONBOARDING_TOKEN_INVALID':
+      return 'El token de onboarding no es válido.';
+    case 'AUTH_ONBOARDING_TOKEN_EXPIRED':
+      return 'El token de onboarding expiró. Solicitá un nuevo email.';
+    case 'AUTH_ONBOARDING_ALREADY_COMPLETED':
+      return 'Este onboarding ya fue completado. Podés iniciar sesión.';
+    case 'AUTH_ONBOARDING_IDENTITY_LINK_CONFLICT':
+      return 'Los datos de identidad ya están vinculados a otra cuenta.';
+    case 'AUTH_ONBOARDING_COMPLETE_FAILED':
+      return 'No pudimos completar el onboarding. Intentá nuevamente.';
     case 'AUTH_SESSION_EXPIRED':
       return 'La sesión ha expirado. Por favor, inicia sesión nuevamente.';
     default:

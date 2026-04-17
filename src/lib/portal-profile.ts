@@ -27,14 +27,14 @@ export const pickPreferredContacto = (
   return candidates.find((contacto) => contacto.principal) ?? candidates[0] ?? null;
 };
 
-const pickPreferredAfiliacion = (afiliaciones: PortalPerfilAfiliacion[] | undefined) => {
+export const pickPreferredAfiliacion = (
+  afiliaciones: PortalPerfilAfiliacion[] | undefined,
+) => {
   const candidates = Array.isArray(afiliaciones) ? afiliaciones : [];
 
   return (
     candidates.find((afiliacion) => afiliacion.principal && afiliacion.vigente) ??
     candidates.find((afiliacion) => afiliacion.principal) ??
-    candidates.find((afiliacion) => afiliacion.vigente) ??
-    candidates[0] ??
     null
   );
 };
