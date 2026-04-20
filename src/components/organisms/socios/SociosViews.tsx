@@ -6,6 +6,8 @@ import { OrderRow } from "@/components/molecules/home/OrderRow";
 import { QuickAccessCard, type QuickAccessItem } from "@/components/molecules/home/QuickAccessCard";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { usePortalExpedientesContext } from "@/lib/portal-expedientes-context";
+import { formatPortalPoints } from "@/lib/portal-puntos";
+import { usePortalPuntos } from "@/lib/use-portal-puntos";
 import { useGlobalToast } from "../../ui/global-toast";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 import { type SociosView } from "@/types/socios";
@@ -54,8 +56,64 @@ export function SociosViews({
   const hasShownValidationToastRef = useRef(false);
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
   const { error: expedientesError } = usePortalExpedientesContext();
+  const { summary: puntosSummary, isLoading: isPointsLoading, error: pointsError } =
+    usePortalPuntos();
   const requiresAccountValidation =
     expedientesError?.includes("Valida tu cuenta") ?? false;
+
+  const pointsCard = (
+    <article className={`${styles.panelCard} ${styles.pointsPanelCard}`}>
+      <div className={styles.pointsHeader}>
+        <div>
+          <h2 className={styles.panelTitle}>Mis puntos</h2>
+          <p className={styles.panelSubtitle}>Saldo acumulado y movimientos pendientes</p>
+        </div>
+        {puntosSummary.partial ? (
+          <span className={styles.statusBadge}>Parcial</span>
+        ) : null}
+      </div>
+
+      {pointsError ? (
+        <div className={styles.pointsErrorBox}>
+          No pudimos cargar tus puntos ahora mismo. Intentá nuevamente en unos minutos.
+        </div>
+      ) : (
+        <div className={styles.pointsContentRow}>
+          <div className={styles.pointsHighlight}>
+            <span className={styles.pointsLabel}>Disponibles</span>
+            <strong className={styles.pointsValue}>
+              {isPointsLoading ? "..." : formatPortalPoints(puntosSummary.disponibles)}
+            </strong>
+          </div>
+
+          <div className={styles.pointsSideColumn}>
+            <div className={styles.pointsGrid}>
+              <div className={styles.pointsMetricCard}>
+                <span className={styles.pointsMetricLabel}>Pendientes</span>
+                <strong className={styles.pointsMetricValue}>
+                  {isPointsLoading ? "..." : formatPortalPoints(puntosSummary.pendientes)}
+                </strong>
+              </div>
+              <div className={styles.pointsMetricCard}>
+                <span className={styles.pointsMetricLabel}>Por vencer 30 d</span>
+                <strong className={styles.pointsMetricValue}>
+                  {isPointsLoading ? "..." : formatPortalPoints(puntosSummary.porVencer30d)}
+                </strong>
+              </div>
+            </div>
+
+            {puntosSummary.warnings.length > 0 ? (
+              <p className={styles.pointsWarning}>
+                Algunas fuentes de puntos no estuvieron disponibles, por eso los datos pueden ser parciales.
+              </p>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      <DetailButton tone="socios" label="Ver detalle" onClick={() => onNavigate("puntos")} />
+    </article>
+  );
 
   useEffect(() => {
     if (!requiresAccountValidation || !expedientesError) {
@@ -99,6 +157,22 @@ export function SociosViews({
 
   if (currentView !== "dashboard") {
     const active = viewContent[currentView];
+
+    if (currentView === "puntos") {
+      return (
+        <main className={styles.container}>
+          <section className={styles.activeViewCard}>
+            <p className={styles.activeViewLabel}>Vista activa</p>
+            <h1 className={styles.activeViewTitle}>{active.title}</h1>
+            <p className={styles.activeViewDescription}>{active.description}</p>
+            <div className={styles.activePointsWrapper}>{pointsCard}</div>
+            <button onClick={() => onNavigate("dashboard")} className={styles.primaryButton} type="button">
+              Volver a Inicio
+            </button>
+          </section>
+        </main>
+      );
+    }
 
     return (
       <main className={styles.container}>
@@ -173,7 +247,10 @@ export function SociosViews({
             </dl>
             <DetailButton tone="socios" onClick={() => onNavigate("mi-cuenta")} />
           </article>
+
         </div>
+
+        <div className={styles.fullWidthRow}>{pointsCard}</div>
 
         <section className={styles.promoBanner}>
           <h3 className={styles.promoTitle}>Entrá a CORA cuando necesites la gestion completa</h3>
