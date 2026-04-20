@@ -112,6 +112,27 @@ const parseSetCookieHeader = (cookieHeader: string) => {
   };
 };
 
+const resolveParentCookieDomain = (req: NextRequest) => {
+  const configuredDomain = process.env.COOKIE_DOMAIN?.trim();
+  if (configuredDomain) {
+    return configuredDomain.startsWith(".")
+      ? configuredDomain
+      : `.${configuredDomain}`;
+  }
+
+  const host = req.headers.get("host")?.split(":")[0]?.trim().toLowerCase();
+  if (!host || host === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+    return null;
+  }
+
+  const segments = host.split(".").filter(Boolean);
+  if (segments.length < 3) {
+    return null;
+  }
+
+  return `.${segments.slice(1).join(".")}`;
+};
+
 const buildUpstreamErrorResponse = async (upstream: Response) => {
   const contentType = upstream.headers.get("content-type") || "";
 
@@ -129,22 +150,38 @@ const buildUpstreamErrorResponse = async (upstream: Response) => {
   return jsonError(text || "upstream_error", upstream.status);
 };
 
-const clearCookie = (response: NextResponse, name: string) => {
+const clearCookie = (
+  response: NextResponse,
+  name: string,
+  domain?: string,
+) => {
   response.cookies.set({
     name,
     value: "",
     expires: new Date(0),
     path: "/",
+    ...(domain ? { domain } : {}),
   });
 };
 
-const clearLegacyCookies = (response: NextResponse) => {
+const clearLegacyCookies = (response: NextResponse, req: NextRequest) => {
+  const parentDomain = resolveParentCookieDomain(req);
+
   clearCookie(response, "sid");
   clearCookie(response, "trusted_device_token");
   clearCookie(response, "fsa_access_token");
   clearCookie(response, "fsa_access_token_expires_at");
   clearCookie(response, "fsa_refresh_token");
   clearCookie(response, "fsa_refresh_token_expires_at");
+
+  if (parentDomain) {
+    clearCookie(response, "sid", parentDomain);
+    clearCookie(response, "trusted_device_token", parentDomain);
+    clearCookie(response, "fsa_access_token", parentDomain);
+    clearCookie(response, "fsa_access_token_expires_at", parentDomain);
+    clearCookie(response, "fsa_refresh_token", parentDomain);
+    clearCookie(response, "fsa_refresh_token_expires_at", parentDomain);
+  }
 };
 
 export async function POST(req: NextRequest) {
@@ -159,6 +196,19 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         Accept: "application/json",
+        ...(req.headers.get("host")
+          ? { "x-forwarded-host": req.headers.get("host") as string }
+          : {}),
+        ...(req.nextUrl.protocol
+          ? {
+              "x-forwarded-proto": req.nextUrl.protocol.replace(":", ""),
+            }
+          : {}),
+        ...(req.headers.get("x-forwarded-for")
+          ? {
+              "x-forwarded-for": req.headers.get("x-forwarded-for") as string,
+            }
+          : {}),
         ...(req.headers.get("cookie")
           ? { Cookie: req.headers.get("cookie") as string }
           : {}),
@@ -193,7 +243,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    clearLegacyCookies(response);
+    clearLegacyCookies(response, req);
 
     return response;
   } catch {
