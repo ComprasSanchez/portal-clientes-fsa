@@ -3,6 +3,7 @@ import { getRequiredBaseUrl, jsonError } from "@/app/api/_lib/proxy";
 
 type CookieOptions = {
   path?: string;
+  domain?: string;
   httpOnly?: boolean;
   secure?: boolean;
   sameSite?: "lax" | "strict" | "none";
@@ -30,10 +31,7 @@ const getSetCookieHeaders = (headers: Headers) => {
   return setCookieHeader ? splitCombinedSetCookieHeader(setCookieHeader) : [];
 };
 
-const parseSetCookieHeader = (
-  cookieHeader: string,
-  isSecureContext: boolean,
-) => {
+const parseSetCookieHeader = (cookieHeader: string) => {
   const [nameValue, ...attributes] = cookieHeader.split(/;\s*/);
   const separatorIndex = nameValue.indexOf("=");
 
@@ -61,6 +59,11 @@ const parseSetCookieHeader = (
     switch (key) {
       case "path":
         options.path = parsedValue || "/";
+        break;
+      case "domain":
+        if (parsedValue) {
+          options.domain = parsedValue;
+        }
         break;
       case "httponly":
         options.httpOnly = true;
@@ -99,11 +102,7 @@ const parseSetCookieHeader = (
   }
 
   if (hasSecureAttribute) {
-    options.secure = isSecureContext;
-  }
-
-  if (!isSecureContext && options.sameSite === "none") {
-    options.sameSite = "lax";
+    options.secure = true;
   }
 
   return {
@@ -178,18 +177,15 @@ export async function POST(req: NextRequest) {
         : NextResponse.json(await upstream.json().catch(() => ({ ok: true })), {
             status: upstream.status,
           });
-    const isSecureContext = req.nextUrl.protocol === "https:";
-
     const setCookieHeaders = getSetCookieHeaders(upstream.headers);
 
     for (const cookieHeader of setCookieHeaders) {
-      const parsedCookie = parseSetCookieHeader(cookieHeader, isSecureContext);
+      const parsedCookie = parseSetCookieHeader(cookieHeader);
 
       if (!parsedCookie) {
         continue;
       }
 
-      parsedCookie.options.path = "/";
       response.cookies.set(
         parsedCookie.name,
         parsedCookie.value,
