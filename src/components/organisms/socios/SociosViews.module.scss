@@ -142,6 +142,188 @@
   margin-top: 1.5rem;
 }
 
+.facturasLayout {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.facturasSummaryGrid {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.facturasSummaryMetric {
+  border-radius: 0.9rem;
+  border: 1px solid #d5e4e8;
+  background: #fbfdfd;
+  padding: 1rem 1.1rem;
+}
+
+.facturasSummaryValue {
+  margin-top: 0.35rem;
+  display: block;
+  font-size: clamp(1.65rem, 4vw, 2rem);
+  font-weight: 700;
+  color: #17343d;
+}
+
+.facturasHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.facturasHeaderMetric {
+  min-width: 10rem;
+  border-radius: 0.9rem;
+  border: 1px solid #d5e4e8;
+  background: #fbfdfd;
+  padding: 0.85rem 1rem;
+}
+
+.facturasHeaderMetricLabel {
+  display: block;
+  font-size: 0.8125rem;
+  color: #698088;
+}
+
+.facturasHeaderMetricValue {
+  margin-top: 0.35rem;
+  display: block;
+  font-size: clamp(1.5rem, 3.8vw, 1.85rem);
+  font-weight: 700;
+  color: #17343d;
+}
+
+.facturasLoadingState,
+.facturasEmptyState {
+  margin-top: 1rem;
+  border-radius: 0.9rem;
+  border: 1px solid #d5e4e8;
+  background: #fbfdfd;
+  padding: 1rem 1.1rem;
+  color: #627880;
+}
+
+.facturasList {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.facturasPagination {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.facturasPaginationButton {
+  border-radius: 0.75rem;
+  border: 1px solid #cfe0e4;
+  background: #ffffff;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #17343d;
+  transition: background 0.2s ease, opacity 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #f3f8f9;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+.facturasPaginationText {
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #698088;
+}
+
+.facturaCard {
+  border-radius: 1rem;
+  border: 1px solid #d5e4e8;
+  background: #fbfdfd;
+  padding: 1rem;
+}
+
+.facturaCardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.facturaRef {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #17343d;
+}
+
+.facturaMeta {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #698088;
+}
+
+.facturaAmountBlock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.facturaAmount {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #007c98;
+}
+
+.facturaItemsList {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.facturaItemRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid #dfe9ec;
+  padding-top: 0.75rem;
+}
+
+.facturaItemName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #17343d;
+}
+
+.facturaItemMeta {
+  margin-top: 0.2rem;
+  font-size: 0.8125rem;
+  color: #698088;
+}
+
+.facturaItemTotal {
+  white-space: nowrap;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #17343d;
+}
+
 .panelTitle {
   font-size: clamp(1.7rem, 3.8vw, 1.875rem);
   font-weight: 700;
@@ -316,6 +498,23 @@
   .pointsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .facturasSummaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .facturasPagination {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 639px) {
+  .facturasHeaderMetric {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 @media (min-width: 960px) {
@@ -326,6 +525,17 @@
 
   .pointsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .facturasLayout {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .facturaCardHeader {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: start;
   }
 }
 

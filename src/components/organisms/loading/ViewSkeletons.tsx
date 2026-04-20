@@ -166,3 +166,60 @@ export function ExpedienteViewSkeleton({ variant = "cora" }: { variant?: ThemeVa
     </section>
   );
 }
+
+export function FacturasViewSkeleton({ variant = "socios" }: { variant?: ThemeVariant }) {
+  return (
+    <section className="space-y-6" aria-hidden="true">
+      <div className="space-y-3">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-10 w-64 max-w-full" />
+        <Skeleton className="h-5 w-96 max-w-full" />
+      </div>
+
+      <SkeletonCard variant={variant}>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-3">
+            <Skeleton className="h-8 w-56 max-w-full" />
+            <Skeleton className="h-5 w-72 max-w-full" />
+          </div>
+          <Skeleton className="h-20 w-full rounded-2xl sm:w-40" />
+        </div>
+
+        <div className="mt-5 space-y-4">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="rounded-2xl border border-[#d5e4e8] bg-[#fbfdfd] p-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="space-y-3">
+                  <Skeleton className="h-7 w-40" />
+                  <Skeleton className="h-5 w-52 max-w-full" />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <Skeleton className="h-8 w-24 rounded-full" />
+                  <Skeleton className="h-7 w-28" />
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3 border-t border-[#dfe9ec] pt-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-56 max-w-full" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                  <Skeleton className="h-5 w-24" />
+                </div>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-44 max-w-full" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                  <Skeleton className="h-5 w-20" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </SkeletonCard>
+    </section>
+  );
+}

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Box, FileText, Package, TrendingUp, User, Users } from "lucide-react";
+import { FileText, Package, User, Users } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
@@ -24,7 +24,6 @@ import { usePortalExpedienteActual } from "@/lib/use-portal-expediente-actual";
 import {
   CICLOS_STATE_TYPE_LABELS,
   formatContactLabel,
-  formatFriendlyLabel,
   getMappedLabel,
   PAY_TYPE_LABELS,
   SEND_TYPE_LABELS,
@@ -172,10 +171,10 @@ export function HomeViews({
       onClick: () => router.push("/socios"),
     },
     { label: "Mi perfil", view: "mi-cuenta", icon: User },
-    { label: "Productos", view: "productos", icon: Box },
+    // { label: "Productos", view: "productos", icon: Box },
     { label: "Segui tu pedido", view: "pedidos", icon: Package },
     { label: "Expediente", view: "expediente-actual", icon: FileText },
-    { label: "Historial", view: "expediente-completo", icon: TrendingUp },
+    // { label: "Historial", view: "expediente-completo", icon: TrendingUp },
   ];
 
   const queryCicloId = searchParams.get("cicloId");

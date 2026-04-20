@@ -1,10 +1,16 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CreditCard, Gift, Heart, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
 import { QuickAccessCard, type QuickAccessItem } from "@/components/molecules/home/QuickAccessCard";
+import { FacturasViewSkeleton } from "@/components/organisms/loading/ViewSkeletons";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
+import {
+  formatPortalCurrency,
+  formatPortalDateTime,
+} from "@/lib/portal-compras";
+import { usePortalCompras } from "@/lib/use-portal-compras";
 import { usePortalExpedientesContext } from "@/lib/portal-expedientes-context";
 import { formatPortalPoints } from "@/lib/portal-puntos";
 import { usePortalPuntos } from "@/lib/use-portal-puntos";
@@ -51,15 +57,30 @@ export function SociosViews({
   perfil,
   isProfileLoading = false,
 }: SociosViewsProps) {
+  const FACTURAS_PAGE_SIZE = 10;
   const router = useRouter();
   const { pushToast } = useGlobalToast();
   const hasShownValidationToastRef = useRef(false);
+  const [facturasOffset, setFacturasOffset] = useState(0);
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
   const { error: expedientesError } = usePortalExpedientesContext();
   const { summary: puntosSummary, isLoading: isPointsLoading, error: pointsError } =
     usePortalPuntos();
+  const {
+    compras,
+    summary: comprasSummary,
+    isLoading: isComprasLoading,
+    error: comprasError,
+  } = usePortalCompras({
+    enabled: currentView === "facturas",
+    limit: FACTURAS_PAGE_SIZE,
+    offset: facturasOffset,
+  });
   const requiresAccountValidation =
     expedientesError?.includes("Valida tu cuenta") ?? false;
+  const currentFacturasPage =
+    Math.floor(comprasSummary.page.offset / comprasSummary.page.limit) + 1;
+  const hasPreviousFacturasPage = comprasSummary.page.offset > 0;
 
   const pointsCard = (
     <article className={`${styles.panelCard} ${styles.pointsPanelCard}`}>
@@ -169,6 +190,186 @@ export function SociosViews({
             <button onClick={() => onNavigate("dashboard")} className={styles.primaryButton} type="button">
               Volver a Inicio
             </button>
+          </section>
+        </main>
+      );
+    }
+
+    if (currentView === "facturas") {
+      if (isComprasLoading && !compras) {
+        return (
+          <main className={styles.container}>
+            <FacturasViewSkeleton variant="socios" />
+          </main>
+        );
+      }
+
+      return (
+        <main className={styles.container}>
+          <section className={styles.activeViewCard}>
+            <p className={styles.activeViewLabel}>Vista activa</p>
+            <h1 className={styles.activeViewTitle}>{active.title}</h1>
+            <p className={styles.activeViewDescription}>{active.description}</p>
+
+            <div className={styles.facturasLayout}>
+              {/* <article className={styles.panelCard}>
+                <div className={styles.pointsHeader}>
+                  <div>
+                    <h2 className={styles.panelTitle}>Resumen de facturacion</h2>
+                    <p className={styles.panelSubtitle}>Total de comprobantes y monto acumulado</p>
+                  </div>
+                  {comprasSummary.partial ? <span className={styles.statusBadge}>Parcial</span> : null}
+                </div>
+
+                {comprasError ? (
+                  <div className={styles.pointsErrorBox}>
+                    No pudimos cargar la facturacion ahora mismo. Intentá nuevamente en unos minutos.
+                  </div>
+                ) : (
+                  <div className={styles.facturasSummaryGrid}>
+                    <div className={styles.facturasSummaryMetric}>
+                      <span className={styles.pointsMetricLabel}>Comprobantes</span>
+                      <strong className={styles.facturasSummaryValue}>
+                        {isComprasLoading ? "..." : comprasSummary.totalCompras}
+                      </strong>
+                    </div>
+                    <div className={styles.facturasSummaryMetric}>
+                      <span className={styles.pointsMetricLabel}>Monto acumulado</span>
+                      <strong className={styles.facturasSummaryValue}>
+                        {isComprasLoading
+                          ? "..."
+                          : formatPortalCurrency(
+                              comprasSummary.montoAcumulado,
+                              comprasSummary.moneda,
+                            )}
+                      </strong>
+                    </div>
+                  </div>
+                )}
+              </article> */}
+
+              <article className={styles.panelCard}>
+                <div className={styles.facturasHeaderRow}>
+                  <div>
+                    <h2 className={styles.panelTitle}>Ultimos comprobantes</h2>
+                    <p className={styles.panelSubtitle}>
+                      Facturas agrupadas por comprobante con sus lineas de detalle.
+                    </p>
+                  </div>
+
+                  {!comprasError ? (
+                    <div className={styles.facturasHeaderMetric}>
+                      <span className={styles.facturasHeaderMetricLabel}>Comprobantes</span>
+                      <strong className={styles.facturasHeaderMetricValue}>
+                        {isComprasLoading ? "..." : comprasSummary.totalCompras}
+                      </strong>
+                    </div>
+                  ) : null}
+                </div>
+
+                {comprasError ? (
+                  <div className={styles.pointsErrorBox}>
+                    No pudimos cargar el listado de facturas para este cliente.
+                  </div>
+                ) : isComprasLoading ? (
+                  <div className={styles.facturasLoadingState}>Cargando facturacion...</div>
+                ) : comprasSummary.comprobantes.length === 0 ? (
+                  <div className={styles.facturasEmptyState}>
+                    No encontramos comprobantes para este cliente por el momento.
+                  </div>
+                ) : (
+                  <div className={styles.facturasList}>
+                    {comprasSummary.comprobantes.map((comprobante) => (
+                      <article key={comprobante.compraId} className={styles.facturaCard}>
+                        <div className={styles.facturaCardHeader}>
+                          <div>
+                            <h3 className={styles.facturaRef}>{comprobante.comprobanteRef}</h3>
+                            <p className={styles.facturaMeta}>
+                              {formatPortalDateTime(comprobante.fecha)}
+                              {comprobante.nombreFantasia ? ` · ${comprobante.nombreFantasia}` : ""}
+                            </p>
+                          </div>
+                          <div className={styles.facturaAmountBlock}>
+                            {comprobante.estado ? (
+                              <span className={styles.statusBadge}>{comprobante.estado}</span>
+                            ) : null}
+                            <strong className={styles.facturaAmount}>
+                              {formatPortalCurrency(comprobante.total, comprobante.moneda)}
+                            </strong>
+                          </div>
+                        </div>
+
+                        <div className={styles.facturaItemsList}>
+                          {comprobante.items.map((item, index) => (
+                            <div
+                              key={`${comprobante.compraId}-${index}`}
+                              className={styles.facturaItemRow}
+                            >
+                              <div>
+                                <p className={styles.facturaItemName}>
+                                  {item.producto || "Producto sin descripcion"}
+                                </p>
+                                <p className={styles.facturaItemMeta}>
+                                  Cantidad: {item.cantidad ?? 0}
+                                </p>
+                              </div>
+                              <strong className={styles.facturaItemTotal}>
+                                {formatPortalCurrency(
+                                  typeof item.total === "number" ? item.total : 0,
+                                  item.moneda || comprobante.moneda,
+                                )}
+                              </strong>
+                            </div>
+                          ))}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+
+                {comprasSummary.warnings.length > 0 ? (
+                  <p className={styles.pointsWarning}>
+                    Algunas dependencias no respondieron correctamente, por eso la facturacion puede estar incompleta.
+                  </p>
+                ) : null}
+
+                {!comprasError && !isComprasLoading ? (
+                  <div className={styles.facturasPagination}>
+                    <button
+                      type="button"
+                      className={styles.facturasPaginationButton}
+                      onClick={() => {
+                        setFacturasOffset((currentOffset) =>
+                          Math.max(0, currentOffset - FACTURAS_PAGE_SIZE),
+                        );
+                      }}
+                      disabled={!hasPreviousFacturasPage}
+                    >
+                      Anterior
+                    </button>
+                    <span className={styles.facturasPaginationText}>
+                      Pagina {currentFacturasPage}
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.facturasPaginationButton}
+                      onClick={() => {
+                        setFacturasOffset((currentOffset) =>
+                          currentOffset + FACTURAS_PAGE_SIZE,
+                        );
+                      }}
+                      disabled={!comprasSummary.page.hasMore}
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                ) : null}
+              </article>
+            </div>
+{/* 
+            <button onClick={() => onNavigate("dashboard")} className={styles.primaryButton} type="button">
+              Volver a Inicio
+            </button> */}
           </section>
         </main>
       );

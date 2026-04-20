@@ -73,19 +73,38 @@ export const fetchUpstream = async <T>(options: {
   headers?: HeadersInit;
   redirect?: RequestRedirect;
 }): Promise<UpstreamSuccess<T> | UpstreamFailure> => {
-  const upstream = await fetch(options.url, {
-    method: options.method ?? "GET",
-    headers: {
-      Accept: "application/json",
-      ...(options.body !== undefined ? { "Content-Type": "application/json" } : {}),
-      ...options.headers,
-    },
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-    cache: "no-store",
-    redirect: options.redirect,
-  });
+  let upstream: Response;
+
+  try {
+    upstream = await fetch(options.url, {
+      method: options.method ?? "GET",
+      headers: {
+        Accept: "application/json",
+        ...(options.body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...options.headers,
+      },
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      cache: "no-store",
+      redirect: options.redirect,
+    });
+  } catch (error) {
+    console.error("[proxy] upstream request failed", {
+      url: options.url,
+      method: options.method ?? "GET",
+      error: error instanceof Error ? error.message : String(error),
+    });
+
+    throw error;
+  }
 
   if (!upstream.ok) {
+    console.error("[proxy] upstream returned error", {
+      url: options.url,
+      method: options.method ?? "GET",
+      status: upstream.status,
+      statusText: upstream.statusText,
+    });
+
     const contentType = upstream.headers.get("content-type") || "";
 
     if (contentType.includes("application/json")) {

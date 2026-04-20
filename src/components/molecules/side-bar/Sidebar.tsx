@@ -11,8 +11,6 @@ import {
   LogOut,
   Menu,
   Package,
-  ShoppingBag,
-  TrendingUp,
   User,
   Users,
   X,
@@ -35,14 +33,14 @@ const menuItems: Array<{
 }> = [
   { id: "dashboard", label: "Inicio", icon: Home },
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
-  { id: "productos", label: "Productos", icon: ShoppingBag },
+  // { id: "productos", label: "Productos", icon: ShoppingBag },
   { id: "pedidos", label: "Segui tu pedido", icon: Package },
   { id: "expediente-actual", label: "Expediente actual", icon: FileText },
-  {
-    id: "expediente-completo",
-    label: "Historial completo",
-    icon: TrendingUp,
-  },
+  // {
+  //   id: "expediente-completo",
+  //   label: "Historial completo",
+  //   icon: TrendingUp,
+  // },
   { id: "socios", label: "SocioSA", icon: Users },
 ];
 
