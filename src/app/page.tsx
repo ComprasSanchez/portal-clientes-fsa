@@ -22,12 +22,26 @@ export default async function Home({ searchParams }: HomePageProps) {
   const googleOnboarding = Array.isArray(query.googleOnboarding)
     ? query.googleOnboarding[0]
     : query.googleOnboarding;
+  const token = Array.isArray(query.token) ? query.token[0] : query.token;
+  const verificationToken = Array.isArray(query.verificationToken)
+    ? query.verificationToken[0]
+    : query.verificationToken;
+  const onboardingToken = Array.isArray(query.onboardingToken)
+    ? query.onboardingToken[0]
+    : query.onboardingToken;
   const hasPendingGoogleOnboarding =
     onboarding === "google" ||
     googleOnboarding === "pending" ||
     googleOnboarding === "1";
+  const hasVerificationToken = Boolean(
+    token?.trim() || verificationToken?.trim() || onboardingToken?.trim(),
+  );
 
-  if (cookieStore.get("sid")?.value && !hasPendingGoogleOnboarding) {
+  if (
+    cookieStore.get("sid")?.value &&
+    !hasPendingGoogleOnboarding &&
+    !hasVerificationToken
+  ) {
     redirect("/socios");
   }
 

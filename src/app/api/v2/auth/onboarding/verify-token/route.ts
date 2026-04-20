@@ -59,22 +59,9 @@ export async function GET(req: NextRequest) {
       return jsonError("invalid_body", 400);
     }
 
-    const base = getRequiredBaseUrl("NEXT_PUBLIC_FSA_AUTH");
-    if (!base) {
-      return jsonError("missing_upstream_base", 500);
-    }
-
-    const result = await fetchUpstream<unknown>({
-      url: `${base}/onboarding/verify-token?token=${encodeURIComponent(token)}`,
-      method: "GET",
-      headers: getHeaders(req),
-    });
-
-    if (!result.ok) {
-      return result.response;
-    }
-
-    return NextResponse.json(result.data ?? { ok: true }, { status: result.status });
+    const redirectUrl = new URL("/", req.url);
+    redirectUrl.searchParams.set("token", token);
+    return NextResponse.redirect(redirectUrl);
   } catch (error) {
     return jsonError("proxy_failure", 500, String(error));
   }

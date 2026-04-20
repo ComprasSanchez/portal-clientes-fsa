@@ -240,19 +240,8 @@ export function Login({ onLogin }: LoginProps) {
           },
         );
 
-        const flowId = data.flow?.id?.trim();
-        if (!flowId) {
-          throw new Error("El backend no devolvió el identificador del onboarding.");
-        }
-
-        setOnboardingFlow({
-          id: flowId,
-          status: data.flow?.status,
-          expiresAt: data.flow?.expiresAt,
-          destinationMasked: data.challenge?.destinationMasked,
-          channel: data.challenge?.channel,
-        });
-        setCardView("verify-onboarding");
+        setOnboardingFlow(null);
+        setCardView("login");
         setInfoMessage(
           data.challenge?.destinationMasked
             ? `Te enviamos un link de validación a ${data.challenge.destinationMasked}.`
@@ -424,6 +413,8 @@ export function Login({ onLogin }: LoginProps) {
                 },
               },
             );
+
+            
             setMfaState({
               ...data.mfa,
               challengeChannel: selectedChannel,
@@ -891,24 +882,32 @@ export function Login({ onLogin }: LoginProps) {
     const verifyByToken = async () => {
       setHasProcessedVerificationToken(true);
       setIsAutoVerifyingOnboarding(true);
-      setCardView("verify-onboarding");
+      setCardView("login");
       clearFeedback();
       setOnboardingFlow(null);
       setInfoMessage("Estamos validando el enlace que llegó por email...");
 
       try {
-        await axios.get("/api/v2/auth/onboarding/verify-token", {
-          params: {
+        await axios.post<LoginResponse>(
+          "/api/v2/auth/onboarding/verify-token",
+          {
             token: verificationTokenFromUrl,
           },
-        });
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
 
         setCardView("login");
+        setOnboardingFlow(null);
         setInfoMessage(
           "Tu onboarding fue validado correctamente. Ahora podés iniciar sesión.",
         );
       } catch (error) {
-        setCardView("verify-onboarding");
+        setCardView("login");
+        setOnboardingFlow(null);
         if (axios.isAxiosError<LoginResponse>(error)) {
           setErrorMessage(
             getErrorMessage(

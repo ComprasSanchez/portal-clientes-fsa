@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  buildForwardHeaders,
-  fetchUpstream,
-  getRequiredBaseUrl,
-  jsonError,
-  readJsonBody,
-} from "@/app/api/_lib/proxy";
+import { buildForwardHeaders, getRequiredBaseUrl, jsonError, readJsonBody } from "@/app/api/_lib/proxy";
 
 type GoogleCompleteBody = {
   customerIdentity?: {
@@ -45,24 +39,39 @@ export async function POST(req: NextRequest) {
     }
 
     const { authorization, cookie, requestId } = buildForwardHeaders(req);
-    const headers: HeadersInit = {
-      "x-request-id": requestId,
-      ...(authorization ? { Authorization: authorization } : {}),
-      ...(cookie ? { Cookie: cookie } : {}),
-    };
-
-    const result = await fetchUpstream<unknown>({
-      url: `${base}/onboarding/google/complete`,
+    const upstream = await fetch(`${base}/onboarding/google/complete`, {
       method: "POST",
-      headers,
-      body,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "x-request-id": requestId,
+        ...(authorization ? { Authorization: authorization } : {}),
+        ...(cookie ? { Cookie: cookie } : {}),
+      },
+      body: JSON.stringify(body),
+      cache: "no-store",
+      redirect: "manual",
     });
 
-    if (!result.ok) {
-      return result.response;
+    const response = new NextResponse(await upstream.arrayBuffer(), {
+      status: upstream.status,
+    });
+
+    for (const [key, value] of upstream.headers.entries()) {
+      const lower = key.toLowerCase();
+      if (lower === "set-cookie" || lower === "transfer-encoding") {
+        continue;
+      }
+
+      response.headers.set(key, value);
     }
 
-    return NextResponse.json(result.data ?? { ok: true }, { status: result.status });
+    const setCookie = upstream.headers.get("set-cookie");
+    if (setCookie) {
+      response.headers.append("set-cookie", setCookie);
+    }
+
+    return response;
   } catch (error) {
     return jsonError("proxy_failure", 500, String(error));
   }
