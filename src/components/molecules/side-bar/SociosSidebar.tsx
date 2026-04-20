@@ -117,6 +117,7 @@ export function SociosSidebar({ currentView, onNavigate, userName, onLogout }: S
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.id !== "cora" && currentView === item.id;
+                const isCoraShortcut = item.id === "cora";
 
                 return (
                   <li key={item.id}>
@@ -126,7 +127,9 @@ export function SociosSidebar({ currentView, onNavigate, userName, onLogout }: S
                         ${
                           isActive
                             ? "bg-linear-to-r from-[#007c98] to-[#0a6c84] text-white shadow-[0_8px_18px_rgba(0,124,152,0.22)]"
-                            : "text-[#17343d] hover:bg-[#e2ecef]"
+                            : isCoraShortcut
+                              ? "text-[#8f63d9] hover:bg-[#ede8f8]"
+                              : "text-[#17343d] hover:bg-[#e2ecef]"
                         }`}
                       title={isCollapsed ? item.label : undefined}
                       type="button"

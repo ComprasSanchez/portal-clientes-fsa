@@ -170,6 +170,7 @@ export function Sidebar({
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.id !== "socios" && currentView === item.id;
+                const isSociosShortcut = item.id === "socios";
 
                 return (
                   <li key={item.id}>
@@ -179,7 +180,9 @@ export function Sidebar({
                         ${
                           isActive
                             ? "bg-linear-to-r from-[#8f63d9] to-[#9f74e5] text-white shadow-[0_6px_16px_rgba(143,99,217,0.3)]"
-                            : "text-[#2f3042] hover:bg-[#ede8f8]"
+                            : isSociosShortcut
+                              ? "text-[#007c98] hover:bg-[#e6f3f6]"
+                              : "text-[#2f3042] hover:bg-[#ede8f8]"
                         }`}
                       title={isCollapsed ? item.label : undefined}
                     >
