@@ -274,6 +274,10 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   gap: 20px;
 }
 
+.fieldRowFullWidth {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .fieldHeader {
   display: flex;
   align-items: center;
@@ -484,6 +488,10 @@ $focus-ring: rgba(0, 124, 152, 0.18);
 @media (min-width: 768px) {
   .fieldRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fieldRowFullWidth {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .contentPanel {

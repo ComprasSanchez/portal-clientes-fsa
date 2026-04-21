@@ -1102,13 +1102,12 @@ export function Login({ onLogin }: LoginProps) {
       return;
     }
 
+    clearFeedback();
     setCardView("google-onboarding");
     setShouldSuggestGoogleAccountRetry(false);
     setMfaState(null);
     setOnboardingFlow(null);
-    setInfoMessage((currentValue) =>
-      currentValue ?? "Completá tus datos para terminar el onboarding con Google.",
-    );
+    setInfoMessage("Completá tus datos para terminar el onboarding con Google.");
   }, [hasGoogleOnboardingHint]);
 
   useEffect(() => {
@@ -1452,7 +1451,7 @@ export function Login({ onLogin }: LoginProps) {
                   </div>
                 ) : null}
                 <form onSubmit={registerFormik.handleSubmit} className={styles.form} noValidate>
-                  <div className={styles.fieldRow}>
+                  <div className={`${styles.fieldRow} ${styles.fieldRowFullWidth}`}>
                     <div className={styles.fieldGroup}>
                       <label className={styles.fieldLabel} htmlFor="register-email">
                         Email
