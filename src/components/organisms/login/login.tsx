@@ -18,6 +18,7 @@ import {
   AuthCardView,
   ForgotPasswordFormValues,
   ForgotPasswordResponse,
+  GoogleProfilePrefill,
   GoogleOnboardingFormValues,
   LoginFormValues,
   LoginProps,
@@ -95,6 +96,36 @@ const initialGoogleOnboardingValues: GoogleOnboardingFormValues = {
   phone: "+549",
 };
 
+type IdentityLinkStatusResponse = {
+  ok?: boolean;
+  link?: {
+    linked?: boolean;
+    status?: string;
+    email?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    nombre?: string | null;
+    apellido?: string | null;
+  };
+  profile?: {
+    email?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    nombre?: string | null;
+    apellido?: string | null;
+  };
+  account?: {
+    email?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+  };
+};
+
+type SocialProfilePayload = Partial<GoogleProfilePrefill> & {
+  nombre?: string | null;
+  apellido?: string | null;
+};
+
 const getErrorCode = (payload: LoginResponse | null) => {
   if (
     payload &&
@@ -152,11 +183,13 @@ export function Login({ onLogin }: LoginProps) {
     useState(false);
   const [isAutoVerifyingOnboarding, setIsAutoVerifyingOnboarding] =
     useState(false);
+  const [googleProfilePrefill, setGoogleProfilePrefill] =
+    useState<GoogleProfilePrefill | null>(null);
 
   type SocialAuthMessage =
-    | { type: "SOCIAL_AUTH_SUCCESS" }
+    | { type: "SOCIAL_AUTH_SUCCESS"; profile?: SocialProfilePayload }
     | { type: "SOCIAL_AUTH_ERROR"; error: string }
-    | { type: "SOCIAL_AUTH_ONBOARDING_REQUIRED" };
+    | { type: "SOCIAL_AUTH_ONBOARDING_REQUIRED"; profile?: SocialProfilePayload };
 
   const redirectTo = getSafeRedirectPath(searchParams.get("redirectTo"));
   const onboardingHint = searchParams.get("onboarding");
@@ -199,6 +232,85 @@ export function Login({ onLogin }: LoginProps) {
       params.set("onboarding", "google");
     });
   };
+
+  const normalizeGoogleProfilePrefill = useCallback(
+    (payload?: SocialProfilePayload | IdentityLinkStatusResponse | null) => {
+      if (!payload) {
+        return null;
+      }
+
+      const profileLike =
+        "profile" in payload || "link" in payload || "account" in payload
+          ? {
+              email:
+                payload.profile?.email ??
+                payload.account?.email ??
+                payload.link?.email ??
+                null,
+              firstName:
+                payload.profile?.firstName ??
+                payload.account?.firstName ??
+                payload.link?.firstName ??
+                payload.profile?.nombre ??
+                payload.link?.nombre ??
+                null,
+              lastName:
+                payload.profile?.lastName ??
+                payload.account?.lastName ??
+                payload.link?.lastName ??
+                payload.profile?.apellido ??
+                payload.link?.apellido ??
+                null,
+            }
+          : {
+              email: (payload as SocialProfilePayload).email ?? null,
+              firstName:
+                (payload as SocialProfilePayload).firstName ??
+                (payload as SocialProfilePayload).nombre ??
+                null,
+              lastName:
+                (payload as SocialProfilePayload).lastName ??
+                (payload as SocialProfilePayload).apellido ??
+                null,
+            };
+
+      const nextPrefill: GoogleProfilePrefill = {
+        email: typeof profileLike.email === "string" ? profileLike.email.trim() : "",
+        firstName:
+          typeof profileLike.firstName === "string"
+            ? profileLike.firstName.trim()
+            : "",
+        lastName:
+          typeof profileLike.lastName === "string"
+            ? profileLike.lastName.trim()
+            : "",
+      };
+
+      return nextPrefill.email || nextPrefill.firstName || nextPrefill.lastName
+        ? nextPrefill
+        : null;
+    },
+    [],
+  );
+  const getIdentityLinkStatus = useCallback(async () => {
+    const response = await fetch(
+      "/api/v2/auth/identity-link/status?accountKind=CLIENTE",
+      {
+        cache: "no-store",
+        credentials: "include",
+      },
+    );
+
+    if (response.status === 401) {
+      throw new Error("SESSION_MISSING");
+    }
+
+    if (!response.ok) {
+      throw new Error("IDENTITY_STATUS_FAILED");
+    }
+
+    return (await response.json()) as IdentityLinkStatusResponse;
+  }, []);
 
   const returnToLogin = () => {
     setCardView("login");
@@ -295,12 +407,9 @@ export function Login({ onLogin }: LoginProps) {
         );
 
         helpers.resetForm();
-        syncSearchParams((params) => {
-          params.delete("onboarding");
-          params.delete("googleOnboarding");
-        });
-        router.push(redirectTo);
-        router.refresh();
+        setGoogleProfilePrefill(null);
+        window.location.assign(redirectTo);
+        return;
       } catch (error) {
         if (axios.isAxiosError<LoginResponse>(error)) {
           setErrorMessage(
@@ -320,6 +429,24 @@ export function Login({ onLogin }: LoginProps) {
       }
     },
   });
+
+  const applyGoogleProfilePrefill = useCallback(
+    (payload?: SocialProfilePayload | IdentityLinkStatusResponse | null) => {
+      const nextPrefill = normalizeGoogleProfilePrefill(payload);
+
+      if (!nextPrefill) {
+        return;
+      }
+
+      setGoogleProfilePrefill(nextPrefill);
+      googleOnboardingFormik.setValues((currentValues) => ({
+        ...currentValues,
+        firstName: currentValues.firstName || nextPrefill.firstName,
+        lastName: currentValues.lastName || nextPrefill.lastName,
+      }));
+    },
+    [googleOnboardingFormik, normalizeGoogleProfilePrefill],
+  );
 
   const verifyOnboardingFormik = useFormik<{ token: string }>({
     initialValues: {
@@ -748,20 +875,45 @@ export function Login({ onLogin }: LoginProps) {
       completed = true;
       cleanup();
       onLogin?.("google", "");
-      router.push(redirectTo);
-      router.refresh();
+      window.location.assign(redirectTo);
     };
 
-    const finishWithGoogleOnboarding = () => {
+    const finishWithGoogleOnboarding = (profile?: SocialProfilePayload | IdentityLinkStatusResponse | null) => {
       if (completed) {
         return;
       }
 
       completed = true;
       cleanup();
+      applyGoogleProfilePrefill(profile);
       openGoogleOnboardingCard(
         "Completá tus datos para terminar el onboarding con Google.",
       );
+    };
+
+    const resolveGoogleDestination = async (profile?: SocialProfilePayload | null) => {
+      try {
+        const identityStatus = await getIdentityLinkStatus();
+
+        if (identityStatus.link?.linked) {
+          finishWithSuccess();
+          return;
+        }
+
+        finishWithGoogleOnboarding(profile ?? identityStatus);
+      } catch (error) {
+        if (error instanceof Error && error.message === "SESSION_MISSING") {
+          setShouldSuggestGoogleAccountRetry(true);
+          finishWithError(
+            "Google autenticó, pero el backend no devolvió cookie de sesión (sid). Contactá al equipo backend.",
+          );
+          return;
+        }
+
+        finishWithError(
+          "No pudimos validar el vínculo de tu identidad con Google. Intentá nuevamente.",
+        );
+      }
     };
 
     const verifySessionAfterPopupClose = async () => {
@@ -776,12 +928,7 @@ export function Login({ onLogin }: LoginProps) {
         );
 
         if (data?.authenticated) {
-          if (hasGoogleOnboardingHint) {
-            finishWithGoogleOnboarding();
-            return;
-          }
-
-          finishWithSuccess();
+          await resolveGoogleDestination();
           return;
         }
       } catch {
@@ -804,12 +951,12 @@ export function Login({ onLogin }: LoginProps) {
       }
 
       if (data.type === "SOCIAL_AUTH_SUCCESS") {
-        finishWithSuccess();
+        void resolveGoogleDestination(data.profile);
         return;
       }
 
       if (data.type === "SOCIAL_AUTH_ONBOARDING_REQUIRED") {
-        finishWithGoogleOnboarding();
+        finishWithGoogleOnboarding(data.profile);
         return;
       }
 
@@ -964,6 +1111,27 @@ export function Login({ onLogin }: LoginProps) {
     );
   }, [hasGoogleOnboardingHint]);
 
+  useEffect(() => {
+    if (!hasGoogleOnboardingHint) {
+      setGoogleProfilePrefill(null);
+      return;
+    }
+
+    const googleEmail = searchParams.get("googleEmail")?.trim() || "";
+    const googleFirstName = searchParams.get("googleFirstName")?.trim() || "";
+    const googleLastName = searchParams.get("googleLastName")?.trim() || "";
+
+    if (!googleEmail && !googleFirstName && !googleLastName) {
+      return;
+    }
+
+    applyGoogleProfilePrefill({
+      email: googleEmail,
+      firstName: googleFirstName,
+      lastName: googleLastName,
+    });
+  }, [applyGoogleProfilePrefill, hasGoogleOnboardingHint, searchParams]);
+
   const usernameHasError = Boolean(formik.touched.username && formik.errors.username);
   const passwordHasError = Boolean(formik.touched.password && formik.errors.password);
   const registerEmailHasError = Boolean(
@@ -1107,6 +1275,11 @@ export function Login({ onLogin }: LoginProps) {
                 {infoMessage ? (
                   <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
                     {infoMessage}
+                  </div>
+                ) : null}
+                {googleProfilePrefill?.email ? (
+                  <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                    Cuenta Google detectada: {googleProfilePrefill.email}
                   </div>
                 ) : null}
                 {errorMessage ? (

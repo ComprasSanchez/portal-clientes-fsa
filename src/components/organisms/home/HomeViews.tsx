@@ -44,7 +44,6 @@ const formatOptionalDate = (value: string | null | undefined) => {
     : parsedDate.toLocaleDateString("es-AR");
 };
 
-
 const formatDeliveryLocation = ({
   medioEntrega,
   domicilioEntrega,
@@ -165,15 +164,15 @@ export function HomeViews({
   const active = viewContent[currentView];
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
   const quickAccessItems: QuickAccessItem[] = [
+    { label: "Mi perfil", view: "mi-cuenta", icon: User },
+    // { label: "Productos", view: "productos", icon: Box },
+    { label: "Segui tu pedido", view: "pedidos", icon: Package },
+    { label: "Expediente", view: "expediente-actual", icon: FileText },
     {
       label: "SocioSA",
       icon: Users,
       onClick: () => router.push("/socios"),
     },
-    { label: "Mi perfil", view: "mi-cuenta", icon: User },
-    // { label: "Productos", view: "productos", icon: Box },
-    { label: "Segui tu pedido", view: "pedidos", icon: Package },
-    { label: "Expediente", view: "expediente-actual", icon: FileText },
     // { label: "Historial", view: "expediente-completo", icon: TrendingUp },
   ];
 
@@ -258,7 +257,11 @@ export function HomeViews({
   if (currentView === "mi-cuenta") {
     return (
       <main className={styles.container}>
-        <ProfileView perfil={perfil} variant="cora" isLoading={isProfileLoading} />
+        <ProfileView
+          perfil={perfil}
+          variant="cora"
+          isLoading={isProfileLoading}
+        />
       </main>
     );
   }
@@ -405,7 +408,10 @@ export function HomeViews({
                   <div>
                     <p className={styles.cycleSummaryLabel}>Forma de entrega</p>
                     <p className={styles.cycleSummaryValue}>
-                      {getMappedLabel(SEND_TYPE_LABELS, expedienteActual?.medioEntrega)}
+                      {getMappedLabel(
+                        SEND_TYPE_LABELS,
+                        expedienteActual?.medioEntrega,
+                      )}
                     </p>
                   </div>
                   <div>
@@ -456,7 +462,10 @@ export function HomeViews({
                     <div>
                       <p className={styles.cycleSummaryLabel}>Estado</p>
                       <p className={styles.cycleSummaryValue}>
-                        {getMappedLabel(CICLOS_STATE_TYPE_LABELS, expedienteActualCycle.estado)}
+                        {getMappedLabel(
+                          CICLOS_STATE_TYPE_LABELS,
+                          expedienteActualCycle.estado,
+                        )}
                       </p>
                     </div>
                     <div>
@@ -468,7 +477,9 @@ export function HomeViews({
                       </p>
                     </div>
                     <div>
-                      <p className={styles.cycleSummaryLabel}>Empezamos a prepararlo</p>
+                      <p className={styles.cycleSummaryLabel}>
+                        Empezamos a prepararlo
+                      </p>
                       <p className={styles.cycleSummaryValue}>
                         {formatOptionalDate(
                           expedienteActualCycle.fechaInicioGestion,
@@ -476,13 +487,17 @@ export function HomeViews({
                       </p>
                     </div>
                     <div>
-                      <p className={styles.cycleSummaryLabel}>Movimientos registrados</p>
+                      <p className={styles.cycleSummaryLabel}>
+                        Movimientos registrados
+                      </p>
                       <p className={styles.cycleSummaryValue}>
                         {expedienteActualEvents.length}
                       </p>
                     </div>
                     <div>
-                      <p className={styles.cycleSummaryLabel}>Medicamentos en este pedido</p>
+                      <p className={styles.cycleSummaryLabel}>
+                        Medicamentos en este pedido
+                      </p>
                       <p className={styles.cycleSummaryValue}>
                         {expedienteActualCycleItems.length}
                       </p>
@@ -499,7 +514,9 @@ export function HomeViews({
                 <p className={styles.cycleSummaryEyebrow}>Cómo seguimos</p>
                 <div className={styles.cycleSummaryGrid}>
                   <div>
-                    <p className={styles.cycleSummaryLabel}>Canal de contacto</p>
+                    <p className={styles.cycleSummaryLabel}>
+                      Canal de contacto
+                    </p>
                     <p className={styles.cycleSummaryValue}>
                       {expedienteActualContacto
                         ? `${formatContactLabel(expedienteActualContacto.tipo)}: ${expedienteActualContacto.valor}`
@@ -507,7 +524,9 @@ export function HomeViews({
                     </p>
                   </div>
                   <div>
-                    <p className={styles.cycleSummaryLabel}>Horario de contacto</p>
+                    <p className={styles.cycleSummaryLabel}>
+                      Horario de contacto
+                    </p>
                     <p className={styles.cycleSummaryValue}>
                       {getMappedLabel(
                         TIME_CONTACT_LABELS,
@@ -536,23 +555,32 @@ export function HomeViews({
                   <div>
                     <p className={styles.cycleSummaryLabel}>Forma de pago</p>
                     <p className={styles.cycleSummaryValue}>
-                      {getMappedLabel(PAY_TYPE_LABELS, expedienteActual?.medioPago)}
+                      {getMappedLabel(
+                        PAY_TYPE_LABELS,
+                        expedienteActual?.medioPago,
+                      )}
                     </p>
                   </div>
                   <div>
-                    <p className={styles.cycleSummaryLabel}>Medicamentos de este pedido</p>
+                    <p className={styles.cycleSummaryLabel}>
+                      Medicamentos de este pedido
+                    </p>
                     <p className={styles.cycleSummaryValue}>
                       {cicloItemsCount}
                     </p>
                   </div>
                   <div>
-                    <p className={styles.cycleSummaryLabel}>Medicamentos del tratamiento</p>
+                    <p className={styles.cycleSummaryLabel}>
+                      Medicamentos del tratamiento
+                    </p>
                     <p className={styles.cycleSummaryValue}>
                       {expedienteActualItems.length}
                     </p>
                   </div>
                   <div>
-                    <p className={styles.cycleSummaryLabel}>Entregas anteriores</p>
+                    <p className={styles.cycleSummaryLabel}>
+                      Entregas anteriores
+                    </p>
                     <p className={styles.cycleSummaryValue}>
                       {pastCycles.length}
                     </p>
@@ -560,21 +588,25 @@ export function HomeViews({
                 </div>
 
                 <div className={styles.itemsSection}>
-                  <p className={styles.itemsSectionTitle}>Medicamentos de este pedido</p>
-                {expedienteActualCycleItems.length > 0 ? (
-                  <div className={styles.itemsGrid}>
-                    {expedienteActualCycleItems.map((item) => (
-                      <article key={item.id} className={styles.itemCard}>
-                        <p className={styles.itemTitle}>{item.productoNombre}</p>
-
-                      </article>
-                    ))}
-                  </div>
-                ) : (
-                  <p className={styles.summaryMuted}>
-                    Todavía no tenemos el detalle de los medicamentos de este pedido.
+                  <p className={styles.itemsSectionTitle}>
+                    Medicamentos de este pedido
                   </p>
-                )}
+                  {expedienteActualCycleItems.length > 0 ? (
+                    <div className={styles.itemsGrid}>
+                      {expedienteActualCycleItems.map((item) => (
+                        <article key={item.id} className={styles.itemCard}>
+                          <p className={styles.itemTitle}>
+                            {item.productoNombre}
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={styles.summaryMuted}>
+                      Todavía no tenemos el detalle de los medicamentos de este
+                      pedido.
+                    </p>
+                  )}
                 </div>
 
                 {expedienteActualWarnings.length > 0 ? (

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequiredBaseUrl, jsonError } from "@/app/api/_lib/proxy";
 
+const sanitizeEnvValue = (value: string | undefined) => {
+  return value?.trim().replace(/^['"]+|['"]+$/g, "") || null;
+};
+
 const getSetCookieList = (headers: Headers): string[] => {
   const withGetSetCookie = headers as Headers & { getSetCookie?: () => string[] };
 
@@ -38,7 +42,9 @@ export async function GET(req: NextRequest) {
       redirect: "manual",
     });
 
-    const redirectOverride = process.env.FSA_AUTH_GOOGLE_REDIRECT_URI_OVERRIDE?.trim();
+    const redirectOverride = sanitizeEnvValue(
+      process.env.FSA_AUTH_GOOGLE_REDIRECT_URI_OVERRIDE,
+    );
     const upstreamLocation = upstream.headers.get("location");
     let rewrittenLocation: string | null = null;
 

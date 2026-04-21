@@ -86,6 +86,12 @@ export type CustomerIdentityFormValues = {
 
 export type GoogleOnboardingFormValues = CustomerIdentityFormValues;
 
+export type GoogleProfilePrefill = {
+  email: string;
+  firstName: string;
+  lastName: string;
+};
+
 export type OnboardingFlowState = {
   id: string;
   status?: string;

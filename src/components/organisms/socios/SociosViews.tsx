@@ -132,7 +132,7 @@ export function SociosViews({
         </div>
       )}
 
-      <DetailButton tone="socios" label="Ver detalle" onClick={() => onNavigate("puntos")} />
+      {/* <DetailButton tone="socios" label="Ver detalle" onClick={() => onNavigate("puntos")} /> */}
     </article>
   );
 
@@ -182,14 +182,14 @@ export function SociosViews({
     if (currentView === "puntos") {
       return (
         <main className={styles.container}>
-          <section className={styles.activeViewCard}>
+          <section className={styles.facturasViewSection}>
             <p className={styles.activeViewLabel}>Vista activa</p>
             <h1 className={styles.activeViewTitle}>{active.title}</h1>
             <p className={styles.activeViewDescription}>{active.description}</p>
             <div className={styles.activePointsWrapper}>{pointsCard}</div>
-            <button onClick={() => onNavigate("dashboard")} className={styles.primaryButton} type="button">
+            {/* <button onClick={() => onNavigate("dashboard")} className={styles.primaryButton} type="button">
               Volver a Inicio
-            </button>
+            </button> */}
           </section>
         </main>
       );
