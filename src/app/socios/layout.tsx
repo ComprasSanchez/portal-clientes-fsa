@@ -3,7 +3,7 @@ import { PortalExpedientesProvider } from "@/lib/portal-expedientes-context";
 import { PortalPerfilProvider } from "@/lib/portal-perfil-context";
 
 export const metadata: Metadata = {
-  title: "Socios A",
+  title: "SocioSA",
   description: "Portal de socios",
   icons: {
     icon: "/socio.ico",

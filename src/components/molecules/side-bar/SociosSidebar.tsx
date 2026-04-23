@@ -60,7 +60,7 @@ export function SociosSidebar({ currentView, onNavigate, userName, onLogout }: S
   return (
     <>
       <div className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-[#d3dee2] bg-[#f2f5f6] px-4 lg:hidden">
-        <Image src={sociosaLogo} alt="Socios A" width={140} height={40} className="h-9 w-auto" priority />
+        <Image src={sociosaLogo} alt="SocioSA" width={140} height={40} className="h-9 w-auto" priority />
         <button
           onClick={() => setIsMobileOpen((prev) => !prev)}
           className="rounded-lg p-2 text-[#32505a] transition-colors hover:bg-[#e0eaed]"
@@ -87,7 +87,7 @@ export function SociosSidebar({ currentView, onNavigate, userName, onLogout }: S
               <div className="overflow-hidden">
                 <Image
                   src={sociosaLogo}
-                  alt="Socios A"
+                  alt="SocioSA"
                   width={140}
                   height={40}
                   className={`w-auto shrink-0 ${isCollapsed ? "h-8" : "h-10"}`}

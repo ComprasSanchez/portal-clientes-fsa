@@ -45,7 +45,7 @@ export const pickPreferredDomicilio = (domicilios: PortalPerfilDomicilio[] | und
   return candidates.find((domicilio) => domicilio.principal) ?? candidates[0] ?? null;
 };
 
-const formatDate = (value?: string | null) => {
+export const formatPortalProfileDate = (value?: string | null) => {
   const normalized = normalizeText(value);
   if (!normalized) {
     return "Sin dato";
@@ -128,7 +128,7 @@ export const getPortalPerfilDetails = (
 
   return {
     ...summary,
-    birthDate: formatDate(perfil?.fechaNacimiento),
+    birthDate: formatPortalProfileDate(perfil?.fechaNacimiento),
     legalAddress: formatAddress(domicilio),
     residenceAddress: formatAddress(domicilio),
   };

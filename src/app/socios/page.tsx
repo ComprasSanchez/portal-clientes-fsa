@@ -56,7 +56,7 @@ const SociosPage = () => {
 
         <footer className="relative left-1/2 mt-auto -translate-x-1/2 border-t border-[#d3dee2] bg-white py-6">
           <div className="mx-auto max-w-7xl px-4 text-center text-sm text-[#627880] sm:px-6 lg:px-8">
-            <p className="mb-2">© 2026 Socios A - Todos los derechos reservados</p>
+            <p className="mb-2">© 2026 SocioSA - Todos los derechos reservados</p>
             <p className="text-xs text-[#8a9aa0]">Atencion clara · Gestion simple · Acceso rapido</p>
           </div>
         </footer>

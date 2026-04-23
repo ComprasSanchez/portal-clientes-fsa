@@ -14,6 +14,7 @@ export type UsePortalPerfilResult = {
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  replacePerfil: (nextPerfil: PortalPerfilResponse | null) => void;
 };
 
 const readErrorMessage = async (response: Response) => {
@@ -105,6 +106,11 @@ export const usePortalPerfil = ({ enabled = true }: UsePortalPerfilOptions = {})
     error,
     refresh: async () => {
       await loadPerfil();
+    },
+    replacePerfil: (nextPerfil) => {
+      setPerfil(nextPerfil);
+      setError(null);
+      setIsLoading(false);
     },
   };
 };

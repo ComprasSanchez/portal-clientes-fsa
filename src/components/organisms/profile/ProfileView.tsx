@@ -7,6 +7,7 @@ import { ProfileField } from "@/components/molecules/home/ProfileField";
 import { Switch } from "@/components/ui/switch";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import {
+  formatPortalProfileDate,
   formatAddress,
   getPortalPerfilDetails,
   normalizeText,
@@ -23,7 +24,11 @@ import type {
 import styles from "./ProfileView.module.scss";
 
 type ProfileData = {
+  firstName: string;
+  lastName: string;
+  displayNameFallback: string;
   fullName: string;
+  birthDateValue: string;
   birthDate: string;
   identification: string;
   legalAddress: string;
@@ -45,6 +50,12 @@ type ProfileViewProps = {
   perfil: PortalPerfilResponse | null;
   variant?: "cora" | "socios";
   isLoading?: boolean;
+};
+
+type UpdateDatosPersonalesPayload = {
+  nombre?: string;
+  apellido?: string;
+  fechaNacimiento?: string | null;
 };
 
 type AffiliationFormData = {
@@ -285,11 +296,29 @@ const formatEditableAddress = (
   });
 };
 
-const syncProfileAddressFields = (profileData: ProfileData): ProfileData => {
+const buildPersonalDisplayName = (
+  firstName: string,
+  lastName: string,
+  fallback: string,
+) => {
+  const displayName = [firstName.trim(), lastName.trim()]
+    .filter(Boolean)
+    .join(" ");
+
+  return displayName || fallback || "Usuario";
+};
+
+const syncProfileDerivedFields = (profileData: ProfileData): ProfileData => {
   const formattedAddress = formatEditableAddress(profileData);
 
   return {
     ...profileData,
+    fullName: buildPersonalDisplayName(
+      profileData.firstName,
+      profileData.lastName,
+      profileData.displayNameFallback,
+    ),
+    birthDate: formatPortalProfileDate(profileData.birthDateValue || null),
     legalAddress: formattedAddress,
     residenceAddress: formattedAddress,
   };
@@ -299,8 +328,12 @@ const buildProfileData = (perfil: PortalPerfilResponse | null): ProfileData => {
   const details = getPortalPerfilDetails(perfil);
   const domicilio = pickPreferredDomicilio(perfil?.domicilios);
 
-  return syncProfileAddressFields({
+  return syncProfileDerivedFields({
+    firstName: perfil?.nombre ?? "",
+    lastName: perfil?.apellido ?? "",
+    displayNameFallback: details.displayName,
     fullName: details.displayName,
+    birthDateValue: normalizeText(perfil?.fechaNacimiento) ?? "",
     birthDate: details.birthDate,
     identification: details.documentNumber ?? "Sin dato",
     legalAddress: details.legalAddress,
@@ -422,6 +455,52 @@ const savePortalDomicilio = async (
   }
 };
 
+const buildDatosPersonalesPatch = (
+  initialProfile: ProfileData,
+  currentProfile: ProfileData,
+): UpdateDatosPersonalesPayload => {
+  const payload: UpdateDatosPersonalesPayload = {};
+  const initialFirstName = initialProfile.firstName.trim();
+  const currentFirstName = currentProfile.firstName.trim();
+  const initialLastName = initialProfile.lastName.trim();
+  const currentLastName = currentProfile.lastName.trim();
+  const initialBirthDate = initialProfile.birthDateValue.trim();
+  const currentBirthDate = currentProfile.birthDateValue.trim();
+
+  if (currentFirstName !== initialFirstName) {
+    payload.nombre = currentFirstName;
+  }
+
+  if (currentLastName !== initialLastName) {
+    payload.apellido = currentLastName;
+  }
+
+  if (currentBirthDate !== initialBirthDate) {
+    payload.fechaNacimiento = currentBirthDate || null;
+  }
+
+  return payload;
+};
+
+const savePortalDatosPersonales = async (
+  payload: UpdateDatosPersonalesPayload,
+) => {
+  const response = await fetch("/api/portal/me/datos-personales", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readMutationError(response));
+  }
+
+  return (await response.json()) as PortalPerfilResponse;
+};
+
 const setPortalDomicilioAsPrincipal = async (
   domicilio: PortalPerfilDomicilio,
 ) => {
@@ -429,8 +508,12 @@ const setPortalDomicilioAsPrincipal = async (
     throw new Error("El domicilio seleccionado no tiene id y no se puede actualizar.");
   }
 
-  const nextProfile = syncProfileAddressFields({
+  const nextProfile = syncProfileDerivedFields({
+    firstName: "",
+    lastName: "",
+    displayNameFallback: "Usuario",
     fullName: "",
+    birthDateValue: "",
     birthDate: "",
     identification: "",
     legalAddress: "",
@@ -462,7 +545,7 @@ export function ProfileView({
   variant = "socios",
   isLoading = false,
 }: ProfileViewProps) {
-  const { refresh } = usePortalPerfilContext();
+  const { refresh, replacePerfil } = usePortalPerfilContext();
   const [isAffiliationModalOpen, setIsAffiliationModalOpen] = useState(false);
   const [isContactoModalOpen, setIsContactoModalOpen] = useState(false);
   const [isDomicilioModalOpen, setIsDomicilioModalOpen] = useState(false);
@@ -491,6 +574,8 @@ export function ProfileView({
   const [isSavingContacto, setIsSavingContacto] = useState(false);
   const [isSwitchingDomicilio, setIsSwitchingDomicilio] = useState(false);
   const [isSavingDomicilio, setIsSavingDomicilio] = useState(false);
+  const [isEditingPersonalData, setIsEditingPersonalData] = useState(false);
+  const [isSavingPersonalData, setIsSavingPersonalData] = useState(false);
   const [profileFeedback, setProfileFeedback] =
     useState<ProfileFeedback | null>(null);
 
@@ -978,7 +1063,7 @@ export function ProfileView({
       return;
     }
 
-    const nextProfile = syncProfileAddressFields({
+    const nextProfile = syncProfileDerivedFields({
       ...editableProfile,
       addressStreet: domicilioForm.street,
       addressNumber: domicilioForm.number,
@@ -1014,6 +1099,92 @@ export function ProfileView({
     }
   };
 
+  const handlePersonalDataFieldChange = (
+    field: "firstName" | "lastName" | "birthDateValue",
+    value: string,
+  ) => {
+    setEditableProfile((current) => {
+      if (!current) {
+        return current;
+      }
+
+      return syncProfileDerivedFields({
+        ...current,
+        [field]: value,
+      });
+    });
+  };
+
+  const handleStartEditingPersonalData = () => {
+    setEditableProfile(profile);
+    setProfileFeedback(null);
+    setIsEditingPersonalData(true);
+  };
+
+  const handleCancelEditingPersonalData = () => {
+    if (isSavingPersonalData) {
+      return;
+    }
+
+    setEditableProfile(profile);
+    setProfileFeedback(null);
+    setIsEditingPersonalData(false);
+  };
+
+  const handleSavePersonalData = async () => {
+    if (isSavingPersonalData || !editableProfile) {
+      return;
+    }
+
+    const payload = buildDatosPersonalesPatch(profile, editableProfile);
+
+    if (Object.keys(payload).length === 0) {
+      setIsEditingPersonalData(false);
+      setProfileFeedback(null);
+      return;
+    }
+
+    if ("nombre" in payload && !payload.nombre) {
+      setProfileFeedback({
+        type: "error",
+        message: "El nombre no puede quedar vacío.",
+      });
+      return;
+    }
+
+    if ("apellido" in payload && !payload.apellido) {
+      setProfileFeedback({
+        type: "error",
+        message: "El apellido no puede quedar vacío.",
+      });
+      return;
+    }
+
+    try {
+      setIsSavingPersonalData(true);
+      setProfileFeedback(null);
+
+      const updatedPerfil = await savePortalDatosPersonales(payload);
+      replacePerfil(updatedPerfil);
+      setEditableProfile(buildProfileData(updatedPerfil));
+      setIsEditingPersonalData(false);
+      setProfileFeedback({
+        type: "success",
+        message: "Tus datos personales se actualizaron correctamente.",
+      });
+    } catch (error) {
+      setProfileFeedback({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "No se pudieron guardar los datos personales.",
+      });
+    } finally {
+      setIsSavingPersonalData(false);
+    }
+  };
+
   const profileValues = currentProfile;
 
   return (
@@ -1027,8 +1198,8 @@ export function ProfileView({
           <h1 className={styles.title}>Mis datos</h1>
           <p className={styles.subtitle}>Informacion personal y de contacto</p>
           <p className={styles.localEditHint}>
-            Podés elegir qué contacto y qué domicilio querés usar, o cargar uno
-            nuevo cuando lo necesites.
+            Desde editar podés actualizar tus datos personales y también elegir
+            o cargar nuevos datos de contacto y domicilio.
           </p>
         </div>
       </header>
@@ -1056,180 +1227,277 @@ export function ProfileView({
 
             <div className={styles.sectionsGrid}>
               <section>
-                <h3 className={styles.sectionTitle}>Mis datos personales</h3>
-                <div className={styles.fieldsGrid}>
-                  <ProfileField
-                    label="Nombre"
-                    value={profileValues.fullName}
-                    readOnly
-                  />
-                  <ProfileField
-                    label="Fecha de nacimiento"
-                    value={profileValues.birthDate}
-                    readOnly
-                  />
-                  <ProfileField
-                    label="Identificacion"
-                    value={profileValues.identification}
-                    readOnly
-                  />
-                  <ProfileField
-                    label="Domicilio Legal"
-                    value={profileValues.legalAddress}
-                    readOnly
-                  />
-                </div>
-              </section>
-
-              <section>
-                <h3 className={styles.sectionTitle}>Mis datos de contacto</h3>
-                <div className={styles.fieldsGrid}>
-                  <div className={styles.selectorGroup}>
-                    <label
-                      className={styles.selectorLabel}
-                      htmlFor="phone-select"
-                    >
-                      Elegir teléfono principal
-                    </label>
-                    <div className={styles.selectorRow}>
-                      <select
-                        id="phone-select"
-                        className={styles.selectorInput}
-                        value={
-                          preferredPhone
-                            ? getContactOptionValue(preferredPhone)
-                            : ""
-                        }
-                        onChange={(event) =>
-                          void handleSelectPrincipalPhone(event.target.value)
-                        }
-                        disabled={telefonos.length === 0 || isSwitchingPhone}
-                      >
-                        {telefonos.length === 0 ? (
-                          <option value="">No hay teléfonos cargados</option>
-                        ) : null}
-                        {telefonos.map((contacto) => (
-                          <option
-                            key={getContactOptionValue(contacto)}
-                            value={getContactOptionValue(contacto)}
-                          >
-                            {contacto.valor ?? "Sin dato"}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        className={styles.selectorActionButton}
-                        onClick={() => handleOpenContactoModal("TELEFONO")}
-                      >
-                        Añadir nuevo
-                      </button>
-                    </div>
-                    <p className={styles.contactInlineHint}>
-                      {telefonos.length > 0
-                        ? ""
-                        : "Todavía no hay teléfonos guardados."}
+                <div className={styles.sectionHeader}>
+                  <div>
+                    <h3 className={styles.sectionTitle}>Mis datos personales</h3>
+                    <p className={styles.sectionSubtitle}>
+                      {isEditingPersonalData
+                        ? "Editá tus datos personales y administrá tus contactos desde este mismo bloque."
+                        : "Consultá tus datos personales y abrí editar para actualizar también tus contactos."}
                     </p>
                   </div>
-                  <div className={styles.addressFieldGroup}>
-                    <div className={styles.addressInlineAction}>
-                      <label
-                        className={styles.selectorLabel}
-                        htmlFor="domicilio-select"
-                      >
-                        Elegir domicilio principal
-                      </label>
-                      <div className={styles.selectorRow}>
-                        <select
-                          id="domicilio-select"
-                          className={styles.selectorInput}
-                          value={
-                            preferredDomicilio
-                              ? getDomicilioOptionValue(preferredDomicilio)
-                              : ""
-                          }
-                          onChange={(event) =>
-                            void handleSelectPrincipalDomicilio(
-                              event.target.value,
-                            )
-                          }
-                          disabled={
-                            domicilios.length === 0 || isSwitchingDomicilio
-                          }
+                  <div className={styles.sectionActions}>
+                    {isEditingPersonalData ? (
+                      <>
+                        <button
+                          type="button"
+                          className={styles.secondaryButton}
+                          onClick={handleCancelEditingPersonalData}
+                          disabled={isSavingPersonalData}
                         >
-                          {domicilios.length === 0 ? (
-                            <option value="">No hay domicilios cargados</option>
-                          ) : null}
-                          {domicilios.map((domicilio) => (
-                            <option
-                              key={getDomicilioOptionValue(domicilio)}
-                              value={getDomicilioOptionValue(domicilio)}
-                            >
-                              {getDomicilioOptionLabel(domicilio)}
-                            </option>
-                          ))}
-                        </select>
+                          Cancelar
+                        </button>
                         <button
                           type="button"
                           className={styles.selectorActionButton}
-                          onClick={handleOpenDomicilioModal}
+                          onClick={() => {
+                            void handleSavePersonalData();
+                          }}
+                          disabled={isSavingPersonalData}
                         >
-                          Añadir nuevo domicilio
+                          {isSavingPersonalData ? "Guardando..." : "Guardar cambios"}
                         </button>
-                      </div>
-                      <p className={styles.addressInlineHint}>
-                        {hasSavedDomicilio
-                          ? ""
-                          : "Todavía no tenés un domicilio cargado."}
-                      </p>
-                    </div>
-                  </div>
-                  <div className={styles.selectorGroup}>
-                    <label
-                      className={styles.selectorLabel}
-                      htmlFor="email-select"
-                    >
-                      Elegir email principal
-                    </label>
-                    <div className={styles.selectorRow}>
-                      <select
-                        id="email-select"
-                        className={styles.selectorInput}
-                        value={
-                          preferredEmail
-                            ? getContactOptionValue(preferredEmail)
-                            : ""
-                        }
-                        onChange={(event) =>
-                          void handleSelectPrincipalEmail(event.target.value)
-                        }
-                        disabled={emails.length === 0 || isSwitchingEmail}
-                      >
-                        {emails.length === 0 ? (
-                          <option value="">No hay emails cargados</option>
-                        ) : null}
-                        {emails.map((contacto) => (
-                          <option
-                            key={getContactOptionValue(contacto)}
-                            value={getContactOptionValue(contacto)}
-                          >
-                            {contacto.valor ?? "Sin dato"}
-                          </option>
-                        ))}
-                      </select>
+                      </>
+                    ) : (
                       <button
                         type="button"
-                        className={styles.selectorActionButton}
-                        onClick={() => handleOpenContactoModal("EMAIL")}
+                        className={styles.secondaryButton}
+                        onClick={handleStartEditingPersonalData}
                       >
-                        Añadir nuevo
+                        Editar
                       </button>
+                    )}
+                  </div>
+                </div>
+                <div className={styles.profileSectionGrid}>
+                  <div className={styles.profileSectionColumn}>
+                    <h4 className={styles.subsectionTitle}>Datos personales</h4>
+                    <div className={styles.fieldsGrid}>
+                      <ProfileField
+                        label="Nombre"
+                        value={
+                          isEditingPersonalData
+                            ? profileValues.firstName
+                            : profileValues.firstName || "Sin dato"
+                        }
+                        isEditing={isEditingPersonalData}
+                        onChange={(value) => {
+                          handlePersonalDataFieldChange("firstName", value);
+                        }}
+                      />
+                      <ProfileField
+                        label="Apellido"
+                        value={
+                          isEditingPersonalData
+                            ? profileValues.lastName
+                            : profileValues.lastName || "Sin dato"
+                        }
+                        isEditing={isEditingPersonalData}
+                        onChange={(value) => {
+                          handlePersonalDataFieldChange("lastName", value);
+                        }}
+                      />
+                      <ProfileField
+                        label="Fecha de nacimiento"
+                        value={
+                          isEditingPersonalData
+                            ? profileValues.birthDateValue
+                            : profileValues.birthDate
+                        }
+                        type="date"
+                        isEditing={isEditingPersonalData}
+                        onChange={(value) => {
+                          handlePersonalDataFieldChange("birthDateValue", value);
+                        }}
+                      />
+                      <ProfileField
+                        label="Identificacion"
+                        value={profileValues.identification}
+                        readOnly
+                      />
+                      <ProfileField
+                        label="Domicilio Legal"
+                        value={profileValues.legalAddress}
+                        readOnly
+                      />
                     </div>
-                    <p className={styles.contactInlineHint}>
-                      {emails.length > 0
-                        ? ""
-                        : "Todavía no hay emails guardados."}
-                    </p>
+                  </div>
+
+                  <div className={styles.profileSectionColumn}>
+                    <h4 className={styles.subsectionTitle}>Datos de contacto</h4>
+                    {isEditingPersonalData ? (
+                      <div className={styles.fieldsGrid}>
+                        <div className={styles.selectorGroup}>
+                          <label
+                            className={styles.selectorLabel}
+                            htmlFor="phone-select"
+                          >
+                            Elegir teléfono principal
+                          </label>
+                          <div className={styles.selectorRow}>
+                            <select
+                              id="phone-select"
+                              className={styles.selectorInput}
+                              value={
+                                preferredPhone
+                                  ? getContactOptionValue(preferredPhone)
+                                  : ""
+                              }
+                              onChange={(event) =>
+                                void handleSelectPrincipalPhone(event.target.value)
+                              }
+                              disabled={telefonos.length === 0 || isSwitchingPhone}
+                            >
+                              {telefonos.length === 0 ? (
+                                <option value="">No hay teléfonos cargados</option>
+                              ) : null}
+                              {telefonos.map((contacto) => (
+                                <option
+                                  key={getContactOptionValue(contacto)}
+                                  value={getContactOptionValue(contacto)}
+                                >
+                                  {contacto.valor ?? "Sin dato"}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              className={styles.selectorActionButton}
+                              onClick={() => handleOpenContactoModal("TELEFONO")}
+                            >
+                              Añadir nuevo
+                            </button>
+                          </div>
+                          {telefonos.length === 0 ? (
+                            <p className={styles.contactInlineHint}>
+                              Todavía no hay teléfonos guardados.
+                            </p>
+                          ) : null}
+                        </div>
+                        <div className={styles.addressFieldGroup}>
+                          <div className={styles.addressInlineAction}>
+                            <label
+                              className={styles.selectorLabel}
+                              htmlFor="domicilio-select"
+                            >
+                              Elegir domicilio principal
+                            </label>
+                            <div className={styles.selectorRow}>
+                              <select
+                                id="domicilio-select"
+                                className={styles.selectorInput}
+                                value={
+                                  preferredDomicilio
+                                    ? getDomicilioOptionValue(preferredDomicilio)
+                                    : ""
+                                }
+                                onChange={(event) =>
+                                  void handleSelectPrincipalDomicilio(
+                                    event.target.value,
+                                  )
+                                }
+                                disabled={
+                                  domicilios.length === 0 || isSwitchingDomicilio
+                                }
+                              >
+                                {domicilios.length === 0 ? (
+                                  <option value="">No hay domicilios cargados</option>
+                                ) : null}
+                                {domicilios.map((domicilio) => (
+                                  <option
+                                    key={getDomicilioOptionValue(domicilio)}
+                                    value={getDomicilioOptionValue(domicilio)}
+                                  >
+                                    {getDomicilioOptionLabel(domicilio)}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                type="button"
+                                className={styles.selectorActionButton}
+                                onClick={handleOpenDomicilioModal}
+                              >
+                                Añadir nuevo domicilio
+                              </button>
+                            </div>
+                            {!hasSavedDomicilio ? (
+                              <p className={styles.addressInlineHint}>
+                                Todavía no tenés un domicilio cargado.
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className={styles.selectorGroup}>
+                          <label
+                            className={styles.selectorLabel}
+                            htmlFor="email-select"
+                          >
+                            Elegir email principal
+                          </label>
+                          <div className={styles.selectorRow}>
+                            <select
+                              id="email-select"
+                              className={styles.selectorInput}
+                              value={
+                                preferredEmail
+                                  ? getContactOptionValue(preferredEmail)
+                                  : ""
+                              }
+                              onChange={(event) =>
+                                void handleSelectPrincipalEmail(event.target.value)
+                              }
+                              disabled={emails.length === 0 || isSwitchingEmail}
+                            >
+                              {emails.length === 0 ? (
+                                <option value="">No hay emails cargados</option>
+                              ) : null}
+                              {emails.map((contacto) => (
+                                <option
+                                  key={getContactOptionValue(contacto)}
+                                  value={getContactOptionValue(contacto)}
+                                >
+                                  {contacto.valor ?? "Sin dato"}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              className={styles.selectorActionButton}
+                              onClick={() => handleOpenContactoModal("EMAIL")}
+                            >
+                              Añadir nuevo
+                            </button>
+                          </div>
+                          {emails.length === 0 ? (
+                            <p className={styles.contactInlineHint}>
+                              Todavía no hay emails guardados.
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={styles.fieldsGrid}>
+                        <ProfileField
+                          label="Teléfono principal"
+                          value={preferredPhone?.valor ?? "Sin dato"}
+                          readOnly
+                        />
+                        <ProfileField
+                          label="Email principal"
+                          value={preferredEmail?.valor ?? "Sin dato"}
+                          readOnly
+                        />
+                        <ProfileField
+                          label="Domicilio principal"
+                          value={
+                            preferredDomicilio
+                              ? getDomicilioOptionLabel(preferredDomicilio)
+                              : "Sin dato"
+                          }
+                          readOnly
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </section>

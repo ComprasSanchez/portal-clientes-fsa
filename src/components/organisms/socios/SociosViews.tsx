@@ -170,7 +170,7 @@ export function SociosViews({
 
   if (currentView === "mi-cuenta") {
     return (
-      <main className={styles.container}>
+      <main className={`${styles.container} ${styles.containerWide}`}>
         <ProfileView perfil={perfil} variant="socios" isLoading={isProfileLoading} />
       </main>
     );

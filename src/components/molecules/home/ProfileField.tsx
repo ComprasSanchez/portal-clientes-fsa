@@ -5,7 +5,7 @@ interface ProfileFieldProps {
   value: string;
   isEditing?: boolean;
   onChange?: (value: string) => void;
-  type?: "text" | "email" | "tel";
+  type?: "text" | "email" | "tel" | "date";
   readOnly?: boolean;
 }
 
