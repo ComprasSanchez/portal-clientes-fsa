@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, CreditCard, Gift, Heart, User } from "lucide-react";
+import { ArrowRight, ChevronDown, CreditCard, Gift, Heart, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
@@ -16,6 +16,7 @@ import { formatPortalPoints } from "@/lib/portal-puntos";
 import { usePortalPuntos } from "@/lib/use-portal-puntos";
 import { useGlobalToast } from "../../ui/global-toast";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
+import type { PortalComprasProducto } from "@/types/portal-compras";
 import { type SociosView } from "@/types/socios";
 import styles from "./SociosViews.module.scss";
 
@@ -44,6 +45,10 @@ const viewContent: Record<Exclude<SociosView, "dashboard">, { title: string; des
     title: "Puntos",
     description: "Revisa tu saldo actual, beneficios vigentes y proximas recompensas disponibles.",
   },
+};
+
+const hasProductDiscount = (producto: PortalComprasProducto) => {
+  return typeof producto.descuento === "number" && producto.descuento !== 0;
 };
 
 export function SociosViews({
@@ -280,49 +285,59 @@ export function SociosViews({
                 ) : (
                   <div className={styles.facturasList}>
                     {comprasSummary.comprobantes.map((comprobante) => (
-                      <article key={comprobante.compraId} className={styles.facturaCard}>
-                        <div className={styles.facturaCardHeader}>
-                          <div>
-                            <h3 className={styles.facturaRef}>{comprobante.comprobanteRef}</h3>
-                            <p className={styles.facturaMeta}>
-                              {formatPortalDateTime(comprobante.fecha)}
-                              {comprobante.nombreFantasia ? ` · ${comprobante.nombreFantasia}` : ""}
-                            </p>
-                          </div>
-                          <div className={styles.facturaAmountBlock}>
-                            {comprobante.estado ? (
-                              <span className={styles.statusBadge}>{comprobante.estado}</span>
-                            ) : null}
-                            <strong className={styles.facturaAmount}>
-                              {formatPortalCurrency(comprobante.total, comprobante.moneda)}
-                            </strong>
-                          </div>
-                        </div>
-
-                        <div className={styles.facturaItemsList}>
-                          {comprobante.items.map((item, index) => (
-                            <div
-                              key={`${comprobante.compraId}-${index}`}
-                              className={styles.facturaItemRow}
-                            >
-                              <div>
-                                <p className={styles.facturaItemName}>
-                                  {item.producto || "Producto sin descripcion"}
-                                </p>
-                                <p className={styles.facturaItemMeta}>
-                                  Cantidad: {item.cantidad ?? 0}
-                                </p>
-                              </div>
-                              <strong className={styles.facturaItemTotal}>
-                                {formatPortalCurrency(
-                                  typeof item.total === "number" ? item.total : 0,
-                                  item.moneda || comprobante.moneda,
-                                )}
+                      <details key={comprobante.compraId} className={styles.facturaCard}>
+                        <summary className={styles.facturaSummary}>
+                          <div className={styles.facturaCardHeader}>
+                            <div>
+                              <h3 className={styles.facturaRef}>{comprobante.comprobanteRef}</h3>
+                              <p className={styles.facturaMeta}>
+                                {formatPortalDateTime(comprobante.fecha)}
+                                {comprobante.hora ? ` · ${comprobante.hora} hs` : ""}
+                                {comprobante.nombreFantasia ? ` · ${comprobante.nombreFantasia}` : ""}
+                              </p>
+                            </div>
+                            <div className={styles.facturaAmountBlock}>
+                              <span className={styles.facturaAccordionHintWrap}>
+                                <span className={styles.facturaAccordionHint}>Desplegar productos</span>
+                                <ChevronDown className={styles.facturaAccordionIcon} size={18} />
+                              </span>
+                              <strong className={styles.facturaAmount}>
+                                {formatPortalCurrency(comprobante.total, comprobante.moneda)}
                               </strong>
                             </div>
-                          ))}
+                          </div>
+                        </summary>
+
+                        <div className={styles.facturaAccordionContent}>
+                          <div className={styles.facturaItemsList}>
+                            {comprobante.productos.map((producto, index) => (
+                              <div
+                                key={`${comprobante.compraId}-producto-${index}`}
+                                className={styles.facturaItemRow}
+                              >
+                                <div>
+                                  <p className={styles.facturaItemName}>
+                                    {producto.detalle || "Producto sin descripcion"}
+                                  </p>
+                                  <div className={styles.facturaItemMetaList}>
+                                    <p className={styles.facturaItemMeta}>
+                                      Cantidad: {producto.cantidad ?? 0}
+                                    </p>
+                                    {hasProductDiscount(producto) ? (
+                                      <p className={styles.facturaItemMeta}>
+                                        Descuento: {formatPortalCurrency(producto.descuento ?? 0, comprobante.moneda)}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                </div>
+                                <strong className={styles.facturaItemTotal}>
+                                  {formatPortalCurrency(producto.total ?? 0, comprobante.moneda)}
+                                </strong>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </article>
+                      </details>
                     ))}
                   </div>
                 )}

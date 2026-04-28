@@ -1,6 +1,7 @@
 import type {
   PortalCompraComprobante,
   PortalComprasItem,
+  PortalComprasProducto,
   PortalComprasResponse,
   PortalComprasSummary,
 } from "@/types/portal-compras";
@@ -15,6 +16,34 @@ const normalizeText = (value: unknown) => {
 
 const getCompraKey = (item: PortalComprasItem, index: number) => {
   return normalizeText(item.compraId) || String(item.idComprobante ?? index);
+};
+
+const buildProductos = (item: PortalComprasItem): PortalComprasProducto[] => {
+  if (Array.isArray(item.productos) && item.productos.length > 0) {
+    return item.productos.map((producto) => ({
+      detalle: normalizeText(producto.detalle) || "Producto sin descripcion",
+      cantidad: normalizeNumber(producto.cantidad),
+      total: normalizeNumber(producto.total),
+      cobertura: normalizeNumber(producto.cobertura),
+      coberturaPorcentaje: normalizeNumber(producto.coberturaPorcentaje),
+      descuento: normalizeNumber(producto.descuento),
+      descuentoPorcentaje: normalizeNumber(producto.descuentoPorcentaje),
+      recargoPorcentaje: normalizeNumber(producto.recargoPorcentaje),
+    }));
+  }
+
+  return [
+    {
+      detalle: normalizeText(item.producto) || "Producto sin descripcion",
+      cantidad: normalizeNumber(item.cantidad),
+      total: normalizeNumber(item.total),
+      cobertura: 0,
+      coberturaPorcentaje: 0,
+      descuento: 0,
+      descuentoPorcentaje: 0,
+      recargoPorcentaje: 0,
+    },
+  ];
 };
 
 export const formatPortalCurrency = (amount: number, currency = "ARS") => {
@@ -47,12 +76,18 @@ const buildComprobantes = (items: PortalComprasItem[] | undefined): PortalCompra
   (items ?? []).forEach((item, index) => {
     const key = getCompraKey(item, index);
     const existing = grouped.get(key);
-    const lineTotal = normalizeNumber(item.total);
+    const productos = buildProductos(item);
+    const lineTotal =
+      typeof item.total === "number" && Number.isFinite(item.total)
+        ? item.total
+        : productos.reduce((sum, producto) => sum + normalizeNumber(producto.total), 0);
     const currency = normalizeText(item.moneda) || "ARS";
 
     if (existing) {
       existing.total += lineTotal;
       existing.items.push(item);
+      existing.productos.push(...productos);
+      existing.hora = existing.hora || normalizeText(item.hora);
       return;
     }
 
@@ -60,10 +95,12 @@ const buildComprobantes = (items: PortalComprasItem[] | undefined): PortalCompra
       compraId: key,
       comprobanteRef: normalizeText(item.comprobanteRef) || `Comprobante ${key}`,
       fecha: normalizeText(item.fecha) || normalizeText(item.emision),
+      hora: normalizeText(item.hora),
       nombreFantasia: normalizeText(item.nombreFantasia),
       estado: normalizeText(item.estado),
       moneda: currency,
       total: lineTotal,
+      productos,
       items: [item],
     });
   });

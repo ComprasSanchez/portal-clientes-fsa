@@ -4,6 +4,17 @@ export type PortalComprasResumen = {
   moneda?: string;
 };
 
+export type PortalComprasProducto = {
+  detalle?: string;
+  cantidad?: number;
+  total?: number;
+  cobertura?: number;
+  coberturaPorcentaje?: number;
+  descuento?: number;
+  descuentoPorcentaje?: number;
+  recargoPorcentaje?: number;
+};
+
 export type PortalComprasItem = {
   cliente?: string;
   telefono?: string;
@@ -25,6 +36,7 @@ export type PortalComprasItem = {
   total?: number;
   moneda?: string;
   comprobanteRef?: string;
+  productos?: PortalComprasProducto[];
 };
 
 export type PortalComprasPage = {
@@ -52,10 +64,12 @@ export type PortalCompraComprobante = {
   compraId: string;
   comprobanteRef: string;
   fecha: string | null;
+  hora: string | null;
   nombreFantasia: string | null;
   estado: string | null;
   moneda: string;
   total: number;
+  productos: PortalComprasProducto[];
   items: PortalComprasItem[];
 };
 

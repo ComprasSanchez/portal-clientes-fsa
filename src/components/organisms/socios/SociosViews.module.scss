@@ -270,7 +270,38 @@
   border-radius: 1rem;
   border: 1px solid #d5e4e8;
   background: #fbfdfd;
+
+  &[open] {
+    border-color: #9bc8d2;
+    box-shadow: 0 12px 24px rgba(0, 68, 84, 0.08);
+
+    .facturaAccordionIcon {
+      transform: rotate(180deg);
+    }
+
+    .facturaAccordionHint {
+      color: #007c98;
+    }
+  }
+}
+
+.facturaSummary {
+  cursor: pointer;
+  list-style: none;
   padding: 1rem;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #f4fafb;
+  }
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+}
+
+.facturaAccordionContent {
+  padding: 0 1rem 1rem;
 }
 
 .facturaCardHeader {
@@ -295,7 +326,29 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.75rem;
+}
+
+.facturaAccordionHintWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  background: #edf7f9;
+}
+
+.facturaAccordionHint {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #698088;
+  transition: color 0.2s ease;
+}
+
+.facturaAccordionIcon {
+  color: #007c98;
+  transition: transform 0.2s ease;
 }
 
 .facturaAmount {
@@ -318,6 +371,12 @@
   gap: 1rem;
   border-top: 1px solid #dfe9ec;
   padding-top: 0.75rem;
+}
+
+.facturaItemMetaList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
 }
 
 .facturaItemName {
@@ -545,8 +604,15 @@
   }
 
   .facturaCard {
-    padding: 0.9rem;
     border-radius: 0.9rem;
+  }
+
+  .facturaSummary {
+    padding: 0.9rem;
+  }
+
+  .facturaAccordionContent {
+    padding: 0 0.9rem 0.9rem;
   }
 
   .facturaRef {
@@ -555,11 +621,6 @@
 
   .facturaMeta {
     font-size: 0.82rem;
-  }
-
-  .statusBadge {
-    padding: 0.22rem 0.62rem;
-    font-size: 0.7rem;
   }
 
   .facturaAmount {
