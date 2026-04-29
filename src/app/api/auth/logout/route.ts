@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequiredBaseUrl, jsonError } from "@/app/api/_lib/proxy";
+import { SESSION_EXPIRY_COOKIE_NAME, clearSessionExpiryMetadata } from "@/app/api/auth/_lib/session-cookie";
 
 type CookieOptions = {
   path?: string;
@@ -168,6 +169,7 @@ const clearLegacyCookies = (response: NextResponse, req: NextRequest) => {
   const parentDomain = resolveParentCookieDomain(req);
 
   clearCookie(response, "sid");
+  clearCookie(response, SESSION_EXPIRY_COOKIE_NAME);
   clearCookie(response, "trusted_device_token");
   clearCookie(response, "fsa_access_token");
   clearCookie(response, "fsa_access_token_expires_at");
@@ -176,6 +178,7 @@ const clearLegacyCookies = (response: NextResponse, req: NextRequest) => {
 
   if (parentDomain) {
     clearCookie(response, "sid", parentDomain);
+    clearCookie(response, SESSION_EXPIRY_COOKIE_NAME, parentDomain);
     clearCookie(response, "trusted_device_token", parentDomain);
     clearCookie(response, "fsa_access_token", parentDomain);
     clearCookie(response, "fsa_access_token_expires_at", parentDomain);
@@ -244,6 +247,7 @@ export async function POST(req: NextRequest) {
     }
 
     clearLegacyCookies(response, req);
+    clearSessionExpiryMetadata(response);
 
     return response;
   } catch {

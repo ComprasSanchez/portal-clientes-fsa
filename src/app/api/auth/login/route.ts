@@ -4,17 +4,11 @@ import {
   jsonError,
   readJsonBody,
 } from "@/app/api/_lib/proxy";
+import { applyAuthCookiesFromUpstream } from "@/app/api/auth/_lib/session-cookie";
 
 type LoginBody = {
   username?: string;
   password?: string;
-};
-
-const splitCombinedSetCookieHeader = (setCookieHeader: string) => {
-  return setCookieHeader
-    .split(/,(?=[^;=]+=[^;]+)/g)
-    .map((value) => value.trim())
-    .filter(Boolean);
 };
 
 const getForwardedCookieHeader = (req: NextRequest) => {
@@ -26,20 +20,6 @@ const getForwardedCookieHeader = (req: NextRequest) => {
 
   return `trusted_device_token=${trustedDeviceToken}`;
 };
-
-const getSetCookieHeaders = (headers: Headers) => {
-  const withGetSetCookie = headers as Headers & {
-    getSetCookie?: () => string[];
-  };
-
-  if (typeof withGetSetCookie.getSetCookie === "function") {
-    return withGetSetCookie.getSetCookie();
-  }
-
-  const setCookieHeader = headers.get("set-cookie");
-  return setCookieHeader ? splitCombinedSetCookieHeader(setCookieHeader) : [];
-};
-
 const buildUpstreamErrorResponse = async (upstream: Response) => {
   const contentType = upstream.headers.get("content-type") || "";
 
@@ -96,13 +76,7 @@ export async function POST(req: NextRequest) {
 
     const data = await upstream.json().catch(() => null);
     const response = NextResponse.json(data ?? { ok: true }, { status: upstream.status });
-
-    const setCookieHeaders = getSetCookieHeaders(upstream.headers);
-    console.log("[LOGIN] Set-Cookie headers from backend:", setCookieHeaders);
-
-    for (const cookieHeader of setCookieHeaders) {
-      response.headers.append("set-cookie", cookieHeader);
-    }
+    applyAuthCookiesFromUpstream(req, response, upstream.headers);
 
     return response;
   } catch {

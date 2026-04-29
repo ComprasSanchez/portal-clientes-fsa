@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildForwardHeaders, getRequiredBaseUrl, jsonError, readJsonBody } from "@/app/api/_lib/proxy";
-
-const splitCombinedSetCookieHeader = (setCookieHeader: string) => {
-  return setCookieHeader
-    .split(/,(?=[^;=]+=[^;]+)/g)
-    .map((value) => value.trim())
-    .filter(Boolean);
-};
-
-const getSetCookieList = (headers: Headers): string[] => {
-  const withGetSetCookie = headers as Headers & { getSetCookie?: () => string[] };
-
-  if (typeof withGetSetCookie.getSetCookie === "function") {
-    return withGetSetCookie.getSetCookie();
-  }
-
-  const single = headers.get("set-cookie");
-  return single ? splitCombinedSetCookieHeader(single) : [];
-};
+import { applyAuthCookiesFromUpstream } from "@/app/api/auth/_lib/session-cookie";
 
 const forwardGoogleComplete = async (req: NextRequest) => {
   const base = getRequiredBaseUrl("NEXT_PUBLIC_FSA_AUTH");
@@ -63,9 +46,7 @@ const forwardGoogleComplete = async (req: NextRequest) => {
     response.headers.set(key, value);
   }
 
-  for (const setCookie of getSetCookieList(upstream.headers)) {
-    response.headers.append("set-cookie", setCookie);
-  }
+  applyAuthCookiesFromUpstream(req, response, upstream.headers);
 
   return response;
 };

@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequiredBaseUrl, jsonError } from "@/app/api/_lib/proxy";
-
-const splitCombinedSetCookieHeader = (setCookieHeader: string) => {
-  return setCookieHeader
-    .split(/,(?=[^;=]+=[^;]+)/g)
-    .map((value) => value.trim())
-    .filter(Boolean);
-};
-
-const getSetCookieList = (headers: Headers): string[] => {
-  const withGetSetCookie = headers as Headers & { getSetCookie?: () => string[] };
-
-  if (typeof withGetSetCookie.getSetCookie === "function") {
-    return withGetSetCookie.getSetCookie();
-  }
-
-  const single = headers.get("set-cookie");
-  return single ? splitCombinedSetCookieHeader(single) : [];
-};
+import { applyAuthCookiesFromUpstream } from "@/app/api/auth/_lib/session-cookie";
 
 export async function GET(req: NextRequest) {
   try {
@@ -45,10 +28,6 @@ export async function GET(req: NextRequest) {
       redirect: "manual",
     });
 
-    const upstreamSetCookies = getSetCookieList(upstream.headers);
-    console.log("[GOOGLE_CALLBACK] Upstream status:", upstream.status);
-    console.log("[GOOGLE_CALLBACK] Upstream Set-Cookie:", upstreamSetCookies);
-
     const body = await upstream.arrayBuffer();
     const response = new NextResponse(body, { status: upstream.status });
 
@@ -58,9 +37,7 @@ export async function GET(req: NextRequest) {
       response.headers.set(key, value);
     }
 
-    for (const cookie of upstreamSetCookies) {
-      response.headers.append("set-cookie", cookie);
-    }
+    applyAuthCookiesFromUpstream(req, response, upstream.headers);
 
     return response;
   } catch {

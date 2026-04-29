@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SessionExpiryGuard } from "@/components/auth/SessionExpiryGuard";
 import { PortalExpedientesProvider } from "@/lib/portal-expedientes-context";
 import { PortalPerfilProvider } from "@/lib/portal-perfil-context";
 
@@ -18,7 +19,10 @@ export default function HomeLayout({
 }>) {
   return (
     <PortalPerfilProvider>
-      <PortalExpedientesProvider>{children}</PortalExpedientesProvider>
+      <PortalExpedientesProvider>
+        <SessionExpiryGuard />
+        {children}
+      </PortalExpedientesProvider>
     </PortalPerfilProvider>
   );
 }
