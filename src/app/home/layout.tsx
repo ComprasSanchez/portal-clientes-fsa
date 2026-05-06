@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { IdentityLinkGuard } from "@/components/auth/IdentityLinkGuard";
 import { SessionExpiryGuard } from "@/components/auth/SessionExpiryGuard";
@@ -21,8 +22,10 @@ export default function HomeLayout({
   return (
     <PortalPerfilProvider>
       <PortalExpedientesProvider>
-        <SessionExpiryGuard />
-        <IdentityLinkGuard />
+        <Suspense fallback={null}>
+          <SessionExpiryGuard />
+          <IdentityLinkGuard />
+        </Suspense>
         {children}
       </PortalExpedientesProvider>
     </PortalPerfilProvider>
