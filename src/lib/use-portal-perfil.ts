@@ -8,6 +8,9 @@ type UsePortalPerfilOptions = {
   enabled?: boolean;
 };
 
+const MISSING_CLIENT_LINK_MESSAGE =
+  "Tu cuenta no tiene un cliente vinculado. Contactá a soporte para completar la vinculación.";
+
 export type UsePortalPerfilResult = {
   perfil: PortalPerfilResponse | null;
   summary: ReturnType<typeof getPortalPerfilSummary>;
@@ -53,8 +56,14 @@ export const usePortalPerfil = ({ enabled = true }: UsePortalPerfilOptions = {})
         signal,
       });
 
-      if (response.status === 401 || response.status === 403) {
+      if (response.status === 401) {
         setPerfil(null);
+        return;
+      }
+
+      if (response.status === 403) {
+        setPerfil(null);
+        setError(MISSING_CLIENT_LINK_MESSAGE);
         return;
       }
 

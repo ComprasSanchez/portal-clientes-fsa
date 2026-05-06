@@ -11,6 +11,7 @@ export type LoginResponse = {
           email?: string;
           retryAfterSec?: number;
           flowId?: string;
+          reason?: string;
         };
       };
   message?: string | string[];
@@ -86,6 +87,10 @@ export type CustomerIdentityFormValues = {
 
 export type GoogleOnboardingFormValues = CustomerIdentityFormValues;
 
+export type IdentityLinkFormValues = CustomerIdentityFormValues & {
+  email: string;
+};
+
 export type GoogleProfilePrefill = {
   email: string;
   firstName: string;
@@ -120,6 +125,8 @@ export type AuthCardView =
   | "register"
   | "mfa"
   | "verify-onboarding"
+  | "identity-link"
+  | "identity-link-verify"
   | "forgot-password"
   | "reset-password"
   | "google-onboarding";

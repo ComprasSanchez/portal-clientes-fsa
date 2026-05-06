@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { IdentityLinkGuard } from "@/components/auth/IdentityLinkGuard";
 import { SessionExpiryGuard } from "@/components/auth/SessionExpiryGuard";
 import { PortalExpedientesProvider } from "@/lib/portal-expedientes-context";
 import { PortalPerfilProvider } from "@/lib/portal-perfil-context";
@@ -21,6 +22,7 @@ export default function SociosLayout({
     <PortalPerfilProvider>
       <PortalExpedientesProvider>
         <SessionExpiryGuard />
+        <IdentityLinkGuard />
         {children}
       </PortalExpedientesProvider>
     </PortalPerfilProvider>

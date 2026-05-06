@@ -7,26 +7,9 @@ import {
   readJsonBody,
 } from "@/app/api/_lib/proxy";
 
-type OnboardingStartBody = {
-  account?: {
-    username?: string;
-    email?: string;
-    password?: string;
-    firstName?: string;
-    lastName?: string;
-  };
-  customerIdentity?: {
-    tipoDocumento?: string;
-    nroDocumento?: string;
-    nombre?: string;
-    apellido?: string;
-    sexo?: string;
-    fechaNacimiento?: string;
-    telefono?: string;
-  };
-  accountKind?: string;
-  externalSystem?: string;
-  externalRef?: string;
+type IdentityLinkChallengeBody = {
+  linkId?: string;
+  channel?: string;
 };
 
 const isNonEmptyString = (value: unknown): value is string =>
@@ -34,18 +17,9 @@ const isNonEmptyString = (value: unknown): value is string =>
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await readJsonBody<OnboardingStartBody>(req);
+    const body = await readJsonBody<IdentityLinkChallengeBody>(req);
 
-    if (
-      !body ||
-      !isNonEmptyString(body.account?.username) ||
-      !isNonEmptyString(body.account?.email) ||
-      !isNonEmptyString(body.account?.password) ||
-      !isNonEmptyString(body.customerIdentity?.tipoDocumento) ||
-      !isNonEmptyString(body.customerIdentity?.nroDocumento) ||
-      !isNonEmptyString(body.customerIdentity?.nombre) ||
-      !isNonEmptyString(body.customerIdentity?.apellido)
-    ) {
+    if (!body || !isNonEmptyString(body.linkId)) {
       return jsonError("invalid_body", 400);
     }
 
@@ -62,7 +36,7 @@ export async function POST(req: NextRequest) {
     };
 
     const result = await fetchUpstream<unknown>({
-      url: `${base}/onboarding/start`,
+      url: `${base}/identity-link/challenge`,
       method: "POST",
       headers,
       body,

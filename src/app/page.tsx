@@ -5,6 +5,7 @@ import { Login } from "@/components/organisms/login/login";
 
 type HomePageProps = {
   searchParams: Promise<{
+    identityLink?: string | string[];
     onboarding?: string | string[];
     googleOnboarding?: string | string[];
     token?: string | string[];
@@ -16,6 +17,9 @@ type HomePageProps = {
 export default async function Home({ searchParams }: HomePageProps) {
   const cookieStore = await cookies();
   const query = await searchParams;
+  const identityLink = Array.isArray(query.identityLink)
+    ? query.identityLink[0]
+    : query.identityLink;
   const onboarding = Array.isArray(query.onboarding)
     ? query.onboarding[0]
     : query.onboarding;
@@ -33,12 +37,14 @@ export default async function Home({ searchParams }: HomePageProps) {
     onboarding === "google" ||
     googleOnboarding === "pending" ||
     googleOnboarding === "1";
+  const hasPendingIdentityLink = identityLink === "pending";
   const hasVerificationToken = Boolean(
     token?.trim() || verificationToken?.trim() || onboardingToken?.trim(),
   );
 
   if (
     cookieStore.get("sid")?.value &&
+    !hasPendingIdentityLink &&
     !hasPendingGoogleOnboarding &&
     !hasVerificationToken
   ) {

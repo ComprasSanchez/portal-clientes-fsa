@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { InputOTP } from "@heroui/react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -13,13 +12,14 @@ import googleLogo from "@/assets/google-logo.svg";
 import mobileLogo from "@/assets/logo-celeste.png";
 import loginLogo from "@/assets/farmacia-logo.svg";
 import styles from "./login.module.scss";
-import { InputMFA } from "@/components/molecules/input-otp/input-otp";
+import { InputMFA, OtpCodeInput } from "@/components/molecules/input-otp/input-otp";
 import {
   AuthCardView,
   ForgotPasswordFormValues,
   ForgotPasswordResponse,
   GoogleProfilePrefill,
   GoogleOnboardingFormValues,
+  IdentityLinkFormValues,
   LoginFormValues,
   LoginProps,
   LoginResponse,
@@ -31,6 +31,7 @@ import {
 } from "@/types/login";
 import { getErrorMessage } from "@/helpers/error-message";
 import { getSafeRedirectPath } from "@/lib/auth";
+import { mapAuthError } from "@/lib/authErrors";
 
 const BENEFITS = [
   "Acceso rápido a tus envíos de datos",
@@ -61,8 +62,23 @@ const registerValidationSchema = Yup.object({
 
 const googleOnboardingValidationSchema = Yup.object(customerIdentityShape);
 
+const identityLinkValidationSchema = Yup.object({
+  ...customerIdentityShape,
+  email: Yup.string()
+    .trim()
+    .email("Ingresa un email valido.")
+    .required("Ingresa un email."),
+});
+
 const verifyOnboardingValidationSchema = Yup.object({
   token: Yup.string().trim().required("Ingresá el token que recibiste por email."),
+});
+
+const identityLinkVerifyValidationSchema = Yup.object({
+  code: Yup.string()
+    .trim()
+    .length(6, "Ingresá el código de 6 dígitos.")
+    .required("Ingresá el código de verificación."),
 });
 
 const forgotPasswordValidationSchema = Yup.object({
@@ -87,6 +103,17 @@ const initialRegisterValues: RegisterFormValues = {
 };
 
 const initialGoogleOnboardingValues: GoogleOnboardingFormValues = {
+  firstName: "",
+  lastName: "",
+  documentType: "DNI",
+  documentNumber: "",
+  sex: "",
+  birthDate: "",
+  phone: "+549",
+};
+
+const initialIdentityLinkValues: IdentityLinkFormValues = {
+  email: "",
   firstName: "",
   lastName: "",
   documentType: "DNI",
@@ -126,6 +153,17 @@ type SocialProfilePayload = Partial<GoogleProfilePrefill> & {
   apellido?: string | null;
 };
 
+type IdentityLinkResponse = LoginResponse & {
+  link?: {
+    id?: string;
+    linked?: boolean;
+    status?: string;
+    clienteId?: string | null;
+    expiresAt?: number;
+    created?: boolean;
+  };
+};
+
 const getErrorCode = (payload: LoginResponse | null) => {
   if (
     payload &&
@@ -153,8 +191,20 @@ const buildCustomerIdentityPayload = (values: GoogleOnboardingFormValues) => ({
   telefono: values.phone.trim(),
 });
 
+const buildIdentityLinkPayload = (values: IdentityLinkFormValues) => ({
+  accountKind: "CLIENTE",
+  tipoDocumento: values.documentType.trim(),
+  nroDocumento: values.documentNumber.trim(),
+  nombre: values.firstName.trim(),
+  apellido: values.lastName.trim(),
+  sexo: values.sex.trim(),
+  fechaNacimiento: values.birthDate,
+  phoneE164: values.phone.trim(),
+  email: values.email.trim(),
+});
+
 export function Login({ onLogin }: LoginProps) {
-  const MFA_RESEND_COOLDOWN_SECONDS = 30;
+  const MFA_RESEND_COOLDOWN_SECONDS = 50;
   const router = useRouter();
   const searchParams = useSearchParams();
   const [cardView, setCardView] = useState<AuthCardView>("login");
@@ -185,6 +235,12 @@ export function Login({ onLogin }: LoginProps) {
     useState(false);
   const [googleProfilePrefill, setGoogleProfilePrefill] =
     useState<GoogleProfilePrefill | null>(null);
+  const [identityLinkFlow, setIdentityLinkFlow] =
+    useState<OnboardingFlowState | null>(null);
+  const [isStartingIdentityLink, setIsStartingIdentityLink] = useState(false);
+  const [isVerifyingIdentityLink, setIsVerifyingIdentityLink] = useState(false);
+  const [hasOpenedIdentityLinkFromHint, setHasOpenedIdentityLinkFromHint] =
+    useState(false);
 
   type SocialAuthMessage =
     | { type: "SOCIAL_AUTH_SUCCESS"; profile?: SocialProfilePayload }
@@ -192,7 +248,9 @@ export function Login({ onLogin }: LoginProps) {
     | { type: "SOCIAL_AUTH_ONBOARDING_REQUIRED"; profile?: SocialProfilePayload };
 
   const redirectTo = getSafeRedirectPath(searchParams.get("redirectTo"));
+  const identityLinkHint = searchParams.get("identityLink");
   const onboardingHint = searchParams.get("onboarding");
+  const onboardingErrorCode = searchParams.get("onboardingError");
   const googleOnboardingHint = searchParams.get("googleOnboarding");
   const verificationTokenFromUrl =
     searchParams.get("token") ||
@@ -232,6 +290,31 @@ export function Login({ onLogin }: LoginProps) {
       params.set("onboarding", "google");
     });
   };
+
+  const openIdentityLinkCard = useCallback(
+    (message?: string) => {
+      setCardView("identity-link");
+      setMfaState(null);
+      setShouldSuggestGoogleAccountRetry(false);
+      clearFeedback();
+      setIdentityLinkFlow(null);
+
+      if (message) {
+        setInfoMessage(message);
+      }
+    },
+    [],
+  );
+
+  const openVerifyOnboardingCard = useCallback((message?: string) => {
+    setCardView("verify-onboarding");
+    setMfaState(null);
+    clearFeedback();
+
+    if (message) {
+      setInfoMessage(message);
+    }
+  }, []);
 
   const normalizeGoogleProfilePrefill = useCallback(
     (payload?: SocialProfilePayload | IdentityLinkStatusResponse | null) => {
@@ -305,6 +388,10 @@ export function Login({ onLogin }: LoginProps) {
       throw new Error("SESSION_MISSING");
     }
 
+    if (response.status === 403) {
+      throw new Error("CLIENT_LINK_MISSING");
+    }
+
     if (!response.ok) {
       throw new Error("IDENTITY_STATUS_FAILED");
     }
@@ -316,6 +403,7 @@ export function Login({ onLogin }: LoginProps) {
     setCardView("login");
     setMfaState(null);
     setMfaResendCooldownSeconds(0);
+    setIdentityLinkFlow(null);
     clearFeedback();
   };
 
@@ -352,9 +440,14 @@ export function Login({ onLogin }: LoginProps) {
           },
         );
 
-        setOnboardingFlow(null);
-        setCardView("login");
-        setInfoMessage(
+        setOnboardingFlow({
+          id: data.flow?.id ?? "",
+          status: data.flow?.status,
+          expiresAt: data.flow?.expiresAt,
+          destinationMasked: data.challenge?.destinationMasked,
+          channel: data.challenge?.channel,
+        });
+        openVerifyOnboardingCard(
           data.challenge?.destinationMasked
             ? `Te enviamos un link de validación a ${data.challenge.destinationMasked}.`
             : "Te enviamos un link de validación por email para completar el onboarding.",
@@ -430,6 +523,87 @@ export function Login({ onLogin }: LoginProps) {
     },
   });
 
+  const identityLinkFormik = useFormik<IdentityLinkFormValues>({
+    initialValues: initialIdentityLinkValues,
+    validationSchema: identityLinkValidationSchema,
+    validateOnBlur: true,
+    validateOnChange: false,
+    onSubmit: async (values, helpers) => {
+      clearFeedback();
+      setIsStartingIdentityLink(true);
+
+      try {
+        const { data } = await axios.post<IdentityLinkResponse>(
+          "/api/v2/auth/identity-link/start",
+          buildIdentityLinkPayload(values),
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        const linkId = data.link?.id;
+
+        if (!linkId) {
+          throw new Error("IDENTITY_LINK_ID_MISSING");
+        }
+
+        const challengeResponse = await axios.post<IdentityLinkResponse>(
+          "/api/v2/auth/identity-link/challenge",
+          {
+            linkId,
+            channel: "email",
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        setIdentityLinkFlow({
+          id: linkId,
+          status: challengeResponse.data.link?.status ?? data.link?.status,
+          expiresAt:
+            challengeResponse.data.link?.expiresAt ?? data.link?.expiresAt,
+          destinationMasked:
+            challengeResponse.data.challenge?.destinationMasked,
+          channel: challengeResponse.data.challenge?.channel ?? "email",
+        });
+        setCardView("identity-link-verify");
+        setInfoMessage(
+          challengeResponse.data.challenge?.destinationMasked
+            ? `Te enviamos un código a ${challengeResponse.data.challenge.destinationMasked}.`
+            : "Te enviamos un código para confirmar la vinculación.",
+        );
+      } catch (error) {
+        if (axios.isAxiosError<LoginResponse>(error)) {
+          setErrorMessage(
+            getErrorMessage(
+              error.response?.data ?? null,
+              "No pudimos iniciar la vinculación de tu cuenta. Intentá nuevamente.",
+            ),
+          );
+        } else if (
+          error instanceof Error &&
+          error.message === "IDENTITY_LINK_ID_MISSING"
+        ) {
+          setErrorMessage(
+            "No pudimos iniciar la vinculación porque el backend no devolvió el identificador del flujo.",
+          );
+        } else {
+          setErrorMessage(
+            "No pudimos iniciar la vinculación de tu cuenta. Intentá nuevamente.",
+          );
+        }
+      } finally {
+        setIsStartingIdentityLink(false);
+        helpers.setSubmitting(false);
+      }
+    },
+  });
+
   const applyGoogleProfilePrefill = useCallback(
     (payload?: SocialProfilePayload | IdentityLinkStatusResponse | null) => {
       const nextPrefill = normalizeGoogleProfilePrefill(payload);
@@ -446,6 +620,51 @@ export function Login({ onLogin }: LoginProps) {
       }));
     },
     [googleOnboardingFormik, normalizeGoogleProfilePrefill],
+  );
+
+  const applyIdentityLinkPrefill = useCallback(
+    (payload?: SocialProfilePayload | IdentityLinkStatusResponse | null) => {
+      const nextPrefill = normalizeGoogleProfilePrefill(payload);
+
+      if (!nextPrefill) {
+        return;
+      }
+
+      identityLinkFormik.setValues((currentValues) => ({
+        ...currentValues,
+        email: currentValues.email || nextPrefill.email,
+        firstName: currentValues.firstName || nextPrefill.firstName,
+        lastName: currentValues.lastName || nextPrefill.lastName,
+      }));
+    },
+    [identityLinkFormik, normalizeGoogleProfilePrefill],
+  );
+
+  const finishLoginIfIdentityLinked = useCallback(
+    async (username: string, password: string) => {
+      const identityStatus = await getIdentityLinkStatus();
+
+      if (identityStatus.link?.linked) {
+        onLogin?.(username, password);
+        router.push(redirectTo);
+        router.refresh();
+        return true;
+      }
+
+      openIdentityLinkCard(
+        "Completá tus datos para vincular tu cuenta y poder continuar.",
+      );
+      applyIdentityLinkPrefill(identityStatus);
+      return false;
+    },
+    [
+      applyIdentityLinkPrefill,
+      getIdentityLinkStatus,
+      onLogin,
+      openIdentityLinkCard,
+      redirectTo,
+      router,
+    ],
   );
 
   const verifyOnboardingFormik = useFormik<{ token: string }>({
@@ -491,6 +710,65 @@ export function Login({ onLogin }: LoginProps) {
           );
         }
       } finally {
+        helpers.setSubmitting(false);
+      }
+    },
+  });
+
+  const identityLinkVerifyFormik = useFormik<{ code: string }>({
+    initialValues: {
+      code: "",
+    },
+    validationSchema: identityLinkVerifyValidationSchema,
+    validateOnBlur: true,
+    validateOnChange: false,
+    onSubmit: async (values, helpers) => {
+      if (!identityLinkFlow?.id) {
+        setErrorMessage(
+          "No encontramos una solicitud activa para completar la vinculación.",
+        );
+        helpers.setSubmitting(false);
+        return;
+      }
+
+      clearFeedback();
+      setIsVerifyingIdentityLink(true);
+
+      try {
+        await axios.post<IdentityLinkResponse>(
+          "/api/v2/auth/identity-link/verify",
+          {
+            linkId: identityLinkFlow.id,
+            code: values.code.trim(),
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        helpers.resetForm();
+        setIdentityLinkFlow(null);
+        setCardView("login");
+        onLogin?.(formik.values.username, formik.values.password);
+        router.push(redirectTo);
+        router.refresh();
+      } catch (error) {
+        if (axios.isAxiosError<LoginResponse>(error)) {
+          setErrorMessage(
+            getErrorMessage(
+              error.response?.data ?? null,
+              "No pudimos completar la vinculación. Intentá nuevamente.",
+            ),
+          );
+        } else {
+          setErrorMessage(
+            "No pudimos completar la vinculación. Intentá nuevamente.",
+          );
+        }
+      } finally {
+        setIsVerifyingIdentityLink(false);
         helpers.setSubmitting(false);
       }
     },
@@ -564,18 +842,36 @@ export function Login({ onLogin }: LoginProps) {
           }
         }
 
-        onLogin?.(values.username, values.password);
-        router.push(redirectTo);
-        router.refresh();
+        try {
+          await finishLoginIfIdentityLinked(values.username, values.password);
+        } catch (identityError) {
+          if (
+            identityError instanceof Error &&
+            identityError.message === "CLIENT_LINK_MISSING"
+          ) {
+            openIdentityLinkCard(
+              "Completá tus datos para vincular tu cuenta y poder continuar.",
+            );
+            return;
+          }
+
+          setErrorMessage(
+            "No pudimos validar el vínculo de tu cuenta. Intentá nuevamente.",
+          );
+        }
       } catch (error) {
         if (axios.isAxiosError<LoginResponse>(error)) {
           const payload = error.response?.data ?? null;
           const errorCode = getErrorCode(payload);
 
           if (errorCode === "AUTH_EMAIL_NOT_VERIFIED") {
-            setInfoMessage(
-              "Tu cuenta todavía no completó el onboarding. Revisá el email que te enviamos para continuar.",
+            openVerifyOnboardingCard(
+              onboardingFlow?.destinationMasked
+                ? `Tu cuenta todavía no completó el onboarding. Revisá el email que enviamos a ${onboardingFlow.destinationMasked}.`
+                : "Tu cuenta todavía no completó el onboarding. Revisá el email que te enviamos para continuar.",
             );
+            verifyOnboardingFormik.setFieldValue("token", "", false);
+            return;
           }
 
           setErrorMessage(
@@ -1022,6 +1318,82 @@ export function Login({ onLogin }: LoginProps) {
   }, [cardView, mfaResendCooldownSeconds]);
 
   useEffect(() => {
+    if (identityLinkHint !== "pending" || hasOpenedIdentityLinkFromHint) {
+      return;
+    }
+
+    const startIdentityLinkFlow = async () => {
+      setHasOpenedIdentityLinkFromHint(true);
+
+      try {
+        const identityStatus = await getIdentityLinkStatus();
+
+        if (identityStatus.link?.linked) {
+          router.replace(redirectTo);
+          return;
+        }
+
+        openIdentityLinkCard(
+          "Completá tus datos para vincular tu cuenta y poder continuar.",
+        );
+        applyIdentityLinkPrefill(identityStatus);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          (error.message === "CLIENT_LINK_MISSING" ||
+            error.message === "IDENTITY_STATUS_FAILED")
+        ) {
+          openIdentityLinkCard(
+            "Completá tus datos para vincular tu cuenta y poder continuar.",
+          );
+        }
+      }
+    };
+
+    void startIdentityLinkFlow();
+  }, [
+    applyIdentityLinkPrefill,
+    getIdentityLinkStatus,
+    hasOpenedIdentityLinkFromHint,
+    identityLinkHint,
+    openIdentityLinkCard,
+    redirectTo,
+    router,
+  ]);
+
+  useEffect(() => {
+    if (onboardingHint !== "verified" && onboardingHint !== "error") {
+      return;
+    }
+
+    setCardView("login");
+    setOnboardingFlow(null);
+    setHasProcessedVerificationToken(true);
+
+    if (onboardingHint === "verified") {
+      clearFeedback();
+      setInfoMessage(
+        "Tu onboarding fue validado correctamente. Ahora podés iniciar sesión.",
+      );
+    } else {
+      setInfoMessage(null);
+      setErrorMessage(
+        onboardingErrorCode
+          ? mapAuthError(onboardingErrorCode)
+          : "No pudimos validar tu onboarding. Solicitá un nuevo enlace.",
+      );
+    }
+
+    syncSearchParams((params) => {
+      params.delete("onboarding");
+      params.delete("onboardingError");
+      params.delete("token");
+      params.delete("verificationToken");
+      params.delete("onboardingToken");
+    });
+  }, [onboardingErrorCode, onboardingHint, syncSearchParams]);
+
+  useEffect(() => {
     if (!verificationTokenFromUrl || hasProcessedVerificationToken) {
       return;
     }
@@ -1185,8 +1557,37 @@ export function Login({ onLogin }: LoginProps) {
   const googlePhoneHasError = Boolean(
     googleOnboardingFormik.touched.phone && googleOnboardingFormik.errors.phone,
   );
+  const identityLinkEmailHasError = Boolean(
+    identityLinkFormik.touched.email && identityLinkFormik.errors.email,
+  );
+  const identityLinkFirstNameHasError = Boolean(
+    identityLinkFormik.touched.firstName && identityLinkFormik.errors.firstName,
+  );
+  const identityLinkLastNameHasError = Boolean(
+    identityLinkFormik.touched.lastName && identityLinkFormik.errors.lastName,
+  );
+  const identityLinkDocumentTypeHasError = Boolean(
+    identityLinkFormik.touched.documentType &&
+      identityLinkFormik.errors.documentType,
+  );
+  const identityLinkDocumentNumberHasError = Boolean(
+    identityLinkFormik.touched.documentNumber &&
+      identityLinkFormik.errors.documentNumber,
+  );
+  const identityLinkSexHasError = Boolean(
+    identityLinkFormik.touched.sex && identityLinkFormik.errors.sex,
+  );
+  const identityLinkBirthDateHasError = Boolean(
+    identityLinkFormik.touched.birthDate && identityLinkFormik.errors.birthDate,
+  );
+  const identityLinkPhoneHasError = Boolean(
+    identityLinkFormik.touched.phone && identityLinkFormik.errors.phone,
+  );
   const verifyOnboardingHasError = Boolean(
     verifyOnboardingFormik.touched.token && verifyOnboardingFormik.errors.token,
+  );
+  const identityLinkCodeHasError = Boolean(
+    identityLinkVerifyFormik.touched.code && identityLinkVerifyFormik.errors.code,
   );
   const forgotPasswordHasError = Boolean(
     forgotPasswordFormik.touched.identifier &&
@@ -1762,6 +2163,294 @@ export function Login({ onLogin }: LoginProps) {
               </motion.div>
             ) : null}
 
+            {cardView === "identity-link" ? (
+              <motion.div
+                key="identity-link-form"
+                initial={{ opacity: 0, y: 32 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -32 }}
+                transition={{ duration: 0.32, ease: "easeInOut" }}
+              >
+                <header className={styles.formHeader}>
+                      <div className={styles.mfaHeaderRow}>
+                        <h2 className={styles.formTitle}>Completar vinculación</h2>
+                        <button
+                          type="button"
+                          className={styles.mfaBackIconButton}
+                          onClick={() => {
+                            returnToLogin();
+                            identityLinkFormik.resetForm();
+                          }}
+                          aria-label="Volver al inicio de sesión"
+                        >
+                          <ArrowLeft size={20} />
+                        </button>
+                      </div>
+                      <p className={styles.formSubtitle}>
+                        Confirmá tus datos personales para vincular tu cuenta con tu cliente.
+                      </p>
+                    </header>
+                    {infoMessage ? (
+                      <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                        {infoMessage}
+                      </div>
+                    ) : null}
+                    {errorMessage ? (
+                      <div className={`${styles.feedback} ${styles.feedbackError}`}>
+                        {errorMessage}
+                      </div>
+                    ) : null}
+                    <form onSubmit={identityLinkFormik.handleSubmit} className={styles.form} noValidate>
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel} htmlFor="identity-link-email">
+                          Email
+                        </label>
+                        <input
+                          id="identity-link-email"
+                          name="email"
+                          type="email"
+                          placeholder="Ingresa tu email"
+                          value={identityLinkFormik.values.email ?? ""}
+                          onChange={identityLinkFormik.handleChange}
+                          onBlur={identityLinkFormik.handleBlur}
+                          autoComplete="email"
+                          className={`${styles.input} ${identityLinkEmailHasError ? styles.inputError : ""}`}
+                        />
+                        {identityLinkEmailHasError ? (
+                          <p className={styles.fieldError}>{identityLinkFormik.errors.email}</p>
+                        ) : null}
+                      </div>
+                      <div className={styles.fieldRow}>
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel} htmlFor="identity-link-first-name">
+                            Nombre
+                          </label>
+                          <input
+                            id="identity-link-first-name"
+                            name="firstName"
+                            type="text"
+                            placeholder="Ingresá tu nombre"
+                            value={identityLinkFormik.values.firstName ?? ""}
+                            onChange={identityLinkFormik.handleChange}
+                            onBlur={identityLinkFormik.handleBlur}
+                            className={`${styles.input} ${identityLinkFirstNameHasError ? styles.inputError : ""}`}
+                          />
+                          {identityLinkFirstNameHasError ? (
+                            <p className={styles.fieldError}>{identityLinkFormik.errors.firstName}</p>
+                          ) : null}
+                        </div>
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel} htmlFor="identity-link-last-name">
+                            Apellido
+                          </label>
+                          <input
+                            id="identity-link-last-name"
+                            name="lastName"
+                            type="text"
+                            placeholder="Ingresá tu apellido"
+                            value={identityLinkFormik.values.lastName ?? ""}
+                            onChange={identityLinkFormik.handleChange}
+                            onBlur={identityLinkFormik.handleBlur}
+                            className={`${styles.input} ${identityLinkLastNameHasError ? styles.inputError : ""}`}
+                          />
+                          {identityLinkLastNameHasError ? (
+                            <p className={styles.fieldError}>{identityLinkFormik.errors.lastName}</p>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div className={styles.fieldRow}>
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel} htmlFor="identity-link-document-type">
+                            Tipo de documento
+                          </label>
+                          <select
+                            id="identity-link-document-type"
+                            name="documentType"
+                            value={identityLinkFormik.values.documentType ?? ""}
+                            onChange={identityLinkFormik.handleChange}
+                            onBlur={identityLinkFormik.handleBlur}
+                            className={`${styles.input} ${identityLinkDocumentTypeHasError ? styles.inputError : ""}`}
+                          >
+                            <option value="DNI">DNI</option>
+                            <option value="CI">CI</option>
+                            <option value="PASAPORTE">Pasaporte</option>
+                          </select>
+                          {identityLinkDocumentTypeHasError ? (
+                            <p className={styles.fieldError}>{identityLinkFormik.errors.documentType}</p>
+                          ) : null}
+                        </div>
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel} htmlFor="identity-link-document-number">
+                            Número de documento
+                          </label>
+                          <input
+                            id="identity-link-document-number"
+                            name="documentNumber"
+                            type="text"
+                            placeholder="Ingresá tu documento"
+                            value={identityLinkFormik.values.documentNumber ?? ""}
+                            onChange={identityLinkFormik.handleChange}
+                            onBlur={identityLinkFormik.handleBlur}
+                            className={`${styles.input} ${identityLinkDocumentNumberHasError ? styles.inputError : ""}`}
+                          />
+                          {identityLinkDocumentNumberHasError ? (
+                            <p className={styles.fieldError}>{identityLinkFormik.errors.documentNumber}</p>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div className={styles.fieldRow}>
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel} htmlFor="identity-link-sex">
+                            Sexo
+                          </label>
+                          <select
+                            id="identity-link-sex"
+                            name="sex"
+                            value={identityLinkFormik.values.sex ?? ""}
+                            onChange={identityLinkFormik.handleChange}
+                            onBlur={identityLinkFormik.handleBlur}
+                            className={`${styles.input} ${identityLinkSexHasError ? styles.inputError : ""}`}
+                          >
+                            <option value="">Seleccioná una opción</option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                            <option value="X">No binario / X</option>
+                          </select>
+                          {identityLinkSexHasError ? (
+                            <p className={styles.fieldError}>{identityLinkFormik.errors.sex}</p>
+                          ) : null}
+                        </div>
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel} htmlFor="identity-link-birth-date">
+                            Fecha de nacimiento
+                          </label>
+                          <input
+                            id="identity-link-birth-date"
+                            name="birthDate"
+                            type="date"
+                            value={identityLinkFormik.values.birthDate ?? ""}
+                            onChange={identityLinkFormik.handleChange}
+                            onBlur={identityLinkFormik.handleBlur}
+                            className={`${styles.input} ${identityLinkBirthDateHasError ? styles.inputError : ""}`}
+                          />
+                          {identityLinkBirthDateHasError ? (
+                            <p className={styles.fieldError}>{identityLinkFormik.errors.birthDate}</p>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel} htmlFor="identity-link-phone">
+                          Teléfono
+                        </label>
+                        <input
+                          id="identity-link-phone"
+                          name="phone"
+                          type="tel"
+                          placeholder="+5491112345678"
+                          value={identityLinkFormik.values.phone ?? ""}
+                          onChange={identityLinkFormik.handleChange}
+                          onBlur={identityLinkFormik.handleBlur}
+                          className={`${styles.input} ${identityLinkPhoneHasError ? styles.inputError : ""}`}
+                        />
+                        {identityLinkPhoneHasError ? (
+                          <p className={styles.fieldError}>{identityLinkFormik.errors.phone}</p>
+                        ) : null}
+                      </div>
+                      <button
+                        type="submit"
+                        className={styles.primaryButton}
+                        disabled={identityLinkFormik.isSubmitting || isStartingIdentityLink}
+                      >
+                        <span>
+                          {isStartingIdentityLink
+                            ? "Enviando código..."
+                            : "Continuar vinculación"}
+                        </span>
+                      </button>
+                    </form>
+                {legalLinks}
+              </motion.div>
+            ) : null}
+
+            {cardView === "identity-link-verify" ? (
+              <motion.div
+                key="identity-link-verify-form"
+                initial={{ opacity: 0, y: 32 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -32 }}
+                transition={{ duration: 0.32, ease: "easeInOut" }}
+              >
+                <header className={styles.formHeader}>
+                  <div className={styles.mfaHeaderRow}>
+                    <h2 className={styles.formTitle}>Validar vinculación</h2>
+                    <button
+                      type="button"
+                      className={styles.mfaBackIconButton}
+                      onClick={() => {
+                        setCardView("identity-link");
+                        clearFeedback();
+                      }}
+                      aria-label="Volver al formulario"
+                    >
+                      <ArrowLeft size={20} />
+                    </button>
+                  </div>
+                  <p className={styles.formSubtitle}>
+                    Ingresá el código que te enviamos para completar la vinculación de tu cuenta.
+                  </p>
+                </header>
+                {infoMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                    {infoMessage}
+                  </div>
+                ) : null}
+                {errorMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackError}`}>
+                    {errorMessage}
+                  </div>
+                ) : null}
+                {identityLinkFlow?.destinationMasked ? (
+                  <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                    Email destino: {identityLinkFlow.destinationMasked}
+                  </div>
+                ) : null}
+                <form onSubmit={identityLinkVerifyFormik.handleSubmit} className={styles.form} noValidate>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel} htmlFor="identity-link-code">
+                      Código
+                    </label>
+                    <div className={styles.otpField}>
+                      <OtpCodeInput
+                        describedBy={identityLinkCodeHasError ? "identity-link-code-error" : undefined}
+                        isInvalid={identityLinkCodeHasError}
+                        value={identityLinkVerifyFormik.values.code}
+                        onChange={(value) => {
+                          void identityLinkVerifyFormik.setFieldValue("code", value);
+                        }}
+                      />
+                    </div>
+                    {identityLinkCodeHasError ? (
+                      <p className={styles.fieldError} id="identity-link-code-error">
+                        {identityLinkVerifyFormik.errors.code}
+                      </p>
+                    ) : null}
+                  </div>
+                  <button
+                    type="submit"
+                    className={styles.primaryButton}
+                    disabled={identityLinkVerifyFormik.isSubmitting || isVerifyingIdentityLink}
+                  >
+                    <span>
+                      {isVerifyingIdentityLink
+                        ? "Validando..."
+                        : "Completar vinculación"}
+                    </span>
+                  </button>
+                </form>
+                {legalLinks}
+              </motion.div>
+            ) : null}
+
             {cardView === "google-onboarding" ? (
               <motion.div
                 key="google-onboarding-form"
@@ -2010,9 +2699,10 @@ export function Login({ onLogin }: LoginProps) {
                       );
 
                       if (data.ok) {
-                        onLogin?.(formik.values.username, formik.values.password);
-                        router.push(redirectTo);
-                        router.refresh();
+                        await finishLoginIfIdentityLinked(
+                          formik.values.username,
+                          formik.values.password,
+                        );
                         return;
                       }
 
@@ -2166,28 +2856,14 @@ export function Login({ onLogin }: LoginProps) {
                       Código
                     </label>
                     <div className={styles.otpField}>
-                      <InputOTP
-                        aria-describedby={resetPasswordCodeHasError ? "reset-password-code-error" : undefined}
+                      <OtpCodeInput
+                        describedBy={resetPasswordCodeHasError ? "reset-password-code-error" : undefined}
                         isInvalid={resetPasswordCodeHasError}
-                        maxLength={6}
-                        name="code"
                         value={resetPasswordFormik.values.code}
                         onChange={(value) => {
                           void resetPasswordFormik.setFieldValue("code", value);
                         }}
-                      >
-                        <InputOTP.Group>
-                          <InputOTP.Slot index={0} />
-                          <InputOTP.Slot index={1} />
-                          <InputOTP.Slot index={2} />
-                        </InputOTP.Group>
-                        <InputOTP.Separator />
-                        <InputOTP.Group>
-                          <InputOTP.Slot index={3} />
-                          <InputOTP.Slot index={4} />
-                          <InputOTP.Slot index={5} />
-                        </InputOTP.Group>
-                      </InputOTP>
+                      />
                     </div>
                     {resetPasswordCodeHasError ? (
                       <p className={styles.fieldError} id="reset-password-code-error">

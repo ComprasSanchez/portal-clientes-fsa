@@ -1,93 +1,128 @@
-// Centraliza el mapeo de errores de autenticación/MFA
+// Centraliza el mapeo de errores de autenticacion/MFA
 
 export type AuthErrorCode =
-  | 'AUTH_INVALID_CREDENTIALS'
-  | 'AUTH_MFA_CHALLENGE_FAILED'
-  | 'AUTH_MFA_CODE_INVALID'
-  | 'AUTH_MFA_INVALID_CODE'
-  | 'AUTH_USER_ALREADY_EXISTS'
-  | 'AUTH_USERNAME_ALREADY_EXISTS'
-  | 'AUTH_EMAIL_ALREADY_EXISTS'
-  | 'AUTH_REGISTER_EMAIL_IN_USE'
-  | 'AUTH_REGISTER_EMAIL_SEND_FAILED'
-  | 'AUTH_REGISTER_FAILED'
-  | 'AUTH_RESET_CHALLENGE_INVALID'
-  | 'AUTH_RESET_CHALLENGE_EXPIRED'
-  | 'AUTH_RESET_INVALID_CODE'
-  | 'AUTH_RESET_LOCKED'
-  | 'AUTH_RESET_PASSWORD_FAILED'
-  | 'AUTH_EMAIL_VERIFY_TOKEN_INVALID'
-  | 'AUTH_EMAIL_VERIFY_TOKEN_EXPIRED'
-  | 'AUTH_EMAIL_VERIFY_RESEND_COOLDOWN'
-  | 'AUTH_SESSION_EXPIRED'
-  | 'AUTH_UNKNOWN'
-  | 'AUTH_EMAIL_NOT_VERIFIED'
-  | 'AUTH_EMAIL_VERIFY_RESEND_LIMIT'
-  | 'AUTH_ONBOARDING_INVALID'
-  | 'AUTH_ONBOARDING_EXPIRED'
-  | 'AUTH_ONBOARDING_TOKEN_INVALID'
-  | 'AUTH_ONBOARDING_TOKEN_EXPIRED'
-  | 'AUTH_ONBOARDING_ALREADY_COMPLETED'
-  | 'AUTH_ONBOARDING_IDENTITY_LINK_CONFLICT'
-  | 'AUTH_ONBOARDING_COMPLETE_FAILED'
+  | "AUTH_INVALID_CREDENTIALS"
+  | "AUTH_MFA_CHALLENGE_FAILED"
+  | "AUTH_MFA_CODE_INVALID"
+  | "AUTH_MFA_INVALID_CODE"
+  | "AUTH_USER_ALREADY_EXISTS"
+  | "AUTH_USERNAME_ALREADY_EXISTS"
+  | "AUTH_EMAIL_ALREADY_EXISTS"
+  | "AUTH_REGISTER_EMAIL_IN_USE"
+  | "AUTH_REGISTER_EMAIL_SEND_FAILED"
+  | "AUTH_REGISTER_FAILED"
+  | "AUTH_RESET_CHALLENGE_INVALID"
+  | "AUTH_RESET_CHALLENGE_EXPIRED"
+  | "AUTH_RESET_INVALID_CODE"
+  | "AUTH_RESET_LOCKED"
+  | "AUTH_RESET_PASSWORD_FAILED"
+  | "AUTH_EMAIL_VERIFY_TOKEN_INVALID"
+  | "AUTH_EMAIL_VERIFY_TOKEN_EXPIRED"
+  | "AUTH_EMAIL_VERIFY_RESEND_COOLDOWN"
+  | "AUTH_SESSION_EXPIRED"
+  | "AUTH_UNKNOWN"
+  | "AUTH_EMAIL_NOT_VERIFIED"
+  | "AUTH_EMAIL_VERIFY_RESEND_LIMIT"
+  | "AUTH_ONBOARDING_INVALID"
+  | "AUTH_ONBOARDING_EXPIRED"
+  | "AUTH_ONBOARDING_TOKEN_INVALID"
+  | "AUTH_ONBOARDING_TOKEN_EXPIRED"
+  | "AUTH_ONBOARDING_ALREADY_COMPLETED"
+  | "AUTH_ONBOARDING_IDENTITY_LINK_CONFLICT"
+  | "AUTH_ONBOARDING_COMPLETE_FAILED"
+  | "AUTH_IDENTITY_LINK_INVALID"
+  | "AUTH_IDENTITY_LINK_EXPIRED"
+  | "AUTH_IDENTITY_LINK_CONFLICT"
+  | "AUTH_IDENTITY_LINK_START_FAILED"
+  | "AUTH_IDENTITY_LINK_CHALLENGE_REQUIRED"
+  | "AUTH_IDENTITY_LINK_CHANNEL_UNAVAILABLE"
+  | "AUTH_IDENTITY_LINK_CHALLENGE_FAILED"
+  | "AUTH_IDENTITY_LINK_OTP_INVALID"
+  | "AUTH_IDENTITY_LINK_OTP_LOCKED"
+  | "AUTH_IDENTITY_LINK_OTP_EXPIRED"
+  | "AUTH_IDENTITY_LINK_MIRROR_FAILED"
+  | "AUTH_IDENTITY_LINK_VERIFY_FAILED"
+  | "AUTH_MFA_TICKET_INVALID"
+  | "AUTH_MFA_COOLDOWN"
   | string;
 
+const DEFAULT_AUTH_ERROR_MESSAGE =
+  "Ocurrio un error inesperado. Intenta nuevamente.";
+
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  AUTH_INVALID_CREDENTIALS: "Usuario o contrasena incorrectos.",
+  AUTH_MFA_CHALLENGE_FAILED:
+    "Error inesperado al iniciar el OTP. Intenta nuevamente.",
+  AUTH_MFA_CODE_INVALID: "El codigo OTP ingresado no es valido.",
+  AUTH_MFA_INVALID_CODE: "El codigo OTP ingresado no es valido.",
+  AUTH_USER_ALREADY_EXISTS: "Ese usuario ya existe. Proba con otro.",
+  AUTH_USERNAME_ALREADY_EXISTS: "Ese usuario ya existe. Proba con otro.",
+  AUTH_EMAIL_ALREADY_EXISTS: "Ese email ya esta registrado.",
+  AUTH_MFA_TICKET_INVALID:
+    "El ticket OTP es invalido o expiro. Por favor, inicia sesion nuevamente.",
+  AUTH_REGISTER_EMAIL_IN_USE: "Ese email ya esta registrado.",
+  AUTH_MFA_COOLDOWN: "El reenvio del OTP esta en tiempo de espera.",
+  AUTH_REGISTER_EMAIL_SEND_FAILED:
+    "No pudimos enviar el email de confirmacion.",
+  AUTH_REGISTER_FAILED: "No pudimos crear la cuenta. Intenta nuevamente.",
+  AUTH_RESET_CHALLENGE_INVALID:
+    "La solicitud para restablecer la contrasena no es valida.",
+  AUTH_RESET_CHALLENGE_EXPIRED:
+    "La solicitud para restablecer la contrasena expiro. Solicita un nuevo codigo.",
+  AUTH_RESET_INVALID_CODE:
+    "El codigo de recuperacion ingresado no es valido.",
+  AUTH_RESET_LOCKED:
+    "La recuperacion de contrasena fue bloqueada temporalmente por demasiados intentos.",
+  AUTH_RESET_PASSWORD_FAILED:
+    "No pudimos actualizar tu contrasena. Intenta nuevamente.",
+  AUTH_EMAIL_VERIFY_TOKEN_INVALID: "El enlace de verificacion no es valido.",
+  AUTH_EMAIL_VERIFY_TOKEN_EXPIRED:
+    "El enlace de verificacion expiro. Solicita uno nuevo.",
+  AUTH_EMAIL_VERIFY_RESEND_COOLDOWN:
+    "Ya enviamos un email de verificacion recientemente. Por favor, revisa tu bandeja de entrada o intenta nuevamente mas tarde.",
+  AUTH_EMAIL_NOT_VERIFIED:
+    "Tu email no ha sido verificado. Por favor, revisa tu bandeja de entrada.",
+  AUTH_EMAIL_VERIFY_RESEND_LIMIT:
+    "Has alcanzado el limite de reenvios de email de verificacion. Por favor, intenta nuevamente mas tarde.",
+  AUTH_ONBOARDING_INVALID: "El onboarding solicitado no es valido.",
+  AUTH_ONBOARDING_EXPIRED: "El onboarding expiro. Volve a iniciar el registro.",
+  AUTH_ONBOARDING_TOKEN_INVALID: "El token de onboarding no es valido.",
+  AUTH_ONBOARDING_TOKEN_EXPIRED:
+    "El token de onboarding expiro. Solicita un nuevo email.",
+  AUTH_ONBOARDING_ALREADY_COMPLETED:
+    "Este onboarding ya fue completado. Podes iniciar sesion.",
+  AUTH_ONBOARDING_IDENTITY_LINK_CONFLICT:
+    "Los datos de identidad ya estan vinculados a otra cuenta.",
+  AUTH_ONBOARDING_COMPLETE_FAILED:
+    "No pudimos completar el onboarding. Intenta nuevamente.",
+  AUTH_IDENTITY_LINK_INVALID:
+    "La solicitud de vinculacion no es valida o expiro.",
+  AUTH_IDENTITY_LINK_EXPIRED:
+    "La solicitud de vinculacion expiro. Inicia el proceso nuevamente.",
+  AUTH_IDENTITY_LINK_CONFLICT:
+    "No pudimos vincular tu cuenta porque el documento o el email ya estan asociados a otra cuenta.",
+  AUTH_IDENTITY_LINK_START_FAILED:
+    "No pudimos iniciar la vinculacion de tu cuenta. Intenta nuevamente.",
+  AUTH_IDENTITY_LINK_CHALLENGE_REQUIRED:
+    "Ya enviamos un codigo para esta vinculacion. Revisa tu email.",
+  AUTH_IDENTITY_LINK_CHANNEL_UNAVAILABLE:
+    "No podemos enviar el codigo por ese canal en este momento.",
+  AUTH_IDENTITY_LINK_CHALLENGE_FAILED:
+    "No pudimos enviar el codigo de vinculacion. Intenta nuevamente.",
+  AUTH_IDENTITY_LINK_OTP_INVALID:
+    "El codigo de vinculacion ingresado no es valido.",
+  AUTH_IDENTITY_LINK_OTP_LOCKED:
+    "La vinculacion fue bloqueada temporalmente por demasiados intentos.",
+  AUTH_IDENTITY_LINK_OTP_EXPIRED:
+    "El codigo de vinculacion expiro. Solicita uno nuevo.",
+  AUTH_IDENTITY_LINK_MIRROR_FAILED:
+    "La cuenta se vinculo, pero no pudimos sincronizar todos los datos. Contacta a soporte.",
+  AUTH_IDENTITY_LINK_VERIFY_FAILED:
+    "No pudimos completar la vinculacion. Intenta nuevamente.",
+  AUTH_SESSION_EXPIRED:
+    "La sesion ha expirado. Por favor, inicia sesion nuevamente.",
+};
+
 export function mapAuthError(code: AuthErrorCode): string {
-  switch (code) {
-    case 'AUTH_INVALID_CREDENTIALS':
-      return 'Usuario o contraseña incorrectos.';
-    case 'AUTH_MFA_CHALLENGE_FAILED':
-      return 'Error inesperado al iniciar el OTP. Intenta nuevamente.';
-    case 'AUTH_MFA_CODE_INVALID':
-    case 'AUTH_MFA_INVALID_CODE':
-      return 'El código MFA ingresado no es válido.';
-    case 'AUTH_USER_ALREADY_EXISTS':
-    case 'AUTH_USERNAME_ALREADY_EXISTS':
-      return 'Ese usuario ya existe. Probá con otro.';
-    case 'AUTH_EMAIL_ALREADY_EXISTS':
-    case 'AUTH_REGISTER_EMAIL_IN_USE':
-      return 'Ese email ya está registrado.';
-    case 'AUTH_REGISTER_EMAIL_SEND_FAILED':
-      return 'No pudimos enviar el email de confirmación.';
-    case 'AUTH_REGISTER_FAILED':
-      return 'No pudimos crear la cuenta. Intentá nuevamente.';
-    case 'AUTH_RESET_CHALLENGE_INVALID':
-      return 'La solicitud para restablecer la contraseña no es válida.';
-    case 'AUTH_RESET_CHALLENGE_EXPIRED':
-      return 'La solicitud para restablecer la contraseña expiró. Solicitá un nuevo código.';
-    case 'AUTH_RESET_INVALID_CODE':
-      return 'El código de recuperación ingresado no es válido.';
-    case 'AUTH_RESET_LOCKED':
-      return 'La recuperación de contraseña fue bloqueada temporalmente por demasiados intentos.';
-    case 'AUTH_RESET_PASSWORD_FAILED':
-      return 'No pudimos actualizar tu contraseña. Intentá nuevamente.';
-    case 'AUTH_EMAIL_VERIFY_TOKEN_INVALID':
-      return 'El enlace de verificación no es válido.';
-    case 'AUTH_EMAIL_VERIFY_TOKEN_EXPIRED':
-      return 'El enlace de verificación expiró. Solicitá uno nuevo.';
-    case 'AUTH_EMAIL_VERIFY_RESEND_COOLDOWN':
-      return 'Ya enviamos un email de verificación recientemente. Por favor, revisá tu bandeja de entrada o intentá nuevamente más tarde.';
-    case 'AUTH_EMAIL_NOT_VERIFIED':
-      return 'Tu email no ha sido verificado. Por favor, revisá tu bandeja de entrada.';
-    case 'AUTH_EMAIL_VERIFY_RESEND_LIMIT':
-      return 'Has alcanzado el límite de reenvíos de email de verificación. Por favor, intentá nuevamente más tarde.';
-    case 'AUTH_ONBOARDING_INVALID':
-      return 'El onboarding solicitado no es válido.';
-    case 'AUTH_ONBOARDING_EXPIRED':
-      return 'El onboarding expiró. Volvé a iniciar el registro.';
-    case 'AUTH_ONBOARDING_TOKEN_INVALID':
-      return 'El token de onboarding no es válido.';
-    case 'AUTH_ONBOARDING_TOKEN_EXPIRED':
-      return 'El token de onboarding expiró. Solicitá un nuevo email.';
-    case 'AUTH_ONBOARDING_ALREADY_COMPLETED':
-      return 'Este onboarding ya fue completado. Podés iniciar sesión.';
-    case 'AUTH_ONBOARDING_IDENTITY_LINK_CONFLICT':
-      return 'Los datos de identidad ya están vinculados a otra cuenta.';
-    case 'AUTH_ONBOARDING_COMPLETE_FAILED':
-      return 'No pudimos completar el onboarding. Intentá nuevamente.';
-    case 'AUTH_SESSION_EXPIRED':
-      return 'La sesión ha expirado. Por favor, inicia sesión nuevamente.';
-    default:
-      return 'Ocurrió un error inesperado. Intenta nuevamente.';
-  }
+  return AUTH_ERROR_MESSAGES[code] ?? DEFAULT_AUTH_ERROR_MESSAGE;
 }

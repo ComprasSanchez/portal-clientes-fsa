@@ -8,6 +8,9 @@ type UsePortalPuntosOptions = {
   enabled?: boolean;
 };
 
+const MISSING_CLIENT_LINK_MESSAGE =
+  "Tu cuenta no tiene un cliente vinculado. Contactá a soporte para completar la vinculación.";
+
 export type UsePortalPuntosResult = {
   puntos: PortalPuntosResponse | null;
   summary: ReturnType<typeof getPortalPuntosSummary>;
@@ -52,8 +55,14 @@ export const usePortalPuntos = ({ enabled = true }: UsePortalPuntosOptions = {})
         signal,
       });
 
-      if (response.status === 401 || response.status === 403) {
+      if (response.status === 401) {
         setPuntos(null);
+        return;
+      }
+
+      if (response.status === 403) {
+        setPuntos(null);
+        setError(MISSING_CLIENT_LINK_MESSAGE);
         return;
       }
 
