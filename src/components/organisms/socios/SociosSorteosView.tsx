@@ -163,8 +163,8 @@ export function SociosSorteosView({ documentNumber, userName }: SociosSorteosVie
         <article className={styles.panelCard}>
           <div className={styles.panelHeader}>
             <div>
-              <h2 className={styles.panelTitle}>Sorteo activo</h2>
-              <p className={styles.panelSubtitle}>Estado actual del beneficio publicado para socios.</p>
+              <h2 className={styles.panelTitle}>Sorteo actual</h2>
+              {/* <p className={styles.panelSubtitle}>Estado actual del beneficio publicado para socios.</p> */}
             </div>
             <span className={styles.iconBadge}>
               <Ticket size={18} />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { BotmakerChat } from "../components/BotmakerChat";
 import { GlobalToastProvider } from "../components/ui/global-toast";
 import "./globals.css";
 
@@ -34,6 +35,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <GlobalToastProvider>{children}</GlobalToastProvider>
+        <BotmakerChat />
       </body>
     </html>
   );
