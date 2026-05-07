@@ -70,7 +70,7 @@ const identityLinkValidationSchema = Yup.object({
     .required("Ingresa un email."),
 });
 
-const verifyOnboardingValidationSchema = Yup.object({
+export const verifyOnboardingValidationSchema = Yup.object({
   token: Yup.string().trim().required("Ingresá el token que recibiste por email."),
 });
 
@@ -671,7 +671,7 @@ export function Login({ onLogin }: LoginProps) {
     initialValues: {
       token: "",
     },
-    validationSchema: verifyOnboardingValidationSchema,
+    validationSchema: undefined,
     validateOnBlur: true,
     validateOnChange: false,
     onSubmit: async (values, helpers) => {
@@ -870,7 +870,6 @@ export function Login({ onLogin }: LoginProps) {
                 ? `Tu cuenta todavía no completó el onboarding. Revisá el email que enviamos a ${onboardingFlow.destinationMasked}.`
                 : "Tu cuenta todavía no completó el onboarding. Revisá el email que te enviamos para continuar.",
             );
-            verifyOnboardingFormik.setFieldValue("token", "", false);
             return;
           }
 
@@ -2052,7 +2051,7 @@ export function Login({ onLogin }: LoginProps) {
                     <UserPlus size={20} />
                     <span>
                       {registerFormik.isSubmitting
-                        ? "Iniciando onboarding..."
+                        ? "Iniciando registro..."
                         : "Comenzar registro"}
                     </span>
                   </button>
@@ -2071,14 +2070,13 @@ export function Login({ onLogin }: LoginProps) {
               >
                 <header className={styles.formHeader}>
                   <div className={styles.mfaHeaderRow}>
-                    <h2 className={styles.formTitle}>Verificar onboarding</h2>
+                    <h2 className={styles.formTitle}>Terminar registro</h2>
                     <button
                       type="button"
                       className={styles.mfaBackIconButton}
                       onClick={() => {
                         returnToLogin();
                         setOnboardingFlow(null);
-                        verifyOnboardingFormik.resetForm();
                       }}
                       aria-label="Volver al inicio de sesión"
                     >
@@ -2086,7 +2084,7 @@ export function Login({ onLogin }: LoginProps) {
                     </button>
                   </div>
                   <p className={styles.formSubtitle}>
-                    Revisá tu email y pegá el token o abrí el link que te enviamos.
+                    Te enviamos un email para completar tu registro. Abrí el enlace para continuar.
                   </p>
                 </header>
                 {infoMessage ? (
@@ -2109,8 +2107,8 @@ export function Login({ onLogin }: LoginProps) {
                     Validando el enlace del email...
                   </div>
                 ) : null}
-                <form onSubmit={verifyOnboardingFormik.handleSubmit} className={styles.form} noValidate>
-                  <div className={styles.fieldGroup}>
+                <div className={styles.form}>
+                  <div className={styles.fieldGroup} style={{ display: "none" }}>
                     <label className={styles.fieldLabel} htmlFor="verify-onboarding-token">
                       Token
                     </label>
@@ -2133,6 +2131,7 @@ export function Login({ onLogin }: LoginProps) {
                     type="submit"
                     className={styles.primaryButton}
                     disabled={verifyOnboardingFormik.isSubmitting || isAutoVerifyingOnboarding}
+                    style={{ display: "none" }}
                   >
                     <span>
                       {isAutoVerifyingOnboarding
@@ -2158,7 +2157,7 @@ export function Login({ onLogin }: LoginProps) {
                       {isResendingOnboarding ? "Reenviando..." : "Reenviar email"}
                     </span>
                   </button>
-                </form>
+                </div>
                 {legalLinks}
               </motion.div>
             ) : null}
@@ -2937,3 +2936,12 @@ export function Login({ onLogin }: LoginProps) {
     </section>
   );
 }
+
+
+
+
+
+
+
+
+
