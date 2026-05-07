@@ -203,8 +203,6 @@ const buildIdentityLinkPayload = (values: IdentityLinkFormValues) => ({
   email: values.email.trim(),
 });
 
-const GOOGLE_POPUP_REDIRECT_KEY = "google-auth-popup-redirect-target";
-
 export function Login({ onLogin }: LoginProps) {
   const MFA_RESEND_COOLDOWN_SECONDS = 50;
   const router = useRouter();
@@ -1109,13 +1107,7 @@ export function Login({ onLogin }: LoginProps) {
       return;
     }
 
-    try {
-      window.localStorage.setItem(GOOGLE_POPUP_REDIRECT_KEY, redirectTo);
-    } catch {
-      // Ignore storage access issues.
-    }
-
-    const startUrl = `/api/auth/providers/google/start?redirectTo=${encodeURIComponent(redirectTo)}${promptParam}`;
+    const startUrl = `/api/v2/auth/providers/google/start?redirectTo=${encodeURIComponent(redirectTo)}${promptParam}`;
     window.location.assign(startUrl);
   };
   useEffect(() => {
