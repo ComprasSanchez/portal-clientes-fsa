@@ -203,6 +203,8 @@ const buildIdentityLinkPayload = (values: IdentityLinkFormValues) => ({
   email: values.email.trim(),
 });
 
+const GOOGLE_POPUP_REDIRECT_KEY = "google-auth-popup-redirect-target";
+
 export function Login({ onLogin }: LoginProps) {
   const MFA_RESEND_COOLDOWN_SECONDS = 50;
   const router = useRouter();
@@ -224,8 +226,6 @@ export function Login({ onLogin }: LoginProps) {
   const [passwordRecoveryState, setPasswordRecoveryState] =
     useState<PasswordRecoveryState | null>(null);
   const [isGooglePopupLoading, setIsGooglePopupLoading] = useState(false);
-  const [shouldSuggestGoogleAccountRetry, setShouldSuggestGoogleAccountRetry] =
-    useState(false);
   const [onboardingFlow, setOnboardingFlow] =
     useState<OnboardingFlowState | null>(null);
   const [isResendingOnboarding, setIsResendingOnboarding] = useState(false);
@@ -241,11 +241,6 @@ export function Login({ onLogin }: LoginProps) {
   const [isVerifyingIdentityLink, setIsVerifyingIdentityLink] = useState(false);
   const [hasOpenedIdentityLinkFromHint, setHasOpenedIdentityLinkFromHint] =
     useState(false);
-
-  type SocialAuthMessage =
-    | { type: "SOCIAL_AUTH_SUCCESS"; profile?: SocialProfilePayload }
-    | { type: "SOCIAL_AUTH_ERROR"; error: string }
-    | { type: "SOCIAL_AUTH_ONBOARDING_REQUIRED"; profile?: SocialProfilePayload };
 
   const redirectTo = getSafeRedirectPath(searchParams.get("redirectTo"));
   const identityLinkHint = searchParams.get("identityLink");
@@ -276,26 +271,10 @@ export function Login({ onLogin }: LoginProps) {
     [router, searchParams],
   );
 
-  const openGoogleOnboardingCard = (message?: string) => {
-    setCardView("google-onboarding");
-    setMfaState(null);
-    setShouldSuggestGoogleAccountRetry(false);
-    clearFeedback();
-
-    if (message) {
-      setInfoMessage(message);
-    }
-
-    syncSearchParams((params) => {
-      params.set("onboarding", "google");
-    });
-  };
-
   const openIdentityLinkCard = useCallback(
     (message?: string) => {
       setCardView("identity-link");
       setMfaState(null);
-      setShouldSuggestGoogleAccountRetry(false);
       clearFeedback();
       setIdentityLinkFlow(null);
 
@@ -1120,186 +1099,25 @@ export function Login({ onLogin }: LoginProps) {
     }
 
     clearFeedback();
-    setShouldSuggestGoogleAccountRetry(false);
     setIsGooglePopupLoading(true);
 
     const promptParam = forceAccountSelection
       ? `&prompt=${encodeURIComponent("select_account consent")}`
       : "";
-    const popupUrl = `/api/auth/providers/google/start?mode=popup&redirectTo=${encodeURIComponent(redirectTo)}${promptParam}`;
-    const popup = window.open(
-      popupUrl,
-      "googleLogin",
-      "width=520,height=720,menubar=no,toolbar=no,status=no,scrollbars=yes,resizable=yes",
-    );
 
-    if (!popup) {
-      setIsGooglePopupLoading(false);
-      setErrorMessage(
-        "El navegador bloqueó la ventana de Google. Habilitá popups e intentá nuevamente.",
-      );
+    if (typeof window === "undefined") {
       return;
     }
 
-    const timeoutMs = 60000;
-    const startedAt = Date.now();
-    let completed = false;
-
-    const cleanup = () => {
-      window.clearInterval(poll);
-      window.clearTimeout(timer);
-      window.removeEventListener("message", onMessage);
-      setIsGooglePopupLoading(false);
-    };
-
-    const finishWithError = (message: string) => {
-      if (completed) {
-        return;
-      }
-
-      completed = true;
-      cleanup();
-      setErrorMessage(message);
-    };
-
-    const finishWithSuccess = () => {
-      if (completed) {
-        return;
-      }
-
-      completed = true;
-      cleanup();
-      onLogin?.("google", "");
-      window.location.assign(redirectTo);
-    };
-
-    const finishWithGoogleOnboarding = (profile?: SocialProfilePayload | IdentityLinkStatusResponse | null) => {
-      if (completed) {
-        return;
-      }
-
-      completed = true;
-      cleanup();
-      applyGoogleProfilePrefill(profile);
-      openGoogleOnboardingCard(
-        "Completá tus datos para terminar el onboarding con Google.",
-      );
-    };
-
-    const resolveGoogleDestination = async (profile?: SocialProfilePayload | null) => {
-      try {
-        const identityStatus = await getIdentityLinkStatus();
-
-        if (identityStatus.link?.linked) {
-          finishWithSuccess();
-          return;
-        }
-
-        finishWithGoogleOnboarding(profile ?? identityStatus);
-      } catch (error) {
-        if (error instanceof Error && error.message === "SESSION_MISSING") {
-          setShouldSuggestGoogleAccountRetry(true);
-          finishWithError(
-            "Google autenticó, pero el backend no devolvió cookie de sesión (sid). Contactá al equipo backend.",
-          );
-          return;
-        }
-
-        finishWithError(
-          "No pudimos validar el vínculo de tu identidad con Google. Intentá nuevamente.",
-        );
-      }
-    };
-
-    const verifySessionAfterPopupClose = async () => {
-      try {
-        const { data } = await axios.get<{ ok: boolean; authenticated: boolean }>(
-          "/api/auth/session",
-          {
-            headers: {
-              Accept: "application/json",
-            },
-          },
-        );
-
-        if (data?.authenticated) {
-          await resolveGoogleDestination();
-          return;
-        }
-      } catch {
-        // Ignore session check errors and fallback to generic popup close message.
-      }
-
-      finishWithError(
-        "La ventana de Google se cerró antes de completar la autenticación.",
-      );
-    };
-
-    function onMessage(event: MessageEvent) {
-      if (event.origin !== window.location.origin) {
-        return;
-      }
-
-      const data = event.data as SocialAuthMessage | null;
-      if (!data || typeof data !== "object" || !("type" in data)) {
-        return;
-      }
-
-      if (data.type === "SOCIAL_AUTH_SUCCESS") {
-        void resolveGoogleDestination(data.profile);
-        return;
-      }
-
-      if (data.type === "SOCIAL_AUTH_ONBOARDING_REQUIRED") {
-        finishWithGoogleOnboarding(data.profile);
-        return;
-      }
-
-      if (data.type === "SOCIAL_AUTH_ERROR") {
-        if (data.error === "AUTH_GOOGLE_SESSION_MISSING") {
-          setShouldSuggestGoogleAccountRetry(true);
-          finishWithError(
-            "Google autenticó, pero el backend no devolvió cookie de sesión (sid). Contactá al equipo backend.",
-          );
-          return;
-        }
-
-        finishWithError(
-          "No pudimos completar el inicio de sesión con Google. Intentá nuevamente.",
-        );
-      }
+    try {
+      window.localStorage.setItem(GOOGLE_POPUP_REDIRECT_KEY, redirectTo);
+    } catch {
+      // Ignore storage access issues.
     }
 
-    const poll = window.setInterval(() => {
-      if (!popup.closed) {
-        return;
-      }
-
-      if (completed) {
-        cleanup();
-        return;
-      }
-
-      if (Date.now() - startedAt < timeoutMs) {
-        void verifySessionAfterPopupClose();
-      }
-    }, 500);
-
-    const timer = window.setTimeout(() => {
-      try {
-        popup.close();
-      } catch {
-        // Ignore popup close errors.
-      }
-
-      finishWithError(
-        "La autenticación con Google tardó demasiado. Intentá nuevamente.",
-      );
-    }, timeoutMs);
-
-    window.addEventListener("message", onMessage);
+    const startUrl = `/api/auth/providers/google/start?redirectTo=${encodeURIComponent(redirectTo)}${promptParam}`;
+    window.location.assign(startUrl);
   };
-
   useEffect(() => {
     if (cardView !== "mfa" || mfaResendCooldownSeconds <= 0) {
       return;
@@ -1475,7 +1293,6 @@ export function Login({ onLogin }: LoginProps) {
 
     clearFeedback();
     setCardView("google-onboarding");
-    setShouldSuggestGoogleAccountRetry(false);
     setMfaState(null);
     setOnboardingFlow(null);
     setInfoMessage("Completá tus datos para terminar el onboarding con Google.");
@@ -1797,18 +1614,6 @@ export function Login({ onLogin }: LoginProps) {
                       : "Continuar con Google"}
                   </span>
                 </button>
-                {shouldSuggestGoogleAccountRetry ? (
-                  <div className={styles.feedbackActions}>
-                    <button
-                      type="button"
-                      className={styles.resendButton}
-                      disabled={isGooglePopupLoading}
-                      onClick={() => startGooglePopupLogin(true)}
-                    >
-                      Reintentar con otra cuenta de Google
-                    </button>
-                  </div>
-                ) : null}
                 {legalLinks}
               </motion.div>
             ) : null}

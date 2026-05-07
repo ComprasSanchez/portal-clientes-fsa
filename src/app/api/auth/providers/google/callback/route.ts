@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequiredBaseUrl, jsonError } from "@/app/api/_lib/proxy";
-import { applyAuthCookiesFromUpstream } from "@/app/api/auth/_lib/session-cookie";
+import {
+  applyAuthCookiesFromUpstream,
+} from "@/app/api/auth/_lib/session-cookie";
+const GOOGLE_AUTH_FLOW_MODE_COOKIE = "google_auth_flow_mode";
+const GOOGLE_AUTH_REDIRECT_TARGET_COOKIE = "google_auth_redirect_target";
+
+const clearGoogleFlowCookies = (response: NextResponse) => {
+  response.cookies.set({
+    name: GOOGLE_AUTH_FLOW_MODE_COOKIE,
+    value: "",
+    path: "/",
+    expires: new Date(0),
+  });
+  response.cookies.set({
+    name: GOOGLE_AUTH_REDIRECT_TARGET_COOKIE,
+    value: "",
+    path: "/",
+    expires: new Date(0),
+  });
+};
 
 export async function GET(req: NextRequest) {
   try {
@@ -38,6 +57,27 @@ export async function GET(req: NextRequest) {
     }
 
     applyAuthCookiesFromUpstream(req, response, upstream.headers);
+
+    const flowMode = req.cookies.get(GOOGLE_AUTH_FLOW_MODE_COOKIE)?.value ?? "popup";
+    const redirectTarget =
+      req.cookies.get(GOOGLE_AUTH_REDIRECT_TARGET_COOKIE)?.value || "/socios";
+    const hasSidCookie = response.cookies.has("sid");
+
+    if (flowMode !== "popup" && hasSidCookie) {
+      const redirectUrl = new URL(
+        redirectTarget.startsWith("/") ? redirectTarget : "/socios",
+        req.url,
+      );
+      const redirectResponse = NextResponse.redirect(redirectUrl, 302);
+
+      for (const cookie of response.cookies.getAll()) {
+        redirectResponse.cookies.set(cookie);
+      }
+
+      clearGoogleFlowCookies(redirectResponse);
+
+      return redirectResponse;
+    }
 
     return response;
   } catch {

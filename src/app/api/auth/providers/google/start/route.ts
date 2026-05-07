@@ -16,6 +16,36 @@ const getSetCookieList = (headers: Headers): string[] => {
   return single ? [single] : [];
 };
 
+const GOOGLE_AUTH_FLOW_MODE_COOKIE = "google_auth_flow_mode";
+const GOOGLE_AUTH_REDIRECT_TARGET_COOKIE = "google_auth_redirect_target";
+
+const getSafeRedirectTarget = (value: string | null) => {
+  if (!value) {
+    return "/socios";
+  }
+
+  return value.startsWith("/") ? value : "/socios";
+};
+
+const resolveSafeRedirectOverride = (req: NextRequest, rawValue: string | null) => {
+  if (!rawValue) {
+    return null;
+  }
+
+  try {
+    const overrideUrl = new URL(rawValue);
+    const requestHost = req.headers.get("host") ?? req.nextUrl.host;
+
+    if (overrideUrl.host !== requestHost) {
+      return null;
+    }
+
+    return overrideUrl.toString();
+  } catch {
+    return null;
+  }
+};
+
 export async function GET(req: NextRequest) {
   try {
     const base = getRequiredBaseUrl("NEXT_PUBLIC_FSA_AUTH");
@@ -42,8 +72,9 @@ export async function GET(req: NextRequest) {
       redirect: "manual",
     });
 
-    const redirectOverride = sanitizeEnvValue(
-      process.env.FSA_AUTH_GOOGLE_REDIRECT_URI_OVERRIDE,
+    const redirectOverride = resolveSafeRedirectOverride(
+      req,
+      sanitizeEnvValue(process.env.FSA_AUTH_GOOGLE_REDIRECT_URI_OVERRIDE),
     );
     const upstreamLocation = upstream.headers.get("location");
     let rewrittenLocation: string | null = null;
@@ -54,7 +85,6 @@ export async function GET(req: NextRequest) {
         if (locationUrl.searchParams.has("redirect_uri")) {
           locationUrl.searchParams.set("redirect_uri", redirectOverride);
           rewrittenLocation = locationUrl.toString();
-          console.log("[GOOGLE_START] redirect_uri override applied:", redirectOverride);
         }
       } catch {
         // Keep upstream location untouched when not parseable.
@@ -77,6 +107,22 @@ export async function GET(req: NextRequest) {
     for (const cookie of getSetCookieList(upstream.headers)) {
       response.headers.append("set-cookie", cookie);
     }
+
+    const mode = req.nextUrl.searchParams.get("mode") === "popup" ? "popup" : "redirect";
+    response.cookies.set({
+      name: GOOGLE_AUTH_FLOW_MODE_COOKIE,
+      value: mode,
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+    });
+    response.cookies.set({
+      name: GOOGLE_AUTH_REDIRECT_TARGET_COOKIE,
+      value: getSafeRedirectTarget(req.nextUrl.searchParams.get("redirectTo")),
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+    });
 
     return response;
   } catch {
