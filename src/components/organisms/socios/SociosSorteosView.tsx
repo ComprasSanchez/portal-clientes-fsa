@@ -38,6 +38,7 @@ type ParticiparSorteoResponse = {
 interface SociosSorteosViewProps {
   documentNumber: string | null;
   userName: string;
+  phoneVerified: boolean;
 }
 
 const formatDate = (value?: string | null) => {
@@ -55,7 +56,7 @@ const formatDate = (value?: string | null) => {
   }).format(date);
 };
 
-export function SociosSorteosView({ documentNumber, userName }: SociosSorteosViewProps) {
+export function SociosSorteosView({ documentNumber, userName, phoneVerified }: SociosSorteosViewProps) {
   const [activeDraw, setActiveDraw] = useState<SorteoActivo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -141,7 +142,7 @@ export function SociosSorteosView({ documentNumber, userName }: SociosSorteosVie
   };
 
   const participationMessage = participation?.message ?? participation?.error ?? null;
-  const canParticipate = Boolean(documentNumber && activeDraw && !isParticipating);
+  const canParticipate = Boolean(documentNumber && activeDraw && !isParticipating && phoneVerified);
 
   return (
     <main className={styles.container}>
@@ -223,6 +224,15 @@ export function SociosSorteosView({ documentNumber, userName }: SociosSorteosVie
               Documento usado para participar: {documentNumber?.trim() || "No disponible en tu perfil"}
             </span>
           </div>
+
+          {!phoneVerified ? (
+            <div className={styles.warningBox}>
+              <CircleAlert size={18} />
+              <span>
+                Necesitás verificar tu celular para poder participar del sorteo. Andá a tu perfil y verificá tu número.
+              </span>
+            </div>
+          ) : null}
 
           {!documentNumber ? (
             <div className={styles.warningBox}>

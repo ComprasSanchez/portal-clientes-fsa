@@ -157,7 +157,17 @@ export function SociosViews({
   }
 
   if (currentView === "sorteos") {
-    return <SociosSorteosView documentNumber={documentNumber} userName={userName} />;
+    const principalPhone =
+      perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
+      perfil?.contactos?.find((c) => c.tipo === "TELEFONO");
+    const phoneVerified = principalPhone?.verificado === true;
+    return (
+      <SociosSorteosView
+        documentNumber={documentNumber}
+        userName={userName}
+        phoneVerified={phoneVerified}
+      />
+    );
   }
 
   if (currentView !== "dashboard") {

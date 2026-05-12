@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarDays, Mail, Phone, Search, UserRound, X } from "lucide-react";
 import { ProfileViewSkeleton } from "@/components/organisms/loading/ViewSkeletons";
 import { ProfileField } from "@/components/molecules/home/ProfileField";
@@ -578,6 +578,16 @@ export function ProfileView({
   const [isSavingPersonalData, setIsSavingPersonalData] = useState(false);
   const [profileFeedback, setProfileFeedback] =
     useState<ProfileFeedback | null>(null);
+  const [isVerificacionModalOpen, setIsVerificacionModalOpen] = useState(false);
+  const [verificandoContacto, setVerificandoContacto] =
+    useState<PortalPerfilContacto | null>(null);
+  const [otpStep, setOtpStep] = useState<
+    "idle" | "sending" | "waiting_whatsapp"
+  >("idle");
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const allContactos = useMemo(
     () => (Array.isArray(perfil?.contactos) ? perfil.contactos : []),
@@ -627,6 +637,58 @@ export function ProfileView({
   useEffect(() => {
     setDomicilioForm(buildDomicilioFormData(preferredDomicilio));
   }, [preferredDomicilio]);
+
+  useEffect(() => {
+    if (otpStep !== "waiting_whatsapp" || !verificandoContacto?.id) return;
+
+    const contactoId = verificandoContacto.id;
+
+    pollingRef.current = setInterval(() => {
+      void fetch("/api/portal/me", { headers: { Accept: "application/json" } })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data: PortalPerfilResponse | null) => {
+          if (!data) return;
+          const contacto = (data.contactos ?? []).find(
+            (c) => c.id === contactoId,
+          );
+          if (contacto?.verificado) {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+            setIsVerificacionModalOpen(false);
+            setVerificandoContacto(null);
+            setOtpStep("idle");
+            void refresh();
+          }
+        })
+        .catch(() => undefined);
+    }, 4000);
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [otpStep, verificandoContacto?.id, refresh]);
+
+  useEffect(() => {
+    if (otpStep !== "waiting_whatsapp") {
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+      setResendCooldown(0);
+      return;
+    }
+
+    setResendCooldown(60);
+    cooldownRef.current = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) {
+          if (cooldownRef.current) clearInterval(cooldownRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+    };
+  }, [otpStep]);
 
   const currentProfile = editableProfile ?? profile;
   const displayedAffiliateNumber = currentProfile.affiliateNumber;
@@ -716,6 +778,51 @@ export function ProfileView({
     setIsDomicilioModalOpen(false);
     setDomicilioForm(buildDomicilioFormData(preferredDomicilio));
   };
+
+  const handleOpenVerificacionModal = (contacto: PortalPerfilContacto) => {
+    setVerificandoContacto(contacto);
+    setOtpStep("idle");
+    setOtpError(null);
+    setIsVerificacionModalOpen(true);
+  };
+
+  const handleCloseVerificacionModal = () => {
+    if (otpStep === "sending") return;
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    if (cooldownRef.current) clearInterval(cooldownRef.current);
+    setIsVerificacionModalOpen(false);
+    setVerificandoContacto(null);
+    setOtpStep("idle");
+    setOtpError(null);
+    setResendCooldown(0);
+  };
+
+  const handleSolicitarOtp = async () => {
+    if (!verificandoContacto?.id) return;
+    setOtpStep("sending");
+    setOtpError(null);
+    try {
+      const res = await fetch(
+        `/api/portal/me/contactos/${verificandoContacto.id}/verificar`,
+        { method: "POST", headers: { Accept: "application/json" } },
+      );
+      const data = (await res.json().catch(() => null)) as {
+        message?: string;
+      } | null;
+      if (!res.ok) {
+        setOtpError(
+          data?.message ?? "No se pudo enviar el mensaje. Intentá de nuevo.",
+        );
+        setOtpStep("idle");
+        return;
+      }
+      setOtpStep("waiting_whatsapp");
+    } catch {
+      setOtpError("Error de red. Intentá de nuevo.");
+      setOtpStep("idle");
+    }
+  };
+
 
   const handleAffiliationInputChange = <T extends keyof AffiliationFormData>(
     field: T,
@@ -1482,6 +1589,20 @@ export function ProfileView({
                           value={preferredPhone?.valor ?? "Sin dato"}
                           readOnly
                         />
+                        {preferredPhone && !preferredPhone.verificado ? (
+                          <div className={styles.verificationHint}>
+                            <span>Tu celular aún no está verificado.</span>
+                            <button
+                              type="button"
+                              className={styles.verificationAction}
+                              onClick={() =>
+                                handleOpenVerificacionModal(preferredPhone)
+                              }
+                            >
+                              Verificar celular
+                            </button>
+                          </div>
+                        ) : null}
                         <ProfileField
                           label="Email principal"
                           value={preferredEmail?.valor ?? "Sin dato"}
@@ -2283,6 +2404,104 @@ export function ProfileView({
                 </button>
               </footer>
             </form>
+          </div>
+        </div>
+      ) : null}
+      {isVerificacionModalOpen && verificandoContacto ? (
+        <div
+          className={styles.modalOverlay}
+          onClick={handleCloseVerificacionModal}
+        >
+          <div
+            className={styles.modalDialog}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="verificacion-modal-title"
+          >
+            <header className={styles.modalHeader}>
+              <div>
+                <h2
+                  id="verificacion-modal-title"
+                  className={styles.modalTitle}
+                >
+                  Verificar celular
+                </h2>
+                <p className={styles.modalSubtitle}>
+                  {verificandoContacto.valor ?? "Tu celular"}
+                </p>
+              </div>
+              <button
+                type="button"
+                className={styles.modalCloseButton}
+                onClick={handleCloseVerificacionModal}
+                aria-label="Cerrar"
+                disabled={otpStep === "sending"}
+              >
+                <X size={22} />
+              </button>
+            </header>
+
+            <div className={styles.modalForm}>
+              {otpStep === "waiting_whatsapp" ? (
+                <div className={styles.fieldBlock}>
+                  <p className={styles.fieldLabel}>
+                    Te enviamos un mensaje de WhatsApp a{" "}
+                    <strong>{verificandoContacto.valor ?? "tu celular"}</strong>.
+                    Tocá el botón <strong>Validar</strong> en ese mensaje para
+                    confirmar tu número.
+                  </p>
+                  <p className={styles.fieldLabel} style={{ marginTop: "0.5rem", opacity: 0.6, fontSize: "0.85em" }}>
+                    Esperando confirmación…
+                  </p>
+                  {otpError ? (
+                    <p className={styles.profileFeedbackError}>{otpError}</p>
+                  ) : null}
+                </div>
+              ) : (
+                <div className={styles.fieldBlock}>
+                  <p className={styles.fieldLabel}>
+                    Te enviaremos un mensaje de WhatsApp a tu celular para
+                    confirmar que es tuyo.
+                  </p>
+                  {otpError ? (
+                    <p className={styles.profileFeedbackError}>{otpError}</p>
+                  ) : null}
+                </div>
+              )}
+
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  className={styles.secondaryAction}
+                  onClick={handleCloseVerificacionModal}
+                  disabled={otpStep === "sending"}
+                >
+                  Cancelar
+                </button>
+                {otpStep === "waiting_whatsapp" ? (
+                  <button
+                    type="button"
+                    className={styles.secondaryAction}
+                    onClick={() => void handleSolicitarOtp()}
+                    disabled={resendCooldown > 0 || otpStep === "sending"}
+                  >
+                    {resendCooldown > 0
+                      ? `Reenviar en ${resendCooldown}s`
+                      : "Reenviar mensaje"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.primaryAction}
+                    onClick={() => void handleSolicitarOtp()}
+                    disabled={otpStep === "sending"}
+                  >
+                    {otpStep === "sending" ? "Enviando..." : "Enviar mensaje"}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       ) : null}
