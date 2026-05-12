@@ -644,7 +644,7 @@ export function ProfileView({
     const contactoId = verificandoContacto.id;
 
     pollingRef.current = setInterval(() => {
-      void fetch("/api/portal/me", { headers: { Accept: "application/json" } })
+      void fetch("/api/portal/me/perfil", { headers: { Accept: "application/json" } })
         .then((res) => (res.ok ? res.json() : null))
         .then((data: PortalPerfilResponse | null) => {
           if (!data) return;
@@ -2484,7 +2484,7 @@ export function ProfileView({
                     type="button"
                     className={styles.secondaryAction}
                     onClick={() => void handleSolicitarOtp()}
-                    disabled={resendCooldown > 0 || otpStep === "sending"}
+                    disabled={resendCooldown > 0}
                   >
                     {resendCooldown > 0
                       ? `Reenviar en ${resendCooldown}s`
