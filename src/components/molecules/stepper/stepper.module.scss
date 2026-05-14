@@ -39,15 +39,15 @@ $white: #ffffff;
 }
 
 .completed {
-  background: transparent;
+  background: rgba(140, 111, 174, 0.22);
   border-color: $primary-70;
   color: $primary;
 }
 
 .upcoming {
   background: transparent;
-  border-color: $primary-70;
-  color: $primary;
+  border-color: $neutral-border;
+  color: rgba(140, 111, 174, 0.68);
 }
 
 .connector {
@@ -69,7 +69,7 @@ $white: #ffffff;
 }
 
 .filled {
-  width: 50%;
+  width: 100%;
 }
 
 @media (min-width: 481px) {
