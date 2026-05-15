@@ -1,0 +1,387 @@
+.container {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 80rem;
+  padding: 2rem 1rem;
+}
+
+.dashboardSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.welcomeTitle {
+  font-size: clamp(2rem, 4vw, 2.25rem);
+  font-weight: 700;
+  color: #2a2b3f;
+}
+
+.welcomeSubtitle {
+  margin-top: 0.25rem;
+  font-size: 1.0625rem;
+  color: #767790;
+}
+
+.quickAccessGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.detailsGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.panelCard {
+  border: 1px solid #e5dbf4;
+  border-radius: 1rem;
+  background: #ffffff;
+  padding: 1.25rem;
+  box-shadow: 0 6px 22px rgba(48, 26, 95, 0.05);
+}
+
+.panelTitle {
+  font-size: clamp(1.7rem, 3.8vw, 1.875rem);
+  font-weight: 700;
+  color: #2e3042;
+}
+
+.panelSubtitle {
+  margin-top: 0.25rem;
+  color: #7a7c95;
+}
+
+.credentialGradient {
+  margin-top: 1rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(to right, #8f63d9, #a177e7);
+  padding: 1.25rem;
+  color: #ffffff;
+}
+
+.credentialLabel {
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+.credentialValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.separator {
+  margin: 0.75rem 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.credentialNumber {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.credentialHint {
+  margin-top: 0.75rem;
+  max-width: 22rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.orderList {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+}
+
+.statusBadge {
+  border-radius: 9999px;
+  background: #fff0bf;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #a97700;
+}
+
+.totalAmount {
+  font-size: clamp(1.6rem, 3.8vw, 1.875rem);
+  font-weight: 700;
+  color: #8f63d9;
+}
+
+.promoBanner {
+  border-radius: 1rem;
+  background: linear-gradient(to right, #2460ef, #233fbc);
+  padding: 1.5rem;
+  color: #ffffff;
+  box-shadow: 0 16px 30px rgba(27, 56, 162, 0.28);
+}
+
+.promoTitle {
+  font-size: clamp(1.75rem, 4.8vw, 2.25rem);
+  font-weight: 700;
+}
+
+.promoDescription {
+  margin-top: 0.5rem;
+  color: #dbe7ff;
+}
+
+.promoButton {
+  margin-top: 1.25rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2e54d6;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.activeViewCard {
+  border: 1px solid #e7e2f0;
+  border-radius: 1.5rem;
+  background: #ffffff;
+  padding: 2rem;
+  box-shadow: 0 10px 35px rgba(37, 24, 78, 0.06);
+}
+
+.activeViewLabel {
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #8b8ca4;
+}
+
+.activeViewTitle {
+  margin-bottom: 0.75rem;
+  font-size: clamp(1.9rem, 4vw, 2.25rem);
+  font-weight: 700;
+  color: #2b2d3f;
+}
+
+.activeViewDescription {
+  max-width: 42rem;
+  font-size: 0.9375rem;
+  color: #6f7088;
+}
+
+.trackingPanelWrap {
+  margin-top: 1.5rem;
+}
+
+.detailCardsGrid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.trackingMessageCard {
+  margin-top: 1.5rem;
+  border: 1px solid #ece5f7;
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, #fcf9ff 0%, #ffffff 100%);
+  padding: 1.25rem;
+}
+
+.trackingMessageError {
+  border-color: #f3d1d7;
+  background: linear-gradient(180deg, #fff8f8 0%, #ffffff 100%);
+}
+
+.trackingMessageTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #2d2f42;
+}
+
+.trackingMessageText {
+  margin-top: 0.5rem;
+  max-width: 42rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #6e7088;
+}
+
+.cycleSummaryCard {
+  margin-top: 1rem;
+  border: 1px solid #e7e2f0;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  padding: 1.25rem;
+}
+
+.cycleSummaryEyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8f63d9;
+}
+
+.cycleSummaryGrid {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.cycleSummaryLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #8b8ca4;
+}
+
+.cycleSummaryValue {
+  margin-top: 0.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d2f42;
+}
+
+.cycleSummaryCode {
+  margin-top: 0.2rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  word-break: break-all;
+  color: #5a5d78;
+}
+
+.summaryBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: #f5efff;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #7847d5;
+}
+
+.summaryMuted {
+  margin-top: 0.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #7a7c95;
+}
+
+.warningList {
+  margin-top: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.warningItem {
+  border-radius: 9999px;
+  background: #fff2d6;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9a6500;
+}
+
+.itemsSection {
+  margin-top: 1.25rem;
+}
+
+.itemsSectionTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4a4d6c;
+}
+
+.itemsGrid {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.itemCard {
+  border: 1px solid #eee6fa;
+  border-radius: 1rem;
+  background: #fbf8ff;
+  padding: 0.9rem 1rem;
+}
+
+.itemTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2d2f42;
+}
+
+.itemMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.itemMetaText {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #6a6d89;
+}
+
+.primaryButton {
+  margin-top: 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(to right, #8f63d9, #9f74e5);
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+@media (max-width: 380px) {
+  .quickAccessGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .promoBanner {
+    padding: 2rem;
+  }
+
+  .cycleSummaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .quickAccessGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .detailsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detailCardsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

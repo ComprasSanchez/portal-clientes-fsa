@@ -1,0 +1,157 @@
+$purple: #8c6faf;
+$cream: #f5f0df;
+$gold: #f4b62a;
+$teal: #78a8c8;
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: hidden;
+  background: $purple;
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.backgroundImage {
+  object-fit: cover;
+  opacity: 0.22;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 24px 120px;
+}
+
+.badge {
+  position: relative;
+  width: min(148px, 40vw);
+  height: min(148px, 40vw);
+  border-radius: 28px;
+  background: $cream;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 16px 38px rgba(49, 18, 82, 0.2);
+}
+
+.orbit {
+  position: absolute;
+  inset: 12px;
+  z-index: 1;
+  animation: spin 2.4s linear infinite;
+}
+
+.orbitSvg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.orbitPath {
+  fill: none;
+  stroke: $gold;
+  stroke-width: 6.5;
+  stroke-opacity: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.orbitHead {
+  fill: none;
+  stroke: $gold;
+  stroke-width: 6.5;
+  stroke-opacity: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cartWrap {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 66px;
+  height: 66px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.cartIcon {
+  color: $teal;
+}
+
+.title {
+  margin-top: 28px;
+  color: $cream;
+  text-align: center;
+  font-size: clamp(1.9rem, 6vw, 2.4rem);
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin-top: 10px;
+  max-width: 270px;
+  color: rgba(245, 240, 223, 0.88);
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.footer {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.footerImage {
+  display: block;
+  width: min(170px, 44vw);
+  height: auto;
+  opacity: 0.98;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 380px) {
+  .badge {
+    width: min(132px, 42vw);
+    height: min(132px, 42vw);
+    border-radius: 24px;
+  }
+
+  .orbit {
+    inset: 10px;
+  }
+
+  .cartWrap {
+    width: 58px;
+    height: 58px;
+  }
+
+  .title {
+    font-size: 1.7rem;
+  }
+}
