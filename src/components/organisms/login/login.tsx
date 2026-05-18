@@ -214,10 +214,12 @@ export function Login({ onLogin }: LoginProps) {
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false);
   const [isResendingMfaCode, setIsResendingMfaCode] = useState(false);
   const [mfaResendCooldownSeconds, setMfaResendCooldownSeconds] = useState(0);
+  const [mfaInputResetKey, setMfaInputResetKey] = useState(0);
   const [hasProcessedVerificationToken, setHasProcessedVerificationToken] =
     useState(false);
   const [hasProcessedGoogleAuthError, setHasProcessedGoogleAuthError] =
     useState(false);
+
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -380,7 +382,9 @@ export function Login({ onLogin }: LoginProps) {
     setCardView("login");
     setMfaState(null);
     setMfaResendCooldownSeconds(0);
+    setMfaInputResetKey((currentValue) => currentValue + 1);
     setIdentityLinkFlow(null);
+    identityLinkVerifyFormik.resetForm();
     clearFeedback();
   };
 
@@ -548,6 +552,7 @@ export function Login({ onLogin }: LoginProps) {
             challengeResponse.data.challenge?.destinationMasked,
           channel: challengeResponse.data.challenge?.channel ?? "email",
         });
+        identityLinkVerifyFormik.resetForm();
         setCardView("identity-link-verify");
         setInfoMessage(
           challengeResponse.data.challenge?.destinationMasked
@@ -891,6 +896,7 @@ export function Login({ onLogin }: LoginProps) {
         );
 
         if (data.challenge?.id) {
+          resetPasswordFormik.resetForm();
           setPasswordRecoveryState({
             challengeId: data.challenge.id,
             identifier: values.identifier,
@@ -1018,6 +1024,7 @@ export function Login({ onLogin }: LoginProps) {
           : `Te enviamos un nuevo código por ${mfaState.challengeChannel}.`,
       );
       setMfaResendCooldownSeconds(MFA_RESEND_COOLDOWN_SECONDS);
+      setMfaInputResetKey((currentValue) => currentValue + 1);
     } catch (error) {
       if (axios.isAxiosError<LoginResponse>(error)) {
         setErrorMessage(
@@ -2183,6 +2190,7 @@ export function Login({ onLogin }: LoginProps) {
                       type="button"
                       className={styles.mfaBackIconButton}
                       onClick={() => {
+                        identityLinkVerifyFormik.resetForm();
                         setCardView("identity-link");
                         clearFeedback();
                       }}
@@ -2478,6 +2486,7 @@ export function Login({ onLogin }: LoginProps) {
                 ) : null}
                 <InputMFA
                   key={mfaState?.loginTicket}
+                  resetTrigger={mfaInputResetKey}
                   onSubmit={async (code: string, rememberDevice: boolean) => {
                     setIsVerifyingMfa(true);
                     clearFeedback();

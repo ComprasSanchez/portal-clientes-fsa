@@ -98,6 +98,7 @@ const buildComprobantes = (items: PortalComprasItem[] | undefined): PortalCompra
       hora: normalizeText(item.hora),
       nombreFantasia: normalizeText(item.nombreFantasia),
       estado: normalizeText(item.estado),
+      anulado: item.anulado === true,
       moneda: currency,
       total: lineTotal,
       productos,

@@ -223,3 +223,98 @@ export function FacturasViewSkeleton({ variant = "socios" }: { variant?: ThemeVa
     </section>
   );
 }
+
+export function SociosDashboardSkeleton() {
+  return (
+    <section className="space-y-6" aria-hidden="true">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <SkeletonCard key={index} variant="socios">
+            <div className="flex min-h-[128px] flex-col items-center justify-center gap-5">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <Skeleton className="h-7 w-28" />
+            </div>
+          </SkeletonCard>
+        ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <SkeletonCard variant="socios">
+          <div className="space-y-3">
+            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-5 w-72 max-w-full" />
+          </div>
+
+          <div className="mt-5 rounded-3xl bg-[linear-gradient(135deg,#007c98_0%,#0e6277_100%)] p-5">
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-20 bg-white/20" />
+              <Skeleton className="h-10 w-40 bg-white/25" />
+              <div className="h-px bg-white/15" />
+              <Skeleton className="h-4 w-24 bg-white/20" />
+              <Skeleton className="h-12 w-64 max-w-full bg-white/25" />
+              <Skeleton className="h-5 w-72 max-w-full bg-white/20" />
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <Skeleton className="h-6 w-28" />
+          </div>
+        </SkeletonCard>
+
+        <SkeletonCard variant="socios">
+          <div className="space-y-3">
+            <Skeleton className="h-10 w-40" />
+            <Skeleton className="h-5 w-60 max-w-full" />
+          </div>
+
+          <div className="mt-6 space-y-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className={`flex items-center justify-between gap-4 pb-4 ${
+                  index < 3 ? "border-b border-[#e2ecef]" : ""
+                }`}
+              >
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className={`h-6 ${index === 3 ? "w-32" : "w-28"}`} />
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5">
+            <Skeleton className="h-6 w-24" />
+          </div>
+        </SkeletonCard>
+      </div>
+
+      <SkeletonCard variant="socios">
+        <div className="space-y-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-3">
+              <Skeleton className="h-8 w-40" />
+              <Skeleton className="h-5 w-72 max-w-full" />
+            </div>
+            <Skeleton className="h-8 w-20 rounded-full" />
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+            <Skeleton className="h-32 w-full rounded-3xl" />
+            <div className="grid gap-4">
+              <Skeleton className="h-20 w-full rounded-2xl" />
+              <Skeleton className="h-20 w-full rounded-2xl" />
+            </div>
+          </div>
+        </div>
+      </SkeletonCard>
+
+      <SkeletonCard variant="socios">
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-80 max-w-full" />
+          <Skeleton className="h-5 w-full max-w-3xl" />
+          <Skeleton className="h-5 w-11/12 max-w-2xl" />
+          <Skeleton className="h-11 w-28 rounded-xl" />
+        </div>
+      </SkeletonCard>
+    </section>
+  );
+}

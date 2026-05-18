@@ -15,7 +15,10 @@ import {
   QuickAccessCard,
   type QuickAccessItem,
 } from "@/components/molecules/home/QuickAccessCard";
-import { FacturasViewSkeleton } from "@/components/organisms/loading/ViewSkeletons";
+import {
+  FacturasViewSkeleton,
+  SociosDashboardSkeleton,
+} from "@/components/organisms/loading/ViewSkeletons";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { SociosSorteosView } from "./SociosSorteosView";
 import {
@@ -321,12 +324,14 @@ export function SociosViews({
                         <summary className={styles.facturaSummary}>
                           <div className={styles.facturaCardHeader}>
                             <div>
-                              <h3 className={styles.facturaRef}>
-                                {" "}
-                                {comprobante.nombreFantasia
-                                  ? `${comprobante.nombreFantasia}`
-                                  : ""}
-                              </h3>
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                <h3 className={styles.facturaRef}>
+                                  {comprobante.nombreFantasia ?? ""}
+                                </h3>
+                                {comprobante.anulado && (
+                                  <span className={styles.statusBadgeAnulada}>Anulada</span>
+                                )}
+                              </div>
                               <p className={styles.facturaMeta}>
                                 {formatPortalDateTime(comprobante.fecha)}
                                 {comprobante.hora
@@ -450,6 +455,14 @@ export function SociosViews({
             Volver a Inicio
           </button>
         </section>
+      </main>
+    );
+  }
+
+  if (isProfileLoading) {
+    return (
+      <main className={styles.container}>
+        <SociosDashboardSkeleton />
       </main>
     );
   }
