@@ -188,7 +188,7 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified }: S
                 <p className={styles.drawCode}>{activeDraw.codigo}</p>
                 <h3 className={styles.drawName}>{activeDraw.nombre}</h3>
                 <p className={styles.drawDescription}>
-                  {activeDraw.descripcion?.trim() || "Este sorteo no tiene una descripcion adicional publicada."}
+                  {activeDraw.descripcion?.trim()}
                 </p>
               </div>
 
