@@ -11,8 +11,15 @@ export type PortalExpedienteCycle = {
 
 export type PortalExpedienteItem = {
   expedienteId: string;
+  titulo?: string;
   estado: string;
   categoria?: string;
+  contactoId?: string | null;
+  afiliacionOSId?: string | null;
+  medioEntrega?: string | null;
+  domicilioEntregaId?: string | null;
+  sucursalEntregaId?: number | null;
+  medioPago?: string | null;
   openedAt?: string;
   updatedAt?: string;
   nextActionAt?: string;

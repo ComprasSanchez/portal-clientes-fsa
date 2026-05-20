@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
+  Files,
   FileText,
   Home,
   LogOut,
@@ -33,6 +34,7 @@ const menuItems: Array<{
 }> = [
   { id: "dashboard", label: "Inicio", icon: Home },
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
+  { id: "mis-expedientes", label: "Mis expedientes", icon: Files },
   // { id: "productos", label: "Productos", icon: ShoppingBag },
   { id: "pedidos", label: "Segui tu pedido", icon: Package },
   { id: "expediente-actual", label: "Expediente actual", icon: FileText },

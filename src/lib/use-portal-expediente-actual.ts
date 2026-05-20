@@ -141,7 +141,7 @@ export const usePortalExpedienteActual = ({
 
     try {
       if (!expedienteActualCache.promise || force) {
-        expedienteActualCache.promise = fetch("/api/portal/me/expediente-actual", {
+        const fetchPromise = fetch("/api/portal/me/expediente-actual", {
           cache: "no-store",
           signal,
         }).then(async (response) => {
@@ -162,6 +162,13 @@ export const usePortalExpedienteActual = ({
           expedienteActualCache.isNotFound = false;
           return data;
         });
+
+        expedienteActualCache.promise = fetchPromise;
+        signal?.addEventListener('abort', () => {
+          if (expedienteActualCache.promise === fetchPromise) {
+            expedienteActualCache.promise = null;
+          }
+        }, { once: true });
       }
 
       const data = await expedienteActualCache.promise;
@@ -169,7 +176,10 @@ export const usePortalExpedienteActual = ({
       setError(expedienteActualCache.error);
       setIsNotFound(expedienteActualCache.isNotFound);
     } catch (requestError) {
-      if (signal?.aborted) {
+      if (
+        signal?.aborted ||
+        (requestError instanceof Error && requestError.name === 'AbortError')
+      ) {
         return;
       }
 

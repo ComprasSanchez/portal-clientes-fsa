@@ -1229,7 +1229,7 @@ export function ProfileView({
     >
       <header className={styles.header}>
         <div className={styles.headerText}>
-          <h1 className={styles.title}>Mis datos</h1>
+          <h1 className={styles.title}>Mi perfil</h1>
           <p className={styles.subtitle}>Informacion personal y de contacto</p>
           <p className={styles.localEditHint}>
             Desde editar podes actualizar tus datos personales y tambien elegir
@@ -1487,11 +1487,6 @@ export function ProfileView({
                                 Anadir nuevo domicilio
                               </button>
                             </div>
-                            {!hasSavedDomicilio ? (
-                              <p className={styles.addressInlineHint}>
-                                Todavia no tenes un domicilio cargado.
-                              </p>
-                            ) : null}
                           </div>
                         </div>
                         <div className={styles.selectorGroup}>
