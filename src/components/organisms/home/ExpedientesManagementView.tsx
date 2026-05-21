@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, CalendarDays, FilePenLine, FilePlus2, ShieldCheck } from "lucide-react";
+import { AlertCircle, CalendarDays, FilePenLine, FilePlus2, RotateCcw, ShieldCheck } from "lucide-react";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import { usePortalExpedienteActual } from "@/lib/use-portal-expediente-actual";
 import {
@@ -261,6 +261,7 @@ export function ExpedientesManagementView({
     }),
   );
   const [editForm, setEditForm] = useState<ExpedienteFormState>(buildEditDefaults);
+  const [editFormOriginal, setEditFormOriginal] = useState<ExpedienteFormState | null>(null);
   const [editExpedienteId, setEditExpedienteId] = useState<string | null>(activeExpedienteId);
   const isUserEditingRef = useRef(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -302,7 +303,7 @@ export function ExpedientesManagementView({
     if (isUserEditingRef.current) return;
 
     setEditExpedienteId(expediente.id ?? activeExpedienteId);
-    setEditForm({
+    const nextEditForm = {
       titulo: expediente.titulo ?? "",
       contactoId: expediente.contactoId ?? preferredVerifiedContact?.id ?? "",
       afiliacionOSId: expediente.afiliacionOSId ?? preferredAfiliacionId,
@@ -315,7 +316,9 @@ export function ExpedientesManagementView({
       medioPago: expediente.medioPago ?? "",
       fechaInicioCicloBase: toInputDate(expediente.fechaInicioCicloBase),
       fechaObjetivoEntrega: toInputDate(expediente.proximaFechaEntregaForzada),
-    });
+    };
+    setEditForm(nextEditForm);
+    setEditFormOriginal(nextEditForm);
     setSelectedEditSucursal(sucursalEntrega);
     setEditSucursalQuery("");
     setShowEditSucursalDropdown(false);
@@ -451,7 +454,7 @@ export function ExpedientesManagementView({
   const handleSelectExpedienteForEdit = (item: PortalExpedienteItem) => {
     isUserEditingRef.current = true;
     setEditExpedienteId(item.expedienteId);
-    setEditForm({
+    const nextEditForm = {
       titulo: item.titulo ?? "",
       contactoId: item.contactoId ?? preferredVerifiedContact?.id ?? "",
       afiliacionOSId: item.afiliacionOSId ?? preferredAfiliacionId,
@@ -461,7 +464,9 @@ export function ExpedientesManagementView({
       medioPago: item.medioPago ?? "",
       fechaInicioCicloBase: toInputDate(item.openedAt),
       fechaObjetivoEntrega: toInputDate(item.nextActionAt),
-    });
+    };
+    setEditForm(nextEditForm);
+    setEditFormOriginal(nextEditForm);
     setSelectedEditSucursal(null);
     setEditSucursalQuery("");
     setShowEditSucursalDropdown(false);
@@ -501,6 +506,13 @@ export function ExpedientesManagementView({
         s.direccion.toLowerCase().includes(term),
     );
   }, [allSucursales, editSucursalQuery]);
+
+  const hasEditChanges = useMemo(() => {
+    if (!editFormOriginal) return false;
+    return (Object.keys(editForm) as (keyof ExpedienteFormState)[]).some(
+      (key) => editForm[key] !== editFormOriginal[key],
+    );
+  }, [editForm, editFormOriginal]);
 
   const handleSearchProducts = async () => {
     const term = productQuery.trim();
@@ -673,9 +685,8 @@ export function ExpedientesManagementView({
       setProductQuery("");
       setHasSearchedProducts(false);
       setCreateSucursalQuery("");
-      setCreateSucursalResults([]);
-      setHasSearchedCreateSucursales(false);
       setSelectedCreateSucursal(null);
+      setShowCreateSucursalDropdown(false);
 
       const [expedientesData] = await Promise.all([
         refreshExpedientes(),
@@ -775,6 +786,7 @@ export function ExpedientesManagementView({
         variant: "success",
       });
 
+      setEditFormOriginal({ ...editForm });
       await Promise.all([refreshExpedientes(), refreshExpedienteActual()]);
     } catch (error) {
       pushToast({
@@ -1201,22 +1213,44 @@ export function ExpedientesManagementView({
         </article>
 
         <article className="rounded-3xl border border-[#ebe6f4] bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center gap-3">
-            <span className="rounded-2xl bg-[#eef6ff] p-3 text-[#1f5ea8]">
-              <FilePenLine size={20} />
-            </span>
-            <div>
-              <h3 className="text-lg font-semibold text-[#2f3042]">
-                {editingItem?.titulo
-                  ? `Editando: ${editingItem.titulo}`
-                  : "Editar expediente"}
-              </h3>
-              <p className="text-sm text-[#5f6074]">
-                {editingItem
-                  ? "Modificá los datos y guardá los cambios."
-                  : "Seleccioná un expediente de la lista para editarlo."}
-              </p>
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="rounded-2xl bg-[#eef6ff] p-3 text-[#1f5ea8]">
+                <FilePenLine size={20} />
+              </span>
+              <div>
+                <h3 className="text-lg font-semibold text-[#2f3042]">
+                  {editingItem?.titulo
+                    ? `Editando: ${editingItem.titulo}`
+                    : "Editar expediente"}
+                </h3>
+                <p className="text-sm text-[#5f6074]">
+                  {editingItem
+                    ? "Modificá los datos y guardá los cambios."
+                    : "Seleccioná un expediente de la lista para editarlo."}
+                </p>
+              </div>
             </div>
+            {editingItem && hasEditChanges ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (editFormOriginal) {
+                    setEditForm(editFormOriginal);
+                    const sucursal = allSucursales.find(
+                      (s) => String(s.id) === editFormOriginal.sucursalEntregaId,
+                    ) ?? null;
+                    setSelectedEditSucursal(sucursal);
+                    setEditSucursalQuery("");
+                  }
+                }}
+                className="flex items-center gap-1.5 rounded-2xl border border-[#ddd6eb] px-3 py-2 text-sm text-[#5f6074] transition hover:border-[#c4b5e0] hover:text-[#2f3042]"
+                title="Descartar cambios"
+              >
+                <RotateCcw size={14} />
+                Restaurar
+              </button>
+            ) : null}
           </div>
 
           {!editingItem && isLoadingExpedienteActual ? (
@@ -1421,7 +1455,7 @@ export function ExpedientesManagementView({
               <div className="md:col-span-2">
                 <button
                   type="submit"
-                  disabled={isUpdatingCurrent || !hasVerifiedContact}
+                  disabled={isUpdatingCurrent || !hasVerifiedContact || !hasEditChanges}
                   className="inline-flex items-center justify-center rounded-2xl bg-[#1f5ea8] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#184a84] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isUpdatingCurrent ? "Guardando..." : "Guardar cambios"}
