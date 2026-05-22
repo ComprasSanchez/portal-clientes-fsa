@@ -1,4 +1,5 @@
 ﻿import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import {
   ArrowRight,
   ChevronDown,
@@ -21,6 +22,9 @@ import {
 } from "@/components/organisms/loading/ViewSkeletons";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { SociosSorteosView } from "./SociosSorteosView";
+import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
+import { BeneficiosCarousel } from "@/components/molecules/socios/BeneficiosCarousel";
+import cuotasBanner from "@/assets/sociosa-img/cuotas-banner.jpg";
 import {
   formatPortalCurrency,
   formatPortalDateTime,
@@ -599,11 +603,13 @@ export function SociosViews({
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
         <div>
-          <h1 className={styles.welcomeTitle}>Hola, {userName}</h1>
+          <h1 className={styles.welcomeTitle}>¡Hola, {userName}! 👋</h1>
           <p className={styles.welcomeSubtitle}>
             Bienvenido a tu panel de socios
           </p>
         </div>
+
+        <BannerCarousel />
 
         <div className={styles.quickAccessGrid}>
           {quickAccessItems.map((item) => (
@@ -614,6 +620,19 @@ export function SociosViews({
             />
           ))}
         </div>
+
+        <div className={styles.cuotasBanner}>
+          <Image
+            src={cuotasBanner}
+            alt="NaranjaX y Cordobesa — 4 cuotas sin interés en todas tus compras"
+            width={cuotasBanner.width}
+            height={cuotasBanner.height}
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) calc(100vw - 16rem), 80rem"
+            style={{ width: "100%", height: "auto", display: "block" }}
+          />
+        </div>
+
+        <BeneficiosCarousel />
 
         <div className={styles.detailsGrid}>
           <article className={styles.panelCard}>
