@@ -101,6 +101,7 @@ const buildComprobantes = (items: PortalComprasItem[] | undefined): PortalCompra
       anulado: item.anulado === true,
       moneda: currency,
       total: lineTotal,
+      puntosGanados: typeof item.puntosGanados === "number" ? item.puntosGanados : undefined,
       productos,
       items: [item],
     });

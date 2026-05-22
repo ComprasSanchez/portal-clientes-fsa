@@ -34,3 +34,36 @@ export type PortalPuntosSummary = {
   partial: boolean;
   warnings: string[];
 };
+
+export type PortalHistorialSaldoItem = {
+  id: string;
+  fecha: string;
+  tipo: string;
+  monto?: number;
+  moneda?: string;
+  puntos?: number;
+  puntosDelta?: number;
+  refOperacion?: string;
+  origenTipo?: string;
+};
+
+export type PortalHistorialSaldoPage = {
+  page: number;
+  limit: number;
+  total: number;
+  hasNext: boolean;
+};
+
+export type PortalHistorialSaldoData = {
+  clienteId: string;
+  items: PortalHistorialSaldoItem[];
+  page: PortalHistorialSaldoPage;
+};
+
+export type PortalHistorialSaldoResponse = {
+  schemaVersion: string;
+  generatedAt: string;
+  partial: boolean;
+  warnings: string[];
+  data: PortalHistorialSaldoData;
+};

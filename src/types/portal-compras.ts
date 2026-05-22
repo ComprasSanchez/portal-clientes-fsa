@@ -37,6 +37,7 @@ export type PortalComprasItem = {
   total?: number;
   moneda?: string;
   comprobanteRef?: string;
+  puntosGanados?: number;
   productos?: PortalComprasProducto[];
 };
 
@@ -71,6 +72,7 @@ export type PortalCompraComprobante = {
   anulado: boolean;
   moneda: string;
   total: number;
+  puntosGanados?: number;
   productos: PortalComprasProducto[];
   items: PortalComprasItem[];
 };

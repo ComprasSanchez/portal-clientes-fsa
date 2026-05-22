@@ -29,6 +29,7 @@ import { usePortalCompras } from "@/lib/use-portal-compras";
 import { usePortalExpedientesContext } from "@/lib/portal-expedientes-context";
 import { formatPortalPoints } from "@/lib/portal-puntos";
 import { usePortalPuntos } from "@/lib/use-portal-puntos";
+import { usePortalPuntosHistorial } from "@/lib/use-portal-puntos-historial";
 import { useGlobalToast } from "../../ui/global-toast";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 import type { PortalComprasProducto } from "@/types/portal-compras";
@@ -100,6 +101,13 @@ export function SociosViews({
     isLoading: isPointsLoading,
     error: pointsError,
   } = usePortalPuntos();
+  const {
+    historial: puntosHistorial,
+    isLoading: isHistorialLoading,
+    error: historialError,
+    page: historialPage,
+    setPage: setHistorialPage,
+  } = usePortalPuntosHistorial({ enabled: currentView === "puntos" });
   const {
     compras,
     summary: comprasSummary,
@@ -250,6 +258,119 @@ export function SociosViews({
     const active = viewContent[currentView];
 
     if (currentView === "puntos") {
+      const historialItems = puntosHistorial?.data?.items ?? [];
+      const historialPageInfo = puntosHistorial?.data?.page;
+      const hasPrevHistorial = historialPage > 1;
+      const hasNextHistorial = historialPageInfo?.hasNext ?? false;
+      const historialTotal = historialPageInfo?.total ?? 0;
+
+      const tipoLabel: Record<string, string> = {
+        compra: "Compra",
+        canje: "Canje",
+        devolucion: "Devolución",
+        anulacion: "Anulación",
+        ajuste: "Ajuste",
+      };
+
+      const historialCard = (
+        <article className={`${styles.panelCard} ${styles.historialCard}`}>
+          <div className={styles.historialHeader}>
+            <div>
+              <h2 className={styles.panelTitle}>Movimientos</h2>
+              <p className={styles.panelSubtitle}>
+                Historial de operaciones ordenadas por fecha
+              </p>
+            </div>
+            {historialTotal > 0 && (
+              <span className={styles.statusBadge}>{historialTotal} registros</span>
+            )}
+          </div>
+
+          {historialError ? (
+            <div className={styles.historialErrorBox}>
+              No pudimos cargar el historial ahora mismo. Intenta nuevamente en unos minutos.
+            </div>
+          ) : isHistorialLoading ? (
+            <div className={styles.historialLoading}>Cargando historial…</div>
+          ) : historialItems.length === 0 ? (
+            <div className={styles.historialEmpty}>No hay operaciones registradas aún.</div>
+          ) : (
+            <>
+              <div className={styles.historialTableWrap}>
+                <table className={styles.historialTable}>
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Tipo</th>
+                      <th>Referencia</th>
+                      <th>Monto</th>
+                      <th>Puntos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historialItems.map((item, idx) => {
+                      const delta = item.puntosDelta ?? item.puntos ?? 0;
+                      const deltaClass =
+                        delta > 0
+                          ? styles.historialDeltaPositive
+                          : delta < 0
+                            ? styles.historialDeltaNegative
+                            : styles.historialDeltaNeutral;
+                      const deltaLabel =
+                        delta > 0
+                          ? `+${formatPortalPoints(delta)}`
+                          : delta < 0
+                            ? formatPortalPoints(delta)
+                            : "—";
+                      const montoLabel =
+                        item.monto != null
+                          ? formatPortalCurrency(item.monto)
+                          : "—";
+
+                      return (
+                        <tr key={item.id ?? idx}>
+                          <td>{formatPortalDateTime(item.fecha)}</td>
+                          <td>
+                            {tipoLabel[item.tipo.toLowerCase()] ?? item.tipo}
+                          </td>
+                          <td className={styles.historialRef}>
+                            {item.refOperacion ?? "—"}
+                          </td>
+                          <td>{montoLabel}</td>
+                          <td className={deltaClass}>{deltaLabel}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {(hasPrevHistorial || hasNextHistorial) && (
+                <div className={styles.historialPagination}>
+                  <button
+                    className={styles.facturasPaginationButton}
+                    onClick={() => setHistorialPage(historialPage - 1)}
+                    disabled={!hasPrevHistorial}
+                  >
+                    ← Anterior
+                  </button>
+                  <span className={styles.historialPaginationText}>
+                    Página {historialPage}
+                  </span>
+                  <button
+                    className={styles.facturasPaginationButton}
+                    onClick={() => setHistorialPage(historialPage + 1)}
+                    disabled={!hasNextHistorial}
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </article>
+      );
+
       return (
         <main className={styles.container}>
           <section className={styles.facturasViewSection}>
@@ -257,6 +378,7 @@ export function SociosViews({
             <h1 className={styles.activeViewTitle}>{active.title}</h1>
             <p className={styles.activeViewDescription}>{active.description}</p>
             <div className={styles.activePointsWrapper}>{pointsCard}</div>
+            {historialCard}
           </section>
         </main>
       );
@@ -349,6 +471,12 @@ export function SociosViews({
                                   size={18}
                                 />
                               </span>
+                              {comprobante.puntosGanados != null &&
+                                comprobante.puntosGanados > 0 && (
+                                  <span className={styles.facturaPuntosGanados}>
+                                    +{formatPortalPoints(comprobante.puntosGanados)} pts
+                                  </span>
+                                )}
                               <strong className={styles.facturaAmount}>
                                 {formatPortalCurrency(
                                   comprobante.total,

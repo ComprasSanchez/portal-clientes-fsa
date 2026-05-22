@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\BFF\\\\\")",
+      "Read(//c/Users/Usuario/Documents/front-fsa/**)",
+      "Bash(xargs grep -l \"puntos/me\\\\|GET.*puntos\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\clientes-puntos\" -Recurse -Filter \"*portal*\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -ExpandProperty FullName)"
+    ]
+  }
+}
