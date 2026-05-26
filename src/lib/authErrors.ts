@@ -44,6 +44,8 @@ export type AuthErrorCode =
   | "AUTH_IDENTITY_LINK_VERIFY_FAILED"
   | "AUTH_MFA_TICKET_INVALID"
   | "AUTH_MFA_COOLDOWN"
+  | "AUTH_SOCIAL_CALLBACK_FAILED"
+  | "AUTH_SOCIAL_EMAIL_CONFLICT"
   | string;
 
 const DEFAULT_AUTH_ERROR_MESSAGE =
@@ -121,8 +123,12 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
     "No pudimos completar la vinculacion. Intenta nuevamente.",
   AUTH_SESSION_EXPIRED:
     "La sesion ha expirado. Por favor, inicia sesion nuevamente.",
+  AUTH_SOCIAL_CALLBACK_FAILED:
+    "No pudimos completar el inicio de sesión con Google. Intentá nuevamente.",
+  AUTH_SOCIAL_EMAIL_CONFLICT:
+    "Este Gmail ya tiene una cuenta creada con usuario y contraseña. Iniciá sesión con tus credenciales.",
 };
 
-export function mapAuthError(code: AuthErrorCode): string {
-  return AUTH_ERROR_MESSAGES[code] ?? DEFAULT_AUTH_ERROR_MESSAGE;
+export function mapAuthError(code: AuthErrorCode, fallback?: string): string {
+  return AUTH_ERROR_MESSAGES[code] ?? fallback ?? DEFAULT_AUTH_ERROR_MESSAGE;
 }

@@ -1277,7 +1277,10 @@ export function Login({ onLogin }: LoginProps) {
 
     setHasProcessedGoogleAuthError(true);
     setErrorMessage(
-      "No pudimos completar el inicio de sesión con Google. Intentá nuevamente.",
+      mapAuthError(
+        googleAuthError,
+        "No pudimos completar el inicio de sesión con Google. Si ya tenés una cuenta, intentá ingresar con usuario y contraseña.",
+      ),
     );
 
     syncSearchParams((params) => {

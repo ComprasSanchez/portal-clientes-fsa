@@ -786,6 +786,35 @@ export function ProfileView({
     setOtpStep("sending");
     setOtpError(null);
     try {
+      if (
+        verificandoContacto.tipo === "TELEFONO" &&
+        verificandoContacto.valor?.startsWith("+54") &&
+        !verificandoContacto.valor?.startsWith("+549")
+      ) {
+        const normalizedValor = "+549" + verificandoContacto.valor.slice(3);
+        const patchRes = await fetch(
+          `/api/portal/me/contactos/${verificandoContacto.id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              tipo: "TELEFONO",
+              valor: normalizedValor,
+              regionIso2: "AR",
+              principal: verificandoContacto.principal ?? false,
+              verificado: verificandoContacto.verificado ?? false,
+            }),
+          },
+        );
+        if (!patchRes.ok) {
+          setOtpError(
+            "No se pudo normalizar el numero antes de verificar. Edita y guarda el telefono primero.",
+          );
+          setOtpStep("idle");
+          return;
+        }
+      }
+
       const res = await fetch(
         `/api/portal/me/contactos/${verificandoContacto.id}/verificar`,
         { method: "POST", headers: { Accept: "application/json" } },

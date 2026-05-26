@@ -5,6 +5,7 @@ import {
   CreditCard,
   Gift,
   Heart,
+  MapPin,
   Ticket,
   User,
 } from "lucide-react";
@@ -21,6 +22,7 @@ import {
 } from "@/components/organisms/loading/ViewSkeletons";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { SociosSorteosView } from "./SociosSorteosView";
+import { SociosSucursalesView } from "./SociosSucursalesView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
 import { BeneficiosCarousel } from "@/components/molecules/socios/BeneficiosCarousel";
@@ -75,6 +77,11 @@ const viewContent: Record<
     title: "Sorteos",
     description:
       "Consulta el sorteo activo y participa con tu cuenta de socio en pocos pasos.",
+  },
+  sucursales: {
+    title: "Sucursales",
+    description:
+      "Encontrá la sucursal más cercana, consultá horarios y accedé a indicaciones.",
   },
 };
 
@@ -229,6 +236,7 @@ export function SociosViews({
     { label: "Facturas", view: "facturas", icon: CreditCard, tone: "socios" },
     { label: "Puntos", view: "puntos", icon: Gift, tone: "socios" },
     { label: "Sorteos", view: "sorteos", icon: Ticket, tone: "socios" },
+    { label: "Sucursales", view: "sucursales", icon: MapPin, tone: "socios" },
     {
       label: "CORA",
       icon: Heart,
@@ -247,6 +255,10 @@ export function SociosViews({
         />
       </main>
     );
+  }
+
+  if (currentView === "sucursales") {
+    return <SociosSucursalesView />;
   }
 
   if (currentView === "sorteos") {

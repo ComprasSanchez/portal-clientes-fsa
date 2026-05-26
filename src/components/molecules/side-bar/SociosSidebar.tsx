@@ -11,6 +11,7 @@ import {
   Heart,
   LayoutGrid,
   LogOut,
+  MapPin,
   Menu,
   Ticket,
   User,
@@ -37,6 +38,7 @@ const menuItems: Array<{
   { id: "facturas", label: "Facturas", icon: CreditCard },
   { id: "puntos", label: "Puntos", icon: Gift },
   { id: "sorteos", label: "Sorteos", icon: Ticket },
+  { id: "sucursales", label: "Sucursales", icon: MapPin },
   { id: "cora", label: "CORA", icon: Heart },
 ];
 
