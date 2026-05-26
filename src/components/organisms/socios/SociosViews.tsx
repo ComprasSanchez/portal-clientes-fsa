@@ -264,13 +264,15 @@ export function SociosViews({
   if (currentView === "sorteos") {
     const principalPhone =
       perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
-      perfil?.contactos?.find((c) => c.tipo === "TELEFONO");
+      perfil?.contactos?.find((c) => c.tipo === "TELEFONO") ??
+      null;
     const phoneVerified = principalPhone?.verificado === true;
     return (
       <SociosSorteosView
         documentNumber={documentNumber}
         userName={userName}
         phoneVerified={phoneVerified}
+        principalPhone={principalPhone}
       />
     );
   }

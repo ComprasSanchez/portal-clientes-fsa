@@ -1,8 +1,17 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useState } from "react";
-import { CalendarDays, CircleAlert, CircleCheckBig, LoaderCircle, RefreshCw, Ticket } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CalendarDays, CircleAlert, CircleCheckBig, LoaderCircle, RefreshCw, Ticket, X } from "lucide-react";
+import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import styles from "./SociosSorteosView.module.scss";
+
+type PhoneContact = {
+  id?: string;
+  tipo?: string;
+  valor?: string;
+  principal?: boolean;
+  verificado?: boolean;
+};
 
 type SorteoActivo = {
   id: number;
@@ -39,6 +48,7 @@ interface SociosSorteosViewProps {
   documentNumber: string | null;
   userName: string;
   phoneVerified: boolean;
+  principalPhone: PhoneContact | null;
 }
 
 const formatDate = (value?: string | null) => {
@@ -56,12 +66,20 @@ const formatDate = (value?: string | null) => {
   }).format(date);
 };
 
-export function SociosSorteosView({ documentNumber, userName, phoneVerified }: SociosSorteosViewProps) {
+export function SociosSorteosView({ documentNumber, userName, phoneVerified, principalPhone }: SociosSorteosViewProps) {
+  const { refresh } = usePortalPerfilContext();
   const [activeDraw, setActiveDraw] = useState<SorteoActivo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isParticipating, setIsParticipating] = useState(false);
   const [participation, setParticipation] = useState<ParticiparSorteoResponse | null>(null);
+
+  const [isVerificacionModalOpen, setIsVerificacionModalOpen] = useState(false);
+  const [otpStep, setOtpStep] = useState<"idle" | "sending" | "waiting_whatsapp">("idle");
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadActiveDraw = async () => {
     setIsLoading(true);
@@ -99,6 +117,55 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified }: S
   useEffect(() => {
     void loadActiveDraw();
   }, []);
+
+  useEffect(() => {
+    if (otpStep !== "waiting_whatsapp" || !principalPhone?.id) return;
+
+    const contactoId = principalPhone.id;
+
+    pollingRef.current = setInterval(() => {
+      void fetch("/api/portal/me/perfil", { headers: { Accept: "application/json" } })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data: { contactos?: { id?: string; verificado?: boolean }[] } | null) => {
+          if (!data) return;
+          const contacto = (data.contactos ?? []).find((c) => c.id === contactoId);
+          if (contacto?.verificado) {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+            setIsVerificacionModalOpen(false);
+            setOtpStep("idle");
+            void refresh();
+          }
+        })
+        .catch(() => undefined);
+    }, 4000);
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [otpStep, principalPhone?.id, refresh]);
+
+  useEffect(() => {
+    if (otpStep !== "waiting_whatsapp") {
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+      setResendCooldown(0);
+      return;
+    }
+
+    setResendCooldown(60);
+    cooldownRef.current = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) {
+          if (cooldownRef.current) clearInterval(cooldownRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+    };
+  }, [otpStep]);
 
   const handleParticipate = async () => {
     if (!documentNumber || !activeDraw) {
@@ -141,6 +208,67 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified }: S
     }
   };
 
+  const handleOpenVerificacionModal = () => {
+    setOtpStep("idle");
+    setOtpError(null);
+    setIsVerificacionModalOpen(true);
+  };
+
+  const handleCloseVerificacionModal = () => {
+    if (otpStep === "sending") return;
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    if (cooldownRef.current) clearInterval(cooldownRef.current);
+    setIsVerificacionModalOpen(false);
+    setOtpStep("idle");
+    setOtpError(null);
+    setResendCooldown(0);
+  };
+
+  const handleSolicitarOtp = async () => {
+    if (!principalPhone?.id) return;
+    setOtpStep("sending");
+    setOtpError(null);
+    try {
+      if (
+        principalPhone.valor?.startsWith("+54") &&
+        !principalPhone.valor?.startsWith("+549")
+      ) {
+        const normalizedValor = "+549" + principalPhone.valor.slice(3);
+        const patchRes = await fetch(`/api/portal/me/contactos/${principalPhone.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tipo: "TELEFONO",
+            valor: normalizedValor,
+            regionIso2: "AR",
+            principal: principalPhone.principal ?? false,
+            verificado: principalPhone.verificado ?? false,
+          }),
+        });
+        if (!patchRes.ok) {
+          setOtpError("No se pudo normalizar el numero antes de verificar. Edita y guarda el telefono primero.");
+          setOtpStep("idle");
+          return;
+        }
+      }
+
+      const res = await fetch(
+        `/api/portal/me/contactos/${principalPhone.id}/verificar`,
+        { method: "POST", headers: { Accept: "application/json" } },
+      );
+      const data = (await res.json().catch(() => null)) as { message?: string } | null;
+      if (!res.ok) {
+        setOtpError(data?.message ?? "No se pudo enviar el mensaje. Intenta de nuevo.");
+        setOtpStep("idle");
+        return;
+      }
+      setOtpStep("waiting_whatsapp");
+    } catch {
+      setOtpError("Error de red. Intenta de nuevo.");
+      setOtpStep("idle");
+    }
+  };
+
   const participationMessage = participation?.message ?? participation?.error ?? null;
   const canParticipate = Boolean(documentNumber && activeDraw && !isParticipating && phoneVerified);
 
@@ -165,7 +293,6 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified }: S
           <div className={styles.panelHeader}>
             <div>
               <h2 className={styles.panelTitle}>Sorteo actual</h2>
-              {/* <p className={styles.panelSubtitle}>Estado actual del beneficio publicado para socios.</p> */}
             </div>
             <span className={styles.iconBadge}>
               <Ticket size={18} />
@@ -227,10 +354,23 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified }: S
 
           {!phoneVerified ? (
             <div className={styles.warningBox}>
-              <CircleAlert size={18} />
-              <span>
-                Necesitás verificar tu celular para poder participar del sorteo. Andá a tu perfil y verificá tu número.
-              </span>
+              <CircleAlert size={18} className={styles.warningIcon} />
+              <div className={styles.warningContent}>
+                <span>Necesitas verificar tu celular para poder participar del sorteo.</span>
+                {principalPhone?.id ? (
+                  <button
+                    type="button"
+                    className={styles.verifyLink}
+                    onClick={handleOpenVerificacionModal}
+                  >
+                    Verificar celular
+                  </button>
+                ) : (
+                  <span className={styles.warningHint}>
+                    Anda a tu perfil y carga un numero para verificarlo.
+                  </span>
+                )}
+              </div>
             </div>
           ) : null}
 
@@ -275,6 +415,84 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified }: S
           </button>
         </article>
       </section>
+
+      {isVerificacionModalOpen && principalPhone ? (
+        <div className={styles.modalOverlay} onClick={handleCloseVerificacionModal}>
+          <div
+            className={styles.modalDialog}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="verificacion-sorteo-title"
+          >
+            <header className={styles.modalHeader}>
+              <div>
+                <h2 id="verificacion-sorteo-title" className={styles.modalTitle}>
+                  Verificar celular
+                </h2>
+                <p className={styles.modalSubtitle}>{principalPhone.valor ?? "Tu celular"}</p>
+              </div>
+              <button
+                type="button"
+                className={styles.modalCloseButton}
+                onClick={handleCloseVerificacionModal}
+                aria-label="Cerrar"
+                disabled={otpStep === "sending"}
+              >
+                <X size={22} />
+              </button>
+            </header>
+
+            <div className={styles.modalBody}>
+              {otpStep === "waiting_whatsapp" ? (
+                <p className={styles.modalText}>
+                  Te enviamos un mensaje de WhatsApp a{" "}
+                  <strong>{principalPhone.valor ?? "tu celular"}</strong>.
+                  Toca el boton <strong>Validar</strong> en ese mensaje para confirmar tu numero.
+                  <span className={styles.modalHint}>Esperando confirmacion...</span>
+                </p>
+              ) : (
+                <p className={styles.modalText}>
+                  Te enviaremos un mensaje de WhatsApp a tu celular para confirmar que es tuyo.
+                </p>
+              )}
+              {otpError ? (
+                <p className={styles.modalError}>{otpError}</p>
+              ) : null}
+            </div>
+
+            <footer className={styles.modalFooter}>
+              <button
+                type="button"
+                className={styles.modalSecondaryAction}
+                onClick={handleCloseVerificacionModal}
+                disabled={otpStep === "sending"}
+              >
+                Cancelar
+              </button>
+              {otpStep === "waiting_whatsapp" ? (
+                <button
+                  type="button"
+                  className={styles.modalSecondaryAction}
+                  onClick={() => void handleSolicitarOtp()}
+                  disabled={resendCooldown > 0}
+                >
+                  {resendCooldown > 0 ? `Reenviar en ${resendCooldown}s` : "Reenviar mensaje"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.modalPrimaryAction}
+                  onClick={() => void handleSolicitarOtp()}
+                  disabled={otpStep === "sending"}
+                >
+                  {otpStep === "sending" ? "Enviando..." : "Enviar mensaje"}
+                </button>
+              )}
+            </footer>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

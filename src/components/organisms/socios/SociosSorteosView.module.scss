@@ -251,6 +251,170 @@
   }
 }
 
+.warningIcon {
+  flex-shrink: 0;
+}
+
+.warningContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.warningHint {
+  font-size: 0.8125rem;
+  opacity: 0.8;
+}
+
+.verifyLink {
+  align-self: flex-start;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #7a5900;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  &:hover {
+    color: #5a4000;
+  }
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 40, 50, 0.45);
+  padding: 1rem;
+}
+
+.modalDialog {
+  width: 100%;
+  max-width: 26rem;
+  border-radius: 1.2rem;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(0, 60, 75, 0.18);
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 0;
+}
+
+.modalTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #17343d;
+}
+
+.modalSubtitle {
+  margin-top: 0.2rem;
+  font-size: 0.9rem;
+  color: #607982;
+}
+
+.modalCloseButton {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  color: #607982;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #f0f5f6;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.modalBody {
+  padding: 1rem 1.25rem;
+}
+
+.modalText {
+  color: #3a5560;
+  line-height: 1.6;
+}
+
+.modalHint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85em;
+  opacity: 0.65;
+}
+
+.modalError {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.7rem;
+  background: #fff0ef;
+  color: #b3362d;
+  font-size: 0.875rem;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem 1.25rem;
+}
+
+.modalPrimaryAction,
+.modalSecondaryAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 0.7rem;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.modalPrimaryAction {
+  background: linear-gradient(135deg, #007c98 0%, #0d6075 100%);
+  color: #ffffff;
+  border: none;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+}
+
+.modalSecondaryAction {
+  background: none;
+  border: 1px solid #c8dde2;
+  color: #3a5560;
+
+  &:hover:not(:disabled) {
+    background: #f0f5f6;
+  }
+}
+
 @media (min-width: 768px) {
   .heroCard {
     flex-direction: row;
