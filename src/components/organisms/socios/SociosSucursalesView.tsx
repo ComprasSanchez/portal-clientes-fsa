@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { MapPin, Navigation, Phone, MessageCircle, ExternalLink, Search, X } from "lucide-react";
 import { usePortalSucursales } from "@/lib/use-portal-sucursales";
 import { haversineDistance, formatDistance } from "@/utils/distance";
@@ -37,6 +37,7 @@ export function SociosSucursalesView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [centerUserTrigger, setCenterUserTrigger] = useState(0);
+  const itemRefsMap = useRef<Map<string, HTMLLIElement>>(new Map());
 
   const filtered: SucursalWithDistance[] = sucursales
     .filter((s: Sucursal) => s.activa)
@@ -85,8 +86,17 @@ export function SociosSucursalesView() {
   }, []);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
+  useEffect(() => {
     handleUseLocation();
   }, [handleUseLocation]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    itemRefsMap.current.get(selectedId)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [selectedId]);
 
   return (
     <main className={styles.container}>
@@ -194,7 +204,13 @@ export function SociosSucursalesView() {
                 const isSelected = branch.id === selectedId;
                 const isNearest = userLocation !== null && index === 0;
                 return (
-                  <li key={branch.id}>
+                  <li
+                    key={branch.id}
+                    ref={(el) => {
+                      if (el) itemRefsMap.current.set(branch.id, el);
+                      else itemRefsMap.current.delete(branch.id);
+                    }}
+                  >
                     <button
                       type="button"
                       className={`${styles.branchCard} ${isSelected ? styles.branchCardActive : ""}`}
