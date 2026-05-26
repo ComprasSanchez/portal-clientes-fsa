@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import { HomeViews } from "@/components/organisms/home/HomeViews";
+import { CoraDashboardSkeleton } from "@/components/organisms/loading/ViewSkeletons";
 import { Sidebar } from "@/components/molecules/side-bar/Sidebar";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { HomeView } from "@/types/home";
@@ -12,9 +13,7 @@ const DEFAULT_VIEW: HomeView = "dashboard";
 const HomeViewsFallback = () => {
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <section className="rounded-3xl border border-border bg-white p-8 shadow-sm">
-        <p className="text-sm text-muted-foreground">Cargando vista...</p>
-      </section>
+      <CoraDashboardSkeleton />
     </main>
   );
 };

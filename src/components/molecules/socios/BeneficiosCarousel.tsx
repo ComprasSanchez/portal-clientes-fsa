@@ -7,6 +7,7 @@ import banner2x1 from "@/assets/sociosa-img/banner/banner-2x1.png";
 import banner3x2 from "@/assets/sociosa-img/banner/banenr-3x2.png";
 import bannerDescuentos from "@/assets/sociosa-img/banner/banner-descuentos.png";
 import styles from "./BeneficiosCarousel.module.scss";
+import Link from "next/link";
 
 const SLIDES = [
   { src: banner2x1, alt: "2x1 en productos seleccionados" },
@@ -45,11 +46,14 @@ export function BeneficiosCarousel() {
     return firstSlide ? firstSlide.offsetWidth + 12 : 0;
   }, []);
 
-  const scroll = useCallback((dir: 1 | -1) => {
-    const el = trackRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * getSlideWidth(), behavior: "smooth" });
-  }, [getSlideWidth]);
+  const scroll = useCallback(
+    (dir: 1 | -1) => {
+      const el = trackRef.current;
+      if (!el) return;
+      el.scrollBy({ left: dir * getSlideWidth(), behavior: "smooth" });
+    },
+    [getSlideWidth],
+  );
 
   useEffect(() => {
     if (isPaused) return;
@@ -75,16 +79,23 @@ export function BeneficiosCarousel() {
       <div ref={trackRef} className={styles.track} onScroll={updateArrows}>
         {SLIDES.map((slide, i) => (
           <div key={slide.alt} className={styles.slide} data-slide="">
-            <Image
-              src={slide.src}
-              alt={slide.alt}
-              width={slide.src.width}
-              height={slide.src.height}
-              draggable={false}
-              sizes="(max-width: 480px) 85vw, (max-width: 768px) 50vw, 33vw"
-              style={{ width: "100%", height: "auto", display: "block" }}
-              priority={i === 0}
-            />
+            <Link
+              href={
+                "https://www.farmaciassanchezantoniolli.com.ar/120-ofertasa"
+              }
+              target="_blank"
+            >
+              <Image
+                src={slide.src}
+                alt={slide.alt}
+                width={slide.src.width}
+                height={slide.src.height}
+                draggable={false}
+                sizes="(max-width: 480px) 85vw, (max-width: 768px) 50vw, 33vw"
+                style={{ width: "100%", height: "auto", display: "block" }}
+                priority={i === 0}
+              />
+            </Link>
           </div>
         ))}
       </div>

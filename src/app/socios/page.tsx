@@ -32,6 +32,10 @@ const SociosPage = () => {
     })();
   };
 
+  console.log(perfil, "PERFIL");
+  console.log(summary, "SUMARY");
+  
+
   return (
     <div className={`${poppins.className} min-h-screen bg-linear-to-br from-[#edf1f2] via-[#f7f9fa] to-white`}>
       <SociosSidebar

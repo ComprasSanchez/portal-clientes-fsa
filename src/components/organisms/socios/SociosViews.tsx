@@ -1,7 +1,6 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
-  ArrowRight,
   ChevronDown,
   CreditCard,
   Gift,
@@ -22,6 +21,7 @@ import {
 } from "@/components/organisms/loading/ViewSkeletons";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { SociosSorteosView } from "./SociosSorteosView";
+import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
 import { BeneficiosCarousel } from "@/components/molecules/socios/BeneficiosCarousel";
 import cuotasBanner from "@/assets/sociosa-img/cuotas-banner.jpg";
@@ -31,7 +31,7 @@ import {
 } from "@/lib/portal-compras";
 import { usePortalCompras } from "@/lib/use-portal-compras";
 import { usePortalExpedientesContext } from "@/lib/portal-expedientes-context";
-import { formatPortalPoints } from "@/lib/portal-puntos";
+import { formatPortalPoints, puntosToARS } from "@/lib/portal-puntos";
 import { usePortalPuntos } from "@/lib/use-portal-puntos";
 import { usePortalPuntosHistorial } from "@/lib/use-portal-puntos-historial";
 import { useGlobalToast } from "../../ui/global-toast";
@@ -163,6 +163,11 @@ export function SociosViews({
                 ? "..."
                 : formatPortalPoints(puntosSummary.disponibles)}
             </strong>
+            {!isPointsLoading && (
+              <span className={styles.pointsARS}>
+                ≈ {formatPortalCurrency(puntosToARS(puntosSummary.disponibles))} para gastar
+              </span>
+            )}
           </div>
 
           <div className={styles.pointsSideColumn}>
@@ -227,7 +232,7 @@ export function SociosViews({
     {
       label: "CORA",
       icon: Heart,
-      onClick: () => router.push("/home"),
+      onClick: () => router.push("/cora"),
       tone: "socios",
     },
   ];
@@ -603,7 +608,7 @@ export function SociosViews({
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
         <div>
-          <h1 className={styles.welcomeTitle}>¡Hola, {userName}! 👋</h1>
+          <h1 className={styles.welcomeTitle}>¡Hola, {perfil?.nombre}! 👋</h1>
           <p className={styles.welcomeSubtitle}>
             Bienvenido a tu panel de socios
           </p>
@@ -628,7 +633,7 @@ export function SociosViews({
             width={cuotasBanner.width}
             height={cuotasBanner.height}
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) calc(100vw - 16rem), 80rem"
-            style={{ width: "100%", height: "auto", display: "block" }}
+            className={styles.cuotasImg}
           />
         </div>
 
@@ -699,23 +704,10 @@ export function SociosViews({
 
         <div className={styles.fullWidthRow}>{pointsCard}</div>
 
-        <section className={styles.promoBanner}>
-          <h3 className={styles.promoTitle}>
-            Entra a CORA cuando necesites la gestion completa
-          </h3>
-          <p className={styles.promoDescription}>
-            Desde aqui accedes a una experiencia mas simple. Si necesitas seguir
-            tu pedido o revisar el historial de gestiones, entra a CORA.
-          </p>
-          <button
-            onClick={() => router.push("/home")}
-            className={styles.promoButton}
-            type="button"
-          >
-            Ir a CORA
-            <ArrowRight size={16} />
-          </button>
-        </section>
+        <SorteoCard
+          onNavigate={onNavigate}
+          documentNumber={documentNumber}
+        />
       </section>
     </main>
   );

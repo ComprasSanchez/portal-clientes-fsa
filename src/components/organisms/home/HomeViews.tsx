@@ -9,6 +9,7 @@ import {
 } from "@/components/molecules/home/QuickAccessCard";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import {
+  CoraDashboardSkeleton,
   ExpedienteViewSkeleton,
   TrackingViewSkeleton,
 } from "@/components/organisms/loading/ViewSkeletons";
@@ -317,7 +318,8 @@ export function HomeViews({
           trackingBlockedByExpedientes ? (
             <div className={styles.trackingMessageCard}>
               <p className={styles.trackingMessageTitle}>
-                No se encontraron pedidos recientes para mostrarte su seguimiento
+                No se encontraron pedidos recientes para mostrarte su
+                seguimiento
               </p>
               <p className={styles.trackingMessageText}>
                 No pudimos encontrar un pedido reciente para mostrarte su
@@ -677,11 +679,19 @@ export function HomeViews({
     );
   }
 
+  if (isProfileLoading) {
+    return (
+      <main className={styles.container}>
+        <CoraDashboardSkeleton />
+      </main>
+    );
+  }
+
   return (
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
         <div>
-          <h1 className={styles.welcomeTitle}>Hola, {userName}</h1>
+          <h1 className={styles.welcomeTitle}>Hola, {perfil?.nombre}</h1>
           <p className={styles.welcomeSubtitle}>
             Bienvenido a tu panel de gestion de pedidos
           </p>

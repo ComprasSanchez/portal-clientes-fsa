@@ -26,7 +26,11 @@ const SkeletonCard = ({ variant = "cora", children }: ContainerProps) => (
   </article>
 );
 
-export function ProfileViewSkeleton({ variant = "cora" }: { variant?: ThemeVariant }) {
+export function ProfileViewSkeleton({
+  variant = "cora",
+}: {
+  variant?: ThemeVariant;
+}) {
   return (
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -67,22 +71,34 @@ export function ProfileViewSkeleton({ variant = "cora" }: { variant?: ThemeVaria
 
         <div className="my-6 h-px bg-[#efe9f6]" />
 
-        <div className={`flex items-center justify-between gap-4 rounded-2xl p-5 ${themeAccentClass[variant]}`}>
+        <div
+          className={`flex items-center justify-between gap-4 rounded-2xl p-5 ${themeAccentClass[variant]}`}
+        >
           <div className="space-y-3 w-full max-w-md">
-            <Skeleton className={`h-4 w-40 ${variant === "socios" ? "bg-white/20" : "bg-[#e3d8f6]"}`} />
-            <Skeleton className={`h-8 w-64 max-w-full ${variant === "socios" ? "bg-white/25" : "bg-[#d7c2f5]"}`} />
+            <Skeleton
+              className={`h-4 w-40 ${variant === "socios" ? "bg-white/20" : "bg-[#e3d8f6]"}`}
+            />
+            <Skeleton
+              className={`h-8 w-64 max-w-full ${variant === "socios" ? "bg-white/25" : "bg-[#d7c2f5]"}`}
+            />
             {variant === "socios" ? (
               <Skeleton className="h-10 w-44 bg-white/20" />
             ) : null}
           </div>
-          <Skeleton className={`h-10 w-10 rounded-full ${variant === "socios" ? "bg-white/20" : "bg-[#dccbf5]"}`} />
+          <Skeleton
+            className={`h-10 w-10 rounded-full ${variant === "socios" ? "bg-white/20" : "bg-[#dccbf5]"}`}
+          />
         </div>
       </SkeletonCard>
     </section>
   );
 }
 
-export function TrackingViewSkeleton({ variant = "cora" }: { variant?: ThemeVariant }) {
+export function TrackingViewSkeleton({
+  variant = "cora",
+}: {
+  variant?: ThemeVariant;
+}) {
   return (
     <section className="space-y-6" aria-hidden="true">
       <div className="space-y-3">
@@ -116,7 +132,11 @@ export function TrackingViewSkeleton({ variant = "cora" }: { variant?: ThemeVari
   );
 }
 
-export function ExpedienteViewSkeleton({ variant = "cora" }: { variant?: ThemeVariant }) {
+export function ExpedienteViewSkeleton({
+  variant = "cora",
+}: {
+  variant?: ThemeVariant;
+}) {
   return (
     <section className="space-y-6" aria-hidden="true">
       <div className="space-y-3">
@@ -167,7 +187,11 @@ export function ExpedienteViewSkeleton({ variant = "cora" }: { variant?: ThemeVa
   );
 }
 
-export function FacturasViewSkeleton({ variant = "socios" }: { variant?: ThemeVariant }) {
+export function FacturasViewSkeleton({
+  variant = "socios",
+}: {
+  variant?: ThemeVariant;
+}) {
   return (
     <section className="space-y-6" aria-hidden="true">
       <div className="space-y-3">
@@ -187,7 +211,10 @@ export function FacturasViewSkeleton({ variant = "socios" }: { variant?: ThemeVa
 
         <div className="mt-5 space-y-4">
           {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="rounded-2xl border border-[#d5e4e8] bg-[#fbfdfd] p-4">
+            <div
+              key={index}
+              className="rounded-2xl border border-[#d5e4e8] bg-[#fbfdfd] p-4"
+            >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="space-y-3">
                   <Skeleton className="h-7 w-40" />
@@ -218,6 +245,113 @@ export function FacturasViewSkeleton({ variant = "socios" }: { variant?: ThemeVa
               </div>
             </div>
           ))}
+        </div>
+      </SkeletonCard>
+    </section>
+  );
+}
+
+export function CoraDashboardSkeleton() {
+  return (
+    <section className="space-y-6" aria-hidden="true">
+      <div className="space-y-3">
+        <Skeleton className="h-10 w-56 max-w-full" />
+        <Skeleton className="h-5 w-72 max-w-full" />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <SkeletonCard key={index} variant="cora">
+            <div className="flex min-h-[128px] flex-col items-center justify-center gap-5">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <Skeleton className="h-7 w-32" />
+            </div>
+          </SkeletonCard>
+        ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <SkeletonCard variant="cora">
+          <div className="space-y-3">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-5 w-56 max-w-full" />
+          </div>
+
+          <div className="mt-5 rounded-3xl bg-[linear-gradient(135deg,#8f63d9_0%,#a177e7_100%)] p-5">
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-20 bg-white/20" />
+              <Skeleton className="h-10 w-44 bg-white/25" />
+              <div className="h-px bg-white/15" />
+              <Skeleton className="h-4 w-28 bg-white/20" />
+              <Skeleton className="h-10 w-52 bg-white/25" />
+              <Skeleton className="h-5 w-72 max-w-full bg-white/20" />
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <Skeleton className="h-11 w-32 rounded-xl" />
+          </div>
+        </SkeletonCard>
+
+        <SkeletonCard variant="cora">
+          <div className="space-y-3">
+            <Skeleton className="h-8 w-36" />
+            <Skeleton className="h-5 w-52 max-w-full" />
+          </div>
+
+          <div className="mt-6 space-y-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className={`flex items-center justify-between gap-4 pb-4 ${
+                  index < 3 ? "border-b border-[#efe9f6]" : ""
+                }`}
+              >
+                <Skeleton className="h-5 w-24" />
+                <Skeleton
+                  className={`${index === 3 ? "h-8 w-28" : "h-5 w-36"}`}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5">
+            <Skeleton className="h-11 w-24 rounded-xl" />
+          </div>
+        </SkeletonCard>
+
+        <SkeletonCard variant="cora">
+          <div className="space-y-3">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-5 w-48 max-w-full" />
+          </div>
+
+          <div className="mt-6 space-y-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className={`flex items-center justify-between gap-4 pb-4 ${
+                  index < 3 ? "border-b border-[#efe9f6]" : ""
+                }`}
+              >
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-8 w-28 rounded-full" />
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5">
+            <Skeleton className="h-11 w-24 rounded-xl" />
+          </div>
+        </SkeletonCard>
+      </div>
+
+      <SkeletonCard variant="cora">
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-72 max-w-full" />
+          <Skeleton className="h-5 w-full max-w-2xl" />
+          <Skeleton className="h-5 w-11/12 max-w-xl" />
+          <Skeleton className="h-11 w-32 rounded-xl" />
         </div>
       </SkeletonCard>
     </section>
