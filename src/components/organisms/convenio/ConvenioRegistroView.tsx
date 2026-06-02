@@ -214,6 +214,9 @@ export function ConvenioRegistroView({ convenio }: { convenio: string }) {
     }
   }
 
+  const stepIndex =
+    flow.kind === "dni" ? 0 : flow.kind === "form" ? 1 : flow.kind === "otp" ? 2 : 3;
+
   return (
     <div className={s.page}>
       <div className={s.container}>
@@ -228,21 +231,13 @@ export function ConvenioRegistroView({ convenio }: { convenio: string }) {
         </div>
 
         <div className={s.card}>
-          {flow.kind !== "success" && (
+          {stepIndex < 3 && (
             <div className={s.steps}>
-              <StepDot active={flow.kind === "dni"} done={flow.kind !== "dni"} label="Documento" />
+              <StepDot active={stepIndex === 0} done={stepIndex > 0} label="Documento" />
               <div className={s.stepLine} />
-              <StepDot
-                active={flow.kind === "form"}
-                done={flow.kind === "otp" || flow.kind === "success"}
-                label="Datos"
-              />
+              <StepDot active={stepIndex === 1} done={stepIndex > 1} label="Datos" />
               <div className={s.stepLine} />
-              <StepDot
-                active={flow.kind === "otp"}
-                done={flow.kind === "success"}
-                label="Verificación"
-              />
+              <StepDot active={stepIndex === 2} done={stepIndex > 2} label="Verificación" />
             </div>
           )}
 
