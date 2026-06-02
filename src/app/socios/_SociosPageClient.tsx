@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
 import { SociosSidebar } from "@/components/molecules/side-bar/SociosSidebar";
 import { SociosViews } from "@/components/organisms/socios/SociosViews";
+import { ConvenioVerificacionModal } from "@/components/organisms/convenio/ConvenioVerificacionModal";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { type SociosView } from "@/types/socios";
 
@@ -25,10 +27,40 @@ export function SociosPageClient() {
     }
     return DEFAULT_VIEW;
   });
+  const [convenio] = useState<string | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("convenio")?.trim().toUpperCase() || null;
+  });
+  const [convenioUnlocked, setConvenioUnlocked] = useState<boolean>(() => {
+    if (!convenio || typeof window === "undefined") return true;
+    return localStorage.getItem(`convenio_reg_${convenio}`) === "1";
+  });
+  const convenioLocked = Boolean(convenio && !convenioUnlocked);
+
   const router = useRouter();
   const { perfil, summary, isLoading } = usePortalPerfilContext();
 
+  // Fuente de verdad: verificar contra el CRM en cualquier dispositivo
+  useEffect(() => {
+    if (!convenio || convenioUnlocked) return;
+    const dni = summary.documentNumber;
+    if (!dni) return;
+
+    void axios
+      .get<{ found?: boolean; convenio?: string | null }>(
+        `/api/legacy/cliente/${encodeURIComponent(dni)}`
+      )
+      .then(({ data }) => {
+        if (data.found && data.convenio?.toUpperCase() === convenio) {
+          localStorage.setItem(`convenio_reg_${convenio}`, "1");
+          setConvenioUnlocked(true);
+        }
+      })
+      .catch(() => undefined);
+  }, [convenio, convenioUnlocked, summary.documentNumber]);
+
   const handleNavigate = (view: SociosView) => {
+    if (convenioLocked) return;
     setCurrentView(view);
     const url = view === DEFAULT_VIEW ? "/socios" : `/socios?view=${view}`;
     router.replace(url, { scroll: false });
@@ -45,8 +77,31 @@ export function SociosPageClient() {
     })();
   };
 
+  const principalPhone =
+    perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
+    perfil?.contactos?.find((c) => c.tipo === "TELEFONO") ??
+    null;
+  const phoneVerified = principalPhone?.verificado === true;
+
+  const handleConvenioVerified = () => {
+    setConvenioUnlocked(true);
+    // Ir al dashboard limpiando el param de convenio de la URL
+    router.replace("/socios", { scroll: false });
+  };
+
   return (
     <div className={`${poppins.className} min-h-screen bg-linear-to-br from-[#edf1f2] via-[#f7f9fa] to-white`}>
+      {convenioLocked && convenio && (
+        <ConvenioVerificacionModal
+          convenio={convenio}
+          documentNumber={summary.documentNumber}
+          userName={summary.displayName}
+          principalPhone={principalPhone}
+          phoneVerified={phoneVerified}
+          onVerified={handleConvenioVerified}
+        />
+      )}
+
       <SociosSidebar
         currentView={currentView}
         onNavigate={handleNavigate}
@@ -65,6 +120,8 @@ export function SociosPageClient() {
           phone={summary.phone}
           perfil={perfil}
           isProfileLoading={isLoading}
+          convenio={convenio}
+          convenioLocked={convenioLocked}
         />
 
         <footer className="relative left-1/2 mt-auto -translate-x-1/2 border-t border-[#d3dee2] bg-white py-6">

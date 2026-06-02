@@ -378,7 +378,6 @@ export function HomeViews({
     return (
       <main className={styles.container}>
         <section className={styles.activeViewCard}>
-          <p className={styles.activeViewLabel}>Vista activa</p>
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -664,7 +663,6 @@ export function HomeViews({
     return (
       <main className={styles.container}>
         <section className={styles.activeViewCard}>
-          <p className={styles.activeViewLabel}>Vista activa</p>
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 

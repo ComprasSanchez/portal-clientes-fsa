@@ -5,6 +5,7 @@ type ErrorDetails = {
   remainingAttempts?: number;
   retryAfterSec?: number;
   reason?: string;
+  maskedEmail?: string;
 };
 
 type ErrorPayload = {
@@ -25,14 +26,18 @@ const RETRY_AFTER_CODES = new Set([
   "AUTH_IDENTITY_LINK_OTP_LOCKED",
 ]);
 
-const getIdentityLinkConflictMessage = (reason?: string) => {
+const getIdentityLinkConflictMessage = (reason?: string, maskedEmail?: string) => {
   switch (reason) {
     case "DOCUMENTO_ALREADY_LINKED":
-      return "Este numero de documento ya esta vinculado a otra cuenta. Si creias que no deberia estar vinculado, contacta a soporte.";
+      return maskedEmail
+        ? `Este número de documento ya está vinculado a la cuenta ${maskedEmail}. Si no reconocés esta cuenta, contactá a soporte.`
+        : "Este número de documento ya está vinculado a otra cuenta. Si creías que no debería estar vinculado, contactá a soporte.";
     case "EMAIL_ALREADY_USED":
-      return "Este email ya esta vinculado a otra cuenta. Usa otro email o contacta a soporte.";
+      return "Este email ya está vinculado a otra cuenta. Usá otro email o contactá a soporte.";
     default:
-      return "No pudimos vincular tu cuenta porque el documento o el email ya estan asociados a otra cuenta. Contacta a soporte si necesitas ayuda.";
+      return maskedEmail
+        ? `Tu DNI ya está vinculado a la cuenta ${maskedEmail}. Si no reconocés esta cuenta, contactá a soporte.`
+        : "No pudimos vincular tu cuenta porque el documento o el email ya están asociados a otra cuenta. Contactá a soporte si necesitás ayuda.";
   }
 };
 
@@ -59,8 +64,11 @@ const getMappedErrorMessage = (error: ErrorPayload) => {
   const retryAfterSec = error.details?.retryAfterSec;
   const reason = error.details?.reason;
 
-  if (code === "AUTH_IDENTITY_LINK_CONFLICT") {
-    return getIdentityLinkConflictMessage(reason);
+  if (
+    code === "AUTH_IDENTITY_LINK_CONFLICT" ||
+    code === "AUTH_ONBOARDING_IDENTITY_LINK_CONFLICT"
+  ) {
+    return getIdentityLinkConflictMessage(reason, error.details?.maskedEmail);
   }
 
   if (

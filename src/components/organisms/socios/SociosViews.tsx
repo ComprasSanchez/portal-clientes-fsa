@@ -52,6 +52,8 @@ interface SociosViewsProps {
   phone: string | null;
   perfil: PortalPerfilResponse | null;
   isProfileLoading?: boolean;
+  convenio?: string | null;
+  convenioLocked?: boolean;
 }
 
 const viewContent: Record<
@@ -99,6 +101,8 @@ export function SociosViews({
   phone,
   perfil,
   isProfileLoading = false,
+  convenio,
+  convenioLocked,
 }: SociosViewsProps) {
   const FACTURAS_PAGE_SIZE = 5;
   const router = useRouter();
@@ -273,6 +277,7 @@ export function SociosViews({
         userName={userName}
         phoneVerified={phoneVerified}
         principalPhone={principalPhone}
+        convenio={convenio ?? null}
       />
     );
   }
@@ -397,7 +402,6 @@ export function SociosViews({
       return (
         <main className={styles.container}>
           <section className={styles.facturasViewSection}>
-            <p className={styles.activeViewLabel}>Vista activa</p>
             <h1 className={styles.activeViewTitle}>{active.title}</h1>
             <p className={styles.activeViewDescription}>{active.description}</p>
             <div className={styles.activePointsWrapper}>{pointsCard}</div>
@@ -419,7 +423,6 @@ export function SociosViews({
       return (
         <main className={styles.container}>
           <section className={styles.facturasViewSection}>
-            <p className={styles.activeViewLabel}>Vista activa</p>
             <h1 className={styles.activeViewTitle}>{active.title}</h1>
             <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -594,7 +597,6 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <section className={styles.activeViewCard}>
-          <p className={styles.activeViewLabel}>Vista activa</p>
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 

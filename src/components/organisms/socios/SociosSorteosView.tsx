@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { CalendarDays, CircleAlert, CircleCheckBig, LoaderCircle, RefreshCw, Ticket, X } from "lucide-react";
@@ -49,6 +49,7 @@ interface SociosSorteosViewProps {
   userName: string;
   phoneVerified: boolean;
   principalPhone: PhoneContact | null;
+  convenio: string | null;
 }
 
 const formatDate = (value?: string | null) => {
@@ -66,7 +67,7 @@ const formatDate = (value?: string | null) => {
   }).format(date);
 };
 
-export function SociosSorteosView({ documentNumber, userName, phoneVerified, principalPhone }: SociosSorteosViewProps) {
+export function SociosSorteosView({ documentNumber, userName, phoneVerified, principalPhone, convenio }: SociosSorteosViewProps) {
   const { refresh } = usePortalPerfilContext();
   const [activeDraw, setActiveDraw] = useState<SorteoActivo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -183,7 +184,8 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
         },
         body: JSON.stringify({
           documento: documentNumber,
-          canal: "SOCIOSA_PORTAL",
+          canal: convenio ? "CONVENIO" : "SOCIOSA_PORTAL",
+          ...(convenio ? { convenio } : {}),
         }),
       });
 
@@ -276,7 +278,6 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
     <main className={styles.container}>
       <section className={styles.heroCard}>
         <div>
-          <p className={styles.eyebrow}>Vista activa</p>
           <h1 className={styles.title}>Sorteos</h1>
           <p className={styles.description}>
             Consulta el sorteo vigente y participa con el documento asociado a tu cuenta de socio.
@@ -287,6 +288,13 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
           Actualizar
         </button>
       </section>
+
+      {convenio ? (
+        <section className={styles.convenioBanner}>
+          <span className={styles.convenioBannerLabel}>Sorteo de convenio</span>
+          <strong className={styles.convenioBannerName}>{convenio}</strong>
+        </section>
+      ) : null}
 
       <section className={styles.grid}>
         <article className={styles.panelCard}>
@@ -371,15 +379,6 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
                   </span>
                 )}
               </div>
-            </div>
-          ) : null}
-
-          {!documentNumber ? (
-            <div className={styles.warningBox}>
-              <CircleAlert size={18} />
-              <span>
-                Tu cuenta no tiene documento disponible en el portal. Completa o valida tu perfil antes de participar.
-              </span>
             </div>
           ) : null}
 

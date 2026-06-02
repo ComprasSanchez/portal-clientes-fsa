@@ -50,7 +50,7 @@ const customerIdentityShape = {
 };
 
 const loginValidationSchema = Yup.object({
-  username: Yup.string().trim().required("Ingresá tu usuario."),
+  username: Yup.string().trim().email("Ingresá un email válido.").required("Ingresá tu email."),
   password: Yup.string().required("Ingresá tu contraseña."),
 });
 
@@ -164,6 +164,15 @@ type IdentityLinkResponse = LoginResponse & {
   };
 };
 
+const maskEmail = (email: string): string => {
+  const atIndex = email.indexOf("@");
+  if (atIndex < 0) return email;
+  const local = email.slice(0, atIndex);
+  const domain = email.slice(atIndex);
+  const visible = local.slice(0, Math.min(4, local.length));
+  return `${visible}${"*".repeat(5)}${domain}`;
+};
+
 const getErrorCode = (payload: LoginResponse | null) => {
   if (
     payload &&
@@ -230,6 +239,10 @@ export function Login({ onLogin }: LoginProps) {
     useState<OnboardingFlowState | null>(null);
   const [isResendingOnboarding, setIsResendingOnboarding] = useState(false);
   const [isCompletingGoogleOnboarding, setIsCompletingGoogleOnboarding] =
+    useState(false);
+  const [isAbandoningGoogleOnboarding, setIsAbandoningGoogleOnboarding] =
+    useState(false);
+  const [isAbandoningIdentityLink, setIsAbandoningIdentityLink] =
     useState(false);
   const [isAutoVerifyingOnboarding, setIsAutoVerifyingOnboarding] =
     useState(false);
@@ -1098,7 +1111,46 @@ export function Login({ onLogin }: LoginProps) {
     }
   };
 
-  const startGooglePopupLogin = (forceAccountSelection = false) => {
+  const handleAbandonGoogleOnboarding = async () => {
+    setIsAbandoningGoogleOnboarding(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // session cleanup best-effort: still return to login even if BFF is unreachable
+    } finally {
+      setIsAbandoningGoogleOnboarding(false);
+    }
+    returnToLogin();
+    googleOnboardingFormik.resetForm();
+    setGoogleProfilePrefill(null);
+    syncSearchParams((params) => {
+      params.delete("onboarding");
+      params.delete("googleOnboarding");
+      params.delete("googleEmail");
+      params.delete("googleFirstName");
+      params.delete("googleLastName");
+    });
+  };
+
+  const handleAbandonIdentityLink = async () => {
+    setIsAbandoningIdentityLink(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // session cleanup best-effort
+    } finally {
+      setIsAbandoningIdentityLink(false);
+    }
+    returnToLogin();
+    identityLinkFormik.resetForm();
+    setIdentityLinkFlow(null);
+    syncSearchParams((params) => {
+      params.delete("identityLink");
+      params.delete("redirectTo");
+    });
+  };
+
+  const startGooglePopupLogin = async (forceConsent = false) => {
     if (isGooglePopupLoading) {
       return;
     }
@@ -1106,15 +1158,18 @@ export function Login({ onLogin }: LoginProps) {
     clearFeedback();
     setIsGooglePopupLoading(true);
 
-    const promptParam = forceAccountSelection
-      ? `&prompt=${encodeURIComponent("select_account consent")}`
-      : "";
-
     if (typeof window === "undefined") {
       return;
     }
 
-    const startUrl = `/api/v2/auth/providers/google/start?redirectTo=${encodeURIComponent(redirectTo)}${promptParam}`;
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // best-effort: if no active session the logout is a no-op
+    }
+
+    const prompt = forceConsent ? "select_account consent" : "select_account";
+    const startUrl = `/api/v2/auth/providers/google/start?redirectTo=${encodeURIComponent(redirectTo)}&prompt=${encodeURIComponent(prompt)}`;
     window.location.assign(startUrl);
   };
   useEffect(() => {
@@ -1508,17 +1563,17 @@ export function Login({ onLogin }: LoginProps) {
                 <form onSubmit={formik.handleSubmit} className={styles.form} noValidate>
                   <div className={styles.fieldGroup}>
                     <label className={styles.fieldLabel} htmlFor="login-email">
-                      Usuario
+                      Email
                     </label>
                     <input
                       id="login-email"
                       name="username"
-                      type="text"
-                      placeholder="Ingresá tu usuario"
+                      type="email"
+                      placeholder="Ingresá tu email"
                       value={formik.values.username}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
-                      autoComplete="username"
+                      autoComplete="email"
                       required
                       className={`${styles.input} ${usernameHasError ? styles.inputError : ""}`}
                     />
@@ -1605,7 +1660,7 @@ export function Login({ onLogin }: LoginProps) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => startGooglePopupLogin()}
+                  onClick={() => void startGooglePopupLogin()}
                   className={styles.googleButton}
                   disabled={formik.isSubmitting || isGooglePopupLoading}
                 >
@@ -1983,9 +2038,9 @@ export function Login({ onLogin }: LoginProps) {
                         <button
                           type="button"
                           className={styles.mfaBackIconButton}
+                          disabled={isAbandoningIdentityLink}
                           onClick={() => {
-                            returnToLogin();
-                            identityLinkFormik.resetForm();
+                            void handleAbandonIdentityLink();
                           }}
                           aria-label="Volver al inicio de sesión"
                         >
@@ -1993,7 +2048,10 @@ export function Login({ onLogin }: LoginProps) {
                         </button>
                       </div>
                       <p className={styles.formSubtitle}>
-                        Confirmá tus datos personales para vincular tu cuenta con tu cliente.
+                        {identityLinkFormik.values.email
+                          ? <>Confirmá tus datos para vincular <strong>{maskEmail(identityLinkFormik.values.email)}</strong> con tu cuenta.</>
+                          : "Confirmá tus datos personales para vincular tu cuenta con tu cliente."
+                        }
                       </p>
                     </header>
                     {infoMessage ? (
@@ -2272,13 +2330,9 @@ export function Login({ onLogin }: LoginProps) {
                     <button
                       type="button"
                       className={styles.mfaBackIconButton}
+                      disabled={isAbandoningGoogleOnboarding}
                       onClick={() => {
-                        returnToLogin();
-                        googleOnboardingFormik.resetForm();
-                        syncSearchParams((params) => {
-                          params.delete("onboarding");
-                          params.delete("googleOnboarding");
-                        });
+                        void handleAbandonGoogleOnboarding();
                       }}
                       aria-label="Volver al inicio de sesión"
                     >

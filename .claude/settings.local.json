@@ -5,7 +5,9 @@
       "Read(//c/Users/Usuario/Documents/front-fsa/**)",
       "Bash(xargs grep -l \"puntos/me\\\\|GET.*puntos\")",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\clientes-puntos\" -Recurse -Filter \"*portal*\" -ErrorAction SilentlyContinue)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\crm-webservice\" -Recurse -Directory)",
+      "Bash(Select-Object -First 20)"
     ]
   }
 }
