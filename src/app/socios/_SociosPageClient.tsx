@@ -99,6 +99,7 @@ export function SociosPageClient() {
           principalPhone={principalPhone}
           phoneVerified={phoneVerified}
           onVerified={handleConvenioVerified}
+          onLogout={handleLogout}
         />
       )}
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CircleCheckBig, LoaderCircle, ShieldCheck } from "lucide-react";
 import s from "./ConvenioVerificacionModal.module.scss";
 
@@ -18,6 +18,7 @@ interface ConvenioVerificacionModalProps {
   principalPhone: PhoneContact | null;
   phoneVerified: boolean;
   onVerified: () => void;
+  onLogout: () => void;
 }
 
 function splitUserName(fullName: string) {
@@ -32,13 +33,26 @@ export function ConvenioVerificacionModal({
   principalPhone,
   phoneVerified,
   onVerified,
+  onLogout,
 }: ConvenioVerificacionModalProps) {
-  const [phone, setPhone] = useState(() => principalPhone?.valor ?? "");
+  const [phone, setPhone] = useState(() => {
+    const raw = principalPhone?.valor ?? "";
+    if (raw.startsWith("+549")) return raw.slice(4);
+    if (raw.startsWith("+54")) return raw.slice(3);
+    return raw;
+  });
   const [pendingId, setPendingId] = useState<number | null>(null);
   const [codigo, setCodigo] = useState("");
   const [step, setStep] = useState<"form" | "otp">("form");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const otpRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const ref = step === "form" ? phoneRef : otpRef;
+    ref.current?.focus();
+  }, [step]);
 
   const resetError = () => setError(null);
 
@@ -56,7 +70,7 @@ export function ConvenioVerificacionModal({
           Documento: documentNumber,
           Nombre: nombre,
           Apellido: apellido,
-          Telefono: phone.trim(),
+          Telefono: `+549${phone.trim()}`,
           convenio,
           canal: "CONVENIO",
           aceptaTerminos: true,
@@ -104,23 +118,17 @@ export function ConvenioVerificacionModal({
 
       // Disparar verificación de teléfono en el portal si aún no está verificado
       if (!phoneVerified && principalPhone?.id) {
-        if (
-          principalPhone.valor?.startsWith("+54") &&
-          !principalPhone.valor?.startsWith("+549")
-        ) {
-          const normalizedValor = "+549" + principalPhone.valor.slice(3);
-          await fetch(`/api/portal/me/contactos/${principalPhone.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              tipo: "TELEFONO",
-              valor: normalizedValor,
-              regionIso2: "AR",
-              principal: principalPhone.principal ?? false,
-              verificado: principalPhone.verificado ?? false,
-            }),
-          });
-        }
+        await fetch(`/api/portal/me/contactos/${principalPhone.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tipo: "TELEFONO",
+            valor: `+549${phone.trim()}`,
+            regionIso2: "AR",
+            principal: principalPhone.principal ?? false,
+            verificado: principalPhone.verificado ?? false,
+          }),
+        });
         void fetch(`/api/portal/me/contactos/${principalPhone.id}/verificar`, {
           method: "POST",
           headers: { Accept: "application/json" },
@@ -150,23 +158,32 @@ export function ConvenioVerificacionModal({
           <strong>{convenio}</strong>, confirmá tu teléfono con el código que te enviamos.
         </p>
 
+        <p className={s.accountHint}>
+          ¿No es tu cuenta?{" "}
+          <button type="button" className={s.logoutLink} onClick={onLogout}>
+            Cerrar sesión
+          </button>
+        </p>
+
         {step === "form" ? (
           <form onSubmit={(e) => void handleStart(e)} className={s.form}>
             <div className={s.field}>
               <label className={s.label} htmlFor="conv-phone">
                 Teléfono celular
               </label>
-              <input
-                id="conv-phone"
-                className={s.input}
-                type="tel"
-                inputMode="tel"
-                placeholder="Ej: 3871234567"
-                value={phone}
-                onChange={(e) => { setPhone(e.target.value); resetError(); }}
-                disabled={loading}
-                autoFocus
-              />
+              <div className={s.phoneInputWrap}>
+                <span className={s.phonePrefix}>+549</span>
+                <input
+                  ref={phoneRef}
+                  id="conv-phone"
+                  className={s.phoneInput}
+                  type="tel"
+                  inputMode="numeric"
+                  value={phone}
+                  onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "")); resetError(); }}
+                  disabled={loading}
+                />
+              </div>
               <span className={s.hint}>Recibirás un código en este número.</span>
             </div>
             {error && <p className={s.errorMsg}>{error}</p>}
@@ -184,13 +201,14 @@ export function ConvenioVerificacionModal({
           <form onSubmit={(e) => void handleConfirm(e)} className={s.form}>
             <div className={s.otpInfo}>
               <CircleCheckBig size={16} className={s.otpInfoIcon} />
-              <span>Código enviado a <strong>{phone}</strong></span>
+              <span>Código enviado a <strong>+549{phone}</strong></span>
             </div>
             <div className={s.field}>
               <label className={s.label} htmlFor="conv-otp">
                 Código de verificación
               </label>
               <input
+                ref={otpRef}
                 id="conv-otp"
                 className={s.otpInput}
                 type="text"
@@ -200,7 +218,6 @@ export function ConvenioVerificacionModal({
                 value={codigo}
                 onChange={(e) => { setCodigo(e.target.value.replace(/\D/g, "")); resetError(); }}
                 disabled={loading}
-                autoFocus
                 autoComplete="one-time-code"
               />
             </div>

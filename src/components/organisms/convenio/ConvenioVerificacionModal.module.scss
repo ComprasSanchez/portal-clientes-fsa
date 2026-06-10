@@ -97,6 +97,47 @@
   padding: 0.75rem 1rem;
 }
 
+.phoneInputWrap {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid #c8dde2;
+  border-radius: 0.7rem;
+  background: #f9fcfd;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus-within {
+    border-color: #007c98;
+    box-shadow: 0 0 0 3px rgba(0, 124, 152, 0.12);
+    background: #ffffff;
+  }
+}
+
+.phonePrefix {
+  display: flex;
+  align-items: center;
+  padding: 0 0.65rem 0 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #3a5560;
+  user-select: none;
+  border-right: 1.5px solid #c8dde2;
+}
+
+.phoneInput {
+  flex: 1;
+  padding: 0.65rem 0.9rem;
+  border: none;
+  border-radius: 0 0.7rem 0.7rem 0;
+  font-size: 0.95rem;
+  color: #17343d;
+  background: transparent;
+  outline: none;
+  min-width: 0;
+
+  &::placeholder { color: #a0bec8; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
 .hint {
   font-size: 0.775rem;
   color: #7a9aa8;
@@ -168,6 +209,25 @@
 
   &:hover:not(:disabled) { color: #17343d; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.accountHint {
+  font-size: 0.8rem;
+  color: #7a9aa8;
+  margin-top: -0.25rem;
+}
+
+.logoutLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: #507080;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+
+  &:hover { color: #17343d; }
 }
 
 .spin {
