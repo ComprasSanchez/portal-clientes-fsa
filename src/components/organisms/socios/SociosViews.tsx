@@ -24,6 +24,7 @@ import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { SociosSorteosView } from "./SociosSorteosView";
 import { SociosSucursalesView } from "./SociosSucursalesView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
+import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
 import { BeneficiosCarousel } from "@/components/molecules/socios/BeneficiosCarousel";
 import cuotasBanner from "@/assets/sociosa-img/cuotas-banner.jpg";
@@ -724,6 +725,8 @@ export function SociosViews({
           onNavigate={onNavigate}
           documentNumber={documentNumber}
         />
+
+        <SucursalesPromoCard onNavigate={onNavigate} />
       </section>
     </main>
   );

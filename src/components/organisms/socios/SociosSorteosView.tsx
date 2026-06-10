@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, CircleAlert, CircleCheckBig, LoaderCircle, RefreshCw, Ticket, X } from "lucide-react";
+import { CalendarDays, CalendarOff, CircleAlert, CircleCheckBig, LoaderCircle, RefreshCw, Ticket, X } from "lucide-react";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import styles from "./SociosSorteosView.module.scss";
 
@@ -72,6 +72,7 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
   const [activeDraw, setActiveDraw] = useState<SorteoActivo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [noSorteo, setNoSorteo] = useState(false);
   const [isParticipating, setIsParticipating] = useState(false);
   const [participation, setParticipation] = useState<ParticiparSorteoResponse | null>(null);
 
@@ -85,6 +86,7 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
   const loadActiveDraw = async () => {
     setIsLoading(true);
     setLoadError(null);
+    setNoSorteo(false);
 
     try {
       const response = await fetch("/api/legacy/sorteos/activo", {
@@ -94,15 +96,23 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
 
       const data = (await response.json().catch(() => null)) as SorteoActivoResponse | null;
 
+      const errorCode = data?.error ?? null;
+      const isSinSorteo = !data?.sorteo || errorCode === "sorteo_activo_no_configurado";
+
       if (!response.ok) {
-        setActiveDraw(null);
-        setLoadError(data?.error ?? "No pudimos consultar el sorteo activo.");
+        if (isSinSorteo) {
+          setActiveDraw(null);
+          setNoSorteo(true);
+        } else {
+          setActiveDraw(null);
+          setLoadError(errorCode ?? "No pudimos consultar el sorteo activo.");
+        }
         return;
       }
 
       if (!data?.ok || !data.sorteo) {
         setActiveDraw(null);
-        setLoadError(data?.error ?? "No hay un sorteo activo disponible ahora mismo.");
+        setNoSorteo(true);
         return;
       }
 
@@ -316,6 +326,18 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
             <div className={styles.errorBox}>
               <CircleAlert size={18} />
               <span>{loadError}</span>
+            </div>
+          ) : noSorteo ? (
+            <div className={styles.emptyBox}>
+              <div className={styles.emptyIconWrap}>
+                <CalendarOff size={26} />
+              </div>
+              <div>
+                <p className={styles.emptyTitle}>Sin sorteo activo por el momento</p>
+                <p className={styles.emptyBody}>
+                  Cuando haya un sorteo en curso, vas a poder verlo y participar desde acá. Volvé pronto.
+                </p>
+              </div>
             </div>
           ) : activeDraw ? (
             <div className={styles.drawContent}>

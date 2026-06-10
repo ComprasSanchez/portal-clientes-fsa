@@ -122,6 +122,41 @@
   color: #8a6700;
 }
 
+.emptyBox {
+  margin-top: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  border: 1.5px dashed #c2d8df;
+  border-radius: 1rem;
+  background: #f6fbfc;
+  padding: 1.25rem;
+}
+
+.emptyIconWrap {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  background: #e4f2f5;
+  color: #5a8a98;
+}
+
+.emptyTitle {
+  font-weight: 700;
+  color: #3a5560;
+}
+
+.emptyBody {
+  margin-top: 0.3rem;
+  font-size: 0.875rem;
+  color: #607982;
+  line-height: 1.5;
+}
+
 .drawContent {
   margin-top: 1rem;
 }
