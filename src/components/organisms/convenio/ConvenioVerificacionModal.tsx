@@ -41,18 +41,54 @@ export function ConvenioVerificacionModal({
     if (raw.startsWith("+54")) return raw.slice(3);
     return raw;
   });
-  const [pendingId, setPendingId] = useState<number | null>(null);
-  const [codigo, setCodigo] = useState("");
-  const [step, setStep] = useState<"form" | "otp">("form");
+  const [step, setStep] = useState<"form" | "waiting">("form");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
-  const otpRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const ref = step === "form" ? phoneRef : otpRef;
-    ref.current?.focus();
+    if (step === "form") phoneRef.current?.focus();
   }, [step]);
+
+  // Poll CRM every 4s until the convenio field is set on the client record
+  useEffect(() => {
+    if (step !== "waiting" || !documentNumber) return;
+
+    const interval = setInterval(() => {
+      void (async () => {
+        try {
+          const res = await fetch(`/api/legacy/cliente/${encodeURIComponent(documentNumber)}`);
+          const data = await res.json().catch(() => null) as { found?: boolean; convenio?: string | null } | null;
+          if (data?.found && data.convenio?.toUpperCase() === convenio) {
+            clearInterval(interval);
+            localStorage.setItem(`convenio_reg_${convenio}`, "1");
+            if (!phoneVerified && principalPhone?.id) {
+              await fetch(`/api/portal/me/contactos/${principalPhone.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  tipo: "TELEFONO",
+                  valor: `+549${phone.trim()}`,
+                  regionIso2: "AR",
+                  principal: principalPhone.principal ?? false,
+                  verificado: principalPhone.verificado ?? false,
+                }),
+              });
+              void fetch(`/api/portal/me/contactos/${principalPhone.id}/verificar`, {
+                method: "POST",
+                headers: { Accept: "application/json" },
+              });
+            }
+            onVerified();
+          }
+        } catch {
+          // ignore transient poll errors
+        }
+      })();
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [step, documentNumber, convenio, phone, phoneVerified, principalPhone, onVerified]);
 
   const resetError = () => setError(null);
 
@@ -78,64 +114,10 @@ export function ConvenioVerificacionModal({
       });
       const data = await res.json().catch(() => null) as { pending_id?: number; error?: string } | null;
       if (!res.ok || !data?.pending_id) {
-        setError("No pudimos enviar el código. Revisá el número e intentá de nuevo.");
+        setError("No pudimos enviar el mensaje. Revisá el número e intentá de nuevo.");
         return;
       }
-      setPendingId(data.pending_id);
-      setStep("otp");
-      setCodigo("");
-    } catch {
-      setError("Error de conexión. Intentá de nuevo.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!pendingId) return;
-    setLoading(true);
-    resetError();
-    try {
-      const res = await fetch("/api/legacy/clientes/confirm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pending_id: pendingId, codigo: codigo.trim() }),
-      });
-      const data = await res.json().catch(() => null) as { ok?: boolean; error?: string } | null;
-      if (!res.ok) {
-        setError(
-          data?.error === "codigo_incorrecto"
-            ? "El código es incorrecto. Revisalo e intentá de nuevo."
-            : data?.error === "codigo_expirado"
-            ? "El código expiró. Volvé al paso anterior."
-            : "No pudimos verificar el código. Intentá de nuevo."
-        );
-        return;
-      }
-
-      localStorage.setItem(`convenio_reg_${convenio}`, "1");
-
-      // Disparar verificación de teléfono en el portal si aún no está verificado
-      if (!phoneVerified && principalPhone?.id) {
-        await fetch(`/api/portal/me/contactos/${principalPhone.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tipo: "TELEFONO",
-            valor: `+549${phone.trim()}`,
-            regionIso2: "AR",
-            principal: principalPhone.principal ?? false,
-            verificado: principalPhone.verificado ?? false,
-          }),
-        });
-        void fetch(`/api/portal/me/contactos/${principalPhone.id}/verificar`, {
-          method: "POST",
-          headers: { Accept: "application/json" },
-        });
-      }
-
-      onVerified();
+      setStep("waiting");
     } catch {
       setError("Error de conexión. Intentá de nuevo.");
     } finally {
@@ -155,7 +137,7 @@ export function ConvenioVerificacionModal({
         </h2>
         <p className={s.subtitle}>
           Para activar tu cuenta en el convenio{" "}
-          <strong>{convenio}</strong>, confirmá tu teléfono con el código que te enviamos.
+          <strong>{convenio}</strong>, confirmá tu teléfono vía WhatsApp.
         </p>
 
         <p className={s.accountHint}>
@@ -184,7 +166,7 @@ export function ConvenioVerificacionModal({
                   disabled={loading}
                 />
               </div>
-              <span className={s.hint}>Recibirás un código en este número.</span>
+              <span className={s.hint}>Recibirás un mensaje de WhatsApp en este número.</span>
             </div>
             {error && <p className={s.errorMsg}>{error}</p>}
             <button
@@ -194,52 +176,30 @@ export function ConvenioVerificacionModal({
             >
               {loading
                 ? <><LoaderCircle className={s.spin} size={16} /> Enviando...</>
-                : "Recibir código de verificación"}
+                : "Recibir mensaje de verificación"}
             </button>
           </form>
         ) : (
-          <form onSubmit={(e) => void handleConfirm(e)} className={s.form}>
+          <div className={s.form}>
             <div className={s.otpInfo}>
               <CircleCheckBig size={16} className={s.otpInfoIcon} />
-              <span>Código enviado a <strong>+549{phone}</strong></span>
+              <span>Mensaje enviado a <strong>+549{phone}</strong></span>
             </div>
-            <div className={s.field}>
-              <label className={s.label} htmlFor="conv-otp">
-                Código de verificación
-              </label>
-              <input
-                ref={otpRef}
-                id="conv-otp"
-                className={s.otpInput}
-                type="text"
-                inputMode="numeric"
-                placeholder="• • • • • •"
-                maxLength={8}
-                value={codigo}
-                onChange={(e) => { setCodigo(e.target.value.replace(/\D/g, "")); resetError(); }}
-                disabled={loading}
-                autoComplete="one-time-code"
-              />
+            <div className={s.waitingState}>
+              <LoaderCircle className={s.spin} size={18} />
+              <span>Esperando confirmación...</span>
             </div>
-            {error && <p className={s.errorMsg}>{error}</p>}
-            <button
-              type="submit"
-              className={s.primaryButton}
-              disabled={loading || codigo.length < 4}
-            >
-              {loading
-                ? <><LoaderCircle className={s.spin} size={16} /> Verificando...</>
-                : "Confirmar"}
-            </button>
+            <p className={s.waitingHint}>
+              Tocá el botón <strong>Validar</strong> en el mensaje de WhatsApp para confirmar tu número.
+            </p>
             <button
               type="button"
               className={s.backLink}
-              onClick={() => { setStep("form"); resetError(); setCodigo(""); }}
-              disabled={loading}
+              onClick={() => { setStep("form"); resetError(); }}
             >
               Cambiar número
             </button>
-          </form>
+          </div>
         )}
       </div>
     </div>
