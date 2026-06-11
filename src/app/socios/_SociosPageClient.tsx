@@ -8,6 +8,7 @@ import { SociosSidebar } from "@/components/molecules/side-bar/SociosSidebar";
 import { SociosViews } from "@/components/organisms/socios/SociosViews";
 import { ConvenioVerificacionModal } from "@/components/organisms/convenio/ConvenioVerificacionModal";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
+import { useGlobalToast } from "@/components/ui/global-toast";
 import { type SociosView } from "@/types/socios";
 
 const DEFAULT_VIEW: SociosView = "dashboard";
@@ -37,6 +38,7 @@ export function SociosPageClient() {
 
   const router = useRouter();
   const { perfil, summary, isLoading } = usePortalPerfilContext();
+  const { pushToast } = useGlobalToast();
 
   // Fuente de verdad: verificar contra el CRM en cualquier dispositivo
   useEffect(() => {
@@ -86,8 +88,12 @@ export function SociosPageClient() {
 
   const handleConvenioVerified = () => {
     setConvenioUnlocked(true);
-    // Ir al dashboard limpiando el param de convenio de la URL
     router.replace("/socios", { scroll: false });
+    pushToast({
+      variant: "success",
+      title: "¡Verificación completada!",
+      description: `Tu número fue verificado y quedaste asociado al convenio ${convenio ?? ""}.`,
+    });
   };
 
   return (
