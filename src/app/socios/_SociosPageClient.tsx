@@ -31,10 +31,8 @@ export function SociosPageClient() {
     const params = new URLSearchParams(window.location.search);
     return params.get("convenio")?.trim().toUpperCase() || null;
   });
-  const [convenioUnlocked, setConvenioUnlocked] = useState<boolean>(() => {
-    if (!convenio || typeof window === "undefined") return true;
-    return localStorage.getItem(`convenio_reg_${convenio}`) === "1";
-  });
+  const [convenioUnlocked, setConvenioUnlocked] = useState<boolean>(!convenio);
+  const [convenioChecking, setConvenioChecking] = useState<boolean>(Boolean(convenio));
   const convenioLocked = Boolean(convenio && !convenioUnlocked);
 
   const router = useRouter();
@@ -42,7 +40,10 @@ export function SociosPageClient() {
 
   // Fuente de verdad: verificar contra el CRM en cualquier dispositivo
   useEffect(() => {
-    if (!convenio || convenioUnlocked) return;
+    if (!convenio || convenioUnlocked) {
+      setConvenioChecking(false);
+      return;
+    }
     const dni = summary.documentNumber;
     if (!dni) return;
 
@@ -52,11 +53,11 @@ export function SociosPageClient() {
       )
       .then(({ data }) => {
         if (data.found && data.convenio?.toUpperCase() === convenio) {
-          localStorage.setItem(`convenio_reg_${convenio}`, "1");
           setConvenioUnlocked(true);
         }
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => setConvenioChecking(false));
   }, [convenio, convenioUnlocked, summary.documentNumber]);
 
   const handleNavigate = (view: SociosView) => {
@@ -91,7 +92,7 @@ export function SociosPageClient() {
 
   return (
     <div className={`${poppins.className} min-h-screen bg-linear-to-br from-[#edf1f2] via-[#f7f9fa] to-white`}>
-      {convenioLocked && convenio && (
+      {convenioLocked && convenio && !convenioChecking && (
         <ConvenioVerificacionModal
           convenio={convenio}
           documentNumber={summary.documentNumber}
@@ -120,7 +121,7 @@ export function SociosPageClient() {
           email={summary.email}
           phone={summary.phone}
           perfil={perfil}
-          isProfileLoading={isLoading}
+          isProfileLoading={isLoading || convenioChecking}
           convenio={convenio}
           convenioLocked={convenioLocked}
         />

@@ -35,12 +35,7 @@ export function ConvenioVerificacionModal({
   onVerified,
   onLogout,
 }: ConvenioVerificacionModalProps) {
-  const [phone, setPhone] = useState(() => {
-    const raw = principalPhone?.valor ?? "";
-    if (raw.startsWith("+549")) return raw.slice(4);
-    if (raw.startsWith("+54")) return raw.slice(3);
-    return raw;
-  });
+  const [phone, setPhone] = useState("");
   const [step, setStep] = useState<"form" | "waiting">("form");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +56,6 @@ export function ConvenioVerificacionModal({
           const data = await res.json().catch(() => null) as { found?: boolean; convenio?: string | null } | null;
           if (data?.found && data.convenio?.toUpperCase() === convenio) {
             clearInterval(interval);
-            localStorage.setItem(`convenio_reg_${convenio}`, "1");
             if (!phoneVerified && principalPhone?.id) {
               await fetch(`/api/portal/me/contactos/${principalPhone.id}`, {
                 method: "PATCH",

@@ -215,6 +215,142 @@ Si viene por un link de convenio y participa con `?convenio=COCACOLA`, el reques
 
 ---
 
+## Modal de verificación para usuarios logueados
+
+Además del flujo público en `/convenio/[slug]`, existe un segundo flujo para usuarios que **ya están logueados** en el portal y llegan por un link de convenio.
+
+### URL de entrada
+
+```
+/socios?convenio=COCACOLA
+```
+
+Cuando el usuario entra a `/socios` con el query param `?convenio=`, el portal muestra el `ConvenioVerificacionModal` si todavía no verificó su teléfono para ese convenio.
+
+### Componentes involucrados
+
+- `src/app/socios/_SociosPageClient.tsx` — lee el query param `convenio`, controla si mostrar el modal
+- `src/components/organisms/convenio/ConvenioVerificacionModal.tsx` — el modal en sí
+
+### Flujo del modal
+
+1. El usuario ve el modal con su teléfono pre-cargado (del perfil del portal)
+2. Confirma o cambia el número y hace click en "Recibir mensaje de verificación"
+3. El portal llama a `POST /api/legacy/clientes/start` → el CRM envía un mensaje de WhatsApp con un botón **"Validar"**
+4. El modal muestra una pantalla de espera con spinner
+5. El portal hace polling cada 4 segundos a `GET /api/legacy/cliente/:dni`
+6. Cuando `data.convenio === convenio` en la respuesta, el modal se cierra y se marca el convenio como completado en `localStorage`
+
+> **Nota:** El paso 3 ya NO usa OTP (código numérico). WhatsApp envía un botón interactivo "Validar", no un código. El flujo en `/convenio/[slug]` (`ConvenioRegistroView`) todavía usa OTP y está **pendiente de actualizar** al mismo enfoque de polling.
+
+---
+
+## Arquitectura del webhook de Botmaker (flujo "Validar")
+
+Cuando el usuario toca el botón "Validar" en WhatsApp, Botmaker dispara un webhook. La arquitectura tiene dos repos involucrados:
+
+```
+Botmaker
+   └→ POST notificaciones-fsa /notifications/providers/botmaker/webhook
+              │
+              ├── Detecta WaApiExposed.d === "validar_numero"
+              ├── Publica business.contact_validation.validated (→ clientes-fsa)
+              └── forwardToCrm(body) → POST crm-webservice /webhook
+                        │
+                        └── Busca verificacion_telefono por teléfono
+                            └── applyPending() → escribe clientes_new.convenio
+                                └── sendFinalTemplate() → WhatsApp de confirmación
+```
+
+### Variables de entorno necesarias
+
+| Servicio | Variable | Valor |
+|---|---|---|
+| `portal-clientes-fsa` | `CRM_WEBSERVICE_BASE_URL` | URL del crm-webservice en Railway |
+| `notificaciones-fsa` | `CRM_WEBSERVICE_URL` | URL del crm-webservice en Railway |
+| `crm-webservice` | `BOTMAKER_ACCESS_TOKEN` | Token de Botmaker |
+| `crm-webservice` | `BOTMAKER_BUSINESS_NUMBER` | Número de negocio WhatsApp |
+| `crm-webservice` | `BOTMAKER_TEMPLATE_VALIDACION` | Nombre de la plantilla OTP |
+
+### Configuración de Botmaker
+
+En la plataforma Botmaker, canal WhatsApp (`5493518173000`):
+
+```
+URL de notificación mensaje entrante:  https://notificaciones-fsa-production.up.railway.app/notifications/providers/botmaker/webhook
+URL de notificación estado de mensaje: https://notificaciones-fsa-production.up.railway.app/notifications/providers/botmaker/webhook
+URL de notificación mensaje saliente:  (vacía)
+```
+
+> Durante desarrollo/testing usar la URL de `notificaciones-fsa-development` en lugar de production.
+
+---
+
+## Incidente: envío masivo de mensajes (2026-06-10)
+
+### Qué pasó
+
+Al deployar cambios en `crm-webservice` y testear el flujo de convenio, varios usuarios reales recibieron **múltiples veces** el mensaje de confirmación "Gracias [NOMBRE]! ✅ Tus datos de SocioSA han sido actualizados".
+
+### Causa
+
+Dos factores combinados:
+
+1. **Botmaker reintenta el webhook automáticamente** cuando el servidor tarda en responder (la función `applyPending` hace varias operaciones: escribe en DB, sincroniza con Wibi, llama a clientes-fsa). Si la respuesta tarda más de lo esperado, Botmaker reenvía el webhook varias veces en pocos segundos.
+
+2. **El handler no era idempotente**: aunque detectaba que el pendiente ya estaba en estado `APPLIED`, igual llegaba al bloque de `sendFinalTemplate` y mandaba el mensaje en cada retry.
+
+```js
+// Código viejo — bug
+if (pend.estado === "APPLIED") {
+  console.log("ya procesado")  // no reprocesaba...
+}
+// ...pero siempre mandaba el template:
+await sendFinalTemplate(telefonoE164, nombreCliente);  // ← corría en cada retry
+```
+
+Los otros usuarios que recibieron el mensaje no fueron afectados por el test — cada uno había tocado "Validar" en su propio WhatsApp de forma independiente (tenían pendientes activos de flujos previos), y el mismo bug les generó spam a ellos también.
+
+### Fix aplicado (2026-06-11)
+
+Se hicieron tres grupos de cambios:
+
+#### 1. Claim atómico en el webhook (`crm-webservice/routes/botmakerWebhookV2.js`)
+
+El check de estado terminal no alcanzaba porque varios handlers podían leer `PENDING_VERIFICATION` simultáneamente antes de que ninguno lo actualizara. Se reemplazó por un `UPDATE` atómico con `WHERE estado = 'PENDING_VERIFICATION'` — MySQL garantiza que solo un handler obtiene `affectedRows = 1` y los demás retornan inmediatamente:
+
+```js
+const [claimResult] = await dbRailway.execute(
+  `UPDATE crm_pendientes
+      SET estado = 'PROCESSING', updated_at = NOW()
+    WHERE id = ? AND estado = 'PENDING_VERIFICATION'`,
+  [pend.id]
+);
+if (claimResult.affectedRows === 0) {
+  return res.json({ ok: true, message: "Retry ignorado" });
+}
+```
+
+#### 2. Eliminación de `sendFinalTemplate` (`crm-webservice/routes/botmakerWebhookV2.js`)
+
+El mensaje "Gracias [NOMBRE]! ✅ Tus datos de SocioSA han sido actualizados" se eliminó completamente del webhook. No tiene sentido de negocio en este flujo: el portal ya comunica el éxito vía polling cuando detecta que `convenio` quedó guardado en el CRM. Además el texto del mensaje era incorrecto (mencionaba "sorteo").
+
+#### 3. Sin localStorage en el portal (`portal-clientes-fsa`)
+
+Se eliminó el uso de `localStorage` para cachear si el usuario ya completó el convenio. El CRM es la única fuente de verdad. Esto evita falsos positivos cuando otra cuenta usa la misma computadora o cuando el mismo usuario intenta un convenio diferente.
+
+Adicionalmente, `_SociosPageClient.tsx` ahora muestra el skeleton de carga mientras consulta el CRM al montar, en lugar de mostrar el modal de verificación antes de saber si el usuario ya está registrado.
+
+### Checklist pendiente para producción
+
+- [ ] Deployar cambios de `crm-webservice` (entity fix, clienteController, botmakerWebhookV2 con claim atómico y eliminación de sendFinalTemplate)
+- [ ] Deployar cambios de `notificaciones-fsa` (forwardToCrm en botmaker-webhook.controller.ts)
+- [ ] Actualizar URLs de Botmaker de `development` a `production`
+- [ ] Confirmar variable `CRM_WEBSERVICE_URL` en Railway de notificaciones-fsa apunta al crm-webservice correcto
+- [ ] Actualizar `ConvenioRegistroView` para usar polling en lugar de OTP (el flujo `/convenio/[slug]` todavía usa código numérico que ya no funciona con WhatsApp)
+
+---
+
 ## Evolución futura posible
 
 Si en el futuro se quiere que el convenio también se guarde cuando un usuario se registra por el flujo normal de portal (onboarding), habría que:
