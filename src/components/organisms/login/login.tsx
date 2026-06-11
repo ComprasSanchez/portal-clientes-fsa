@@ -867,9 +867,40 @@ export function Login({ onLogin }: LoginProps) {
           const errorCode = getErrorCode(payload);
 
           if (errorCode === "AUTH_EMAIL_NOT_VERIFIED") {
+            let activeFlow = onboardingFlow;
+
+            // Intentar recuperar el flowId desde la respuesta del BFF
+            const errorDetails = payload?.error?.details as
+              | { flowId?: string; destinationMasked?: string }
+              | undefined;
+            if (!activeFlow?.id && errorDetails?.flowId) {
+              activeFlow = {
+                id: errorDetails.flowId,
+                destinationMasked: errorDetails.destinationMasked,
+              };
+              setOnboardingFlow(activeFlow);
+            }
+
+            // Fallback: sessionStorage (mismo dispositivo/browser)
+            if (!activeFlow?.id) {
+              try {
+                const stored = sessionStorage.getItem("onboarding_flow");
+                if (stored) {
+                  const parsed = JSON.parse(stored) as OnboardingFlowState;
+                  const nowSec = Math.floor(Date.now() / 1000);
+                  if (parsed?.id && (!parsed.expiresAt || parsed.expiresAt > nowSec)) {
+                    activeFlow = parsed;
+                    setOnboardingFlow(parsed);
+                  }
+                }
+              } catch {
+                // ignore parse/storage errors
+              }
+            }
+
             openVerifyOnboardingCard(
-              onboardingFlow?.destinationMasked
-                ? `Tu cuenta todavía no completó el registro. Revisá el email que enviamos a ${onboardingFlow.destinationMasked}.`
+              activeFlow?.destinationMasked
+                ? `Tu cuenta todavía no completó el registro. Revisá el email que enviamos a ${activeFlow.destinationMasked}.`
                 : "Tu cuenta todavía no completó el registro. Revisá el email que te enviamos para continuar.",
             );
             return;
@@ -1361,6 +1392,19 @@ export function Login({ onLogin }: LoginProps) {
     setOnboardingFlow(null);
     setInfoMessage("Completá tus datos para terminar el registro con Google.");
   }, [hasGoogleOnboardingHint]);
+
+  useEffect(() => {
+    const ONBOARDING_FLOW_KEY = "onboarding_flow";
+    if (onboardingFlow?.id) {
+      try {
+        sessionStorage.setItem(ONBOARDING_FLOW_KEY, JSON.stringify(onboardingFlow));
+      } catch {
+        // sessionStorage might be unavailable (private mode, quota exceeded)
+      }
+    } else {
+      sessionStorage.removeItem(ONBOARDING_FLOW_KEY);
+    }
+  }, [onboardingFlow]);
 
   useEffect(() => {
     if (!hasGoogleOnboardingHint) {
@@ -2010,6 +2054,11 @@ export function Login({ onLogin }: LoginProps) {
                         : "Completar registro"}
                     </span>
                   </button>
+                  {!onboardingFlow?.id && !isAutoVerifyingOnboarding ? (
+                    <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                      No encontramos un registro activo. Si no recibiste el email, volvé al inicio e iniciá el registro nuevamente con los mismos datos.
+                    </div>
+                  ) : null}
                   <button
                     type="button"
                     className={styles.secondaryButton}
