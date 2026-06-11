@@ -870,9 +870,8 @@ export function Login({ onLogin }: LoginProps) {
             let activeFlow = onboardingFlow;
 
             // Intentar recuperar el flowId desde la respuesta del BFF
-            const errorDetails = payload?.error?.details as
-              | { flowId?: string; destinationMasked?: string }
-              | undefined;
+            const errorDetails =
+              typeof payload?.error === "object" ? payload?.error?.details : undefined;
             if (!activeFlow?.id && errorDetails?.flowId) {
               activeFlow = {
                 id: errorDetails.flowId,
