@@ -46,7 +46,14 @@ const customerIdentityShape = {
   documentNumber: Yup.string().trim().required("Ingresá tu número de documento."),
   sex: Yup.string().trim().required("Seleccioná tu sexo."),
   birthDate: Yup.string().trim().required("Ingresá tu fecha de nacimiento."),
-  phone: Yup.string().trim().required("Ingresá tu teléfono."),
+  phone: Yup.string()
+    .trim()
+    .required("Ingresá tu teléfono.")
+    .test(
+      "phone-ar",
+      "Ingresá un número argentino completo (ej: +5491112345678).",
+      (v) => !!v && v.startsWith("+549") && v.replace(/\D/g, "").length >= 11,
+    ),
 };
 
 const loginValidationSchema = Yup.object({
