@@ -444,7 +444,7 @@ export function Login({ onLogin }: LoginProps) {
         openVerifyOnboardingCard(
           data.challenge?.destinationMasked
             ? `Te enviamos un link de validación a ${data.challenge.destinationMasked}.`
-            : "Te enviamos un link de validación por email para completar el onboarding.",
+            : "Te enviamos un link de validación por email para completar el registro.",
         );
         helpers.resetForm();
       } catch (error) {
@@ -452,14 +452,14 @@ export function Login({ onLogin }: LoginProps) {
           setErrorMessage(
             getErrorMessage(
               error.response?.data ?? null,
-              "No pudimos iniciar el onboarding. Revisá los datos e intentá nuevamente.",
+              "No pudimos iniciar el registro. Revisá los datos e intentá nuevamente.",
             ),
           );
         } else {
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : "No pudimos iniciar el onboarding. Intentá nuevamente.",
+              : "No pudimos iniciar el registro. Intentá nuevamente.",
           );
         }
       } finally {
@@ -502,12 +502,12 @@ export function Login({ onLogin }: LoginProps) {
           setErrorMessage(
             getErrorMessage(
               error.response?.data ?? null,
-              "No pudimos completar el onboarding con Google. Intentá nuevamente.",
+              "No pudimos completar el registro con Google. Intentá nuevamente.",
             ),
           );
         } else {
           setErrorMessage(
-            "No pudimos completar el onboarding con Google. Intentá nuevamente.",
+            "No pudimos completar el registro con Google. Intentá nuevamente.",
           );
         }
       } finally {
@@ -689,19 +689,19 @@ export function Login({ onLogin }: LoginProps) {
         helpers.resetForm();
         setCardView("login");
         setInfoMessage(
-          "Tu onboarding fue completado correctamente. Ahora podés iniciar sesión.",
+          "Tu registro fue completado correctamente. Ahora podés iniciar sesión.",
         );
       } catch (error) {
         if (axios.isAxiosError<LoginResponse>(error)) {
           setErrorMessage(
             getErrorMessage(
               error.response?.data ?? null,
-              "No pudimos validar el token de onboarding. Intentá nuevamente.",
+              "No pudimos validar el token de registro. Intentá nuevamente.",
             ),
           );
         } else {
           setErrorMessage(
-            "No pudimos validar el token de onboarding. Intentá nuevamente.",
+            "No pudimos validar el token de registro. Intentá nuevamente.",
           );
         }
       } finally {
@@ -862,8 +862,8 @@ export function Login({ onLogin }: LoginProps) {
           if (errorCode === "AUTH_EMAIL_NOT_VERIFIED") {
             openVerifyOnboardingCard(
               onboardingFlow?.destinationMasked
-                ? `Tu cuenta todavía no completó el onboarding. Revisá el email que enviamos a ${onboardingFlow.destinationMasked}.`
-                : "Tu cuenta todavía no completó el onboarding. Revisá el email que te enviamos para continuar.",
+                ? `Tu cuenta todavía no completó el registro. Revisá el email que enviamos a ${onboardingFlow.destinationMasked}.`
+                : "Tu cuenta todavía no completó el registro. Revisá el email que te enviamos para continuar.",
             );
             return;
           }
@@ -1056,7 +1056,7 @@ export function Login({ onLogin }: LoginProps) {
 
   const handleResendOnboarding = async () => {
     if (!onboardingFlow?.id) {
-      setErrorMessage("No encontramos un onboarding activo para reenviar.");
+      setErrorMessage("No encontramos un registro activo para reenviar.");
       return;
     }
 
@@ -1098,12 +1098,12 @@ export function Login({ onLogin }: LoginProps) {
         setErrorMessage(
           getErrorMessage(
             error.response?.data ?? null,
-            "No pudimos reenviar el email de onboarding. Intentá nuevamente.",
+            "No pudimos reenviar el email de registro. Intentá nuevamente.",
           ),
         );
       } else {
         setErrorMessage(
-          "No pudimos reenviar el email de onboarding. Intentá nuevamente.",
+          "No pudimos reenviar el email de registro. Intentá nuevamente.",
         );
       }
     } finally {
@@ -1244,14 +1244,14 @@ export function Login({ onLogin }: LoginProps) {
     if (onboardingHint === "verified") {
       clearFeedback();
       setInfoMessage(
-        "Tu onboarding fue validado correctamente. Ahora podés iniciar sesión.",
+        "Tu registro fue validado correctamente. Ahora podés iniciar sesión.",
       );
     } else {
       setInfoMessage(null);
       setErrorMessage(
         onboardingErrorCode
           ? mapAuthError(onboardingErrorCode)
-          : "No pudimos validar tu onboarding. Solicitá un nuevo enlace.",
+          : "No pudimos validar tu registro. Solicitá un nuevo enlace.",
       );
     }
 
@@ -1293,7 +1293,7 @@ export function Login({ onLogin }: LoginProps) {
         setCardView("login");
         setOnboardingFlow(null);
         setInfoMessage(
-          "Tu onboarding fue validado correctamente. Ahora podés iniciar sesión.",
+          "Tu registro fue validado correctamente. Ahora podés iniciar sesión.",
         );
       } catch (error) {
         setCardView("login");
@@ -1302,12 +1302,12 @@ export function Login({ onLogin }: LoginProps) {
           setErrorMessage(
             getErrorMessage(
               error.response?.data ?? null,
-              "No pudimos validar tu onboarding. Solicitá un nuevo enlace.",
+              "No pudimos validar tu registro. Solicitá un nuevo enlace.",
             ),
           );
         } else {
           setErrorMessage(
-            "No pudimos validar tu onboarding. Solicitá un nuevo enlace.",
+            "No pudimos validar tu registro. Solicitá un nuevo enlace.",
           );
         }
       } finally {
@@ -1352,7 +1352,7 @@ export function Login({ onLogin }: LoginProps) {
     setCardView("google-onboarding");
     setMfaState(null);
     setOnboardingFlow(null);
-    setInfoMessage("Completá tus datos para terminar el onboarding con Google.");
+    setInfoMessage("Completá tus datos para terminar el registro con Google.");
   }, [hasGoogleOnboardingHint]);
 
   useEffect(() => {
@@ -1699,7 +1699,7 @@ export function Login({ onLogin }: LoginProps) {
                     </button>
                   </div>
                   <p className={styles.formSubtitle}>
-                    Completá tus datos para iniciar el onboarding unificado.
+                    Completá tus datos para iniciar el registro unificado.
                   </p>
                 </header>
                 {errorMessage ? (
@@ -2000,7 +2000,7 @@ export function Login({ onLogin }: LoginProps) {
                         ? "Validando enlace..."
                         : verifyOnboardingFormik.isSubmitting
                         ? "Validando..."
-                        : "Completar onboarding"}
+                        : "Completar registro"}
                     </span>
                   </button>
                   <button

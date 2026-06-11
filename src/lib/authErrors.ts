@@ -30,6 +30,8 @@ export type AuthErrorCode =
   | "AUTH_ONBOARDING_ALREADY_COMPLETED"
   | "AUTH_ONBOARDING_IDENTITY_LINK_CONFLICT"
   | "AUTH_ONBOARDING_COMPLETE_FAILED"
+  | "AUTH_ONBOARDING_RESEND_COOLDOWN"
+  | "AUTH_ONBOARDING_RESEND_LIMIT"
   | "AUTH_IDENTITY_LINK_INVALID"
   | "AUTH_IDENTITY_LINK_EXPIRED"
   | "AUTH_IDENTITY_LINK_CONFLICT"
@@ -86,17 +88,21 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
     "Tu email no ha sido verificado. Por favor, revisa tu bandeja de entrada.",
   AUTH_EMAIL_VERIFY_RESEND_LIMIT:
     "Has alcanzado el limite de reenvios de email de verificacion. Por favor, intenta nuevamente mas tarde.",
-  AUTH_ONBOARDING_INVALID: "El onboarding solicitado no es valido.",
-  AUTH_ONBOARDING_EXPIRED: "El onboarding expiro. Volve a iniciar el registro.",
-  AUTH_ONBOARDING_TOKEN_INVALID: "El token de onboarding no es valido.",
+  AUTH_ONBOARDING_INVALID: "El registro solicitado no es válido.",
+  AUTH_ONBOARDING_EXPIRED: "El registro expiró. Volvé a iniciar el proceso.",
+  AUTH_ONBOARDING_TOKEN_INVALID: "El token de registro no es válido.",
   AUTH_ONBOARDING_TOKEN_EXPIRED:
-    "El token de onboarding expiro. Solicita un nuevo email.",
+    "El token de registro expiró. Solicitá un nuevo email.",
   AUTH_ONBOARDING_ALREADY_COMPLETED:
-    "Este onboarding ya fue completado. Podes iniciar sesion.",
+    "Este registro ya fue completado. Podés iniciar sesión.",
   AUTH_ONBOARDING_IDENTITY_LINK_CONFLICT:
-    "Los datos de identidad ya estan vinculados a otra cuenta.",
+    "Los datos de identidad ya están vinculados a otra cuenta.",
   AUTH_ONBOARDING_COMPLETE_FAILED:
-    "No pudimos completar el onboarding. Intenta nuevamente.",
+    "No pudimos completar el registro. Intentá nuevamente.",
+  AUTH_ONBOARDING_RESEND_COOLDOWN:
+    "Ya enviamos el email recientemente. Esperá unos segundos antes de volver a intentarlo.",
+  AUTH_ONBOARDING_RESEND_LIMIT:
+    "Alcanzaste el límite de reenvíos. Revisá tu bandeja de entrada o spam.",
   AUTH_IDENTITY_LINK_INVALID:
     "La solicitud de vinculacion no es valida o expiro.",
   AUTH_IDENTITY_LINK_EXPIRED:
