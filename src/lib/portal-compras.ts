@@ -59,6 +59,19 @@ export const formatPortalDateTime = (value: string | null) => {
     return "Sin dato";
   }
 
+  const isoDateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoDateMatch) {
+    const [, year, month, day] = isoDateMatch;
+    const calendarDate = new Date(Number(year), Number(month) - 1, Number(day));
+
+    if (!Number.isNaN(calendarDate.getTime())) {
+      return new Intl.DateTimeFormat("es-AR", {
+        dateStyle: "medium",
+        timeZone: "America/Argentina/Buenos_Aires",
+      }).format(calendarDate);
+    }
+  }
+
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;
