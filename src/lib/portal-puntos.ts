@@ -21,3 +21,6 @@ export const getPortalPuntosSummary = (
 export const formatPortalPoints = (value: number) => {
   return new Intl.NumberFormat("es-AR").format(value);
 };
+
+// 10.000 puntos = $10 → $1 cada 1.000 puntos
+export const puntosToARS = (puntos: number): number => puntos / 1000;

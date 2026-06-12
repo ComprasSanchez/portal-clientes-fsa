@@ -9,6 +9,8 @@ export type LoginResponse = {
         details?: {
           remainingAttempts?: number;
           email?: string;
+          maskedEmail?: string;
+          destinationMasked?: string;
           retryAfterSec?: number;
           flowId?: string;
           reason?: string;

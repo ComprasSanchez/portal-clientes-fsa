@@ -1,0 +1,100 @@
+.wrapper {
+  position: relative;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  border-radius: 1.2rem;
+  background: #6fb2c0;
+  padding: 1.5rem 1.75rem;
+  overflow: hidden;
+  min-height: 8.5rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  z-index: 1;
+}
+
+.title {
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 800;
+  color: #17343d;
+  line-height: 1.2;
+}
+
+.description {
+  font-size: 0.875rem;
+  color: #1e4a56;
+  max-width: 20rem;
+  line-height: 1.5;
+}
+
+.button {
+  align-self: flex-start;
+  margin-top: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.7rem;
+  padding: 0.55rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: #0d8098;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+}
+
+.mapContainer {
+  flex-shrink: 0;
+  width: 20rem;
+  height: 10.5rem;
+  border-radius: 0.95rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.mapLoading {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.pinWrap {
+  position: absolute;
+  top: -1.4rem;
+  right: 1.75rem;
+  transform: rotate(6deg);
+  pointer-events: none;
+  z-index: 500;
+
+  img {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .mapContainer {
+    display: none;
+  }
+
+  .pinWrap {
+    right: 1rem;
+  }
+}

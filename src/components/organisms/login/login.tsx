@@ -46,11 +46,18 @@ const customerIdentityShape = {
   documentNumber: Yup.string().trim().required("Ingresá tu número de documento."),
   sex: Yup.string().trim().required("Seleccioná tu sexo."),
   birthDate: Yup.string().trim().required("Ingresá tu fecha de nacimiento."),
-  phone: Yup.string().trim().required("Ingresá tu teléfono."),
+  phone: Yup.string()
+    .trim()
+    .required("Ingresá tu teléfono.")
+    .test(
+      "phone-ar",
+      "Ingresá un número argentino completo (ej: +5491112345678).",
+      (v) => !!v && v.startsWith("+549") && v.replace(/\D/g, "").length >= 11,
+    ),
 };
 
 const loginValidationSchema = Yup.object({
-  username: Yup.string().trim().required("Ingresá tu usuario."),
+  username: Yup.string().trim().email("Ingresá un email válido.").required("Ingresá tu email."),
   password: Yup.string().required("Ingresá tu contraseña."),
 });
 
@@ -164,6 +171,15 @@ type IdentityLinkResponse = LoginResponse & {
   };
 };
 
+const maskEmail = (email: string): string => {
+  const atIndex = email.indexOf("@");
+  if (atIndex < 0) return email;
+  const local = email.slice(0, atIndex);
+  const domain = email.slice(atIndex);
+  const visible = local.slice(0, Math.min(4, local.length));
+  return `${visible}${"*".repeat(5)}${domain}`;
+};
+
 const getErrorCode = (payload: LoginResponse | null) => {
   if (
     payload &&
@@ -214,10 +230,12 @@ export function Login({ onLogin }: LoginProps) {
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false);
   const [isResendingMfaCode, setIsResendingMfaCode] = useState(false);
   const [mfaResendCooldownSeconds, setMfaResendCooldownSeconds] = useState(0);
+  const [mfaInputResetKey, setMfaInputResetKey] = useState(0);
   const [hasProcessedVerificationToken, setHasProcessedVerificationToken] =
     useState(false);
   const [hasProcessedGoogleAuthError, setHasProcessedGoogleAuthError] =
     useState(false);
+
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -228,6 +246,10 @@ export function Login({ onLogin }: LoginProps) {
     useState<OnboardingFlowState | null>(null);
   const [isResendingOnboarding, setIsResendingOnboarding] = useState(false);
   const [isCompletingGoogleOnboarding, setIsCompletingGoogleOnboarding] =
+    useState(false);
+  const [isAbandoningGoogleOnboarding, setIsAbandoningGoogleOnboarding] =
+    useState(false);
+  const [isAbandoningIdentityLink, setIsAbandoningIdentityLink] =
     useState(false);
   const [isAutoVerifyingOnboarding, setIsAutoVerifyingOnboarding] =
     useState(false);
@@ -380,7 +402,9 @@ export function Login({ onLogin }: LoginProps) {
     setCardView("login");
     setMfaState(null);
     setMfaResendCooldownSeconds(0);
+    setMfaInputResetKey((currentValue) => currentValue + 1);
     setIdentityLinkFlow(null);
+    identityLinkVerifyFormik.resetForm();
     clearFeedback();
   };
 
@@ -427,7 +451,7 @@ export function Login({ onLogin }: LoginProps) {
         openVerifyOnboardingCard(
           data.challenge?.destinationMasked
             ? `Te enviamos un link de validación a ${data.challenge.destinationMasked}.`
-            : "Te enviamos un link de validación por email para completar el onboarding.",
+            : "Te enviamos un link de validación por email para completar el registro.",
         );
         helpers.resetForm();
       } catch (error) {
@@ -435,14 +459,14 @@ export function Login({ onLogin }: LoginProps) {
           setErrorMessage(
             getErrorMessage(
               error.response?.data ?? null,
-              "No pudimos iniciar el onboarding. Revisá los datos e intentá nuevamente.",
+              "No pudimos iniciar el registro. Revisá los datos e intentá nuevamente.",
             ),
           );
         } else {
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : "No pudimos iniciar el onboarding. Intentá nuevamente.",
+              : "No pudimos iniciar el registro. Intentá nuevamente.",
           );
         }
       } finally {
@@ -485,12 +509,12 @@ export function Login({ onLogin }: LoginProps) {
           setErrorMessage(
             getErrorMessage(
               error.response?.data ?? null,
-              "No pudimos completar el onboarding con Google. Intentá nuevamente.",
+              "No pudimos completar el registro con Google. Intentá nuevamente.",
             ),
           );
         } else {
           setErrorMessage(
-            "No pudimos completar el onboarding con Google. Intentá nuevamente.",
+            "No pudimos completar el registro con Google. Intentá nuevamente.",
           );
         }
       } finally {
@@ -548,6 +572,7 @@ export function Login({ onLogin }: LoginProps) {
             challengeResponse.data.challenge?.destinationMasked,
           channel: challengeResponse.data.challenge?.channel ?? "email",
         });
+        identityLinkVerifyFormik.resetForm();
         setCardView("identity-link-verify");
         setInfoMessage(
           challengeResponse.data.challenge?.destinationMasked
@@ -671,19 +696,19 @@ export function Login({ onLogin }: LoginProps) {
         helpers.resetForm();
         setCardView("login");
         setInfoMessage(
-          "Tu onboarding fue completado correctamente. Ahora podés iniciar sesión.",
+          "Tu registro fue completado correctamente. Ahora podés iniciar sesión.",
         );
       } catch (error) {
         if (axios.isAxiosError<LoginResponse>(error)) {
           setErrorMessage(
             getErrorMessage(
               error.response?.data ?? null,
-              "No pudimos validar el token de onboarding. Intentá nuevamente.",
+              "No pudimos validar el token de registro. Intentá nuevamente.",
             ),
           );
         } else {
           setErrorMessage(
-            "No pudimos validar el token de onboarding. Intentá nuevamente.",
+            "No pudimos validar el token de registro. Intentá nuevamente.",
           );
         }
       } finally {
@@ -842,10 +867,40 @@ export function Login({ onLogin }: LoginProps) {
           const errorCode = getErrorCode(payload);
 
           if (errorCode === "AUTH_EMAIL_NOT_VERIFIED") {
+            let activeFlow = onboardingFlow;
+
+            // Intentar recuperar el flowId desde la respuesta del BFF
+            const errorDetails =
+              typeof payload?.error === "object" ? payload?.error?.details : undefined;
+            if (!activeFlow?.id && errorDetails?.flowId) {
+              activeFlow = {
+                id: errorDetails.flowId,
+                destinationMasked: errorDetails.destinationMasked,
+              };
+              setOnboardingFlow(activeFlow);
+            }
+
+            // Fallback: sessionStorage (mismo dispositivo/browser)
+            if (!activeFlow?.id) {
+              try {
+                const stored = sessionStorage.getItem("onboarding_flow");
+                if (stored) {
+                  const parsed = JSON.parse(stored) as OnboardingFlowState;
+                  const nowSec = Math.floor(Date.now() / 1000);
+                  if (parsed?.id && (!parsed.expiresAt || parsed.expiresAt > nowSec)) {
+                    activeFlow = parsed;
+                    setOnboardingFlow(parsed);
+                  }
+                }
+              } catch {
+                // ignore parse/storage errors
+              }
+            }
+
             openVerifyOnboardingCard(
-              onboardingFlow?.destinationMasked
-                ? `Tu cuenta todavía no completó el onboarding. Revisá el email que enviamos a ${onboardingFlow.destinationMasked}.`
-                : "Tu cuenta todavía no completó el onboarding. Revisá el email que te enviamos para continuar.",
+              activeFlow?.destinationMasked
+                ? `Tu cuenta todavía no completó el registro. Revisá el email que enviamos a ${activeFlow.destinationMasked}.`
+                : "Tu cuenta todavía no completó el registro. Revisá el email que te enviamos para continuar.",
             );
             return;
           }
@@ -891,6 +946,7 @@ export function Login({ onLogin }: LoginProps) {
         );
 
         if (data.challenge?.id) {
+          resetPasswordFormik.resetForm();
           setPasswordRecoveryState({
             challengeId: data.challenge.id,
             identifier: values.identifier,
@@ -1018,6 +1074,7 @@ export function Login({ onLogin }: LoginProps) {
           : `Te enviamos un nuevo código por ${mfaState.challengeChannel}.`,
       );
       setMfaResendCooldownSeconds(MFA_RESEND_COOLDOWN_SECONDS);
+      setMfaInputResetKey((currentValue) => currentValue + 1);
     } catch (error) {
       if (axios.isAxiosError<LoginResponse>(error)) {
         setErrorMessage(
@@ -1036,7 +1093,7 @@ export function Login({ onLogin }: LoginProps) {
 
   const handleResendOnboarding = async () => {
     if (!onboardingFlow?.id) {
-      setErrorMessage("No encontramos un onboarding activo para reenviar.");
+      setErrorMessage("No encontramos un registro activo para reenviar.");
       return;
     }
 
@@ -1078,12 +1135,12 @@ export function Login({ onLogin }: LoginProps) {
         setErrorMessage(
           getErrorMessage(
             error.response?.data ?? null,
-            "No pudimos reenviar el email de onboarding. Intentá nuevamente.",
+            "No pudimos reenviar el email de registro. Intentá nuevamente.",
           ),
         );
       } else {
         setErrorMessage(
-          "No pudimos reenviar el email de onboarding. Intentá nuevamente.",
+          "No pudimos reenviar el email de registro. Intentá nuevamente.",
         );
       }
     } finally {
@@ -1091,7 +1148,46 @@ export function Login({ onLogin }: LoginProps) {
     }
   };
 
-  const startGooglePopupLogin = (forceAccountSelection = false) => {
+  const handleAbandonGoogleOnboarding = async () => {
+    setIsAbandoningGoogleOnboarding(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // session cleanup best-effort: still return to login even if BFF is unreachable
+    } finally {
+      setIsAbandoningGoogleOnboarding(false);
+    }
+    returnToLogin();
+    googleOnboardingFormik.resetForm();
+    setGoogleProfilePrefill(null);
+    syncSearchParams((params) => {
+      params.delete("onboarding");
+      params.delete("googleOnboarding");
+      params.delete("googleEmail");
+      params.delete("googleFirstName");
+      params.delete("googleLastName");
+    });
+  };
+
+  const handleAbandonIdentityLink = async () => {
+    setIsAbandoningIdentityLink(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // session cleanup best-effort
+    } finally {
+      setIsAbandoningIdentityLink(false);
+    }
+    returnToLogin();
+    identityLinkFormik.resetForm();
+    setIdentityLinkFlow(null);
+    syncSearchParams((params) => {
+      params.delete("identityLink");
+      params.delete("redirectTo");
+    });
+  };
+
+  const startGooglePopupLogin = async (forceConsent = false) => {
     if (isGooglePopupLoading) {
       return;
     }
@@ -1099,15 +1195,18 @@ export function Login({ onLogin }: LoginProps) {
     clearFeedback();
     setIsGooglePopupLoading(true);
 
-    const promptParam = forceAccountSelection
-      ? `&prompt=${encodeURIComponent("select_account consent")}`
-      : "";
-
     if (typeof window === "undefined") {
       return;
     }
 
-    const startUrl = `/api/v2/auth/providers/google/start?redirectTo=${encodeURIComponent(redirectTo)}${promptParam}`;
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // best-effort: if no active session the logout is a no-op
+    }
+
+    const prompt = forceConsent ? "select_account consent" : "select_account";
+    const startUrl = `/api/v2/auth/providers/google/start?redirectTo=${encodeURIComponent(redirectTo)}&prompt=${encodeURIComponent(prompt)}`;
     window.location.assign(startUrl);
   };
   useEffect(() => {
@@ -1182,14 +1281,14 @@ export function Login({ onLogin }: LoginProps) {
     if (onboardingHint === "verified") {
       clearFeedback();
       setInfoMessage(
-        "Tu onboarding fue validado correctamente. Ahora podés iniciar sesión.",
+        "Tu registro fue validado correctamente. Ahora podés iniciar sesión.",
       );
     } else {
       setInfoMessage(null);
       setErrorMessage(
         onboardingErrorCode
           ? mapAuthError(onboardingErrorCode)
-          : "No pudimos validar tu onboarding. Solicitá un nuevo enlace.",
+          : "No pudimos validar tu registro. Solicitá un nuevo enlace.",
       );
     }
 
@@ -1231,7 +1330,7 @@ export function Login({ onLogin }: LoginProps) {
         setCardView("login");
         setOnboardingFlow(null);
         setInfoMessage(
-          "Tu onboarding fue validado correctamente. Ahora podés iniciar sesión.",
+          "Tu registro fue validado correctamente. Ahora podés iniciar sesión.",
         );
       } catch (error) {
         setCardView("login");
@@ -1240,12 +1339,12 @@ export function Login({ onLogin }: LoginProps) {
           setErrorMessage(
             getErrorMessage(
               error.response?.data ?? null,
-              "No pudimos validar tu onboarding. Solicitá un nuevo enlace.",
+              "No pudimos validar tu registro. Solicitá un nuevo enlace.",
             ),
           );
         } else {
           setErrorMessage(
-            "No pudimos validar tu onboarding. Solicitá un nuevo enlace.",
+            "No pudimos validar tu registro. Solicitá un nuevo enlace.",
           );
         }
       } finally {
@@ -1270,7 +1369,10 @@ export function Login({ onLogin }: LoginProps) {
 
     setHasProcessedGoogleAuthError(true);
     setErrorMessage(
-      "No pudimos completar el inicio de sesión con Google. Intentá nuevamente.",
+      mapAuthError(
+        googleAuthError,
+        "No pudimos completar el inicio de sesión con Google. Si ya tenés una cuenta, intentá ingresar con usuario y contraseña.",
+      ),
     );
 
     syncSearchParams((params) => {
@@ -1287,8 +1389,21 @@ export function Login({ onLogin }: LoginProps) {
     setCardView("google-onboarding");
     setMfaState(null);
     setOnboardingFlow(null);
-    setInfoMessage("Completá tus datos para terminar el onboarding con Google.");
+    setInfoMessage("Completá tus datos para terminar el registro con Google.");
   }, [hasGoogleOnboardingHint]);
+
+  useEffect(() => {
+    const ONBOARDING_FLOW_KEY = "onboarding_flow";
+    if (onboardingFlow?.id) {
+      try {
+        sessionStorage.setItem(ONBOARDING_FLOW_KEY, JSON.stringify(onboardingFlow));
+      } catch {
+        // sessionStorage might be unavailable (private mode, quota exceeded)
+      }
+    } else {
+      sessionStorage.removeItem(ONBOARDING_FLOW_KEY);
+    }
+  }, [onboardingFlow]);
 
   useEffect(() => {
     if (!hasGoogleOnboardingHint) {
@@ -1498,17 +1613,17 @@ export function Login({ onLogin }: LoginProps) {
                 <form onSubmit={formik.handleSubmit} className={styles.form} noValidate>
                   <div className={styles.fieldGroup}>
                     <label className={styles.fieldLabel} htmlFor="login-email">
-                      Usuario
+                      Email
                     </label>
                     <input
                       id="login-email"
                       name="username"
-                      type="text"
-                      placeholder="Ingresá tu usuario"
+                      type="email"
+                      placeholder="Ingresá tu email"
                       value={formik.values.username}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
-                      autoComplete="username"
+                      autoComplete="email"
                       required
                       className={`${styles.input} ${usernameHasError ? styles.inputError : ""}`}
                     />
@@ -1595,7 +1710,7 @@ export function Login({ onLogin }: LoginProps) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => startGooglePopupLogin()}
+                  onClick={() => void startGooglePopupLogin()}
                   className={styles.googleButton}
                   disabled={formik.isSubmitting || isGooglePopupLoading}
                 >
@@ -1634,7 +1749,7 @@ export function Login({ onLogin }: LoginProps) {
                     </button>
                   </div>
                   <p className={styles.formSubtitle}>
-                    Completá tus datos para iniciar el onboarding unificado.
+                    Completá tus datos para iniciar el registro unificado.
                   </p>
                 </header>
                 {errorMessage ? (
@@ -1935,9 +2050,14 @@ export function Login({ onLogin }: LoginProps) {
                         ? "Validando enlace..."
                         : verifyOnboardingFormik.isSubmitting
                         ? "Validando..."
-                        : "Completar onboarding"}
+                        : "Completar registro"}
                     </span>
                   </button>
+                  {!onboardingFlow?.id && !isAutoVerifyingOnboarding ? (
+                    <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                      No encontramos un registro activo. Si no recibiste el email, volvé al inicio e iniciá el registro nuevamente con los mismos datos.
+                    </div>
+                  ) : null}
                   <button
                     type="button"
                     className={styles.secondaryButton}
@@ -1973,9 +2093,9 @@ export function Login({ onLogin }: LoginProps) {
                         <button
                           type="button"
                           className={styles.mfaBackIconButton}
+                          disabled={isAbandoningIdentityLink}
                           onClick={() => {
-                            returnToLogin();
-                            identityLinkFormik.resetForm();
+                            void handleAbandonIdentityLink();
                           }}
                           aria-label="Volver al inicio de sesión"
                         >
@@ -1983,7 +2103,10 @@ export function Login({ onLogin }: LoginProps) {
                         </button>
                       </div>
                       <p className={styles.formSubtitle}>
-                        Confirmá tus datos personales para vincular tu cuenta con tu cliente.
+                        {identityLinkFormik.values.email
+                          ? <>Confirmá tus datos para vincular <strong>{maskEmail(identityLinkFormik.values.email)}</strong> con tu cuenta.</>
+                          : "Confirmá tus datos personales para vincular tu cuenta con tu cliente."
+                        }
                       </p>
                     </header>
                     {infoMessage ? (
@@ -2183,6 +2306,7 @@ export function Login({ onLogin }: LoginProps) {
                       type="button"
                       className={styles.mfaBackIconButton}
                       onClick={() => {
+                        identityLinkVerifyFormik.resetForm();
                         setCardView("identity-link");
                         clearFeedback();
                       }}
@@ -2261,13 +2385,9 @@ export function Login({ onLogin }: LoginProps) {
                     <button
                       type="button"
                       className={styles.mfaBackIconButton}
+                      disabled={isAbandoningGoogleOnboarding}
                       onClick={() => {
-                        returnToLogin();
-                        googleOnboardingFormik.resetForm();
-                        syncSearchParams((params) => {
-                          params.delete("onboarding");
-                          params.delete("googleOnboarding");
-                        });
+                        void handleAbandonGoogleOnboarding();
                       }}
                       aria-label="Volver al inicio de sesión"
                     >
@@ -2478,6 +2598,7 @@ export function Login({ onLogin }: LoginProps) {
                 ) : null}
                 <InputMFA
                   key={mfaState?.loginTicket}
+                  resetTrigger={mfaInputResetKey}
                   onSubmit={async (code: string, rememberDevice: boolean) => {
                     setIsVerifyingMfa(true);
                     clearFeedback();

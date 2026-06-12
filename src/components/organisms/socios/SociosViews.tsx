@@ -1,10 +1,11 @@
 ﻿import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import {
-  ArrowRight,
   ChevronDown,
   CreditCard,
   Gift,
   Heart,
+  MapPin,
   Ticket,
   User,
 } from "lucide-react";
@@ -15,17 +16,27 @@ import {
   QuickAccessCard,
   type QuickAccessItem,
 } from "@/components/molecules/home/QuickAccessCard";
-import { FacturasViewSkeleton } from "@/components/organisms/loading/ViewSkeletons";
+import {
+  FacturasViewSkeleton,
+  SociosDashboardSkeleton,
+} from "@/components/organisms/loading/ViewSkeletons";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { SociosSorteosView } from "./SociosSorteosView";
+import { SociosSucursalesView } from "./SociosSucursalesView";
+import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
+import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
+import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
+import { BeneficiosCarousel } from "@/components/molecules/socios/BeneficiosCarousel";
+import cuotasBanner from "@/assets/sociosa-img/cuotas-banner.jpg";
 import {
   formatPortalCurrency,
   formatPortalDateTime,
 } from "@/lib/portal-compras";
 import { usePortalCompras } from "@/lib/use-portal-compras";
 import { usePortalExpedientesContext } from "@/lib/portal-expedientes-context";
-import { formatPortalPoints } from "@/lib/portal-puntos";
+import { formatPortalPoints, puntosToARS } from "@/lib/portal-puntos";
 import { usePortalPuntos } from "@/lib/use-portal-puntos";
+import { usePortalPuntosHistorial } from "@/lib/use-portal-puntos-historial";
 import { useGlobalToast } from "../../ui/global-toast";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 import type { PortalComprasProducto } from "@/types/portal-compras";
@@ -42,6 +53,8 @@ interface SociosViewsProps {
   phone: string | null;
   perfil: PortalPerfilResponse | null;
   isProfileLoading?: boolean;
+  convenio?: string | null;
+  convenioLocked?: boolean;
 }
 
 const viewContent: Record<
@@ -68,6 +81,11 @@ const viewContent: Record<
     description:
       "Consulta el sorteo activo y participa con tu cuenta de socio en pocos pasos.",
   },
+  sucursales: {
+    title: "Sucursales",
+    description:
+      "Encontrá la sucursal más cercana, consultá horarios y accedé a indicaciones.",
+  },
 };
 
 const hasProductDiscount = (producto: PortalComprasProducto) => {
@@ -84,6 +102,8 @@ export function SociosViews({
   phone,
   perfil,
   isProfileLoading = false,
+  convenio,
+  convenioLocked,
 }: SociosViewsProps) {
   const FACTURAS_PAGE_SIZE = 5;
   const router = useRouter();
@@ -97,6 +117,13 @@ export function SociosViews({
     isLoading: isPointsLoading,
     error: pointsError,
   } = usePortalPuntos();
+  const {
+    historial: puntosHistorial,
+    isLoading: isHistorialLoading,
+    error: historialError,
+    page: historialPage,
+    setPage: setHistorialPage,
+  } = usePortalPuntosHistorial({ enabled: currentView === "puntos" });
   const {
     compras,
     summary: comprasSummary,
@@ -148,6 +175,11 @@ export function SociosViews({
                 ? "..."
                 : formatPortalPoints(puntosSummary.disponibles)}
             </strong>
+            {!isPointsLoading && (
+              <span className={styles.pointsARS}>
+                ≈ {formatPortalCurrency(puntosToARS(puntosSummary.disponibles))} para gastar
+              </span>
+            )}
           </div>
 
           <div className={styles.pointsSideColumn}>
@@ -209,10 +241,11 @@ export function SociosViews({
     { label: "Facturas", view: "facturas", icon: CreditCard, tone: "socios" },
     { label: "Puntos", view: "puntos", icon: Gift, tone: "socios" },
     { label: "Sorteos", view: "sorteos", icon: Ticket, tone: "socios" },
+    { label: "Sucursales", view: "sucursales", icon: MapPin, tone: "socios" },
     {
       label: "CORA",
       icon: Heart,
-      onClick: () => router.push("/home"),
+      onClick: () => router.push("/cora"),
       tone: "socios",
     },
   ];
@@ -229,16 +262,23 @@ export function SociosViews({
     );
   }
 
+  if (currentView === "sucursales") {
+    return <SociosSucursalesView />;
+  }
+
   if (currentView === "sorteos") {
     const principalPhone =
       perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
-      perfil?.contactos?.find((c) => c.tipo === "TELEFONO");
+      perfil?.contactos?.find((c) => c.tipo === "TELEFONO") ??
+      null;
     const phoneVerified = principalPhone?.verificado === true;
     return (
       <SociosSorteosView
         documentNumber={documentNumber}
         userName={userName}
         phoneVerified={phoneVerified}
+        principalPhone={principalPhone}
+        convenio={convenio ?? null}
       />
     );
   }
@@ -247,13 +287,126 @@ export function SociosViews({
     const active = viewContent[currentView];
 
     if (currentView === "puntos") {
+      const historialItems = puntosHistorial?.data?.items ?? [];
+      const historialPageInfo = puntosHistorial?.data?.page;
+      const hasPrevHistorial = historialPage > 1;
+      const hasNextHistorial = historialPageInfo?.hasNext ?? false;
+      const historialTotal = historialPageInfo?.total ?? 0;
+
+      const tipoLabel: Record<string, string> = {
+        compra: "Compra",
+        canje: "Canje",
+        devolucion: "Devolución",
+        anulacion: "Anulación",
+        ajuste: "Ajuste",
+      };
+
+      const historialCard = (
+        <article className={`${styles.panelCard} ${styles.historialCard}`}>
+          <div className={styles.historialHeader}>
+            <div>
+              <h2 className={styles.panelTitle}>Movimientos</h2>
+              <p className={styles.panelSubtitle}>
+                Historial de operaciones ordenadas por fecha
+              </p>
+            </div>
+            {historialTotal > 0 && (
+              <span className={styles.statusBadge}>{historialTotal} registros</span>
+            )}
+          </div>
+
+          {historialError ? (
+            <div className={styles.historialErrorBox}>
+              No pudimos cargar el historial ahora mismo. Intenta nuevamente en unos minutos.
+            </div>
+          ) : isHistorialLoading ? (
+            <div className={styles.historialLoading}>Cargando historial…</div>
+          ) : historialItems.length === 0 ? (
+            <div className={styles.historialEmpty}>No hay operaciones registradas aún.</div>
+          ) : (
+            <>
+              <div className={styles.historialTableWrap}>
+                <table className={styles.historialTable}>
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Tipo</th>
+                      <th>Referencia</th>
+                      <th>Monto</th>
+                      <th>Puntos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historialItems.map((item, idx) => {
+                      const delta = item.puntosDelta ?? item.puntos ?? 0;
+                      const deltaClass =
+                        delta > 0
+                          ? styles.historialDeltaPositive
+                          : delta < 0
+                            ? styles.historialDeltaNegative
+                            : styles.historialDeltaNeutral;
+                      const deltaLabel =
+                        delta > 0
+                          ? `+${formatPortalPoints(delta)}`
+                          : delta < 0
+                            ? formatPortalPoints(delta)
+                            : "—";
+                      const montoLabel =
+                        item.monto != null
+                          ? formatPortalCurrency(item.monto)
+                          : "—";
+
+                      return (
+                        <tr key={item.id ?? idx}>
+                          <td>{formatPortalDateTime(item.fecha)}</td>
+                          <td>
+                            {tipoLabel[item.tipo.toLowerCase()] ?? item.tipo}
+                          </td>
+                          <td className={styles.historialRef}>
+                            {item.refOperacion ?? "—"}
+                          </td>
+                          <td>{montoLabel}</td>
+                          <td className={deltaClass}>{deltaLabel}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {(hasPrevHistorial || hasNextHistorial) && (
+                <div className={styles.historialPagination}>
+                  <button
+                    className={styles.facturasPaginationButton}
+                    onClick={() => setHistorialPage(historialPage - 1)}
+                    disabled={!hasPrevHistorial}
+                  >
+                    ← Anterior
+                  </button>
+                  <span className={styles.historialPaginationText}>
+                    Página {historialPage}
+                  </span>
+                  <button
+                    className={styles.facturasPaginationButton}
+                    onClick={() => setHistorialPage(historialPage + 1)}
+                    disabled={!hasNextHistorial}
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </article>
+      );
+
       return (
         <main className={styles.container}>
           <section className={styles.facturasViewSection}>
-            <p className={styles.activeViewLabel}>Vista activa</p>
             <h1 className={styles.activeViewTitle}>{active.title}</h1>
             <p className={styles.activeViewDescription}>{active.description}</p>
             <div className={styles.activePointsWrapper}>{pointsCard}</div>
+            {historialCard}
           </section>
         </main>
       );
@@ -271,7 +424,6 @@ export function SociosViews({
       return (
         <main className={styles.container}>
           <section className={styles.facturasViewSection}>
-            <p className={styles.activeViewLabel}>Vista activa</p>
             <h1 className={styles.activeViewTitle}>{active.title}</h1>
             <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -321,12 +473,14 @@ export function SociosViews({
                         <summary className={styles.facturaSummary}>
                           <div className={styles.facturaCardHeader}>
                             <div>
-                              <h3 className={styles.facturaRef}>
-                                {" "}
-                                {comprobante.nombreFantasia
-                                  ? `${comprobante.nombreFantasia}`
-                                  : ""}
-                              </h3>
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                <h3 className={styles.facturaRef}>
+                                  {comprobante.nombreFantasia ?? ""}
+                                </h3>
+                                {comprobante.anulado && (
+                                  <span className={styles.statusBadgeAnulada}>Anulada</span>
+                                )}
+                              </div>
                               <p className={styles.facturaMeta}>
                                 {formatPortalDateTime(comprobante.fecha)}
                                 {comprobante.hora
@@ -344,6 +498,12 @@ export function SociosViews({
                                   size={18}
                                 />
                               </span>
+                              {/* {comprobante.puntosGanados != null &&
+                                comprobante.puntosGanados > 0 && (
+                                  <span className={styles.facturaPuntosGanados}>
+                                    +{formatPortalPoints(comprobante.puntosGanados)} pts
+                                  </span>
+                                )} */}
                               <strong className={styles.facturaAmount}>
                                 {formatPortalCurrency(
                                   comprobante.total,
@@ -438,7 +598,6 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <section className={styles.activeViewCard}>
-          <p className={styles.activeViewLabel}>Vista activa</p>
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -454,15 +613,25 @@ export function SociosViews({
     );
   }
 
+  if (isProfileLoading) {
+    return (
+      <main className={styles.container}>
+        <SociosDashboardSkeleton />
+      </main>
+    );
+  }
+
   return (
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
         <div>
-          <h1 className={styles.welcomeTitle}>Hola, {userName}</h1>
+          <h1 className={styles.welcomeTitle}>¡Hola, {perfil?.nombre}! 👋</h1>
           <p className={styles.welcomeSubtitle}>
             Bienvenido a tu panel de socios
           </p>
         </div>
+
+        <BannerCarousel />
 
         <div className={styles.quickAccessGrid}>
           {quickAccessItems.map((item) => (
@@ -473,6 +642,19 @@ export function SociosViews({
             />
           ))}
         </div>
+
+        <div className={styles.cuotasBanner}>
+          <Image
+            src={cuotasBanner}
+            alt="NaranjaX y Cordobesa — 4 cuotas sin interés en todas tus compras"
+            width={cuotasBanner.width}
+            height={cuotasBanner.height}
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) calc(100vw - 16rem), 80rem"
+            className={styles.cuotasImg}
+          />
+        </div>
+
+        <BeneficiosCarousel />
 
         <div className={styles.detailsGrid}>
           <article className={styles.panelCard}>
@@ -539,23 +721,12 @@ export function SociosViews({
 
         <div className={styles.fullWidthRow}>{pointsCard}</div>
 
-        <section className={styles.promoBanner}>
-          <h3 className={styles.promoTitle}>
-            Entra a CORA cuando necesites la gestion completa
-          </h3>
-          <p className={styles.promoDescription}>
-            Desde aqui accedes a una experiencia mas simple. Si necesitas seguir
-            tu pedido o revisar el historial de gestiones, entra a CORA.
-          </p>
-          <button
-            onClick={() => router.push("/home")}
-            className={styles.promoButton}
-            type="button"
-          >
-            Ir a CORA
-            <ArrowRight size={16} />
-          </button>
-        </section>
+        <SorteoCard
+          onNavigate={onNavigate}
+          documentNumber={documentNumber}
+        />
+
+        <SucursalesPromoCard onNavigate={onNavigate} />
       </section>
     </main>
   );

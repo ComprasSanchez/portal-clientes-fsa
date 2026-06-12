@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   PortalExpedienteItem,
   PortalExpedientesResponse,
@@ -28,6 +28,12 @@ const expedientesCache: ExpedientesCacheEntry = {
   payload: null,
   error: null,
   promise: null,
+};
+
+export const resetPortalExpedientesCache = () => {
+  expedientesCache.payload = null;
+  expedientesCache.error = null;
+  expedientesCache.promise = null;
 };
 
 const getFriendlyErrorMessage = (
@@ -86,57 +92,57 @@ export const usePortalExpedientes = ({
   );
   const [error, setError] = useState<string | null>(expedientesCache.error);
 
-  useEffect(() => {
-    if (!enabled) {
-      setIsLoading(false);
-      return;
-    }
-
-    if (expedientesCache.payload || expedientesCache.error) {
-      setExpedientes(expedientesCache.payload);
-      setError(expedientesCache.error);
-      setIsLoading(false);
-      return;
-    }
-
-    const controller = new AbortController();
-
-    const fetchExpedientes = async () => {
-      const params = new URLSearchParams({
-        accountKind: "CLIENTE",
-        limit: "20",
-        offset: "0",
-      });
-
-      const response = await fetch(
-        `/api/portal/me/expedientes?${params.toString()}`,
-        {
-          cache: "no-store",
-          signal: controller.signal,
-        },
-      );
-
-      if (response.status === 401) {
+  const loadExpedientes = useCallback(
+    async (signal?: AbortSignal, force = false) => {
+      if (!enabled) {
+        setIsLoading(false);
+        setError(null);
+        setExpedientes(null);
         return null;
       }
 
-      if (response.status === 403) {
-        throw new Error(await readErrorMessage(response));
+      if (!force && (expedientesCache.payload || expedientesCache.error)) {
+        setExpedientes(expedientesCache.payload);
+        setError(expedientesCache.error);
+        setIsLoading(false);
+        return expedientesCache.payload;
       }
 
-      if (!response.ok) {
-        throw new Error(await readErrorMessage(response));
-      }
+      const fetchExpedientes = async () => {
+        const params = new URLSearchParams({
+          accountKind: "CLIENTE",
+          limit: "20",
+          offset: "0",
+        });
 
-      return (await response.json()) as PortalExpedientesResponse;
-    };
+        const response = await fetch(
+          `/api/portal/me/expedientes?${params.toString()}`,
+          {
+            cache: "no-store",
+            signal,
+          },
+        );
 
-    const loadExpedientes = async () => {
+        if (response.status === 401) {
+          return null;
+        }
+
+        if (response.status === 403) {
+          throw new Error(await readErrorMessage(response));
+        }
+
+        if (!response.ok) {
+          throw new Error(await readErrorMessage(response));
+        }
+
+        return (await response.json()) as PortalExpedientesResponse;
+      };
+
       try {
         setIsLoading(true);
         setError(null);
 
-        if (!expedientesCache.promise) {
+        if (!expedientesCache.promise || force) {
           expedientesCache.promise = fetchExpedientes();
         }
 
@@ -144,9 +150,10 @@ export const usePortalExpedientes = ({
         expedientesCache.payload = data;
         expedientesCache.error = null;
         setExpedientes(data);
+        return data;
       } catch (requestError) {
-        if (controller.signal.aborted) {
-          return;
+        if (signal?.aborted) {
+          return null;
         }
 
         const nextError =
@@ -158,21 +165,26 @@ export const usePortalExpedientes = ({
         expedientesCache.error = nextError;
         setError(nextError);
         setExpedientes(null);
+        return null;
       } finally {
         expedientesCache.promise = null;
 
-        if (!controller.signal.aborted) {
+        if (!signal?.aborted) {
           setIsLoading(false);
         }
       }
-    };
+    },
+    [enabled],
+  );
 
-    void loadExpedientes();
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadExpedientes(controller.signal);
 
     return () => {
       controller.abort();
     };
-  }, [enabled]);
+  }, [loadExpedientes]);
 
   const items = useMemo(() => expedientes?.data.items ?? [], [expedientes]);
   const activeExpediente = useMemo(
@@ -191,5 +203,9 @@ export const usePortalExpedientes = ({
     warnings: expedientes?.warnings ?? [],
     isLoading,
     error,
+    refresh: async () => {
+      resetPortalExpedientesCache();
+      return loadExpedientes(undefined, true);
+    },
   };
 };

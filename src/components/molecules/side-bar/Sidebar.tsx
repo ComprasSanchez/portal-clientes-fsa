@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
+  Files,
   FileText,
   Home,
   LogOut,
@@ -18,6 +19,7 @@ import {
 import { type HomeView } from "@/types/home";
 import coraWordmark from "@/assets/cora-morado.svg";
 import coraIcon from "@/assets/cora-icono.svg";
+import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 
 interface SidebarProps {
   currentView: HomeView;
@@ -33,6 +35,7 @@ const menuItems: Array<{
 }> = [
   { id: "dashboard", label: "Inicio", icon: Home },
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
+  { id: "mis-expedientes", label: "Mis expedientes", icon: Files },
   // { id: "productos", label: "Productos", icon: ShoppingBag },
   { id: "pedidos", label: "Segui tu pedido", icon: Package },
   { id: "expediente-actual", label: "Expediente actual", icon: FileText },
@@ -53,6 +56,8 @@ export function Sidebar({
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const { perfil } = usePortalPerfilContext();
 
   const handleNavigate = (view: HomeView | "socios") => {
     if (view === "socios") {
@@ -161,7 +166,9 @@ export function Sidebar({
           <div className="border-b border-[#e6e1ef] p-4 lg:hidden">
             <div className="text-sm">
               <p className="text-[#8b8ca4]">Hola,</p>
-              <p className="truncate font-medium text-[#2c2d40]">{userName}</p>
+              <p className="truncate font-medium text-[#2c2d40]">
+                {perfil?.nombre}
+              </p>
             </div>
           </div>
 
@@ -169,7 +176,8 @@ export function Sidebar({
             <ul className="space-y-1 px-3">
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = item.id !== "socios" && currentView === item.id;
+                const isActive =
+                  item.id !== "socios" && currentView === item.id;
                 const isSociosShortcut = item.id === "socios";
 
                 return (

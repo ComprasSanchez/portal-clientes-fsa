@@ -10,6 +10,8 @@ const normalizeNumber = (value: unknown) => {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
 };
 
+const arsToPuntos = (amount: number) => Math.round(amount * 10);
+
 const normalizeText = (value: unknown) => {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 };
@@ -59,6 +61,19 @@ export const formatPortalDateTime = (value: string | null) => {
     return "Sin dato";
   }
 
+  const isoDateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoDateMatch) {
+    const [, year, month, day] = isoDateMatch;
+    const calendarDate = new Date(Number(year), Number(month) - 1, Number(day));
+
+    if (!Number.isNaN(calendarDate.getTime())) {
+      return new Intl.DateTimeFormat("es-AR", {
+        dateStyle: "medium",
+        timeZone: "America/Argentina/Buenos_Aires",
+      }).format(calendarDate);
+    }
+  }
+
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;
@@ -98,8 +113,13 @@ const buildComprobantes = (items: PortalComprasItem[] | undefined): PortalCompra
       hora: normalizeText(item.hora),
       nombreFantasia: normalizeText(item.nombreFantasia),
       estado: normalizeText(item.estado),
+      anulado: item.anulado === true,
       moneda: currency,
       total: lineTotal,
+      puntosGanados:
+        typeof item.puntosGanados === "number"
+          ? item.puntosGanados
+          : arsToPuntos(lineTotal),
       productos,
       items: [item],
     });

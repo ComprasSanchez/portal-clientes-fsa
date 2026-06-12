@@ -1,7 +1,8 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { buildForwardHeaders, fetchUpstream, getRequiredBaseUrl, jsonError } from "@/app/api/_lib/proxy";
 
-const getLegacyBaseUrl = () => getRequiredBaseUrl("d") ?? "http://localhost:3001";
+const getLegacyBaseUrl = () =>
+  getRequiredBaseUrl("CRM_WEBSERVICE_BASE_URL") ?? "http://localhost:3001";
 
 export async function GET(req: NextRequest) {
   try {

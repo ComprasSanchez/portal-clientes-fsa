@@ -1,0 +1,75 @@
+.carousel {
+  position: relative;
+
+  &:hover .arrow:not([disabled]) {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.track {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.slide {
+  flex: 0 0 calc(33.333% - 0.5rem);
+  border-radius: 0.875rem;
+  overflow: hidden;
+  scroll-snap-align: start;
+
+  @media (max-width: 767px) {
+    flex: 0 0 calc(50% - 0.375rem);
+  }
+
+  @media (max-width: 480px) {
+    flex: 0 0 85%;
+  }
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.88);
+  color: #163640;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+
+  &:hover:not([disabled]) {
+    background: #fff;
+  }
+
+  &[disabled] {
+    opacity: 0 !important;
+    pointer-events: none;
+  }
+}
+
+.arrowLeft {
+  left: 0.5rem;
+}
+
+.arrowRight {
+  right: 0.5rem;
+}

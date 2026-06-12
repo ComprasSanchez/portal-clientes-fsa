@@ -166,7 +166,8 @@
 
 .sectionActions {
   display: flex;
-  flex-wrap: wrap;
+  // flex-wrap: wrap;
+  flex-direction: row;
   justify-content: flex-end;
   gap: 0.75rem;
 }
@@ -242,7 +243,7 @@
   min-width: 0;
   border-radius: 0.85rem;
   background: var(--profile-accent);
-  padding: 0.9rem 1rem;
+  padding: 0.9rem 2rem;
   font-size: 0.92rem;
   font-weight: 700;
   color: #ffffff;
@@ -266,6 +267,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   min-height: 3.5rem;
   min-width: 0;
   border: 1px solid var(--profile-accent-soft-border);
@@ -382,6 +384,56 @@
 .contactSwitchLabel {
   font-size: 1rem;
   color: #293440;
+}
+
+.contactPrimaryHint {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--profile-accent-strong);
+}
+
+.inlineContactEditor {
+  display: grid;
+  gap: 0.9rem;
+  width: 100%;
+  margin-top: 0.65rem;
+  padding: 1rem;
+  border: 1px solid #dce4e7;
+  border-radius: 1rem;
+  background: #f9fbfc;
+}
+
+.inlineContactActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.phoneInputRow {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.phonePrefix {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.25rem;
+  border: 1px solid #dce4e7;
+  border-right: 0;
+  border-radius: 0.8rem 0 0 0.8rem;
+  background: #f5f8f9;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #48636b;
+}
+
+.phoneValueInput {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .switchWrap {
@@ -856,7 +908,7 @@
   border-radius: 8px;
   font-size: 0.82rem;
   color: #9a3412;
-  margin-top: -4px;
+  margin-top: 5px;
 }
 
 .verificationAction {
