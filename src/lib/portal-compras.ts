@@ -10,6 +10,8 @@ const normalizeNumber = (value: unknown) => {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
 };
 
+const arsToPuntos = (amount: number) => Math.round(amount * 10);
+
 const normalizeText = (value: unknown) => {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 };
@@ -114,7 +116,10 @@ const buildComprobantes = (items: PortalComprasItem[] | undefined): PortalCompra
       anulado: item.anulado === true,
       moneda: currency,
       total: lineTotal,
-      puntosGanados: typeof item.puntosGanados === "number" ? item.puntosGanados : undefined,
+      puntosGanados:
+        typeof item.puntosGanados === "number"
+          ? item.puntosGanados
+          : arsToPuntos(lineTotal),
       productos,
       items: [item],
     });

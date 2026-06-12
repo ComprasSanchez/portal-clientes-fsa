@@ -498,12 +498,12 @@ export function SociosViews({
                                   size={18}
                                 />
                               </span>
-                              {comprobante.puntosGanados != null &&
+                              {/* {comprobante.puntosGanados != null &&
                                 comprobante.puntosGanados > 0 && (
                                   <span className={styles.facturaPuntosGanados}>
                                     +{formatPortalPoints(comprobante.puntosGanados)} pts
                                   </span>
-                                )}
+                                )} */}
                               <strong className={styles.facturaAmount}>
                                 {formatPortalCurrency(
                                   comprobante.total,
