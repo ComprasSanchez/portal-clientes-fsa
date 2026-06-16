@@ -9,7 +9,11 @@ function normalizeResponse(data: PortalSucursalesResponse): PortalSucursalOption
   return data.sucursales ?? data.items ?? data.data ?? [];
 }
 
+// TODO: remover este set cuando se habiliten estas sucursales
+const SUCURSALES_OCULTAS = new Set([77, 78, 79, 80, 81]);
+
 function toSucursal(s: PortalSucursalOption): Sucursal | null {
+  if (SUCURSALES_OCULTAS.has(s.id)) return null;
   if (!s.latitud || !s.longitud) return null;
   return {
     id: String(s.id),

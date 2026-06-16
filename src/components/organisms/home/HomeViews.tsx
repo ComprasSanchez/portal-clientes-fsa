@@ -706,7 +706,7 @@ export function HomeViews({
         </div>
 
         <div className={styles.detailsGrid}>
-          <article className={styles.panelCard}>
+          {/* <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi credencial</h2>
             <p className={styles.panelSubtitle}>
               {hasAffiliateNumber
@@ -736,7 +736,7 @@ export function HomeViews({
               label={hasAffiliateNumber ? "Ver detalle" : "Ir a Mi perfil"}
               onClick={() => onNavigate("mi-cuenta")}
             />
-          </article>
+          </article> */}
 
           <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi perfil</h2>

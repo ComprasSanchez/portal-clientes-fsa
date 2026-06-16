@@ -177,21 +177,14 @@ export function SociosViews({
             </strong>
             {!isPointsLoading && (
               <span className={styles.pointsARS}>
-                ≈ {formatPortalCurrency(puntosToARS(puntosSummary.disponibles))} para gastar
+                ≈ {formatPortalCurrency(puntosToARS(puntosSummary.disponibles))}{" "}
+                para gastar
               </span>
             )}
           </div>
 
           <div className={styles.pointsSideColumn}>
             <div className={styles.pointsGrid}>
-              <div className={styles.pointsMetricCard}>
-                <span className={styles.pointsMetricLabel}>Pendientes</span>
-                <strong className={styles.pointsMetricValue}>
-                  {isPointsLoading
-                    ? "..."
-                    : formatPortalPoints(puntosSummary.pendientes)}
-                </strong>
-              </div>
               <div className={styles.pointsMetricCard}>
                 <span className={styles.pointsMetricLabel}>
                   Por vencer 30 d
@@ -311,18 +304,23 @@ export function SociosViews({
               </p>
             </div>
             {historialTotal > 0 && (
-              <span className={styles.statusBadge}>{historialTotal} registros</span>
+              <span className={styles.statusBadge}>
+                {historialTotal} registros
+              </span>
             )}
           </div>
 
           {historialError ? (
             <div className={styles.historialErrorBox}>
-              No pudimos cargar el historial ahora mismo. Intenta nuevamente en unos minutos.
+              No pudimos cargar el historial ahora mismo. Intenta nuevamente en
+              unos minutos.
             </div>
           ) : isHistorialLoading ? (
             <div className={styles.historialLoading}>Cargando historial…</div>
           ) : historialItems.length === 0 ? (
-            <div className={styles.historialEmpty}>No hay operaciones registradas aún.</div>
+            <div className={styles.historialEmpty}>
+              No hay operaciones registradas aún.
+            </div>
           ) : (
             <>
               <div className={styles.historialTableWrap}>
@@ -473,19 +471,28 @@ export function SociosViews({
                         <summary className={styles.facturaSummary}>
                           <div className={styles.facturaCardHeader}>
                             <div>
-                              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "0.5rem",
+                                }}
+                              >
                                 <h3 className={styles.facturaRef}>
                                   {comprobante.nombreFantasia ?? ""}
                                 </h3>
                                 {comprobante.anulado && (
-                                  <span className={styles.statusBadgeAnulada}>Anulada</span>
+                                  <span className={styles.statusBadgeAnulada}>
+                                    Anulada
+                                  </span>
                                 )}
                               </div>
                               <p className={styles.facturaMeta}>
                                 {formatPortalDateTime(comprobante.fecha)}
                                 {comprobante.hora
                                   ? ` - ${comprobante.hora} hs`
-                                  : ""} - {comprobante.comprobanteRef}
+                                  : ""}{" "}
+                                - {comprobante.comprobanteRef}
                               </p>
                             </div>
                             <div className={styles.facturaAmountBlock}>
@@ -657,7 +664,7 @@ export function SociosViews({
         <BeneficiosCarousel />
 
         <div className={styles.detailsGrid}>
-          <article className={styles.panelCard}>
+          {/* <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi credencial</h2>
             <p className={styles.panelSubtitle}>
               {hasAffiliateNumber
@@ -688,7 +695,7 @@ export function SociosViews({
               label={hasAffiliateNumber ? "Ver detalle" : "Ir a Mi perfil"}
               onClick={() => onNavigate("mi-cuenta")}
             />
-          </article>
+          </article> */}
 
           <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi perfil</h2>
@@ -717,14 +724,10 @@ export function SociosViews({
               onClick={() => onNavigate("mi-cuenta")}
             />
           </article>
+          {pointsCard}
         </div>
 
-        <div className={styles.fullWidthRow}>{pointsCard}</div>
-
-        <SorteoCard
-          onNavigate={onNavigate}
-          documentNumber={documentNumber}
-        />
+        <SorteoCard onNavigate={onNavigate} documentNumber={documentNumber} />
 
         <SucursalesPromoCard onNavigate={onNavigate} />
       </section>
