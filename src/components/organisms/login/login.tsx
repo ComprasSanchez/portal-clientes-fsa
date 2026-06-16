@@ -1557,7 +1557,11 @@ export function Login({ onLogin }: LoginProps) {
             priority
           />
           <div className={styles.heroCenter}>
-            <h1 className={styles.heroTitle}>Todo en un solo lugar</h1>
+            <div className={styles.sociosaPromo}>
+              <span className={styles.sociosaPromoText}>Portal exclusivo para</span>
+              <Image src={sociosaBlanco} alt="SocioSA" width={160} height={50} className={styles.sociosaLogo} />
+            </div>
+            <h2 className={styles.heroTitle}>Todo en un solo lugar</h2>
             <ul className={styles.benefitsList}>
               {SOCIOS_BENEFITS.map((benefit) => (
                 <li key={benefit.text} className={styles.benefitItem}>
@@ -1566,10 +1570,6 @@ export function Login({ onLogin }: LoginProps) {
                 </li>
               ))}
             </ul>
-            <div className={styles.sociosaPromo}>
-              <span className={styles.sociosaPromoText}>Portal exclusivo para</span>
-              <Image src={sociosaBlanco} alt="SocioSA" width={160} height={50} className={styles.sociosaLogo} />
-            </div>
           </div>
         </div>
         <p className={styles.heroFooter}>

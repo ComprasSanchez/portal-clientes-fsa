@@ -134,7 +134,7 @@ $focus-ring: rgba(0, 124, 152, 0.18);
 
 .sociosaPromoText {
   color: $surface;
-  font-size: clamp(1.6rem, 2vw, 2.4rem);
+  font-size: 2rem;
   font-weight: 700;
 }
 
@@ -621,7 +621,8 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 
   .heroTitle {
-    font-size: clamp(1.6rem, 2vw, 2.4rem);
+    font-size: 1rem;
+    // font-size: clamp(1.6rem, 2vw, 2.4rem);
   }
 
   .benefitsList {
@@ -763,7 +764,8 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 
   .heroTitle {
-    font-size: clamp(2.2rem, 2.8vw, 3.4rem);
+    font-size: 2rem;
+    font-weight: 400;
   }
 
   .benefitsList {
