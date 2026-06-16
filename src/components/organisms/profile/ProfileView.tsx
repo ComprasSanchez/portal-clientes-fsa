@@ -1652,7 +1652,7 @@ export function ProfileView({
 
         <div className={styles.divider} />
 
-        <div
+        {/* <div
           className={`${styles.affiliationCard} ${
             isSociosVariant
               ? styles.affiliationCardSocios
@@ -1795,7 +1795,7 @@ export function ProfileView({
                 : styles.affiliationIconCora
             }
           />
-        </div>
+        </div> */}
       </article>
 
 

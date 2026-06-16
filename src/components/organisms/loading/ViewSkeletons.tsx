@@ -69,7 +69,7 @@ export function ProfileViewSkeleton({
           </div>
         </div>
 
-        <div className="my-6 h-px bg-[#efe9f6]" />
+        {/* <div className="my-6 h-px bg-[#efe9f6]" />
 
         <div
           className={`flex items-center justify-between gap-4 rounded-2xl p-5 ${themeAccentClass[variant]}`}
@@ -88,7 +88,7 @@ export function ProfileViewSkeleton({
           <Skeleton
             className={`h-10 w-10 rounded-full ${variant === "socios" ? "bg-white/20" : "bg-[#dccbf5]"}`}
           />
-        </div>
+        </div> */}
       </SkeletonCard>
     </section>
   );
@@ -362,7 +362,7 @@ export function SociosDashboardSkeleton() {
   return (
     <section className="space-y-6" aria-hidden="true">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 5 }).map((_, index) => (
+        {Array.from({ length: 6 }).map((_, index) => (
           <SkeletonCard key={index} variant="socios">
             <div className="flex min-h-[128px] flex-col items-center justify-center gap-5">
               <Skeleton className="h-12 w-12 rounded-full" />
