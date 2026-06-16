@@ -57,9 +57,10 @@ export function OtpCodeInput({
   );
 }
 
-export function InputMFA({ onSubmit, isLoading }: {
+export function InputMFA({ onSubmit, isLoading, resetTrigger }: {
   onSubmit: (code: string, rememberDevice: boolean) => void | Promise<void>;
   isLoading?: boolean;
+  resetTrigger?: number;
 }) {
   const [value, setValue] = React.useState("");
   const [isInvalid, setIsInvalid] = React.useState(false);
@@ -102,6 +103,12 @@ export function InputMFA({ onSubmit, isLoading }: {
     lastAutoSubmittedCodeRef.current = value;
     void submitCode();
   }, [isLoading, submitCode, value]);
+
+  React.useEffect(() => {
+    setValue("");
+    setIsInvalid(false);
+    lastAutoSubmittedCodeRef.current = null;
+  }, [resetTrigger]);
 
   return (
     <div className="flex w-full flex-col items-center gap-3">

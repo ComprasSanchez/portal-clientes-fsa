@@ -79,6 +79,30 @@ export async function GET(req: NextRequest) {
       return redirectResponse;
     }
 
+    if (flowMode !== "popup") {
+      let errorCode = "AUTH_SOCIAL_CALLBACK_FAILED";
+
+      try {
+        const text = new TextDecoder().decode(body);
+        const json = JSON.parse(text) as Record<string, unknown>;
+        const err = json.error;
+
+        if (typeof err === "object" && err !== null && "code" in err) {
+          errorCode = String((err as Record<string, unknown>).code);
+        } else if (typeof err === "string" && err.length > 0) {
+          errorCode = err;
+        }
+      } catch {
+        // el BFF puede devolver HTML de Keycloak en caso de error federado
+      }
+
+      const loginUrl = new URL("/", req.url);
+      loginUrl.searchParams.set("googleAuthError", errorCode);
+      const errorRedirect = NextResponse.redirect(loginUrl, 302);
+      clearGoogleFlowCookies(errorRedirect);
+      return errorRedirect;
+    }
+
     return response;
   } catch {
     return jsonError("proxy_failure", 500);

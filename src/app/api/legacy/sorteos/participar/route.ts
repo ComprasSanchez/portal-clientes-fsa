@@ -10,6 +10,7 @@ import {
 type ParticiparBody = {
   documento?: string;
   canal?: string;
+  convenio?: string;
   sucursalCodigo?: string;
   sorteo?: unknown;
 };
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
       body: {
         documento,
         canal: body?.canal,
+        convenio: body?.convenio,
         sucursalCodigo: body?.sucursalCodigo,
         sorteo: body?.sorteo,
       },

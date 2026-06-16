@@ -2,7 +2,7 @@
   margin: 0 auto;
   width: 100%;
   max-width: 80rem;
-  padding: 2rem 1rem;
+  padding: 1rem 1rem 2rem;
 }
 
 .containerWide {
@@ -31,6 +31,18 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.cuotasBanner {
+  border-radius: 1rem;
+  overflow: hidden;
+  width: 100%;
+}
+
+.cuotasImg {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .detailsGrid {
@@ -71,7 +83,10 @@
   border-radius: 0.9rem;
   background: linear-gradient(135deg, #e6f7fb 0%, #f6fcfd 100%);
   padding: 1rem 1.1rem;
-  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
 }
 
 .pointsLabel {
@@ -91,10 +106,19 @@
   color: #007c98;
 }
 
+.pointsARS {
+  margin-top: 0.25rem;
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #3a7d44;
+}
+
 .pointsGrid {
   display: grid;
   gap: 0.85rem;
   grid-template-columns: repeat(1, minmax(0, 1fr));
+  flex: 1;
 }
 
 .pointsSideColumn {
@@ -108,6 +132,10 @@
   border: 1px solid #d5e4e8;
   background: #fbfdfd;
   padding: 0.95rem 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .pointsMetricLabel {
@@ -161,28 +189,6 @@
   margin-top: 0.5rem;
   display: grid;
   gap: 1rem;
-}
-
-.facturasSummaryGrid {
-  margin-top: 1rem;
-  display: grid;
-  gap: 0.85rem;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-
-.facturasSummaryMetric {
-  border-radius: 0.9rem;
-  border: 1px solid #d5e4e8;
-  background: #fbfdfd;
-  padding: 1rem 1.1rem;
-}
-
-.facturasSummaryValue {
-  margin-top: 0.35rem;
-  display: block;
-  font-size: clamp(1.65rem, 4vw, 2rem);
-  font-weight: 700;
-  color: #17343d;
 }
 
 .facturasHeaderRow {
@@ -357,6 +363,16 @@
   color: #007c98;
 }
 
+.facturaPuntosGanados {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1a7a4a;
+  background: #e6f4ed;
+  border-radius: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  white-space: nowrap;
+}
+
 .facturaItemsList {
   margin-top: 1rem;
   display: flex;
@@ -464,47 +480,19 @@
   color: #996f00;
 }
 
+.statusBadgeAnulada {
+  border-radius: 9999px;
+  background: #fde8e8;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #c0392b;
+}
+
 .totalAmount {
   font-size: clamp(1.6rem, 3.8vw, 1.875rem);
   font-weight: 700;
   color: #007c98;
-}
-
-.promoBanner {
-  border-radius: 1rem;
-  background: linear-gradient(135deg, #123740 0%, #007c98 100%);
-  padding: 1.5rem;
-  color: #ffffff;
-  box-shadow: 0 16px 30px rgba(12, 62, 74, 0.22);
-}
-
-.promoTitle {
-  font-size: clamp(1.75rem, 4.8vw, 2.25rem);
-  font-weight: 700;
-}
-
-.promoDescription {
-  margin-top: 0.5rem;
-  max-width: 36rem;
-  color: rgba(255, 255, 255, 0.86);
-}
-
-.promoButton {
-  margin-top: 1.25rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius: 0.75rem;
-  background: #f1c94b;
-  padding: 0.625rem 1.25rem;
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #163640;
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
 }
 
 .activeViewCard {
@@ -553,6 +541,124 @@
   &:hover {
     opacity: 0.92;
   }
+}
+
+.historialCard {
+  margin-top: 1rem;
+}
+
+.historialHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.historialTableWrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  border: 1px solid #d5e4e8;
+}
+
+.historialTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th {
+    padding: 0.65rem 0.9rem;
+    background: #f3f8f9;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #5f7c85;
+    white-space: nowrap;
+    border-bottom: 1px solid #d5e4e8;
+  }
+
+  td {
+    padding: 0.75rem 0.9rem;
+    color: #17343d;
+    border-bottom: 1px solid #edf3f5;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background: #f9fcfd;
+  }
+}
+
+.historialDeltaPositive {
+  font-weight: 700;
+  color: #1a7a4a;
+}
+
+.historialDeltaNegative {
+  font-weight: 700;
+  color: #c0392b;
+}
+
+.historialDeltaNeutral {
+  font-weight: 600;
+  color: #698088;
+}
+
+.historialRef {
+  font-size: 0.8125rem;
+  color: #698088;
+}
+
+.historialEmpty {
+  margin-top: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #d5e4e8;
+  background: #fbfdfd;
+  padding: 1.25rem 1rem;
+  font-size: 0.9rem;
+  color: #698088;
+  text-align: center;
+}
+
+.historialLoading {
+  margin-top: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #d5e4e8;
+  background: #fbfdfd;
+  padding: 1.25rem 1rem;
+  font-size: 0.9rem;
+  color: #698088;
+}
+
+.historialErrorBox {
+  margin-top: 1rem;
+  border-radius: 0.75rem;
+  background: #fff0ef;
+  padding: 0.95rem 1rem;
+  font-size: 0.9rem;
+  color: #b3362d;
+}
+
+.historialPagination {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.historialPaginationText {
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #698088;
 }
 
 @media (max-width: 639px) {
@@ -661,10 +767,6 @@
     padding: 2rem;
   }
 
-  .pointsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .facturasSummaryGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -678,12 +780,8 @@
 
 @media (min-width: 960px) {
   .pointsContentRow {
-    grid-template-columns: minmax(18rem, 1.15fr) minmax(22rem, 1fr);
+    grid-template-columns: 1.15fr 1fr;
     align-items: stretch;
-  }
-
-  .pointsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .facturasLayout {

@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CalendarDays, Mail, Phone, Search, UserRound, X } from "lucide-react";
+import { CalendarDays, Search, UserRound, X } from "lucide-react";
 import { ProfileViewSkeleton } from "@/components/organisms/loading/ViewSkeletons";
 import { ProfileField } from "@/components/molecules/home/ProfileField";
-import { Switch } from "@/components/ui/switch";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import {
   formatPortalProfileDate,
@@ -124,6 +123,8 @@ type DomicilioFormData = {
   country: string;
 };
 
+const PHONE_PREFIX = "+549";
+
 const initialAffiliationForm: AffiliationFormData = {
   searchTerm: "",
   obraSocialId: "",
@@ -156,14 +157,17 @@ const buildContactFormData = (
 ): ContactFormData => ({
   id: contacto?.id ?? null,
   tipo,
-  valor: contacto?.valor ?? (tipo === "TELEFONO" ? "+549" : ""),
+  valor:
+    tipo === "TELEFONO"
+      ? (contacto?.valor ?? "").replace(PHONE_PREFIX, "")
+      : (contacto?.valor ?? ""),
   regionIso2: contacto?.regionIso2 ?? "AR",
   principal: contacto?.principal ?? false,
   verificado: contacto?.verificado ?? false,
 });
 
 const getContactTypeLabel = (tipo: ContactType) => {
-  return tipo === "TELEFONO" ? "Teléfono" : "Email";
+  return tipo === "TELEFONO" ? "Telefono" : "Email";
 };
 
 const normalizeOptionalString = (value: string) => {
@@ -171,9 +175,7 @@ const normalizeOptionalString = (value: string) => {
   return normalized.length > 0 ? normalized : null;
 };
 
-const getContactOptionValue = (contacto: PortalPerfilContacto) => {
-  return contacto.id ?? `${contacto.tipo}:${contacto.valor ?? ""}`;
-};
+const normalizePhoneDigits = (value: string) => value.replace(/\D/g, "");
 
 const getDomicilioOptionValue = (domicilio: PortalPerfilDomicilio) => {
   return (
@@ -207,7 +209,7 @@ const getAffiliationOptionLabel = (afiliacion: PortalPerfilAfiliacion) => {
   const plan = normalizeText(afiliacion.planNombre);
   const affiliateNumber = normalizeText(afiliacion.nroAfiliado);
   const parts = [obraSocial, plan].filter(Boolean);
-  const prefix = parts.length > 0 ? parts.join(" - ") : "Afiliación";
+  const prefix = parts.length > 0 ? parts.join(" - ") : "Afiliacion";
 
   if (affiliateNumber) {
     return `${prefix} (${affiliateNumber})`;
@@ -223,7 +225,7 @@ const setPortalAfiliacionAsPrincipal = async (
 
   if (!obraSocialId) {
     throw new Error(
-      "La afiliación seleccionada no tiene obra social y no se puede actualizar.",
+      "La afiliacion seleccionada no tiene obra social y no se puede actualizar.",
     );
   }
 
@@ -356,12 +358,18 @@ const savePortalContact = async (
   contacto: PortalPerfilContacto | null,
   formData: ContactFormData,
 ) => {
-  const normalizedValue = formData.valor.trim();
+  const normalizedValue =
+    formData.tipo === "TELEFONO"
+      ? `${PHONE_PREFIX}${normalizePhoneDigits(formData.valor)}`
+      : formData.valor.trim();
 
-  if (!normalizedValue) {
+  if (
+    !normalizedValue ||
+    (formData.tipo === "TELEFONO" && normalizedValue === PHONE_PREFIX)
+  ) {
     if (normalizeText(contacto?.valor)) {
       throw new Error(
-        "Para eliminar un contacto existente todavía falta conectar la baja desde el portal.",
+        "Para eliminar un contacto existente todavia falta conectar la baja desde el portal.",
       );
     }
 
@@ -372,7 +380,7 @@ const savePortalContact = async (
     tipo: formData.tipo,
     valor: normalizedValue,
     ...(contacto?.regionIso2 || formData.tipo === "TELEFONO"
-      ? { regionIso2: formData.regionIso2 || "AR" }
+      ? { regionIso2: "AR" }
       : {}),
     principal: formData.principal,
     verificado: formData.verificado,
@@ -394,21 +402,6 @@ const savePortalContact = async (
   if (!response.ok) {
     throw new Error(await readMutationError(response));
   }
-};
-
-const setPortalContactAsPrincipal = async (contacto: PortalPerfilContacto) => {
-  if (!contacto.id) {
-    throw new Error("El contacto seleccionado no tiene id y no se puede actualizar.");
-  }
-
-  await savePortalContact(contacto, {
-    id: contacto.id,
-    tipo: contacto.tipo === "EMAIL" ? "EMAIL" : "TELEFONO",
-    valor: contacto.valor ?? "",
-    regionIso2: contacto.regionIso2 ?? "AR",
-    principal: true,
-    verificado: contacto.verificado ?? false,
-  });
 };
 
 const savePortalDomicilio = async (
@@ -433,7 +426,7 @@ const savePortalDomicilio = async (
 
   if (!payload.calle || !payload.ciudad || !payload.provincia) {
     throw new Error(
-      "Para guardar el domicilio completá calle, ciudad y provincia.",
+      "Para guardar el domicilio completa calle, ciudad y provincia.",
     );
   }
 
@@ -547,7 +540,8 @@ export function ProfileView({
 }: ProfileViewProps) {
   const { refresh, replacePerfil } = usePortalPerfilContext();
   const [isAffiliationModalOpen, setIsAffiliationModalOpen] = useState(false);
-  const [isContactoModalOpen, setIsContactoModalOpen] = useState(false);
+  const [activeContactEditorType, setActiveContactEditorType] =
+    useState<ContactType | null>(null);
   const [isDomicilioModalOpen, setIsDomicilioModalOpen] = useState(false);
   const [affiliationForm, setAffiliationForm] = useState<AffiliationFormData>(
     initialAffiliationForm,
@@ -569,8 +563,6 @@ export function ProfileView({
   const [editableProfile, setEditableProfile] = useState<ProfileData | null>(
     null,
   );
-  const [isSwitchingPhone, setIsSwitchingPhone] = useState(false);
-  const [isSwitchingEmail, setIsSwitchingEmail] = useState(false);
   const [isSavingContacto, setIsSavingContacto] = useState(false);
   const [isSwitchingDomicilio, setIsSwitchingDomicilio] = useState(false);
   const [isSavingDomicilio, setIsSavingDomicilio] = useState(false);
@@ -753,15 +745,7 @@ export function ProfileView({
   ) => {
     setContactForm(buildContactFormData(tipo, contacto));
     setProfileFeedback(null);
-    setIsContactoModalOpen(true);
-  };
-
-  const handleCloseContactoModal = () => {
-    if (isSavingContacto) {
-      return;
-    }
-
-    setIsContactoModalOpen(false);
+    setActiveContactEditorType(tipo);
   };
 
   const handleOpenDomicilioModal = () => {
@@ -802,6 +786,35 @@ export function ProfileView({
     setOtpStep("sending");
     setOtpError(null);
     try {
+      if (
+        verificandoContacto.tipo === "TELEFONO" &&
+        verificandoContacto.valor?.startsWith("+54") &&
+        !verificandoContacto.valor?.startsWith("+549")
+      ) {
+        const normalizedValor = "+549" + verificandoContacto.valor.slice(3);
+        const patchRes = await fetch(
+          `/api/portal/me/contactos/${verificandoContacto.id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              tipo: "TELEFONO",
+              valor: normalizedValor,
+              regionIso2: "AR",
+              principal: verificandoContacto.principal ?? false,
+              verificado: verificandoContacto.verificado ?? false,
+            }),
+          },
+        );
+        if (!patchRes.ok) {
+          setOtpError(
+            "No se pudo normalizar el numero antes de verificar. Edita y guarda el telefono primero.",
+          );
+          setOtpStep("idle");
+          return;
+        }
+      }
+
       const res = await fetch(
         `/api/portal/me/contactos/${verificandoContacto.id}/verificar`,
         { method: "POST", headers: { Accept: "application/json" } },
@@ -811,14 +824,14 @@ export function ProfileView({
       } | null;
       if (!res.ok) {
         setOtpError(
-          data?.message ?? "No se pudo enviar el mensaje. Intentá de nuevo.",
+          data?.message ?? "No se pudo enviar el mensaje. Intenta de nuevo.",
         );
         setOtpStep("idle");
         return;
       }
       setOtpStep("waiting_whatsapp");
     } catch {
-      setOtpError("Error de red. Intentá de nuevo.");
+      setOtpError("Error de red. Intenta de nuevo.");
       setOtpStep("idle");
     }
   };
@@ -884,7 +897,7 @@ export function ProfileView({
       if (items.length === 0) {
         setProfileFeedback({
           type: "error",
-          message: "No encontramos obras sociales para esa búsqueda.",
+          message: "No encontramos obras sociales para esa busqueda.",
         });
       }
     } catch (error) {
@@ -947,7 +960,7 @@ export function ProfileView({
       });
       setProfileFeedback({
         type: "success",
-        message: "La afiliación se guardó correctamente.",
+        message: "La afiliacion se guardo correctamente.",
       });
       await refresh();
       handleCloseAffiliationModal();
@@ -957,7 +970,7 @@ export function ProfileView({
         message:
           error instanceof Error
             ? error.message
-            : "No se pudo guardar la afiliación.",
+            : "No se pudo guardar la afiliacion.",
       });
     } finally {
       setIsSavingAffiliation(false);
@@ -974,7 +987,7 @@ export function ProfileView({
         setLocalAffiliationPreview(null);
         setProfileFeedback({
           type: "success",
-          message: "Se quitó la afiliación principal del perfil.",
+          message: "Se quito la afiliacion principal del perfil.",
         });
         await refresh();
         return;
@@ -992,7 +1005,7 @@ export function ProfileView({
       setLocalAffiliationPreview(null);
       setProfileFeedback({
         type: "success",
-        message: "Afiliación principal actualizada.",
+        message: "Afiliacion principal actualizada.",
       });
       await refresh();
     } catch (error) {
@@ -1001,7 +1014,7 @@ export function ProfileView({
         message:
           error instanceof Error
             ? error.message
-            : "No se pudo actualizar la afiliación principal.",
+            : "No se pudo actualizar la afiliacion principal.",
       });
     } finally {
       setIsSavingAffiliation(false);
@@ -1026,66 +1039,6 @@ export function ProfileView({
       ...current,
       [field]: value,
     }));
-  };
-
-  const handleSelectPrincipalPhone = async (nextValue: string) => {
-    const selected = telefonos.find(
-      (contacto) => getContactOptionValue(contacto) === nextValue,
-    );
-    if (!selected) {
-      return;
-    }
-
-    try {
-      setIsSwitchingPhone(true);
-      setProfileFeedback(null);
-      await setPortalContactAsPrincipal(selected);
-      setProfileFeedback({
-        type: "success",
-        message: "Teléfono principal actualizado.",
-      });
-      await refresh();
-    } catch (error) {
-      setProfileFeedback({
-        type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "No se pudo actualizar el teléfono principal.",
-      });
-    } finally {
-      setIsSwitchingPhone(false);
-    }
-  };
-
-  const handleSelectPrincipalEmail = async (nextValue: string) => {
-    const selected = emails.find(
-      (contacto) => getContactOptionValue(contacto) === nextValue,
-    );
-    if (!selected) {
-      return;
-    }
-
-    try {
-      setIsSwitchingEmail(true);
-      setProfileFeedback(null);
-      await setPortalContactAsPrincipal(selected);
-      setProfileFeedback({
-        type: "success",
-        message: "Email principal actualizado.",
-      });
-      await refresh();
-    } catch (error) {
-      setProfileFeedback({
-        type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "No se pudo actualizar el email principal.",
-      });
-    } finally {
-      setIsSwitchingEmail(false);
-    }
   };
 
   const handleSelectPrincipalDomicilio = async (nextValue: string) => {
@@ -1132,8 +1085,8 @@ export function ProfileView({
         type: "error",
         message:
           contactForm.tipo === "TELEFONO"
-            ? "Ingresá un número de teléfono para guardarlo."
-            : "Ingresá un email para guardarlo.",
+            ? "Ingresa un numero de telefono para guardarlo."
+            : "Ingresa un email para guardarlo.",
       });
       return;
     }
@@ -1141,11 +1094,15 @@ export function ProfileView({
     try {
       setIsSavingContacto(true);
       setProfileFeedback(null);
-      await savePortalContact(null, contactForm);
-      setIsContactoModalOpen(false);
+      await savePortalContact(null, {
+        ...contactForm,
+        principal: true,
+        verificado: false,
+      });
+      setActiveContactEditorType(null);
       setProfileFeedback({
         type: "success",
-        message: `${getContactTypeLabel(contactForm.tipo)} guardado correctamente.`,
+        message: `${getContactTypeLabel(contactForm.tipo)} guardado como principal correctamente.`,
       });
       await refresh();
     } catch (error) {
@@ -1190,7 +1147,7 @@ export function ProfileView({
       setIsDomicilioModalOpen(false);
       setProfileFeedback({
         type: "success",
-        message: "Tu domicilio se guardó correctamente.",
+        message: "Tu domicilio se guardo correctamente.",
       });
       await refresh();
     } catch (error) {
@@ -1254,7 +1211,7 @@ export function ProfileView({
     if ("nombre" in payload && !payload.nombre) {
       setProfileFeedback({
         type: "error",
-        message: "El nombre no puede quedar vacío.",
+        message: "El nombre no puede quedar vacio.",
       });
       return;
     }
@@ -1262,7 +1219,7 @@ export function ProfileView({
     if ("apellido" in payload && !payload.apellido) {
       setProfileFeedback({
         type: "error",
-        message: "El apellido no puede quedar vacío.",
+        message: "El apellido no puede quedar vacio.",
       });
       return;
     }
@@ -1293,7 +1250,6 @@ export function ProfileView({
   };
 
   const profileValues = currentProfile;
-
   return (
     <section
       className={`${styles.profileView} ${
@@ -1302,10 +1258,10 @@ export function ProfileView({
     >
       <header className={styles.header}>
         <div className={styles.headerText}>
-          <h1 className={styles.title}>Mis datos</h1>
+          <h1 className={styles.title}>Mi perfil</h1>
           <p className={styles.subtitle}>Informacion personal y de contacto</p>
           <p className={styles.localEditHint}>
-            Desde editar podés actualizar tus datos personales y también elegir
+            Desde editar podes actualizar tus datos personales y tambien elegir
             o cargar nuevos datos de contacto y domicilio.
           </p>
         </div>
@@ -1339,8 +1295,8 @@ export function ProfileView({
                     <h3 className={styles.sectionTitle}>Mis datos personales</h3>
                     <p className={styles.sectionSubtitle}>
                       {isEditingPersonalData
-                        ? "Editá tus datos personales y administrá tus contactos desde este mismo bloque."
-                        : "Consultá tus datos personales y abrí editar para actualizar también tus contactos."}
+                        ? "Edita tus datos personales y administra tus contactos desde este mismo bloque."
+                        : "Consulta tus datos personales y abri editar para actualizar tambien tus contactos."}
                     </p>
                   </div>
                   <div className={styles.sectionActions}>
@@ -1437,48 +1393,81 @@ export function ProfileView({
                         <div className={styles.selectorGroup}>
                           <label
                             className={styles.selectorLabel}
-                            htmlFor="phone-select"
+                            htmlFor="phone-principal"
                           >
-                            Elegir teléfono principal
+                            Telefono principal
                           </label>
                           <div className={styles.selectorRow}>
-                            <select
-                              id="phone-select"
-                              className={styles.selectorInput}
-                              value={
-                                preferredPhone
-                                  ? getContactOptionValue(preferredPhone)
-                                  : ""
-                              }
-                              onChange={(event) =>
-                                void handleSelectPrincipalPhone(event.target.value)
-                              }
-                              disabled={telefonos.length === 0 || isSwitchingPhone}
-                            >
-                              {telefonos.length === 0 ? (
-                                <option value="">No hay teléfonos cargados</option>
-                              ) : null}
-                              {telefonos.map((contacto) => (
-                                <option
-                                  key={getContactOptionValue(contacto)}
-                                  value={getContactOptionValue(contacto)}
-                                >
-                                  {contacto.valor ?? "Sin dato"}
-                                </option>
-                              ))}
-                            </select>
+                            {activeContactEditorType === "TELEFONO" ? (
+                              <div className={styles.phoneInputRow}>
+                                <span className={styles.phonePrefix} aria-hidden="true">
+                                  {PHONE_PREFIX}
+                                </span>
+                                <input
+                                  id="phone-principal"
+                                  type="tel"
+                                  inputMode="numeric"
+                                  value={contactForm.valor}
+                                  onChange={(event) =>
+                                    handleContactFieldChange(
+                                      "valor",
+                                      normalizePhoneDigits(event.target.value),
+                                    )
+                                  }
+                                  className={`${styles.fieldInput} ${styles.phoneValueInput}`}
+                                  placeholder="3511234567"
+                                />
+                              </div>
+                            ) : (
+                              <input
+                                id="phone-principal"
+                                className={styles.selectorInput}
+                                value={preferredPhone?.valor ?? "Sin dato"}
+                                disabled
+                                readOnly
+                              />
+                            )}
                             <button
                               type="button"
                               className={styles.selectorActionButton}
-                              onClick={() => handleOpenContactoModal("TELEFONO")}
+                              onClick={() => {
+                                if (activeContactEditorType === "TELEFONO") {
+                                  void handleSaveContacto({
+                                    preventDefault() {},
+                                  } as React.FormEvent<HTMLFormElement>);
+                                  return;
+                                }
+
+                                handleOpenContactoModal(
+                                  "TELEFONO",
+                                  preferredPhone ?? null,
+                                );
+                              }}
+                              disabled={isSavingContacto}
                             >
-                              Añadir nuevo
+                              {activeContactEditorType === "TELEFONO"
+                                ? "Guardar"
+                                : "Editar"}
                             </button>
                           </div>
                           {telefonos.length === 0 ? (
                             <p className={styles.contactInlineHint}>
-                              Todavía no hay teléfonos guardados.
+                              Todavia no hay telefonos guardados.
                             </p>
+                          ) : null}
+                          {preferredPhone && !preferredPhone.verificado ? (
+                            <div className={styles.verificationHint}>
+                              <span>Este telefono principal aun no esta verificado.</span>
+                              <button
+                                type="button"
+                                className={styles.verificationAction}
+                                onClick={() =>
+                                  handleOpenVerificacionModal(preferredPhone)
+                                }
+                              >
+                                Verificar telefono
+                              </button>
+                            </div>
                           ) : null}
                         </div>
                         <div className={styles.addressFieldGroup}>
@@ -1524,74 +1513,95 @@ export function ProfileView({
                                 className={styles.selectorActionButton}
                                 onClick={handleOpenDomicilioModal}
                               >
-                                Añadir nuevo domicilio
+                                Anadir nuevo domicilio
                               </button>
                             </div>
-                            {!hasSavedDomicilio ? (
-                              <p className={styles.addressInlineHint}>
-                                Todavía no tenés un domicilio cargado.
-                              </p>
-                            ) : null}
                           </div>
                         </div>
                         <div className={styles.selectorGroup}>
                           <label
                             className={styles.selectorLabel}
-                            htmlFor="email-select"
+                            htmlFor="email-principal"
                           >
-                            Elegir email principal
+                            Email principal
                           </label>
                           <div className={styles.selectorRow}>
-                            <select
-                              id="email-select"
-                              className={styles.selectorInput}
+                            <input
+                              id="email-principal"
+                              type="email"
+                              className={
+                                activeContactEditorType === "EMAIL"
+                                  ? styles.fieldInput
+                                  : styles.selectorInput
+                              }
                               value={
-                                preferredEmail
-                                  ? getContactOptionValue(preferredEmail)
-                                  : ""
+                                activeContactEditorType === "EMAIL"
+                                  ? contactForm.valor
+                                  : (preferredEmail?.valor ?? "Sin dato")
                               }
                               onChange={(event) =>
-                                void handleSelectPrincipalEmail(event.target.value)
+                                activeContactEditorType === "EMAIL"
+                                  ? handleContactFieldChange("valor", event.target.value)
+                                  : undefined
                               }
-                              disabled={emails.length === 0 || isSwitchingEmail}
-                            >
-                              {emails.length === 0 ? (
-                                <option value="">No hay emails cargados</option>
-                              ) : null}
-                              {emails.map((contacto) => (
-                                <option
-                                  key={getContactOptionValue(contacto)}
-                                  value={getContactOptionValue(contacto)}
-                                >
-                                  {contacto.valor ?? "Sin dato"}
-                                </option>
-                              ))}
-                            </select>
+                              disabled={activeContactEditorType !== "EMAIL"}
+                              readOnly={activeContactEditorType !== "EMAIL"}
+                              placeholder="usuario@email.com"
+                            />
                             <button
                               type="button"
                               className={styles.selectorActionButton}
-                              onClick={() => handleOpenContactoModal("EMAIL")}
+                              onClick={() => {
+                                if (activeContactEditorType === "EMAIL") {
+                                  void handleSaveContacto({
+                                    preventDefault() {},
+                                  } as React.FormEvent<HTMLFormElement>);
+                                  return;
+                                }
+
+                                handleOpenContactoModal(
+                                  "EMAIL",
+                                  preferredEmail ?? null,
+                                );
+                              }}
+                              disabled={isSavingContacto}
                             >
-                              Añadir nuevo
+                              {activeContactEditorType === "EMAIL"
+                                ? "Guardar"
+                                : "Editar"}
                             </button>
                           </div>
                           {emails.length === 0 ? (
                             <p className={styles.contactInlineHint}>
-                              Todavía no hay emails guardados.
+                              Todavia no hay emails guardados.
                             </p>
+                          ) : null}
+                          {preferredEmail && !preferredEmail.verificado ? (
+                            <div className={styles.verificationHint}>
+                              <span>Este email principal aun no esta verificado.</span>
+                              <button
+                                type="button"
+                                className={styles.verificationAction}
+                                onClick={() =>
+                                  handleOpenVerificacionModal(preferredEmail)
+                                }
+                              >
+                                Verificar email
+                              </button>
+                            </div>
                           ) : null}
                         </div>
                       </div>
                     ) : (
                       <div className={styles.fieldsGrid}>
                         <ProfileField
-                          label="Teléfono principal"
+                          label="Telefono principal"
                           value={preferredPhone?.valor ?? "Sin dato"}
                           readOnly
                         />
                         {preferredPhone && !preferredPhone.verificado ? (
                           <div className={styles.verificationHint}>
-                            <span>Tu celular aún no está verificado.</span>
+                            <span>Tu celular aun no esta verificado.</span>
                             <button
                               type="button"
                               className={styles.verificationAction}
@@ -1608,6 +1618,20 @@ export function ProfileView({
                           value={preferredEmail?.valor ?? "Sin dato"}
                           readOnly
                         />
+                        {preferredEmail && !preferredEmail.verificado ? (
+                          <div className={styles.verificationHint}>
+                            <span>Tu email aun no esta verificado.</span>
+                            <button
+                              type="button"
+                              className={styles.verificationAction}
+                              onClick={() =>
+                                handleOpenVerificacionModal(preferredEmail)
+                              }
+                            >
+                              Verificar email
+                            </button>
+                          </div>
+                        ) : null}
                         <ProfileField
                           label="Domicilio principal"
                           value={
@@ -1628,7 +1652,7 @@ export function ProfileView({
 
         <div className={styles.divider} />
 
-        <div
+        {/* <div
           className={`${styles.affiliationCard} ${
             isSociosVariant
               ? styles.affiliationCardSocios
@@ -1668,7 +1692,7 @@ export function ProfileView({
                     className={styles.affiliationSelectorLabel}
                     htmlFor="affiliation-select"
                   >
-                    Elegir afiliación principal
+                    Elegir afiliacion principal
                   </label>
                   <div className={styles.selectorRow}>
                     <select
@@ -1680,7 +1704,7 @@ export function ProfileView({
                       }
                       disabled={isSavingAffiliation}
                     >
-                      <option value="">Sin afiliación principal</option>
+                      <option value="">Sin afiliacion principal</option>
                       {afiliaciones.map((afiliacion) => (
                         <option
                           key={getAffiliationOptionValue(afiliacion)}
@@ -1696,7 +1720,7 @@ export function ProfileView({
                       onClick={handleOpenAffiliationModal}
                     >
                       {hasAffiliateNumber
-                        ? "Agregar nueva afiliación"
+                        ? "Agregar nueva afiliacion"
                         : "Agregar obra social"}
                     </button>
                   </div>
@@ -1726,7 +1750,7 @@ export function ProfileView({
                     className={styles.affiliationSelectorLabelCora}
                     htmlFor="affiliation-select-cora"
                   >
-                    Elegir afiliación principal
+                    Elegir afiliacion principal
                   </label>
                   <div className={styles.selectorRow}>
                     <select
@@ -1738,7 +1762,7 @@ export function ProfileView({
                       }
                       disabled={isSavingAffiliation}
                     >
-                      <option value="">Sin afiliación principal</option>
+                      <option value="">Sin afiliacion principal</option>
                       {afiliaciones.map((afiliacion) => (
                         <option
                           key={getAffiliationOptionValue(afiliacion)}
@@ -1754,7 +1778,7 @@ export function ProfileView({
                       onClick={handleOpenAffiliationModal}
                     >
                       {hasAffiliateNumber
-                        ? "Agregar nueva afiliación"
+                        ? "Agregar nueva afiliacion"
                         : "Agregar obra social"}
                     </button>
                   </div>
@@ -1771,153 +1795,9 @@ export function ProfileView({
                 : styles.affiliationIconCora
             }
           />
-        </div>
+        </div> */}
       </article>
 
-      {isContactoModalOpen ? (
-        <div className={styles.modalOverlay} onClick={handleCloseContactoModal}>
-          <div
-            className={styles.modalDialog}
-            onClick={(event) => event.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="contacto-modal-title"
-          >
-            <header className={styles.modalHeader}>
-              <div>
-                <h2 id="contacto-modal-title" className={styles.modalTitle}>
-                  Agregar un nuevo contacto
-                </h2>
-                <p className={styles.modalSubtitle}>
-                  Completá los datos de contacto del cliente.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className={styles.modalCloseButton}
-                onClick={handleCloseContactoModal}
-                aria-label="Cerrar formulario de contacto"
-              >
-                <X size={22} />
-              </button>
-            </header>
-
-            <form className={styles.modalForm} onSubmit={handleSaveContacto}>
-              <div className={styles.fieldBlock}>
-                <p className={styles.fieldLabel}>Tipo de contacto</p>
-                <div className={styles.contactTypeGrid}>
-                  <button
-                    type="button"
-                    className={`${styles.contactTypeCard} ${contactForm.tipo === "TELEFONO" ? styles.contactTypeCardActive : ""}`}
-                    onClick={() => handleOpenContactoModal("TELEFONO")}
-                  >
-                    <Phone size={24} />
-                    <span>Teléfono</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.contactTypeCard} ${contactForm.tipo === "EMAIL" ? styles.contactTypeCardActive : ""}`}
-                    onClick={() => handleOpenContactoModal("EMAIL")}
-                  >
-                    <Mail size={24} />
-                    <span>Email</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className={styles.fieldBlock}>
-                <label className={styles.fieldLabel} htmlFor="contact-value">
-                  {contactForm.tipo === "TELEFONO"
-                    ? "Número de teléfono"
-                    : "Email"}
-                </label>
-                <input
-                  id="contact-value"
-                  type={contactForm.tipo === "TELEFONO" ? "tel" : "email"}
-                  value={contactForm.valor}
-                  onChange={(event) =>
-                    handleContactFieldChange("valor", event.target.value)
-                  }
-                  className={styles.fieldInput}
-                  placeholder={
-                    contactForm.tipo === "TELEFONO"
-                      ? "+549"
-                      : "usuario@email.com"
-                  }
-                />
-              </div>
-
-              {contactForm.tipo === "TELEFONO" ? (
-                <div className={styles.fieldBlock}>
-                  <label className={styles.fieldLabel} htmlFor="contact-region">
-                    Región ISO2
-                  </label>
-                  <input
-                    id="contact-region"
-                    type="text"
-                    value={contactForm.regionIso2}
-                    onChange={(event) =>
-                      handleContactFieldChange(
-                        "regionIso2",
-                        event.target.value.toUpperCase(),
-                      )
-                    }
-                    className={styles.fieldInput}
-                    maxLength={2}
-                    placeholder="AR"
-                  />
-                </div>
-              ) : null}
-
-              <div className={styles.contactSwitchList}>
-                <div className={styles.contactSwitchRow}>
-                  <span className={styles.contactSwitchLabel}>Verificado</span>
-                  <div className={styles.switchWrap}>
-                    <Switch
-                      checked={contactForm.verificado}
-                      onCheckedChange={(checked) =>
-                        handleContactFieldChange("verificado", checked)
-                      }
-                    />
-                  </div>
-                </div>
-                <div className={styles.contactSwitchRow}>
-                  <span className={styles.contactSwitchLabel}>
-                    Contacto principal
-                  </span>
-                  <div className={styles.switchWrap}>
-                    <Switch
-                      checked={contactForm.principal}
-                      onCheckedChange={(checked) =>
-                        handleContactFieldChange("principal", checked)
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.modalFooter}>
-                <button
-                  type="button"
-                  className={styles.secondaryAction}
-                  onClick={handleCloseContactoModal}
-                  disabled={isSavingContacto}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className={styles.primaryAction}
-                  disabled={isSavingContacto}
-                >
-                  {isSavingContacto ? "Guardando..." : "Guardar"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
 
       {isDomicilioModalOpen ? (
         <div
@@ -1934,10 +1814,10 @@ export function ProfileView({
             <header className={styles.modalHeader}>
               <div>
                 <h2 id="domicilio-modal-title" className={styles.modalTitle}>
-                  Añadir nuevo domicilio
+                  Anadir nuevo domicilio
                 </h2>
                 <p className={styles.modalSubtitle}>
-                  Cargá un domicilio nuevo para guardarlo como principal en el
+                  Carga un domicilio nuevo para guardarlo como principal en el
                   portal.
                 </p>
               </div>
@@ -2425,10 +2305,15 @@ export function ProfileView({
                   id="verificacion-modal-title"
                   className={styles.modalTitle}
                 >
-                  Verificar celular
+                  {verificandoContacto?.tipo === "EMAIL"
+                    ? "Verificar email"
+                    : "Verificar contacto"}
                 </h2>
                 <p className={styles.modalSubtitle}>
-                  {verificandoContacto.valor ?? "Tu celular"}
+                  {verificandoContacto?.valor ??
+                    (verificandoContacto?.tipo === "EMAIL"
+                      ? "Tu email"
+                      : "Tu contacto")}
                 </p>
               </div>
               <button
@@ -2446,13 +2331,23 @@ export function ProfileView({
               {otpStep === "waiting_whatsapp" ? (
                 <div className={styles.fieldBlock}>
                   <p className={styles.fieldLabel}>
-                    Te enviamos un mensaje de WhatsApp a{" "}
-                    <strong>{verificandoContacto.valor ?? "tu celular"}</strong>.
-                    Tocá el botón <strong>Validar</strong> en ese mensaje para
-                    confirmar tu número.
+                    {verificandoContacto?.tipo === "EMAIL" ? (
+                      <>
+                        Te enviamos un mensaje a{" "}
+                        <strong>{verificandoContacto.valor ?? "tu email"}</strong>.
+                        Segui las instrucciones para confirmar este contacto.
+                      </>
+                    ) : (
+                      <>
+                        Te enviamos un mensaje de WhatsApp a{" "}
+                        <strong>{verificandoContacto?.valor ?? "tu celular"}</strong>.
+                        Toca el boton <strong>Validar</strong> en ese mensaje para
+                        confirmar tu numero.
+                      </>
+                    )}
                   </p>
                   <p className={styles.fieldLabel} style={{ marginTop: "0.5rem", opacity: 0.6, fontSize: "0.85em" }}>
-                    Esperando confirmación…
+                    Esperando confirmacion...
                   </p>
                   {otpError ? (
                     <p className={styles.profileFeedbackError}>{otpError}</p>
@@ -2461,8 +2356,9 @@ export function ProfileView({
               ) : (
                 <div className={styles.fieldBlock}>
                   <p className={styles.fieldLabel}>
-                    Te enviaremos un mensaje de WhatsApp a tu celular para
-                    confirmar que es tuyo.
+                    {verificandoContacto?.tipo === "EMAIL"
+                      ? "Te enviaremos un email para confirmar que te pertenece."
+                      : "Te enviaremos un mensaje de WhatsApp a tu celular para confirmar que es tuyo."}
                   </p>
                   {otpError ? (
                     <p className={styles.profileFeedbackError}>{otpError}</p>
@@ -2508,3 +2404,6 @@ export function ProfileView({
     </section>
   );
 }
+
+
+

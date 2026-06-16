@@ -30,6 +30,8 @@ export type AuthErrorCode =
   | "AUTH_ONBOARDING_ALREADY_COMPLETED"
   | "AUTH_ONBOARDING_IDENTITY_LINK_CONFLICT"
   | "AUTH_ONBOARDING_COMPLETE_FAILED"
+  | "AUTH_ONBOARDING_RESEND_COOLDOWN"
+  | "AUTH_ONBOARDING_RESEND_LIMIT"
   | "AUTH_IDENTITY_LINK_INVALID"
   | "AUTH_IDENTITY_LINK_EXPIRED"
   | "AUTH_IDENTITY_LINK_CONFLICT"
@@ -44,6 +46,8 @@ export type AuthErrorCode =
   | "AUTH_IDENTITY_LINK_VERIFY_FAILED"
   | "AUTH_MFA_TICKET_INVALID"
   | "AUTH_MFA_COOLDOWN"
+  | "AUTH_SOCIAL_CALLBACK_FAILED"
+  | "AUTH_SOCIAL_EMAIL_CONFLICT"
   | string;
 
 const DEFAULT_AUTH_ERROR_MESSAGE =
@@ -84,17 +88,21 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
     "Tu email no ha sido verificado. Por favor, revisa tu bandeja de entrada.",
   AUTH_EMAIL_VERIFY_RESEND_LIMIT:
     "Has alcanzado el limite de reenvios de email de verificacion. Por favor, intenta nuevamente mas tarde.",
-  AUTH_ONBOARDING_INVALID: "El onboarding solicitado no es valido.",
-  AUTH_ONBOARDING_EXPIRED: "El onboarding expiro. Volve a iniciar el registro.",
-  AUTH_ONBOARDING_TOKEN_INVALID: "El token de onboarding no es valido.",
+  AUTH_ONBOARDING_INVALID: "El registro solicitado no es válido.",
+  AUTH_ONBOARDING_EXPIRED: "El registro expiró. Volvé a iniciar el proceso.",
+  AUTH_ONBOARDING_TOKEN_INVALID: "El token de registro no es válido.",
   AUTH_ONBOARDING_TOKEN_EXPIRED:
-    "El token de onboarding expiro. Solicita un nuevo email.",
+    "El token de registro expiró. Solicitá un nuevo email.",
   AUTH_ONBOARDING_ALREADY_COMPLETED:
-    "Este onboarding ya fue completado. Podes iniciar sesion.",
+    "Este registro ya fue completado. Podés iniciar sesión.",
   AUTH_ONBOARDING_IDENTITY_LINK_CONFLICT:
-    "Los datos de identidad ya estan vinculados a otra cuenta.",
+    "Los datos de identidad ya están vinculados a otra cuenta.",
   AUTH_ONBOARDING_COMPLETE_FAILED:
-    "No pudimos completar el onboarding. Intenta nuevamente.",
+    "No pudimos completar el registro. Intentá nuevamente.",
+  AUTH_ONBOARDING_RESEND_COOLDOWN:
+    "Ya enviamos el email recientemente. Esperá unos segundos antes de volver a intentarlo.",
+  AUTH_ONBOARDING_RESEND_LIMIT:
+    "Alcanzaste el límite de reenvíos. Revisá tu bandeja de entrada o spam.",
   AUTH_IDENTITY_LINK_INVALID:
     "La solicitud de vinculacion no es valida o expiro.",
   AUTH_IDENTITY_LINK_EXPIRED:
@@ -121,8 +129,12 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
     "No pudimos completar la vinculacion. Intenta nuevamente.",
   AUTH_SESSION_EXPIRED:
     "La sesion ha expirado. Por favor, inicia sesion nuevamente.",
+  AUTH_SOCIAL_CALLBACK_FAILED:
+    "No pudimos completar el inicio de sesión con Google. Intentá nuevamente.",
+  AUTH_SOCIAL_EMAIL_CONFLICT:
+    "Este Gmail ya tiene una cuenta creada con usuario y contraseña. Iniciá sesión con tus credenciales.",
 };
 
-export function mapAuthError(code: AuthErrorCode): string {
-  return AUTH_ERROR_MESSAGES[code] ?? DEFAULT_AUTH_ERROR_MESSAGE;
+export function mapAuthError(code: AuthErrorCode, fallback?: string): string {
+  return AUTH_ERROR_MESSAGES[code] ?? fallback ?? DEFAULT_AUTH_ERROR_MESSAGE;
 }

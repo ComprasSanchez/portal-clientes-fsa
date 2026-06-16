@@ -1,0 +1,102 @@
+.carousel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+
+  &:hover .arrow {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.track {
+  position: relative;
+  width: 100%;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #d5e4e8;
+}
+
+.sizer {
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+}
+
+.image {
+  object-fit: cover;
+  object-position: center;
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.88);
+  color: #163640;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+
+  &:hover {
+    background: #fff;
+  }
+}
+
+.arrowLeft {
+  left: 0.875rem;
+}
+
+.arrowRight {
+  right: 0.875rem;
+}
+
+.dots {
+  position: absolute;
+  bottom: 0.875rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+
+  &:hover {
+    border-color: #fff;
+    background: rgba(255, 255, 255, 0.4);
+  }
+}
+
+.dotActive {
+  background: #007c98;
+  border-color: #007c98;
+}

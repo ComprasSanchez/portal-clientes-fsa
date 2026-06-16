@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { FileText, Package, User, Users } from "lucide-react";
+import { FileStack, FileText, Package, User, Users } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
@@ -9,6 +9,7 @@ import {
 } from "@/components/molecules/home/QuickAccessCard";
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import {
+  CoraDashboardSkeleton,
   ExpedienteViewSkeleton,
   TrackingViewSkeleton,
 } from "@/components/organisms/loading/ViewSkeletons";
@@ -32,6 +33,7 @@ import {
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 import { HomeView } from "@/types/home";
 import styles from "./HomeViews.module.scss";
+import { ExpedientesManagementView } from "./ExpedientesManagementView";
 
 const formatOptionalDate = (value: string | null | undefined) => {
   if (!value) {
@@ -123,6 +125,10 @@ const viewContent: Record<
     title: "Mi perfil",
     description: "Informacion personal y datos de tu cuenta.",
   },
+  "mis-expedientes": {
+    title: "Mis expedientes",
+    description: "Creá expedientes nuevos y actualizá el expediente activo.",
+  },
   productos: {
     title: "Productos",
     description: "Catalogo y detalle de productos disponibles.",
@@ -165,6 +171,7 @@ export function HomeViews({
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
   const quickAccessItems: QuickAccessItem[] = [
     { label: "Mi perfil", view: "mi-cuenta", icon: User },
+    { label: "Mis expedientes", view: "mis-expedientes", icon: FileStack },
     // { label: "Productos", view: "productos", icon: Box },
     { label: "Segui tu pedido", view: "pedidos", icon: Package },
     { label: "Expediente", view: "expediente-actual", icon: FileText },
@@ -178,12 +185,15 @@ export function HomeViews({
 
   const queryCicloId = searchParams.get("cicloId");
   const {
+    items: expedienteItems,
+    activeExpediente,
     activeCycle,
     currentCycleId,
     partial: expedientesPartial,
     warnings: expedienteWarnings,
     isLoading: isExpedientesLoading,
     error: expedientesError,
+    refresh: refreshExpedientes,
   } = usePortalExpedientesContext();
   const cicloId = queryCicloId || currentCycleId;
   const requiresAccountValidation =
@@ -266,11 +276,23 @@ export function HomeViews({
     );
   }
 
+  if (currentView === "mis-expedientes") {
+    return (
+      <main className={styles.container}>
+        <ExpedientesManagementView
+          perfil={perfil}
+          expedientes={expedienteItems}
+          activeExpedienteId={activeExpediente?.expedienteId ?? null}
+          refreshExpedientes={refreshExpedientes}
+        />
+      </main>
+    );
+  }
+
   if (currentView === "pedidos") {
     return (
       <main className={styles.container}>
         <section className={styles.activeViewCard}>
-          <p className={styles.activeViewLabel}>Vista activa</p>
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -296,11 +318,13 @@ export function HomeViews({
           trackingBlockedByExpedientes ? (
             <div className={styles.trackingMessageCard}>
               <p className={styles.trackingMessageTitle}>
-                Seguimiento no disponible por ahora
+                No se encontraron pedidos recientes para mostrarte su
+                seguimiento
               </p>
               <p className={styles.trackingMessageText}>
-                No encontramos un `cicloActual` en `/portal/me/expedientes`, por
-                lo que todavia no podemos consultar la logistica autenticada.
+                No pudimos encontrar un pedido reciente para mostrarte su
+                seguimiento. Cuando hagas un nuevo pedido, vas a poder seguir su
+                estado y preparación desde esta pantalla.
               </p>
             </div>
           ) : null}
@@ -354,7 +378,6 @@ export function HomeViews({
     return (
       <main className={styles.container}>
         <section className={styles.activeViewCard}>
-          <p className={styles.activeViewLabel}>Vista activa</p>
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -372,7 +395,8 @@ export function HomeViews({
                   : "No pudimos cargar el expediente actual"}
               </p>
               <p className={styles.trackingMessageText}>
-                {expedienteActualError}
+                Contactate con nuestro equipo de soporte para resolver este
+                inconveniente y poder mostrarte el estado de tu pedido actual.
               </p>
             </div>
           ) : null}
@@ -639,7 +663,6 @@ export function HomeViews({
     return (
       <main className={styles.container}>
         <section className={styles.activeViewCard}>
-          <p className={styles.activeViewLabel}>Vista activa</p>
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -654,11 +677,19 @@ export function HomeViews({
     );
   }
 
+  if (isProfileLoading) {
+    return (
+      <main className={styles.container}>
+        <CoraDashboardSkeleton />
+      </main>
+    );
+  }
+
   return (
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
         <div>
-          <h1 className={styles.welcomeTitle}>Hola, {userName}</h1>
+          <h1 className={styles.welcomeTitle}>Hola, {perfil?.nombre}</h1>
           <p className={styles.welcomeSubtitle}>
             Bienvenido a tu panel de gestion de pedidos
           </p>
@@ -675,7 +706,7 @@ export function HomeViews({
         </div>
 
         <div className={styles.detailsGrid}>
-          <article className={styles.panelCard}>
+          {/* <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi credencial</h2>
             <p className={styles.panelSubtitle}>
               {hasAffiliateNumber
@@ -705,7 +736,7 @@ export function HomeViews({
               label={hasAffiliateNumber ? "Ver detalle" : "Ir a Mi perfil"}
               onClick={() => onNavigate("mi-cuenta")}
             />
-          </article>
+          </article> */}
 
           <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi perfil</h2>

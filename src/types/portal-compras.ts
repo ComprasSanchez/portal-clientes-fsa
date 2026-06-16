@@ -24,6 +24,7 @@ export type PortalComprasItem = {
   emision?: string;
   hora?: string;
   estado?: string;
+  anulado?: boolean;
   tipo?: string;
   letra?: string;
   puntoVta?: number | string;
@@ -36,6 +37,7 @@ export type PortalComprasItem = {
   total?: number;
   moneda?: string;
   comprobanteRef?: string;
+  puntosGanados?: number;
   productos?: PortalComprasProducto[];
 };
 
@@ -67,8 +69,10 @@ export type PortalCompraComprobante = {
   hora: string | null;
   nombreFantasia: string | null;
   estado: string | null;
+  anulado: boolean;
   moneda: string;
   total: number;
+  puntosGanados?: number;
   productos: PortalComprasProducto[];
   items: PortalComprasItem[];
 };
