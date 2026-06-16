@@ -4,18 +4,18 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import finDeSemanaBanner from "@/assets/sociosa-img/fin-de-semana-banner.jpg";
-import panalesBanner from "@/assets/sociosa-img/pañales-baner.jpg";
+import remeraPromo from "@/assets/sociosa-img/remera-promo.png";
+import sorteoTV from "@/assets/sociosa-img/sorteo-tv.png";
 import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [
   {
-    src: finDeSemanaBanner,
-    alt: "Sorteo Socio SA — Ganá un fin de semana en Las Sierras para dos personas",
+    src: remeraPromo,
+    alt: "Sorteo Socio SA — Gana una remera exclusiva de Socio SA",
   },
   {
-    src: panalesBanner,
-    alt: "Promo pañales Socio SA",
+    src: sorteoTV,
+    alt: "Sorteo Socio SA — Gana un Smart TV de última generación",
   },
 ];
 
