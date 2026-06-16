@@ -6,11 +6,16 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useFormik } from "formik";
-import { ArrowLeft, Check, Eye, EyeOff, LogIn, UserPlus } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, LogIn, UserPlus } from "lucide-react";
 import * as Yup from "yup";
 import googleLogo from "@/assets/google-logo.svg";
 import mobileLogo from "@/assets/logo-celeste.png";
 import loginLogo from "@/assets/farmacia-logo.svg";
+import loginBackground from "@/assets/login/elementos/fondo.jpg";
+import iconHand from "@/assets/login/elementos/icon-hand.png";
+import iconPuntos from "@/assets/login/elementos/puntos-pay.png";
+import iconRegalo from "@/assets/login/elementos/regalo.png";
+import sociosaBlanco from "@/assets/sociosa-blanco.png";
 import styles from "./login.module.scss";
 import { InputMFA, OtpCodeInput } from "@/components/molecules/input-otp/input-otp";
 import {
@@ -33,10 +38,10 @@ import { getErrorMessage } from "@/helpers/error-message";
 import { getSafeRedirectPath } from "@/lib/auth";
 import { mapAuthError } from "@/lib/authErrors";
 
-const BENEFITS = [
-  "Acceso rápido a tus envíos de datos",
-  "Reportes y estadísticas en tiempo real",
-  "Gestión simplificada de tus entregas",
+const SOCIOS_BENEFITS = [
+  { icon: iconHand, text: "Tus puntos siempre disponibles" },
+  { icon: iconPuntos, text: "Beneficios durante todo el año" },
+  { icon: iconRegalo, text: "Sorteos exclusivos" },
 ];
 
 const customerIdentityShape = {
@@ -1539,34 +1544,33 @@ export function Login({ onLogin }: LoginProps) {
   return (
     <section className={styles.root}>
       <aside className={styles.heroPanel}>
-        <div className={styles.heroBackdrop} aria-hidden="true">
-          <div className={styles.heroOrbPrimary}></div>
-          <div className={styles.heroOrbSecondary}></div>
+        <div className={styles.heroBanner} aria-hidden="true">
+          <Image src={loginBackground} alt="" fill style={{ objectFit: "cover" }} priority />
         </div>
         <div className={styles.heroContent}>
           <Image
             src={loginLogo}
             alt="Farmacias Sanchez Antoniolli"
-            width={180}
-            height={60}
+            width={160}
+            height={54}
             className={styles.heroLogo}
             priority
           />
-          <h1 className={styles.heroTitle}>Gestión inteligente</h1>
-          <h2 className={styles.heroAccent}>para tu farmacia</h2>
-          <p className={styles.heroDescription}>
-            Control total sobre tus pedidos, clientes y gestión de entregas de tu farmacia en un solo lugar.
-          </p>
-          <ul className={styles.benefitsList}>
-            {BENEFITS.map((benefit) => (
-              <li key={benefit} className={styles.benefitItem}>
-                <span className={styles.benefitIcon}>
-                  <Check size={16} />
-                </span>
-                <span>{benefit}</span>
-              </li>
-            ))}
-          </ul>
+          <div className={styles.heroCenter}>
+            <h1 className={styles.heroTitle}>Todo en un solo lugar</h1>
+            <ul className={styles.benefitsList}>
+              {SOCIOS_BENEFITS.map((benefit) => (
+                <li key={benefit.text} className={styles.benefitItem}>
+                  <Image src={benefit.icon} alt="" width={88} height={88} className={styles.benefitIcon} unoptimized />
+                  <span>{benefit.text}</span>
+                </li>
+              ))}
+            </ul>
+            <div className={styles.sociosaPromo}>
+              <span className={styles.sociosaPromoText}>Portal exclusivo para</span>
+              <Image src={sociosaBlanco} alt="SocioSA" width={160} height={50} className={styles.sociosaLogo} />
+            </div>
+          </div>
         </div>
         <p className={styles.heroFooter}>
           © 2026 Farmacias Sanchez Antoniolli - Todos los derechos reservados

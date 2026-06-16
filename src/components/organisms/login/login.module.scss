@@ -50,82 +50,97 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   background: rgba(243, 188, 0, 0.95);
 }
 
+.heroBanner {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
 .heroContent {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
-  height: 100%;
+  flex: 1;
   flex-direction: column;
-//   justify-content: center;
-  padding: 48px;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 48px 48px;
+  gap: 32px;
+  text-align: center;
 }
 
 .heroLogo {
-  width: 180px;
+  width: 160px;
   height: auto;
-  margin-bottom: 56px;
-}
-
-.heroTitle,
-.heroAccent {
-  margin: 0;
-  font-size: clamp(2.2rem, 3.1vw, 3.35rem);
-  line-height: 0.98;
-  letter-spacing: -0.03em;
+  margin-bottom: 32px;
 }
 
 .heroTitle {
+  margin: 0;
+  font-size: clamp(1.9rem, 2.4vw, 2.8rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 800;
   color: $surface;
 }
 
-.heroAccent {
-  margin-top: 8px;
-  color: $brand-gold;
-}
-
-.heroDescription {
-  max-width: 30rem;
-  margin: 28px 0 0;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 1.05rem;
-  line-height: 1.65;
-}
-
 .benefitsList {
-  margin: 40px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .benefitItem {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   color: $surface;
   font-size: 1rem;
+  font-weight: 500;
 }
 
 .benefitIcon {
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  background: $brand-gold;
-  color: $brand-blue;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 20px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .heroFooter {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   margin: 0;
   padding: 0 48px 40px;
   color: rgba(255, 255, 255, 0.64);
   font-size: 0.9rem;
+}
+
+.heroCenter {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.sociosaPromo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sociosaPromoText {
+  color: $surface;
+  font-size: clamp(1.6rem, 2vw, 2.4rem);
+  font-weight: 700;
+}
+
+.sociosaLogo {
+  height: auto !important;
+  margin-bottom: 18px !important;
 }
 
 .contentPanel {
@@ -486,7 +501,6 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 }
 
-
 @media (min-width: 768px) {
   .fieldRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -602,33 +616,24 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 
   .heroLogo {
-    width: 150px;
-    margin-bottom: 36px;
+    width: 140px;
+    margin-bottom: 24px;
   }
 
-  .heroTitle,
-  .heroAccent {
-    font-size: clamp(1.95rem, 2.4vw, 2.8rem);
-  }
-
-  .heroDescription {
-    margin-top: 20px;
-    font-size: 0.95rem;
-    line-height: 1.45;
+  .heroTitle {
+    font-size: clamp(1.6rem, 2vw, 2.4rem);
   }
 
   .benefitsList {
-    margin-top: 28px;
-    gap: 14px;
+    gap: 12px;
   }
 
   .benefitItem {
     font-size: 0.94rem;
   }
 
-  .benefitIcon {
-    width: 24px;
-    height: 24px;
+  .heroCenter {
+    gap: 22px;
   }
 
   .heroFooter {
@@ -735,7 +740,7 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   .heroPanel {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    min-height: 100dvh;
   }
 
   .mobileLogo {
@@ -749,38 +754,28 @@ $focus-ring: rgba(0, 124, 152, 0.18);
 
 @media (min-width: 1366px) {
   .heroContent {
-    padding: 60px 60px 52px;
+    padding: 0px 60px 160px;
   }
 
   .heroLogo {
-    width: 204px;
-    margin-bottom: 68px;
+    width: 190px;
+    margin-bottom: 40px;
   }
 
-  .heroTitle,
-  .heroAccent {
-    font-size: clamp(2.7rem, 3.2vw, 4rem);
-  }
-
-  .heroDescription {
-    max-width: 35rem;
-    margin-top: 34px;
-    font-size: 1.18rem;
-    line-height: 1.74;
+  .heroTitle {
+    font-size: clamp(2.2rem, 2.8vw, 3.4rem);
   }
 
   .benefitsList {
-    margin-top: 46px;
-    gap: 22px;
+    gap: 20px;
   }
 
   .benefitItem {
-    font-size: 1.12rem;
+    font-size: 1.4rem;
   }
 
-  .benefitIcon {
-    width: 32px;
-    height: 32px;
+  .heroCenter {
+    gap: 34px;
   }
 
   .heroFooter {
