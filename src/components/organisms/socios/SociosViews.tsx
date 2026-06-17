@@ -349,9 +349,10 @@ export function SociosViews({
                           : delta < 0
                             ? formatPortalPoints(delta)
                             : "—";
+                      const tipoNorm = item.tipo.toLowerCase();
                       const montoLabel =
-                        item.monto != null
-                          ? formatPortalCurrency(item.monto)
+                        (tipoNorm === "compra" || tipoNorm === "devolucion" || tipoNorm === "canje") && delta !== 0
+                          ? formatPortalCurrency(Math.abs(delta) / 10)
                           : "—";
 
                       return (
