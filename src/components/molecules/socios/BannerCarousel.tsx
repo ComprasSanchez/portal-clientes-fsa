@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import remeraPromo from "@/assets/sociosa-img/remera-promo.png";
@@ -12,10 +13,12 @@ const SLIDES = [
   {
     src: remeraPromo,
     alt: "Sorteo Socio SA — Gana una remera exclusiva de Socio SA",
+    href: null,
   },
   {
     src: sorteoTV,
     alt: "Sorteo Socio SA — Gana un Smart TV de última generación",
+    href: "/socios?view=sorteos",
   },
 ];
 
@@ -84,15 +87,29 @@ export function BannerCarousel() {
             transition={{ duration: 0.45, ease: "easeInOut" }}
             className={styles.slide}
           >
-            <Image
-              src={SLIDES[current].src}
-              alt={SLIDES[current].alt}
-              fill
-              draggable={false}
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) calc(100vw - 16rem), 80rem"
-              className={styles.image}
-              priority={current === 0}
-            />
+            {SLIDES[current].href ? (
+              <Link href={SLIDES[current].href} className={styles.slideLink}>
+                <Image
+                  src={SLIDES[current].src}
+                  alt={SLIDES[current].alt}
+                  fill
+                  draggable={false}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) calc(100vw - 16rem), 80rem"
+                  className={styles.image}
+                  priority={current === 0}
+                />
+              </Link>
+            ) : (
+              <Image
+                src={SLIDES[current].src}
+                alt={SLIDES[current].alt}
+                fill
+                draggable={false}
+                sizes="(max-width: 768px) 100vw, (max-width: 1280px) calc(100vw - 16rem), 80rem"
+                className={styles.image}
+                priority={current === 0}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
       </div>

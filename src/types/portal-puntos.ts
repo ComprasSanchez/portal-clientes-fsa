@@ -43,6 +43,8 @@ export type PortalHistorialSaldoItem = {
   moneda?: string;
   puntos?: number;
   puntosDelta?: number;
+  saldoAnterior?: number;
+  saldoNuevo?: number;
   refOperacion?: string;
   origenTipo?: string;
 };
