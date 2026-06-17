@@ -75,6 +75,7 @@ export type RegisterFormValues = {
   sex: string;
   birthDate: string;
   phone: string;
+  privacyPolicy: boolean;
 };
 
 export type CustomerIdentityFormValues = {
