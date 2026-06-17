@@ -1588,7 +1588,7 @@ export function Login({ onLogin }: LoginProps) {
           className={styles.mobileLogo}
           priority
         />
-        <div className={styles.formCard}>
+        <motion.div layout className={styles.formCard}>
           <AnimatePresence mode="wait">
             {cardView === "login" ? (
               <motion.div
@@ -2889,7 +2889,7 @@ export function Login({ onLogin }: LoginProps) {
               </motion.div>
             ) : null}
           </AnimatePresence>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
