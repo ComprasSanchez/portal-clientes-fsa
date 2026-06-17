@@ -37,6 +37,7 @@ import {
 import { getErrorMessage } from "@/helpers/error-message";
 import { getSafeRedirectPath } from "@/lib/auth";
 import { mapAuthError } from "@/lib/authErrors";
+import Link from "next/link";
 
 const SOCIOS_BENEFITS = [
   { icon: iconHand, text: "Tus puntos siempre disponibles" },
@@ -70,6 +71,7 @@ const registerValidationSchema = Yup.object({
   email: Yup.string().trim().email("Ingresá un email válido.").required("Ingresá un email."),
   password: Yup.string().min(8, "La contraseña debe tener al menos 8 caracteres.").required("Ingresá una contraseña."),
   ...customerIdentityShape,
+  privacyPolicy: Yup.boolean().oneOf([true], "Debés aceptar la política de privacidad para continuar."),
 });
 
 const googleOnboardingValidationSchema = Yup.object(customerIdentityShape);
@@ -112,6 +114,7 @@ const initialRegisterValues: RegisterFormValues = {
   sex: "",
   birthDate: "",
   phone: "+549",
+  privacyPolicy: false,
 };
 
 const initialGoogleOnboardingValues: GoogleOnboardingFormValues = {
@@ -1535,9 +1538,9 @@ export function Login({ onLogin }: LoginProps) {
         Términos de uso
       </a>
       {" · "}
-      <a href="#" className={styles.inlineLink}>
+      <Link href="/politica-de-privacidad" className={styles.inlineLink}>
         Política de privacidad
-      </a>
+      </Link>
     </div>
   );
 
@@ -1944,19 +1947,52 @@ export function Login({ onLogin }: LoginProps) {
                     <label className={styles.fieldLabel} htmlFor="register-phone">
                       Teléfono
                     </label>
-                    <input
-                      id="register-phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="+5491112345678"
-                      value={registerFormik.values.phone}
-                      onChange={registerFormik.handleChange}
-                      onBlur={registerFormik.handleBlur}
-                      autoComplete="tel"
-                      className={`${styles.input} ${registerPhoneHasError ? styles.inputError : ""}`}
-                    />
+                    <div className={`${styles.phoneInputRow} ${registerPhoneHasError ? styles.inputError : ""}`}>
+                      <span className={styles.phonePrefix} aria-hidden="true">+549</span>
+                      <input
+                        id="register-phone"
+                        name="phone"
+                        type="tel"
+                        inputMode="numeric"
+                        value={registerFormik.values.phone.replace(/^\+549/, "")}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "");
+                          void registerFormik.setFieldValue("phone", `+549${digits}`);
+                        }}
+                        onBlur={registerFormik.handleBlur}
+                        autoComplete="tel"
+                        className={styles.phoneDigitsInput}
+                      />
+                    </div>
                     {registerPhoneHasError ? (
                       <p className={styles.fieldError}>{registerFormik.errors.phone}</p>
+                    ) : null}
+                  </div>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.checkboxLabel} htmlFor="register-privacy-policy">
+                      <input
+                        id="register-privacy-policy"
+                        type="checkbox"
+                        name="privacyPolicy"
+                        checked={registerFormik.values.privacyPolicy}
+                        onChange={registerFormik.handleChange}
+                        onBlur={registerFormik.handleBlur}
+                        className={styles.checkbox}
+                      />
+                      <span>
+                        Acepto la{" "}
+                        <Link
+                          href="/politica-de-privacidad"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.privacyLink}
+                        >
+                          Política de Privacidad
+                        </Link>
+                      </span>
+                    </label>
+                    {registerFormik.touched.privacyPolicy && registerFormik.errors.privacyPolicy ? (
+                      <p className={styles.fieldError}>{registerFormik.errors.privacyPolicy}</p>
                     ) : null}
                   </div>
                   <button

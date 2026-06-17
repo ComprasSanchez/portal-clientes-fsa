@@ -6,7 +6,8 @@ const isPublicRoute = (pathname: string) => {
     pathname === "/portal-cliente" ||
     pathname.startsWith("/portal-cliente/") ||
     pathname === "/portal-pedidos" ||
-    pathname.startsWith("/portal-pedidos/")
+    pathname.startsWith("/portal-pedidos/") ||
+    pathname === "/politica-de-privacidad"
   );
 };
 

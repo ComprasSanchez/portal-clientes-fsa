@@ -326,6 +326,58 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   position: relative;
 }
 
+.phoneInputRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 54px;
+  border: 1px solid $border;
+  border-radius: 16px;
+  background: $surface-muted;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+
+  &:focus-within {
+    border-color: rgba(0, 124, 152, 0.55);
+    box-shadow: 0 0 0 4px $focus-ring;
+    background: $surface;
+  }
+
+  &.inputError {
+    border-color: rgba(180, 35, 24, 0.34);
+    box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.08);
+  }
+}
+
+.phonePrefix {
+  padding: 0 6px 0 16px;
+  color: $text-strong;
+  font-size: 1rem;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+
+.phoneDigitsInput {
+  flex: 1;
+  min-height: 54px;
+  border: none;
+  background: transparent;
+  padding: 0 16px 0 0;
+  color: $text-strong;
+  font-size: 1rem;
+
+  &::placeholder {
+    color: rgba(102, 112, 133, 0.82);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
 .input {
   width: 100%;
   min-height: 54px;
@@ -391,6 +443,36 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   color: #b42318;
   font-size: 0.84rem;
   line-height: 1.4;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: rgba(31, 41, 55, 0.85);
+  line-height: 1.5;
+}
+
+.checkbox {
+  flex-shrink: 0;
+  margin-top: 2px;
+  width: 17px;
+  height: 17px;
+  accent-color: #007c98;
+  cursor: pointer;
+}
+
+.privacyLink {
+  color: #007c98;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: #005f75;
+  }
 }
 
 .otpField {

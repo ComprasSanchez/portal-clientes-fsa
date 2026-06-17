@@ -37,7 +37,7 @@ const readErrorMessage = async (response: Response): Promise<string> => {
 
 export const usePortalPuntosHistorial = ({
   enabled = true,
-  limit = 20,
+  limit = 10,
 }: UsePortalPuntosHistorialOptions = {}): UsePortalPuntosHistorialResult => {
   const [historial, setHistorial] = useState<PortalHistorialSaldoResponse | null>(null);
   const [isLoading, setIsLoading] = useState(enabled);
