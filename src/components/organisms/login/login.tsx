@@ -1534,10 +1534,10 @@ export function Login({ onLogin }: LoginProps) {
 
   const legalLinks = (
     <div className={styles.legalLinks}>
-      <a href="#" className={styles.inlineLink}>
+      {/* <a href="#" className={styles.inlineLink}>
         Términos de uso
-      </a>
-      {" · "}
+      </a> */}
+      {/* {" · "} */}
       <Link href="/politica-de-privacidad" className={styles.inlineLink}>
         Política de privacidad
       </Link>
