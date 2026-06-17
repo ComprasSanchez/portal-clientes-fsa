@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Poppins } from "next/font/google";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SociosSidebar } from "@/components/molecules/side-bar/SociosSidebar";
 import { SociosViews } from "@/components/organisms/socios/SociosViews";
 import { ConvenioVerificacionModal } from "@/components/organisms/convenio/ConvenioVerificacionModal";
@@ -37,6 +37,17 @@ export function SociosPageClient() {
   const convenioLocked = Boolean(convenio && !convenioUnlocked);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const view = searchParams.get("view");
+    if (view && VALID_VIEWS.includes(view as SociosView)) {
+      setCurrentView(view as SociosView);
+    } else if (!view) {
+      setCurrentView(DEFAULT_VIEW);
+    }
+  }, [searchParams]);
+
   const { perfil, summary, isLoading } = usePortalPerfilContext();
   const { pushToast } = useGlobalToast();
 
