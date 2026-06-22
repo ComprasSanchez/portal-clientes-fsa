@@ -1221,13 +1221,7 @@ const [showLoginPassword, setShowLoginPassword] = useState(false);
     } finally {
       setIsAbandoningIdentityLink(false);
     }
-    returnToLogin();
-    identityLinkFormik.resetForm();
-    setIdentityLinkFlow(null);
-    syncSearchParams((params) => {
-      params.delete("identityLink");
-      params.delete("redirectTo");
-    });
+    window.location.replace("/");
   };
 
   const startGoogleLogin = async (forceConsent = false) => {
