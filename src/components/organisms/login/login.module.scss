@@ -584,6 +584,28 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 }
 
+@media (max-width: 639px) {
+  .formCard {
+    padding: 20px 14px;
+    border-radius: 22px;
+  }
+
+  .formHeader {
+    margin-bottom: 18px;
+  }
+
+  .formTitle {
+    font-size: 1.65rem;
+  }
+
+  .primaryButton,
+  .secondaryButton,
+  .googleButton {
+    min-height: 48px;
+    border-radius: 13px;
+  }
+}
+
 @media (min-width: 768px) {
   .fieldRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -13,11 +13,11 @@ type OtpCodeInputProps = {
 };
 
 const otpSlotClassName = [
-  "flex h-14 w-12 items-center justify-center rounded-2xl border-2 border-slate-300",
-  "bg-white text-[1.45rem] font-black tracking-[0.08em] text-slate-900",
+  "flex h-12 w-10 items-center justify-center rounded-2xl border-2 border-slate-300",
+  "bg-white text-[1.2rem] font-black tracking-[0.08em] text-slate-900",
   "shadow-[0_12px_30px_rgba(15,23,42,0.14),0_0_0_1px_rgba(148,163,184,0.1)] transition-all duration-200",
   "data-[active=true]:border-[#007c98] data-[active=true]:shadow-[0_0_0_5px_rgba(0,124,152,0.2),0_16px_36px_rgba(0,124,152,0.16)]",
-  "data-[filled=true]:border-slate-400 sm:h-16 sm:w-14 sm:text-[1.7rem]",
+  "data-[filled=true]:border-slate-400 sm:h-14 sm:w-12 sm:text-[1.45rem] md:h-16 md:w-14 md:text-[1.7rem]",
 ].join(" ");
 
 export function OtpCodeInput({
@@ -41,13 +41,13 @@ export function OtpCodeInput({
         value={value}
         onChange={onChange}
       >
-        <InputOTP.Group className="gap-2 sm:gap-3">
+        <InputOTP.Group className="gap-1.5 sm:gap-2 md:gap-3">
           <InputOTP.Slot className={otpSlotClassName} index={0} />
           <InputOTP.Slot className={otpSlotClassName} index={1} />
           <InputOTP.Slot className={otpSlotClassName} index={2} />
         </InputOTP.Group>
-        <InputOTP.Separator className="mx-1 text-xl font-black text-[#007c98]/70 sm:mx-2" />
-        <InputOTP.Group className="gap-2 sm:gap-3">
+        <InputOTP.Separator className="mx-0.5 text-lg font-black text-[#007c98]/70 sm:mx-1 sm:text-xl md:mx-2" />
+        <InputOTP.Group className="gap-1.5 sm:gap-2 md:gap-3">
           <InputOTP.Slot className={otpSlotClassName} index={3} />
           <InputOTP.Slot className={otpSlotClassName} index={4} />
           <InputOTP.Slot className={otpSlotClassName} index={5} />
@@ -136,7 +136,7 @@ export function InputMFA({ onSubmit, isLoading, resetTrigger }: {
           Recordar esta sesión en este dispositivo
         </label>
         <Button
-          className="mt-2 h-14 w-full rounded-2xl bg-[#007c98] text-base font-bold text-white shadow-[0_10px_24px_rgba(0,124,152,0.18)] hover:bg-[#005f76]"
+          className="mt-2 h-12 w-full rounded-2xl bg-[#007c98] text-base font-bold text-white shadow-[0_10px_24px_rgba(0,124,152,0.18)] hover:bg-[#005f76] sm:h-14"
           isDisabled={value.length !== 6 || isLoading}
           type="submit"
         >
