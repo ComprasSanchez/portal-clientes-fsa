@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -17,7 +17,10 @@ import iconPuntos from "@/assets/login/elementos/puntos-pay.png";
 import iconRegalo from "@/assets/login/elementos/regalo.png";
 import sociosaBlanco from "@/assets/sociosa-blanco.png";
 import styles from "./login.module.scss";
-import { InputMFA, OtpCodeInput } from "@/components/molecules/input-otp/input-otp";
+import {
+  InputMFA,
+  OtpCodeInput,
+} from "@/components/molecules/input-otp/input-otp";
 import {
   AuthCardView,
   ForgotPasswordFormValues,
@@ -48,8 +51,12 @@ const SOCIOS_BENEFITS = [
 const customerIdentityShape = {
   firstName: Yup.string().trim().required("Ingresá tu nombre."),
   lastName: Yup.string().trim().required("Ingresá tu apellido."),
-  documentType: Yup.string().trim().required("Seleccioná un tipo de documento."),
-  documentNumber: Yup.string().trim().required("Ingresá tu número de documento."),
+  documentType: Yup.string()
+    .trim()
+    .required("Seleccioná un tipo de documento."),
+  documentNumber: Yup.string()
+    .trim()
+    .required("Ingresá tu número de documento."),
   sex: Yup.string().trim().required("Seleccioná tu sexo."),
   birthDate: Yup.string().trim().required("Ingresá tu fecha de nacimiento."),
   phone: Yup.string()
@@ -63,15 +70,26 @@ const customerIdentityShape = {
 };
 
 const loginValidationSchema = Yup.object({
-  username: Yup.string().trim().email("Ingresá un email válido.").required("Ingresá tu email."),
+  username: Yup.string()
+    .trim()
+    .email("Ingresá un email válido.")
+    .required("Ingresá tu email."),
   password: Yup.string().required("Ingresá tu contraseña."),
 });
 
 const registerValidationSchema = Yup.object({
-  email: Yup.string().trim().email("Ingresá un email válido.").required("Ingresá un email."),
-  password: Yup.string().min(8, "La contraseña debe tener al menos 8 caracteres.").required("Ingresá una contraseña."),
+  email: Yup.string()
+    .trim()
+    .email("Ingresá un email válido.")
+    .required("Ingresá un email."),
+  password: Yup.string()
+    .min(8, "La contraseña debe tener al menos 8 caracteres.")
+    .required("Ingresá una contraseña."),
   ...customerIdentityShape,
-  privacyPolicy: Yup.boolean().oneOf([true], "Debés aceptar la política de privacidad para continuar."),
+  privacyPolicy: Yup.boolean().oneOf(
+    [true],
+    "Debés aceptar la política de privacidad para continuar.",
+  ),
 });
 
 const googleOnboardingValidationSchema = Yup.object(customerIdentityShape);
@@ -85,7 +103,9 @@ const identityLinkValidationSchema = Yup.object({
 });
 
 export const verifyOnboardingValidationSchema = Yup.object({
-  token: Yup.string().trim().required("Ingresá el token que recibiste por email."),
+  token: Yup.string()
+    .trim()
+    .required("Ingresá el token que recibiste por email."),
 });
 
 const identityLinkVerifyValidationSchema = Yup.object({
@@ -96,12 +116,20 @@ const identityLinkVerifyValidationSchema = Yup.object({
 });
 
 const forgotPasswordValidationSchema = Yup.object({
-  identifier: Yup.string().trim().email("Ingresá un email válido.").required("Ingresá un email."),
+  identifier: Yup.string()
+    .trim()
+    .email("Ingresá un email válido.")
+    .required("Ingresá un email."),
 });
 
 const resetPasswordValidationSchema = Yup.object({
-  code: Yup.string().trim().length(6, "Ingresá el código de 6 dígitos.").required("Ingresá el código de verificación."),
-  newPassword: Yup.string().min(8, "La contraseña debe tener al menos 8 caracteres.").required("Ingresá una nueva contraseña."),
+  code: Yup.string()
+    .trim()
+    .length(6, "Ingresá el código de 6 dígitos.")
+    .required("Ingresá el código de verificación."),
+  newPassword: Yup.string()
+    .min(8, "La contraseña debe tener al menos 8 caracteres.")
+    .required("Ingresá una nueva contraseña."),
 });
 
 const initialRegisterValues: RegisterFormValues = {
@@ -244,12 +272,15 @@ export function Login({ onLogin }: LoginProps) {
   const [hasProcessedGoogleAuthError, setHasProcessedGoogleAuthError] =
     useState(false);
 
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
+const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [passwordRecoveryState, setPasswordRecoveryState] =
     useState<PasswordRecoveryState | null>(null);
   const [isGooglePopupLoading, setIsGooglePopupLoading] = useState(false);
+  const googlePopupRef = useRef<Window | null>(null);
+  const googlePopupPollRef = useRef<number | null>(null);
+  const cancelGoogleLoginRef = useRef<(() => void) | null>(null);
   const [onboardingFlow, setOnboardingFlow] =
     useState<OnboardingFlowState | null>(null);
   const [isResendingOnboarding, setIsResendingOnboarding] = useState(false);
@@ -299,19 +330,16 @@ export function Login({ onLogin }: LoginProps) {
     [router, searchParams],
   );
 
-  const openIdentityLinkCard = useCallback(
-    (message?: string) => {
-      setCardView("identity-link");
-      setMfaState(null);
-      clearFeedback();
-      setIdentityLinkFlow(null);
+  const openIdentityLinkCard = useCallback((message?: string) => {
+    setCardView("identity-link");
+    setMfaState(null);
+    clearFeedback();
+    setIdentityLinkFlow(null);
 
-      if (message) {
-        setInfoMessage(message);
-      }
-    },
-    [],
-  );
+    if (message) {
+      setInfoMessage(message);
+    }
+  }, []);
 
   const openVerifyOnboardingCard = useCallback((message?: string) => {
     setCardView("verify-onboarding");
@@ -365,7 +393,8 @@ export function Login({ onLogin }: LoginProps) {
             };
 
       const nextPrefill: GoogleProfilePrefill = {
-        email: typeof profileLike.email === "string" ? profileLike.email.trim() : "",
+        email:
+          typeof profileLike.email === "string" ? profileLike.email.trim() : "",
         firstName:
           typeof profileLike.firstName === "string"
             ? profileLike.firstName.trim()
@@ -585,7 +614,7 @@ export function Login({ onLogin }: LoginProps) {
         setInfoMessage(
           challengeResponse.data.challenge?.destinationMasked
             ? `Te enviamos un código a ${challengeResponse.data.challenge.destinationMasked}.`
-            : "Te enviamos un código para confirmar la vinculación.",
+            : "Te enviamos un código por email para confirmar la vinculación.",
         );
       } catch (error) {
         if (axios.isAxiosError<LoginResponse>(error)) {
@@ -829,7 +858,6 @@ export function Login({ onLogin }: LoginProps) {
               },
             );
 
-            
             setMfaState({
               ...data.mfa,
               challengeChannel: selectedChannel,
@@ -879,7 +907,9 @@ export function Login({ onLogin }: LoginProps) {
 
             // Intentar recuperar el flowId desde la respuesta del BFF
             const errorDetails =
-              typeof payload?.error === "object" ? payload?.error?.details : undefined;
+              typeof payload?.error === "object"
+                ? payload?.error?.details
+                : undefined;
             if (!activeFlow?.id && errorDetails?.flowId) {
               activeFlow = {
                 id: errorDetails.flowId,
@@ -895,7 +925,10 @@ export function Login({ onLogin }: LoginProps) {
                 if (stored) {
                   const parsed = JSON.parse(stored) as OnboardingFlowState;
                   const nowSec = Math.floor(Date.now() / 1000);
-                  if (parsed?.id && (!parsed.expiresAt || parsed.expiresAt > nowSec)) {
+                  if (
+                    parsed?.id &&
+                    (!parsed.expiresAt || parsed.expiresAt > nowSec)
+                  ) {
                     activeFlow = parsed;
                     setOnboardingFlow(parsed);
                   }
@@ -961,7 +994,9 @@ export function Login({ onLogin }: LoginProps) {
             expiresAt: data.challenge.expiresAt,
           });
           setCardView("reset-password");
-          setInfoMessage("Te enviamos un código de 6 dígitos al email indicado.");
+          setInfoMessage(
+            "Te enviamos un código de 6 dígitos al email indicado.",
+          );
           helpers.resetForm();
           return;
         }
@@ -1195,28 +1230,115 @@ export function Login({ onLogin }: LoginProps) {
     });
   };
 
-  const startGooglePopupLogin = async (forceConsent = false) => {
-    if (isGooglePopupLoading) {
-      return;
-    }
-
+  const startGoogleLogin = async (forceConsent = false) => {
+    if (isGooglePopupLoading) return;
     clearFeedback();
     setIsGooglePopupLoading(true);
 
-    if (typeof window === "undefined") {
-      return;
-    }
-
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-    } catch {
-      // best-effort: if no active session the logout is a no-op
-    }
+    } catch {}
 
-    const prompt = forceConsent ? "select_account consent" : "select_account";
-    const startUrl = `/api/v2/auth/providers/google/start?redirectTo=${encodeURIComponent(redirectTo)}&prompt=${encodeURIComponent(prompt)}`;
-    window.location.assign(startUrl);
+    const prompt = forceConsent ? "select_account consent" : "login";
+    const url = `/api/v2/auth/providers/google/start?mode=popup&redirectTo=${encodeURIComponent(redirectTo)}&prompt=${encodeURIComponent(prompt)}`;
+
+    const popup = window.open(
+      url,
+      "google_login",
+      "width=520,height=620,resizable=yes,scrollbars=yes",
+    );
+    if (!popup) {
+      setIsGooglePopupLoading(false);
+      setErrorMessage(
+        "No se pudo abrir el popup de Google. Verificá que los popups no estén bloqueados en el navegador.",
+      );
+      return;
+    }
+    googlePopupRef.current = popup;
+
+    // done = true evita que BC y session poll se pisen entre sí
+    let done = false;
+    let bc: BroadcastChannel | null = null;
+
+    const stopAll = () => {
+      cancelGoogleLoginRef.current = null;
+      if (googlePopupPollRef.current !== null) {
+        window.clearInterval(googlePopupPollRef.current);
+        googlePopupPollRef.current = null;
+      }
+      bc?.close();
+      googlePopupRef.current?.close();
+      googlePopupRef.current = null;
+    };
+
+    const onSuccess = () => {
+      if (done) return;
+      done = true;
+      stopAll();
+      setIsGooglePopupLoading(false);
+      window.location.assign(redirectTo);
+    };
+
+    const onError = (errorCode?: string) => {
+      if (done) return;
+      done = true;
+      stopAll();
+      setIsGooglePopupLoading(false);
+      setErrorMessage(
+        mapAuthError(
+          errorCode ?? "AUTH_SOCIAL_CALLBACK_FAILED",
+          "No pudimos completar el inicio de sesión con Google. Si ya tenés una cuenta, intentá ingresar con usuario y contraseña.",
+        ),
+      );
+    };
+
+    cancelGoogleLoginRef.current = () => {
+      if (done) return;
+      done = true;
+      stopAll();
+      setIsGooglePopupLoading(false);
+    };
+
+    // Primario: BroadcastChannel — dispara instantáneo cuando el callback llega
+    // al mismo origen. No depende de window.opener (inmune a COOP).
+    try {
+      bc = new BroadcastChannel("fsa_social_auth");
+      bc.onmessage = (event) => {
+        const data = event.data as { ok: boolean; error?: string };
+        if (data.ok) {
+          onSuccess();
+        } else {
+          onError(data.error);
+        }
+      };
+    } catch {}
+
+    // Fallback: session poll cada 2s × 15 intentos (30s).
+    // Cubre el caso donde BroadcastChannel falle. COOP hace que popup.closed
+    // sea true casi de inmediato, por lo que no se usa como señal de cancelación.
+    let retries = 0;
+    googlePopupPollRef.current = window.setInterval(() => {
+      if (done) {
+        window.clearInterval(googlePopupPollRef.current!);
+        googlePopupPollRef.current = null;
+        return;
+      }
+      retries++;
+      fetch("/api/auth/session", { cache: "no-store" })
+        .then((r) => r.json() as Promise<{ ok: boolean; authenticated: boolean }>)
+        .then((data) => {
+          if (data.authenticated) {
+            onSuccess();
+          } else if (retries >= 8) {
+            onError();
+          }
+        })
+        .catch(() => {
+          if (retries >= 8) onError();
+        });
+    }, 2000);
   };
+
   useEffect(() => {
     if (cardView !== "mfa" || mfaResendCooldownSeconds <= 0) {
       return;
@@ -1366,7 +1488,11 @@ export function Login({ onLogin }: LoginProps) {
     };
 
     void verifyByToken();
-  }, [hasProcessedVerificationToken, syncSearchParams, verificationTokenFromUrl]);
+  }, [
+    hasProcessedVerificationToken,
+    syncSearchParams,
+    verificationTokenFromUrl,
+  ]);
 
   useEffect(() => {
     const googleAuthError = searchParams.get("googleAuthError");
@@ -1404,7 +1530,10 @@ export function Login({ onLogin }: LoginProps) {
     const ONBOARDING_FLOW_KEY = "onboarding_flow";
     if (onboardingFlow?.id) {
       try {
-        sessionStorage.setItem(ONBOARDING_FLOW_KEY, JSON.stringify(onboardingFlow));
+        sessionStorage.setItem(
+          ONBOARDING_FLOW_KEY,
+          JSON.stringify(onboardingFlow),
+        );
       } catch {
         // sessionStorage might be unavailable (private mode, quota exceeded)
       }
@@ -1434,8 +1563,12 @@ export function Login({ onLogin }: LoginProps) {
     });
   }, [applyGoogleProfilePrefill, hasGoogleOnboardingHint, searchParams]);
 
-  const usernameHasError = Boolean(formik.touched.username && formik.errors.username);
-  const passwordHasError = Boolean(formik.touched.password && formik.errors.password);
+  const usernameHasError = Boolean(
+    formik.touched.username && formik.errors.username,
+  );
+  const passwordHasError = Boolean(
+    formik.touched.password && formik.errors.password,
+  );
   const registerEmailHasError = Boolean(
     registerFormik.touched.email && registerFormik.errors.email,
   );
@@ -1452,7 +1585,8 @@ export function Login({ onLogin }: LoginProps) {
     registerFormik.touched.documentType && registerFormik.errors.documentType,
   );
   const registerDocumentNumberHasError = Boolean(
-    registerFormik.touched.documentNumber && registerFormik.errors.documentNumber,
+    registerFormik.touched.documentNumber &&
+    registerFormik.errors.documentNumber,
   );
   const registerSexHasError = Boolean(
     registerFormik.touched.sex && registerFormik.errors.sex,
@@ -1465,25 +1599,26 @@ export function Login({ onLogin }: LoginProps) {
   );
   const googleFirstNameHasError = Boolean(
     googleOnboardingFormik.touched.firstName &&
-      googleOnboardingFormik.errors.firstName,
+    googleOnboardingFormik.errors.firstName,
   );
   const googleLastNameHasError = Boolean(
-    googleOnboardingFormik.touched.lastName && googleOnboardingFormik.errors.lastName,
+    googleOnboardingFormik.touched.lastName &&
+    googleOnboardingFormik.errors.lastName,
   );
   const googleDocumentTypeHasError = Boolean(
     googleOnboardingFormik.touched.documentType &&
-      googleOnboardingFormik.errors.documentType,
+    googleOnboardingFormik.errors.documentType,
   );
   const googleDocumentNumberHasError = Boolean(
     googleOnboardingFormik.touched.documentNumber &&
-      googleOnboardingFormik.errors.documentNumber,
+    googleOnboardingFormik.errors.documentNumber,
   );
   const googleSexHasError = Boolean(
     googleOnboardingFormik.touched.sex && googleOnboardingFormik.errors.sex,
   );
   const googleBirthDateHasError = Boolean(
     googleOnboardingFormik.touched.birthDate &&
-      googleOnboardingFormik.errors.birthDate,
+    googleOnboardingFormik.errors.birthDate,
   );
   const googlePhoneHasError = Boolean(
     googleOnboardingFormik.touched.phone && googleOnboardingFormik.errors.phone,
@@ -1499,11 +1634,11 @@ export function Login({ onLogin }: LoginProps) {
   );
   const identityLinkDocumentTypeHasError = Boolean(
     identityLinkFormik.touched.documentType &&
-      identityLinkFormik.errors.documentType,
+    identityLinkFormik.errors.documentType,
   );
   const identityLinkDocumentNumberHasError = Boolean(
     identityLinkFormik.touched.documentNumber &&
-      identityLinkFormik.errors.documentNumber,
+    identityLinkFormik.errors.documentNumber,
   );
   const identityLinkSexHasError = Boolean(
     identityLinkFormik.touched.sex && identityLinkFormik.errors.sex,
@@ -1518,18 +1653,19 @@ export function Login({ onLogin }: LoginProps) {
     verifyOnboardingFormik.touched.token && verifyOnboardingFormik.errors.token,
   );
   const identityLinkCodeHasError = Boolean(
-    identityLinkVerifyFormik.touched.code && identityLinkVerifyFormik.errors.code,
+    identityLinkVerifyFormik.touched.code &&
+    identityLinkVerifyFormik.errors.code,
   );
   const forgotPasswordHasError = Boolean(
     forgotPasswordFormik.touched.identifier &&
-      forgotPasswordFormik.errors.identifier,
+    forgotPasswordFormik.errors.identifier,
   );
   const resetPasswordCodeHasError = Boolean(
     resetPasswordFormik.touched.code && resetPasswordFormik.errors.code,
   );
   const resetPasswordHasError = Boolean(
     resetPasswordFormik.touched.newPassword &&
-      resetPasswordFormik.errors.newPassword,
+    resetPasswordFormik.errors.newPassword,
   );
 
   const legalLinks = (
@@ -1548,7 +1684,13 @@ export function Login({ onLogin }: LoginProps) {
     <section className={styles.root}>
       <aside className={styles.heroPanel}>
         <div className={styles.heroBanner} aria-hidden="true">
-          <Image src={loginBackground} alt="" fill style={{ objectFit: "cover" }} priority />
+          <Image
+            src={loginBackground}
+            alt=""
+            fill
+            style={{ objectFit: "cover" }}
+            priority
+          />
         </div>
         <div className={styles.heroContent}>
           <Image
@@ -1561,14 +1703,29 @@ export function Login({ onLogin }: LoginProps) {
           />
           <div className={styles.heroCenter}>
             <div className={styles.sociosaPromo}>
-              <span className={styles.sociosaPromoText}>Portal exclusivo para</span>
-              <Image src={sociosaBlanco} alt="SocioSA" width={160} height={50} className={styles.sociosaLogo} />
+              <span className={styles.sociosaPromoText}>
+                Portal exclusivo para
+              </span>
+              <Image
+                src={sociosaBlanco}
+                alt="SocioSA"
+                width={160}
+                height={50}
+                className={styles.sociosaLogo}
+              />
             </div>
             <h2 className={styles.heroTitle}>Todo en un solo lugar</h2>
             <ul className={styles.benefitsList}>
               {SOCIOS_BENEFITS.map((benefit) => (
                 <li key={benefit.text} className={styles.benefitItem}>
-                  <Image src={benefit.icon} alt="" width={88} height={88} className={styles.benefitIcon} unoptimized />
+                  <Image
+                    src={benefit.icon}
+                    alt=""
+                    width={88}
+                    height={88}
+                    className={styles.benefitIcon}
+                    unoptimized
+                  />
                   <span>{benefit.text}</span>
                 </li>
               ))}
@@ -1617,7 +1774,11 @@ export function Login({ onLogin }: LoginProps) {
                     {errorMessage}
                   </div>
                 ) : null}
-                <form onSubmit={formik.handleSubmit} className={styles.form} noValidate>
+                <form
+                  onSubmit={formik.handleSubmit}
+                  className={styles.form}
+                  noValidate
+                >
                   <div className={styles.fieldGroup}>
                     <label className={styles.fieldLabel} htmlFor="login-email">
                       Email
@@ -1635,12 +1796,17 @@ export function Login({ onLogin }: LoginProps) {
                       className={`${styles.input} ${usernameHasError ? styles.inputError : ""}`}
                     />
                     {usernameHasError ? (
-                      <p className={styles.fieldError}>{formik.errors.username}</p>
+                      <p className={styles.fieldError}>
+                        {formik.errors.username}
+                      </p>
                     ) : null}
                   </div>
                   <div className={styles.fieldGroup}>
                     <div className={styles.fieldHeader}>
-                      <label className={styles.fieldLabel} htmlFor="login-password">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="login-password"
+                      >
                         Contraseña
                       </label>
                       <button
@@ -1673,17 +1839,27 @@ export function Login({ onLogin }: LoginProps) {
                       <button
                         type="button"
                         className={styles.passwordToggle}
-                        aria-label={showLoginPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        aria-label={
+                          showLoginPassword
+                            ? "Ocultar contraseña"
+                            : "Mostrar contraseña"
+                        }
                         aria-pressed={showLoginPassword}
                         onClick={() =>
                           setShowLoginPassword((currentValue) => !currentValue)
                         }
                       >
-                        {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showLoginPassword ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
                       </button>
                     </div>
                     {passwordHasError ? (
-                      <p className={styles.fieldError}>{formik.errors.password}</p>
+                      <p className={styles.fieldError}>
+                        {formik.errors.password}
+                      </p>
                     ) : null}
                   </div>
                   <button
@@ -1693,7 +1869,9 @@ export function Login({ onLogin }: LoginProps) {
                   >
                     <LogIn size={20} />
                     <span>
-                      {formik.isSubmitting ? "Ingresando..." : "Ingresar al sistema"}
+                      {formik.isSubmitting
+                        ? "Ingresando..."
+                        : "Ingresar al sistema"}
                     </span>
                   </button>
                   <button
@@ -1717,7 +1895,7 @@ export function Login({ onLogin }: LoginProps) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => void startGooglePopupLogin()}
+                  onClick={() => void startGoogleLogin()}
                   className={styles.googleButton}
                   disabled={formik.isSubmitting || isGooglePopupLoading}
                 >
@@ -1728,7 +1906,20 @@ export function Login({ onLogin }: LoginProps) {
                       : "Continuar con Google"}
                   </span>
                 </button>
-                {legalLinks}
+                {isGooglePopupLoading ? (
+                  <div className={styles.legalLinks}>
+                    <button
+                      type="button"
+                      className={styles.inlineLink}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                      onClick={() => cancelGoogleLoginRef.current?.()}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                ) : (
+                  legalLinks
+                )}
               </motion.div>
             ) : null}
 
@@ -1769,10 +1960,19 @@ export function Login({ onLogin }: LoginProps) {
                     {infoMessage}
                   </div>
                 ) : null}
-                <form onSubmit={registerFormik.handleSubmit} className={styles.form} noValidate>
-                  <div className={`${styles.fieldRow} ${styles.fieldRowFullWidth}`}>
+                <form
+                  onSubmit={registerFormik.handleSubmit}
+                  className={styles.form}
+                  noValidate
+                >
+                  <div
+                    className={`${styles.fieldRow} ${styles.fieldRowFullWidth}`}
+                  >
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="register-email">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="register-email"
+                      >
                         Email
                       </label>
                       <input
@@ -1787,12 +1987,17 @@ export function Login({ onLogin }: LoginProps) {
                         className={`${styles.input} ${registerEmailHasError ? styles.inputError : ""}`}
                       />
                       {registerEmailHasError ? (
-                        <p className={styles.fieldError}>{registerFormik.errors.email}</p>
+                        <p className={styles.fieldError}>
+                          {registerFormik.errors.email}
+                        </p>
                       ) : null}
                     </div>
                   </div>
                   <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel} htmlFor="register-password">
+                    <label
+                      className={styles.fieldLabel}
+                      htmlFor="register-password"
+                    >
                       Contraseña
                     </label>
                     <div className={styles.passwordField}>
@@ -1810,22 +2015,37 @@ export function Login({ onLogin }: LoginProps) {
                       <button
                         type="button"
                         className={styles.passwordToggle}
-                        aria-label={showRegisterPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        aria-label={
+                          showRegisterPassword
+                            ? "Ocultar contraseña"
+                            : "Mostrar contraseña"
+                        }
                         aria-pressed={showRegisterPassword}
                         onClick={() =>
-                          setShowRegisterPassword((currentValue) => !currentValue)
+                          setShowRegisterPassword(
+                            (currentValue) => !currentValue,
+                          )
                         }
                       >
-                        {showRegisterPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showRegisterPassword ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
                       </button>
                     </div>
                     {registerPasswordHasError ? (
-                      <p className={styles.fieldError}>{registerFormik.errors.password}</p>
+                      <p className={styles.fieldError}>
+                        {registerFormik.errors.password}
+                      </p>
                     ) : null}
                   </div>
                   <div className={styles.fieldRow}>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="register-first-name">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="register-first-name"
+                      >
                         Nombre
                       </label>
                       <input
@@ -1840,11 +2060,16 @@ export function Login({ onLogin }: LoginProps) {
                         className={`${styles.input} ${registerFirstNameHasError ? styles.inputError : ""}`}
                       />
                       {registerFirstNameHasError ? (
-                        <p className={styles.fieldError}>{registerFormik.errors.firstName}</p>
+                        <p className={styles.fieldError}>
+                          {registerFormik.errors.firstName}
+                        </p>
                       ) : null}
                     </div>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="register-last-name">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="register-last-name"
+                      >
                         Apellido
                       </label>
                       <input
@@ -1859,13 +2084,18 @@ export function Login({ onLogin }: LoginProps) {
                         className={`${styles.input} ${registerLastNameHasError ? styles.inputError : ""}`}
                       />
                       {registerLastNameHasError ? (
-                        <p className={styles.fieldError}>{registerFormik.errors.lastName}</p>
+                        <p className={styles.fieldError}>
+                          {registerFormik.errors.lastName}
+                        </p>
                       ) : null}
                     </div>
                   </div>
                   <div className={styles.fieldRow}>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="register-document-type">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="register-document-type"
+                      >
                         Tipo de documento
                       </label>
                       <select
@@ -1881,11 +2111,16 @@ export function Login({ onLogin }: LoginProps) {
                         <option value="PASAPORTE">Pasaporte</option>
                       </select>
                       {registerDocumentTypeHasError ? (
-                        <p className={styles.fieldError}>{registerFormik.errors.documentType}</p>
+                        <p className={styles.fieldError}>
+                          {registerFormik.errors.documentType}
+                        </p>
                       ) : null}
                     </div>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="register-document-number">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="register-document-number"
+                      >
                         Número de documento
                       </label>
                       <input
@@ -1899,13 +2134,18 @@ export function Login({ onLogin }: LoginProps) {
                         className={`${styles.input} ${registerDocumentNumberHasError ? styles.inputError : ""}`}
                       />
                       {registerDocumentNumberHasError ? (
-                        <p className={styles.fieldError}>{registerFormik.errors.documentNumber}</p>
+                        <p className={styles.fieldError}>
+                          {registerFormik.errors.documentNumber}
+                        </p>
                       ) : null}
                     </div>
                   </div>
                   <div className={styles.fieldRow}>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="register-sex">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="register-sex"
+                      >
                         Sexo
                       </label>
                       <select
@@ -1922,11 +2162,16 @@ export function Login({ onLogin }: LoginProps) {
                         <option value="X">No binario / X</option>
                       </select>
                       {registerSexHasError ? (
-                        <p className={styles.fieldError}>{registerFormik.errors.sex}</p>
+                        <p className={styles.fieldError}>
+                          {registerFormik.errors.sex}
+                        </p>
                       ) : null}
                     </div>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="register-birth-date">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="register-birth-date"
+                      >
                         Fecha de nacimiento
                       </label>
                       <input
@@ -1939,25 +2184,40 @@ export function Login({ onLogin }: LoginProps) {
                         className={`${styles.input} ${registerBirthDateHasError ? styles.inputError : ""}`}
                       />
                       {registerBirthDateHasError ? (
-                        <p className={styles.fieldError}>{registerFormik.errors.birthDate}</p>
+                        <p className={styles.fieldError}>
+                          {registerFormik.errors.birthDate}
+                        </p>
                       ) : null}
                     </div>
                   </div>
                   <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel} htmlFor="register-phone">
+                    <label
+                      className={styles.fieldLabel}
+                      htmlFor="register-phone"
+                    >
                       Teléfono
                     </label>
-                    <div className={`${styles.phoneInputRow} ${registerPhoneHasError ? styles.inputError : ""}`}>
-                      <span className={styles.phonePrefix} aria-hidden="true">+549</span>
+                    <div
+                      className={`${styles.phoneInputRow} ${registerPhoneHasError ? styles.inputError : ""}`}
+                    >
+                      <span className={styles.phonePrefix} aria-hidden="true">
+                        +549
+                      </span>
                       <input
                         id="register-phone"
                         name="phone"
                         type="tel"
                         inputMode="numeric"
-                        value={registerFormik.values.phone.replace(/^\+549/, "")}
+                        value={registerFormik.values.phone.replace(
+                          /^\+549/,
+                          "",
+                        )}
                         onChange={(e) => {
                           const digits = e.target.value.replace(/\D/g, "");
-                          void registerFormik.setFieldValue("phone", `+549${digits}`);
+                          void registerFormik.setFieldValue(
+                            "phone",
+                            `+549${digits}`,
+                          );
                         }}
                         onBlur={registerFormik.handleBlur}
                         autoComplete="tel"
@@ -1965,11 +2225,16 @@ export function Login({ onLogin }: LoginProps) {
                       />
                     </div>
                     {registerPhoneHasError ? (
-                      <p className={styles.fieldError}>{registerFormik.errors.phone}</p>
+                      <p className={styles.fieldError}>
+                        {registerFormik.errors.phone}
+                      </p>
                     ) : null}
                   </div>
                   <div className={styles.fieldGroup}>
-                    <label className={styles.checkboxLabel} htmlFor="register-privacy-policy">
+                    <label
+                      className={styles.checkboxLabel}
+                      htmlFor="register-privacy-policy"
+                    >
                       <input
                         id="register-privacy-policy"
                         type="checkbox"
@@ -1991,8 +2256,11 @@ export function Login({ onLogin }: LoginProps) {
                         </Link>
                       </span>
                     </label>
-                    {registerFormik.touched.privacyPolicy && registerFormik.errors.privacyPolicy ? (
-                      <p className={styles.fieldError}>{registerFormik.errors.privacyPolicy}</p>
+                    {registerFormik.touched.privacyPolicy &&
+                    registerFormik.errors.privacyPolicy ? (
+                      <p className={styles.fieldError}>
+                        {registerFormik.errors.privacyPolicy}
+                      </p>
                     ) : null}
                   </div>
                   <button
@@ -2036,7 +2304,8 @@ export function Login({ onLogin }: LoginProps) {
                     </button>
                   </div>
                   <p className={styles.formSubtitle}>
-                    Te enviamos un email para completar tu registro. Abrí el enlace para continuar.
+                    Te enviamos un email para completar tu registro. Abrí el
+                    enlace para continuar.
                   </p>
                 </header>
                 {infoMessage ? (
@@ -2060,8 +2329,14 @@ export function Login({ onLogin }: LoginProps) {
                   </div>
                 ) : null}
                 <div className={styles.form}>
-                  <div className={styles.fieldGroup} style={{ display: "none" }}>
-                    <label className={styles.fieldLabel} htmlFor="verify-onboarding-token">
+                  <div
+                    className={styles.fieldGroup}
+                    style={{ display: "none" }}
+                  >
+                    <label
+                      className={styles.fieldLabel}
+                      htmlFor="verify-onboarding-token"
+                    >
                       Token
                     </label>
                     <input
@@ -2076,26 +2351,35 @@ export function Login({ onLogin }: LoginProps) {
                       className={`${styles.input} ${verifyOnboardingHasError ? styles.inputError : ""}`}
                     />
                     {verifyOnboardingHasError ? (
-                      <p className={styles.fieldError}>{verifyOnboardingFormik.errors.token}</p>
+                      <p className={styles.fieldError}>
+                        {verifyOnboardingFormik.errors.token}
+                      </p>
                     ) : null}
                   </div>
                   <button
                     type="submit"
                     className={styles.primaryButton}
-                    disabled={verifyOnboardingFormik.isSubmitting || isAutoVerifyingOnboarding}
+                    disabled={
+                      verifyOnboardingFormik.isSubmitting ||
+                      isAutoVerifyingOnboarding
+                    }
                     style={{ display: "none" }}
                   >
                     <span>
                       {isAutoVerifyingOnboarding
                         ? "Validando enlace..."
                         : verifyOnboardingFormik.isSubmitting
-                        ? "Validando..."
-                        : "Completar registro"}
+                          ? "Validando..."
+                          : "Completar registro"}
                     </span>
                   </button>
                   {!onboardingFlow?.id && !isAutoVerifyingOnboarding ? (
-                    <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
-                      No encontramos un registro activo. Si no recibiste el email, volvé al inicio e iniciá el registro nuevamente con los mismos datos.
+                    <div
+                      className={`${styles.feedback} ${styles.feedbackInfo}`}
+                    >
+                      No encontramos un registro activo. Si no recibiste el
+                      email, volvé al inicio e iniciá el registro nuevamente con
+                      los mismos datos.
                     </div>
                   ) : null}
                   <button
@@ -2111,7 +2395,9 @@ export function Login({ onLogin }: LoginProps) {
                     }}
                   >
                     <span>
-                      {isResendingOnboarding ? "Reenviando..." : "Reenviar email"}
+                      {isResendingOnboarding
+                        ? "Reenviando..."
+                        : "Reenviar email"}
                     </span>
                   </button>
                 </div>
@@ -2128,205 +2414,258 @@ export function Login({ onLogin }: LoginProps) {
                 transition={{ duration: 0.32, ease: "easeInOut" }}
               >
                 <header className={styles.formHeader}>
-                      <div className={styles.mfaHeaderRow}>
-                        <h2 className={styles.formTitle}>Completar vinculación</h2>
-                        <button
-                          type="button"
-                          className={styles.mfaBackIconButton}
-                          disabled={isAbandoningIdentityLink}
-                          onClick={() => {
-                            void handleAbandonIdentityLink();
-                          }}
-                          aria-label="Volver al inicio de sesión"
-                        >
-                          <ArrowLeft size={20} />
-                        </button>
-                      </div>
-                      <p className={styles.formSubtitle}>
-                        {identityLinkFormik.values.email
-                          ? <>Confirmá tus datos para vincular <strong>{maskEmail(identityLinkFormik.values.email)}</strong> con tu cuenta.</>
-                          : "Confirmá tus datos personales para vincular tu cuenta con tu cliente."
-                        }
+                  <div className={styles.mfaHeaderRow}>
+                    <h2 className={styles.formTitle}>Completar vinculación</h2>
+                    <button
+                      type="button"
+                      className={styles.mfaBackIconButton}
+                      disabled={isAbandoningIdentityLink}
+                      onClick={() => {
+                        void handleAbandonIdentityLink();
+                      }}
+                      aria-label="Volver al inicio de sesión"
+                    >
+                      <ArrowLeft size={20} />
+                    </button>
+                  </div>
+                  <p className={styles.formSubtitle}>
+                    {identityLinkFormik.values.email ? (
+                      <>
+                        Confirmá tus datos para vincular{" "}
+                        <strong>
+                          {maskEmail(identityLinkFormik.values.email)}
+                        </strong>{" "}
+                        con tu cuenta.
+                      </>
+                    ) : (
+                      "Confirmá tus datos personales para vincular tu cuenta con tu cliente."
+                    )}
+                  </p>
+                </header>
+                {infoMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                    {infoMessage}
+                  </div>
+                ) : null}
+                {errorMessage ? (
+                  <div className={`${styles.feedback} ${styles.feedbackError}`}>
+                    {errorMessage}
+                  </div>
+                ) : null}
+                <form
+                  onSubmit={identityLinkFormik.handleSubmit}
+                  className={styles.form}
+                  noValidate
+                >
+                  <div className={styles.fieldGroup}>
+                    <label
+                      className={styles.fieldLabel}
+                      htmlFor="identity-link-email"
+                    >
+                      Email
+                    </label>
+                    <input
+                      id="identity-link-email"
+                      name="email"
+                      type="email"
+                      placeholder="Ingresa tu email"
+                      value={identityLinkFormik.values.email ?? ""}
+                      onChange={identityLinkFormik.handleChange}
+                      onBlur={identityLinkFormik.handleBlur}
+                      autoComplete="email"
+                      className={`${styles.input} ${identityLinkEmailHasError ? styles.inputError : ""}`}
+                    />
+                    {identityLinkEmailHasError ? (
+                      <p className={styles.fieldError}>
+                        {identityLinkFormik.errors.email}
                       </p>
-                    </header>
-                    {infoMessage ? (
-                      <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
-                        {infoMessage}
-                      </div>
                     ) : null}
-                    {errorMessage ? (
-                      <div className={`${styles.feedback} ${styles.feedbackError}`}>
-                        {errorMessage}
-                      </div>
-                    ) : null}
-                    <form onSubmit={identityLinkFormik.handleSubmit} className={styles.form} noValidate>
-                      <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel} htmlFor="identity-link-email">
-                          Email
-                        </label>
-                        <input
-                          id="identity-link-email"
-                          name="email"
-                          type="email"
-                          placeholder="Ingresa tu email"
-                          value={identityLinkFormik.values.email ?? ""}
-                          onChange={identityLinkFormik.handleChange}
-                          onBlur={identityLinkFormik.handleBlur}
-                          autoComplete="email"
-                          className={`${styles.input} ${identityLinkEmailHasError ? styles.inputError : ""}`}
-                        />
-                        {identityLinkEmailHasError ? (
-                          <p className={styles.fieldError}>{identityLinkFormik.errors.email}</p>
-                        ) : null}
-                      </div>
-                      <div className={styles.fieldRow}>
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel} htmlFor="identity-link-first-name">
-                            Nombre
-                          </label>
-                          <input
-                            id="identity-link-first-name"
-                            name="firstName"
-                            type="text"
-                            placeholder="Ingresá tu nombre"
-                            value={identityLinkFormik.values.firstName ?? ""}
-                            onChange={identityLinkFormik.handleChange}
-                            onBlur={identityLinkFormik.handleBlur}
-                            className={`${styles.input} ${identityLinkFirstNameHasError ? styles.inputError : ""}`}
-                          />
-                          {identityLinkFirstNameHasError ? (
-                            <p className={styles.fieldError}>{identityLinkFormik.errors.firstName}</p>
-                          ) : null}
-                        </div>
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel} htmlFor="identity-link-last-name">
-                            Apellido
-                          </label>
-                          <input
-                            id="identity-link-last-name"
-                            name="lastName"
-                            type="text"
-                            placeholder="Ingresá tu apellido"
-                            value={identityLinkFormik.values.lastName ?? ""}
-                            onChange={identityLinkFormik.handleChange}
-                            onBlur={identityLinkFormik.handleBlur}
-                            className={`${styles.input} ${identityLinkLastNameHasError ? styles.inputError : ""}`}
-                          />
-                          {identityLinkLastNameHasError ? (
-                            <p className={styles.fieldError}>{identityLinkFormik.errors.lastName}</p>
-                          ) : null}
-                        </div>
-                      </div>
-                      <div className={styles.fieldRow}>
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel} htmlFor="identity-link-document-type">
-                            Tipo de documento
-                          </label>
-                          <select
-                            id="identity-link-document-type"
-                            name="documentType"
-                            value={identityLinkFormik.values.documentType ?? ""}
-                            onChange={identityLinkFormik.handleChange}
-                            onBlur={identityLinkFormik.handleBlur}
-                            className={`${styles.input} ${identityLinkDocumentTypeHasError ? styles.inputError : ""}`}
-                          >
-                            <option value="DNI">DNI</option>
-                            <option value="CI">CI</option>
-                            <option value="PASAPORTE">Pasaporte</option>
-                          </select>
-                          {identityLinkDocumentTypeHasError ? (
-                            <p className={styles.fieldError}>{identityLinkFormik.errors.documentType}</p>
-                          ) : null}
-                        </div>
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel} htmlFor="identity-link-document-number">
-                            Número de documento
-                          </label>
-                          <input
-                            id="identity-link-document-number"
-                            name="documentNumber"
-                            type="text"
-                            placeholder="Ingresá tu documento"
-                            value={identityLinkFormik.values.documentNumber ?? ""}
-                            onChange={identityLinkFormik.handleChange}
-                            onBlur={identityLinkFormik.handleBlur}
-                            className={`${styles.input} ${identityLinkDocumentNumberHasError ? styles.inputError : ""}`}
-                          />
-                          {identityLinkDocumentNumberHasError ? (
-                            <p className={styles.fieldError}>{identityLinkFormik.errors.documentNumber}</p>
-                          ) : null}
-                        </div>
-                      </div>
-                      <div className={styles.fieldRow}>
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel} htmlFor="identity-link-sex">
-                            Sexo
-                          </label>
-                          <select
-                            id="identity-link-sex"
-                            name="sex"
-                            value={identityLinkFormik.values.sex ?? ""}
-                            onChange={identityLinkFormik.handleChange}
-                            onBlur={identityLinkFormik.handleBlur}
-                            className={`${styles.input} ${identityLinkSexHasError ? styles.inputError : ""}`}
-                          >
-                            <option value="">Seleccioná una opción</option>
-                            <option value="M">Masculino</option>
-                            <option value="F">Femenino</option>
-                            <option value="X">No binario / X</option>
-                          </select>
-                          {identityLinkSexHasError ? (
-                            <p className={styles.fieldError}>{identityLinkFormik.errors.sex}</p>
-                          ) : null}
-                        </div>
-                        <div className={styles.fieldGroup}>
-                          <label className={styles.fieldLabel} htmlFor="identity-link-birth-date">
-                            Fecha de nacimiento
-                          </label>
-                          <input
-                            id="identity-link-birth-date"
-                            name="birthDate"
-                            type="date"
-                            value={identityLinkFormik.values.birthDate ?? ""}
-                            onChange={identityLinkFormik.handleChange}
-                            onBlur={identityLinkFormik.handleBlur}
-                            className={`${styles.input} ${identityLinkBirthDateHasError ? styles.inputError : ""}`}
-                          />
-                          {identityLinkBirthDateHasError ? (
-                            <p className={styles.fieldError}>{identityLinkFormik.errors.birthDate}</p>
-                          ) : null}
-                        </div>
-                      </div>
-                      <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel} htmlFor="identity-link-phone">
-                          Teléfono
-                        </label>
-                        <input
-                          id="identity-link-phone"
-                          name="phone"
-                          type="tel"
-                          placeholder="+5491112345678"
-                          value={identityLinkFormik.values.phone ?? ""}
-                          onChange={identityLinkFormik.handleChange}
-                          onBlur={identityLinkFormik.handleBlur}
-                          className={`${styles.input} ${identityLinkPhoneHasError ? styles.inputError : ""}`}
-                        />
-                        {identityLinkPhoneHasError ? (
-                          <p className={styles.fieldError}>{identityLinkFormik.errors.phone}</p>
-                        ) : null}
-                      </div>
-                      <button
-                        type="submit"
-                        className={styles.primaryButton}
-                        disabled={identityLinkFormik.isSubmitting || isStartingIdentityLink}
+                  </div>
+                  <div className={styles.fieldRow}>
+                    <div className={styles.fieldGroup}>
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="identity-link-first-name"
                       >
-                        <span>
-                          {isStartingIdentityLink
-                            ? "Enviando código..."
-                            : "Continuar vinculación"}
-                        </span>
-                      </button>
-                    </form>
+                        Nombre
+                      </label>
+                      <input
+                        id="identity-link-first-name"
+                        name="firstName"
+                        type="text"
+                        placeholder="Ingresá tu nombre"
+                        value={identityLinkFormik.values.firstName ?? ""}
+                        onChange={identityLinkFormik.handleChange}
+                        onBlur={identityLinkFormik.handleBlur}
+                        className={`${styles.input} ${identityLinkFirstNameHasError ? styles.inputError : ""}`}
+                      />
+                      {identityLinkFirstNameHasError ? (
+                        <p className={styles.fieldError}>
+                          {identityLinkFormik.errors.firstName}
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className={styles.fieldGroup}>
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="identity-link-last-name"
+                      >
+                        Apellido
+                      </label>
+                      <input
+                        id="identity-link-last-name"
+                        name="lastName"
+                        type="text"
+                        placeholder="Ingresá tu apellido"
+                        value={identityLinkFormik.values.lastName ?? ""}
+                        onChange={identityLinkFormik.handleChange}
+                        onBlur={identityLinkFormik.handleBlur}
+                        className={`${styles.input} ${identityLinkLastNameHasError ? styles.inputError : ""}`}
+                      />
+                      {identityLinkLastNameHasError ? (
+                        <p className={styles.fieldError}>
+                          {identityLinkFormik.errors.lastName}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className={styles.fieldRow}>
+                    <div className={styles.fieldGroup}>
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="identity-link-document-type"
+                      >
+                        Tipo de documento
+                      </label>
+                      <select
+                        id="identity-link-document-type"
+                        name="documentType"
+                        value={identityLinkFormik.values.documentType ?? ""}
+                        onChange={identityLinkFormik.handleChange}
+                        onBlur={identityLinkFormik.handleBlur}
+                        className={`${styles.input} ${identityLinkDocumentTypeHasError ? styles.inputError : ""}`}
+                      >
+                        <option value="DNI">DNI</option>
+                        <option value="CI">CI</option>
+                        <option value="PASAPORTE">Pasaporte</option>
+                      </select>
+                      {identityLinkDocumentTypeHasError ? (
+                        <p className={styles.fieldError}>
+                          {identityLinkFormik.errors.documentType}
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className={styles.fieldGroup}>
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="identity-link-document-number"
+                      >
+                        Número de documento
+                      </label>
+                      <input
+                        id="identity-link-document-number"
+                        name="documentNumber"
+                        type="text"
+                        placeholder="Ingresá tu documento"
+                        value={identityLinkFormik.values.documentNumber ?? ""}
+                        onChange={identityLinkFormik.handleChange}
+                        onBlur={identityLinkFormik.handleBlur}
+                        className={`${styles.input} ${identityLinkDocumentNumberHasError ? styles.inputError : ""}`}
+                      />
+                      {identityLinkDocumentNumberHasError ? (
+                        <p className={styles.fieldError}>
+                          {identityLinkFormik.errors.documentNumber}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className={styles.fieldRow}>
+                    <div className={styles.fieldGroup}>
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="identity-link-sex"
+                      >
+                        Sexo
+                      </label>
+                      <select
+                        id="identity-link-sex"
+                        name="sex"
+                        value={identityLinkFormik.values.sex ?? ""}
+                        onChange={identityLinkFormik.handleChange}
+                        onBlur={identityLinkFormik.handleBlur}
+                        className={`${styles.input} ${identityLinkSexHasError ? styles.inputError : ""}`}
+                      >
+                        <option value="">Seleccioná una opción</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Femenino</option>
+                        <option value="X">No binario / X</option>
+                      </select>
+                      {identityLinkSexHasError ? (
+                        <p className={styles.fieldError}>
+                          {identityLinkFormik.errors.sex}
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className={styles.fieldGroup}>
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="identity-link-birth-date"
+                      >
+                        Fecha de nacimiento
+                      </label>
+                      <input
+                        id="identity-link-birth-date"
+                        name="birthDate"
+                        type="date"
+                        value={identityLinkFormik.values.birthDate ?? ""}
+                        onChange={identityLinkFormik.handleChange}
+                        onBlur={identityLinkFormik.handleBlur}
+                        className={`${styles.input} ${identityLinkBirthDateHasError ? styles.inputError : ""}`}
+                      />
+                      {identityLinkBirthDateHasError ? (
+                        <p className={styles.fieldError}>
+                          {identityLinkFormik.errors.birthDate}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className={styles.fieldGroup}>
+                    <label
+                      className={styles.fieldLabel}
+                      htmlFor="identity-link-phone"
+                    >
+                      Teléfono
+                    </label>
+                    <input
+                      id="identity-link-phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="+5491112345678"
+                      value={identityLinkFormik.values.phone ?? ""}
+                      onChange={identityLinkFormik.handleChange}
+                      onBlur={identityLinkFormik.handleBlur}
+                      className={`${styles.input} ${identityLinkPhoneHasError ? styles.inputError : ""}`}
+                    />
+                    {identityLinkPhoneHasError ? (
+                      <p className={styles.fieldError}>
+                        {identityLinkFormik.errors.phone}
+                      </p>
+                    ) : null}
+                  </div>
+                  <button
+                    type="submit"
+                    className={styles.primaryButton}
+                    disabled={
+                      identityLinkFormik.isSubmitting || isStartingIdentityLink
+                    }
+                  >
+                    <span>
+                      {isStartingIdentityLink
+                        ? "Enviando código..."
+                        : "Continuar vinculación"}
+                    </span>
+                  </button>
+                </form>
                 {legalLinks}
               </motion.div>
             ) : null}
@@ -2356,7 +2695,8 @@ export function Login({ onLogin }: LoginProps) {
                     </button>
                   </div>
                   <p className={styles.formSubtitle}>
-                    Ingresá el código que te enviamos para completar la vinculación de tu cuenta.
+                    Ingresá el código que te enviamos para completar la
+                    vinculación de tu cuenta.
                   </p>
                 </header>
                 {infoMessage ? (
@@ -2374,23 +2714,40 @@ export function Login({ onLogin }: LoginProps) {
                     Email destino: {identityLinkFlow.destinationMasked}
                   </div>
                 ) : null}
-                <form onSubmit={identityLinkVerifyFormik.handleSubmit} className={styles.form} noValidate>
+                <form
+                  onSubmit={identityLinkVerifyFormik.handleSubmit}
+                  className={styles.form}
+                  noValidate
+                >
                   <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel} htmlFor="identity-link-code">
+                    <label
+                      className={styles.fieldLabel}
+                      htmlFor="identity-link-code"
+                    >
                       Código
                     </label>
                     <div className={styles.otpField}>
                       <OtpCodeInput
-                        describedBy={identityLinkCodeHasError ? "identity-link-code-error" : undefined}
+                        describedBy={
+                          identityLinkCodeHasError
+                            ? "identity-link-code-error"
+                            : undefined
+                        }
                         isInvalid={identityLinkCodeHasError}
                         value={identityLinkVerifyFormik.values.code}
                         onChange={(value) => {
-                          void identityLinkVerifyFormik.setFieldValue("code", value);
+                          void identityLinkVerifyFormik.setFieldValue(
+                            "code",
+                            value,
+                          );
                         }}
                       />
                     </div>
                     {identityLinkCodeHasError ? (
-                      <p className={styles.fieldError} id="identity-link-code-error">
+                      <p
+                        className={styles.fieldError}
+                        id="identity-link-code-error"
+                      >
                         {identityLinkVerifyFormik.errors.code}
                       </p>
                     ) : null}
@@ -2398,7 +2755,10 @@ export function Login({ onLogin }: LoginProps) {
                   <button
                     type="submit"
                     className={styles.primaryButton}
-                    disabled={identityLinkVerifyFormik.isSubmitting || isVerifyingIdentityLink}
+                    disabled={
+                      identityLinkVerifyFormik.isSubmitting ||
+                      isVerifyingIdentityLink
+                    }
                   >
                     <span>
                       {isVerifyingIdentityLink
@@ -2421,7 +2781,9 @@ export function Login({ onLogin }: LoginProps) {
               >
                 <header className={styles.formHeader}>
                   <div className={styles.mfaHeaderRow}>
-                    <h2 className={styles.formTitle}>Completar alta con Google</h2>
+                    <h2 className={styles.formTitle}>
+                      Completar alta con Google
+                    </h2>
                     <button
                       type="button"
                       className={styles.mfaBackIconButton}
@@ -2435,7 +2797,8 @@ export function Login({ onLogin }: LoginProps) {
                     </button>
                   </div>
                   <p className={styles.formSubtitle}>
-                    Confirmá tus datos personales para vincular la identidad y confiar este dispositivo.
+                    Confirmá tus datos personales para vincular la identidad y
+                    confiar este dispositivo.
                   </p>
                 </header>
                 {infoMessage ? (
@@ -2448,10 +2811,17 @@ export function Login({ onLogin }: LoginProps) {
                     {errorMessage}
                   </div>
                 ) : null}
-                <form onSubmit={googleOnboardingFormik.handleSubmit} className={styles.form} noValidate>
+                <form
+                  onSubmit={googleOnboardingFormik.handleSubmit}
+                  className={styles.form}
+                  noValidate
+                >
                   <div className={styles.fieldRow}>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="google-first-name">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="google-first-name"
+                      >
                         Nombre
                       </label>
                       <input
@@ -2465,11 +2835,16 @@ export function Login({ onLogin }: LoginProps) {
                         className={`${styles.input} ${googleFirstNameHasError ? styles.inputError : ""}`}
                       />
                       {googleFirstNameHasError ? (
-                        <p className={styles.fieldError}>{googleOnboardingFormik.errors.firstName}</p>
+                        <p className={styles.fieldError}>
+                          {googleOnboardingFormik.errors.firstName}
+                        </p>
                       ) : null}
                     </div>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="google-last-name">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="google-last-name"
+                      >
                         Apellido
                       </label>
                       <input
@@ -2483,13 +2858,18 @@ export function Login({ onLogin }: LoginProps) {
                         className={`${styles.input} ${googleLastNameHasError ? styles.inputError : ""}`}
                       />
                       {googleLastNameHasError ? (
-                        <p className={styles.fieldError}>{googleOnboardingFormik.errors.lastName}</p>
+                        <p className={styles.fieldError}>
+                          {googleOnboardingFormik.errors.lastName}
+                        </p>
                       ) : null}
                     </div>
                   </div>
                   <div className={styles.fieldRow}>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="google-document-type">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="google-document-type"
+                      >
                         Tipo de documento
                       </label>
                       <select
@@ -2505,11 +2885,16 @@ export function Login({ onLogin }: LoginProps) {
                         <option value="PASAPORTE">Pasaporte</option>
                       </select>
                       {googleDocumentTypeHasError ? (
-                        <p className={styles.fieldError}>{googleOnboardingFormik.errors.documentType}</p>
+                        <p className={styles.fieldError}>
+                          {googleOnboardingFormik.errors.documentType}
+                        </p>
                       ) : null}
                     </div>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="google-document-number">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="google-document-number"
+                      >
                         Número de documento
                       </label>
                       <input
@@ -2523,7 +2908,9 @@ export function Login({ onLogin }: LoginProps) {
                         className={`${styles.input} ${googleDocumentNumberHasError ? styles.inputError : ""}`}
                       />
                       {googleDocumentNumberHasError ? (
-                        <p className={styles.fieldError}>{googleOnboardingFormik.errors.documentNumber}</p>
+                        <p className={styles.fieldError}>
+                          {googleOnboardingFormik.errors.documentNumber}
+                        </p>
                       ) : null}
                     </div>
                   </div>
@@ -2546,11 +2933,16 @@ export function Login({ onLogin }: LoginProps) {
                         <option value="X">No binario / X</option>
                       </select>
                       {googleSexHasError ? (
-                        <p className={styles.fieldError}>{googleOnboardingFormik.errors.sex}</p>
+                        <p className={styles.fieldError}>
+                          {googleOnboardingFormik.errors.sex}
+                        </p>
                       ) : null}
                     </div>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel} htmlFor="google-birth-date">
+                      <label
+                        className={styles.fieldLabel}
+                        htmlFor="google-birth-date"
+                      >
                         Fecha de nacimiento
                       </label>
                       <input
@@ -2563,7 +2955,9 @@ export function Login({ onLogin }: LoginProps) {
                         className={`${styles.input} ${googleBirthDateHasError ? styles.inputError : ""}`}
                       />
                       {googleBirthDateHasError ? (
-                        <p className={styles.fieldError}>{googleOnboardingFormik.errors.birthDate}</p>
+                        <p className={styles.fieldError}>
+                          {googleOnboardingFormik.errors.birthDate}
+                        </p>
                       ) : null}
                     </div>
                   </div>
@@ -2582,13 +2976,18 @@ export function Login({ onLogin }: LoginProps) {
                       className={`${styles.input} ${googlePhoneHasError ? styles.inputError : ""}`}
                     />
                     {googlePhoneHasError ? (
-                      <p className={styles.fieldError}>{googleOnboardingFormik.errors.phone}</p>
+                      <p className={styles.fieldError}>
+                        {googleOnboardingFormik.errors.phone}
+                      </p>
                     ) : null}
                   </div>
                   <button
                     type="submit"
                     className={styles.primaryButton}
-                    disabled={googleOnboardingFormik.isSubmitting || isCompletingGoogleOnboarding}
+                    disabled={
+                      googleOnboardingFormik.isSubmitting ||
+                      isCompletingGoogleOnboarding
+                    }
                   >
                     <span>
                       {isCompletingGoogleOnboarding
@@ -2623,7 +3022,8 @@ export function Login({ onLogin }: LoginProps) {
                     </button>
                   </div>
                   <p className={styles.formSubtitle}>
-                    Ingresá el código enviado por {mfaState?.challengeChannel || "tu canal seleccionado"}.
+                    Ingresá el código enviado por{" "}
+                    {mfaState?.challengeChannel || "tu canal seleccionado"}.
                   </p>
                 </header>
                 {errorMessage ? (
@@ -2706,7 +3106,9 @@ export function Login({ onLogin }: LoginProps) {
                       mfaResendCooldownSeconds > 0
                     }
                   >
-                    {isResendingMfaCode ? "Reenviando código..." : "Reenviar código"}
+                    {isResendingMfaCode
+                      ? "Reenviando código..."
+                      : "Reenviar código"}
                   </button>
                 </div>
                 {legalLinks}
@@ -2737,9 +3139,16 @@ export function Login({ onLogin }: LoginProps) {
                     {errorMessage}
                   </div>
                 ) : null}
-                <form onSubmit={forgotPasswordFormik.handleSubmit} className={styles.form} noValidate>
+                <form
+                  onSubmit={forgotPasswordFormik.handleSubmit}
+                  className={styles.form}
+                  noValidate
+                >
                   <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel} htmlFor="forgot-password-identifier">
+                    <label
+                      className={styles.fieldLabel}
+                      htmlFor="forgot-password-identifier"
+                    >
                       Email
                     </label>
                     <input
@@ -2754,7 +3163,9 @@ export function Login({ onLogin }: LoginProps) {
                       className={`${styles.input} ${forgotPasswordHasError ? styles.inputError : ""}`}
                     />
                     {forgotPasswordHasError ? (
-                      <p className={styles.fieldError}>{forgotPasswordFormik.errors.identifier}</p>
+                      <p className={styles.fieldError}>
+                        {forgotPasswordFormik.errors.identifier}
+                      </p>
                     ) : null}
                   </div>
                   <button
@@ -2763,7 +3174,9 @@ export function Login({ onLogin }: LoginProps) {
                     disabled={forgotPasswordFormik.isSubmitting}
                   >
                     <span>
-                      {forgotPasswordFormik.isSubmitting ? "Enviando..." : "Enviar código"}
+                      {forgotPasswordFormik.isSubmitting
+                        ? "Enviando..."
+                        : "Enviar código"}
                     </span>
                   </button>
                   <button
@@ -2794,7 +3207,9 @@ export function Login({ onLogin }: LoginProps) {
                 <header className={styles.formHeader}>
                   <h2 className={styles.formTitle}>Nueva contraseña</h2>
                   <p className={styles.formSubtitle}>
-                    Ingresá el código enviado a {passwordRecoveryState?.identifier} y definí tu nueva contraseña.
+                    Ingresá el código enviado a{" "}
+                    {passwordRecoveryState?.identifier} y definí tu nueva
+                    contraseña.
                   </p>
                 </header>
                 {infoMessage ? (
@@ -2807,14 +3222,25 @@ export function Login({ onLogin }: LoginProps) {
                     {errorMessage}
                   </div>
                 ) : null}
-                <form onSubmit={resetPasswordFormik.handleSubmit} className={styles.form} noValidate>
+                <form
+                  onSubmit={resetPasswordFormik.handleSubmit}
+                  className={styles.form}
+                  noValidate
+                >
                   <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel} htmlFor="reset-password-code">
+                    <label
+                      className={styles.fieldLabel}
+                      htmlFor="reset-password-code"
+                    >
                       Código
                     </label>
                     <div className={styles.otpField}>
                       <OtpCodeInput
-                        describedBy={resetPasswordCodeHasError ? "reset-password-code-error" : undefined}
+                        describedBy={
+                          resetPasswordCodeHasError
+                            ? "reset-password-code-error"
+                            : undefined
+                        }
                         isInvalid={resetPasswordCodeHasError}
                         value={resetPasswordFormik.values.code}
                         onChange={(value) => {
@@ -2823,13 +3249,19 @@ export function Login({ onLogin }: LoginProps) {
                       />
                     </div>
                     {resetPasswordCodeHasError ? (
-                      <p className={styles.fieldError} id="reset-password-code-error">
+                      <p
+                        className={styles.fieldError}
+                        id="reset-password-code-error"
+                      >
                         {resetPasswordFormik.errors.code}
                       </p>
                     ) : null}
                   </div>
                   <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel} htmlFor="reset-password-new-password">
+                    <label
+                      className={styles.fieldLabel}
+                      htmlFor="reset-password-new-password"
+                    >
                       Nueva contraseña
                     </label>
                     <div className={styles.passwordField}>
@@ -2847,17 +3279,27 @@ export function Login({ onLogin }: LoginProps) {
                       <button
                         type="button"
                         className={styles.passwordToggle}
-                        aria-label={showResetPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        aria-label={
+                          showResetPassword
+                            ? "Ocultar contraseña"
+                            : "Mostrar contraseña"
+                        }
                         aria-pressed={showResetPassword}
                         onClick={() =>
                           setShowResetPassword((currentValue) => !currentValue)
                         }
                       >
-                        {showResetPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showResetPassword ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
                       </button>
                     </div>
                     {resetPasswordHasError ? (
-                      <p className={styles.fieldError}>{resetPasswordFormik.errors.newPassword}</p>
+                      <p className={styles.fieldError}>
+                        {resetPasswordFormik.errors.newPassword}
+                      </p>
                     ) : null}
                   </div>
                   <button
@@ -2894,12 +3336,3 @@ export function Login({ onLogin }: LoginProps) {
     </section>
   );
 }
-
-
-
-
-
-
-
-
-
