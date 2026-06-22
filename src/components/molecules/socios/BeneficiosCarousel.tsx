@@ -3,17 +3,46 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import banner2x1 from "@/assets/sociosa-img/banner/banner-2x1.png";
-import banner3x2 from "@/assets/sociosa-img/banner/banenr-3x2.png";
-import bannerDescuentos from "@/assets/sociosa-img/banner/banner-descuentos.png";
+import dermoImg from "@/assets/sociosa-img/banner/categorias-01.jpg";
+import makeUpImg from "@/assets/sociosa-img/banner/categorias-02.jpg";
+import capilarImg from "@/assets/sociosa-img/banner/categorias-03.jpg";
+import mundobebeImg from "@/assets/sociosa-img/banner/categorias-04.jpg";
+import cuidadosPersonalImg from "@/assets/sociosa-img/banner/categorias-05.jpg";
+import bienestarImg from "@/assets/sociosa-img/banner/categorias-06.jpg";
 import styles from "./BeneficiosCarousel.module.scss";
 import Link from "next/link";
 
 const SLIDES = [
-  { src: banner2x1, alt: "2x1 en productos seleccionados" },
-  { src: banner3x2, alt: "3x2 en productos seleccionados" },
-  { src: bannerDescuentos, alt: "Descuentos exclusivos Socio SA" },
-  { src: banner2x1, alt: "2x1 en producto" },
+  {
+    src: dermoImg,
+    alt: "Dermocosmetica",
+    href: "https://www.farmaciassanchezantoniolli.com.ar/50-dermocosmetica",
+  },
+  {
+    src: makeUpImg,
+    alt: "Maquillaje",
+    href: "https://www.farmaciassanchezantoniolli.com.ar/30-maquillaje",
+  },
+  {
+    src: capilarImg,
+    alt: "Capilar",
+    href: "https://www.farmaciassanchezantoniolli.com.ar/62-cuidado-capilar",
+  },
+  {
+    src: mundobebeImg,
+    alt: "Mundo bebé",
+    href: "https://www.farmaciassanchezantoniolli.com.ar/23-mundo-beb%C3%A9",
+  },
+  {
+    src: cuidadosPersonalImg,
+    alt: "Cuidados personal",
+    href: "https://www.farmaciassanchezantoniolli.com.ar/60-cuidado-personal",
+  },
+  {
+    src: bienestarImg,
+    alt: "Bienestar",
+    href: "https://www.farmaciassanchezantoniolli.com.ar/80-nutricion-y-deportes",
+  },
 ];
 
 const AUTOPLAY_MS = 3500;
@@ -79,12 +108,7 @@ export function BeneficiosCarousel() {
       <div ref={trackRef} className={styles.track} onScroll={updateArrows}>
         {SLIDES.map((slide, i) => (
           <div key={slide.alt} className={styles.slide} data-slide="">
-            <Link
-              href={
-                "https://www.farmaciassanchezantoniolli.com.ar/120-ofertasa"
-              }
-              target="_blank"
-            >
+            <Link href={slide.href} target="_blank">
               <Image
                 src={slide.src}
                 alt={slide.alt}
