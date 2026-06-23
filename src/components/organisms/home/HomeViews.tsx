@@ -171,7 +171,7 @@ export function HomeViews({
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
   const quickAccessItems: QuickAccessItem[] = [
     { label: "Mi perfil", view: "mi-cuenta", icon: User },
-    { label: "Mis expedientes", view: "mis-expedientes", icon: FileStack },
+    // { label: "Mis expedientes", view: "mis-expedientes", icon: FileStack },
     // { label: "Productos", view: "productos", icon: Box },
     { label: "Segui tu pedido", view: "pedidos", icon: Package },
     { label: "Expediente", view: "expediente-actual", icon: FileText },
@@ -817,19 +817,6 @@ export function HomeViews({
             <DetailButton onClick={() => onNavigate("pedidos")} />
           </article>
         </div>
-
-        <section className={styles.promoBanner}>
-          <h3 className={styles.promoTitle}>Nuevos productos disponibles</h3>
-          <p className={styles.promoDescription}>
-            Descubre nuestra nueva seleccion de productos premium
-          </p>
-          <button
-            onClick={() => onNavigate("productos")}
-            className={styles.promoButton}
-          >
-            Ver productos
-          </button>
-        </section>
       </section>
     </main>
   );
