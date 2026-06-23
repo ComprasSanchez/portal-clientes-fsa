@@ -3,6 +3,7 @@
   width: 100%;
   max-width: 80rem;
   padding: 1rem 1rem 2rem;
+  font-family: "Futura", "BD Supper", Arial, Helvetica, sans-serif;
 }
 
 .containerWide {
@@ -23,7 +24,7 @@
 
 .welcomeSubtitle {
   margin-top: 0.25rem;
-  font-size: 1.0625rem;
+  font-size: 1.6rem;
   color: #617881;
 }
 
@@ -140,7 +141,7 @@
 
 .pointsMetricLabel {
   display: block;
-  font-size: 0.8125rem;
+  font-size: 1rem;
   color: #698088;
 }
 
@@ -253,7 +254,9 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #17343d;
-  transition: background 0.2s ease, opacity 0.2s ease;
+  transition:
+    background 0.2s ease,
+    opacity 0.2s ease;
 
   &:hover:not(:disabled) {
     background: #f3f8f9;
@@ -324,7 +327,8 @@
 
 .facturaMeta {
   margin-top: 0.25rem;
-  font-size: 0.875rem;
+  font-weight: 500;
+  font-size: 1rem;
   color: #698088;
 }
 
@@ -422,7 +426,9 @@
 
 .panelSubtitle {
   margin-top: 0.25rem;
+  font-size: 1.4rem;
   color: #698088;
+  font-weight: 500;
 }
 
 .credentialGradient {
@@ -521,7 +527,7 @@
 
 .activeViewDescription {
   max-width: 42rem;
-  font-size: 0.9375rem;
+  font-size: 1.6rem;
   color: #627880;
 }
 
@@ -677,7 +683,7 @@
 
   .activeViewDescription {
     max-width: 18rem;
-    font-size: 0.84rem;
+    font-size: 1.1rem;
     line-height: 1.45;
   }
 
@@ -705,7 +711,7 @@
   }
 
   .panelSubtitle {
-    font-size: 0.82rem;
+    font-size: 1rem;
     line-height: 1.45;
   }
 
@@ -726,7 +732,7 @@
   }
 
   .facturaMeta {
-    font-size: 0.82rem;
+    font-size: 1rem;
   }
 
   .facturaAmount {
@@ -749,7 +755,7 @@
   }
 
   .facturaItemMeta {
-    font-size: 0.78rem;
+    font-size: 1rem;
   }
 }
 

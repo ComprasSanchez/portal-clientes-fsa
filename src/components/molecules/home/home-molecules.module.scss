@@ -48,10 +48,11 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #8f63d9;
   transition: opacity 0.2s ease;
+  cursor: pointer;
 
   &:hover {
     opacity: 0.8;
@@ -74,6 +75,7 @@
 }
 
 .orderLabel {
+  font-size: 1rem;
   color: #777892;
 }
 
@@ -95,8 +97,9 @@
 }
 
 .profileFieldValue {
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.5;
+  font-weight: 500;
   color: #2f3042;
 }
 
