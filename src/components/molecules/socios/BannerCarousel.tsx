@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import remeraPromo from "@/assets/sociosa-img/remera-promo.png";
+import remeraPromo from "@/assets/sociosa-img/remera-promo.jpg";
 import sorteoTV from "@/assets/sociosa-img/sorteo-tv.png";
 import styles from "./BannerCarousel.module.scss";
 

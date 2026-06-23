@@ -86,6 +86,63 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Futura";
+  src: url("../assets/futura/FUTURA45LIGHT.TTF") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Futura";
+  src: url("../assets/futura/FUTURA46LIGHTITALIC.TTF") format("truetype");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Futura";
+  src: url("../assets/futura/FUTURA55REGULAR.TTF") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Futura";
+  src: url("../assets/futura/FUTURA56ITALIC.TTF") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Futura";
+  src: url("../assets/futura/FUTURA65MEDIUM.TTF") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Futura";
+  src: url("../assets/futura/FUTURA66MEDIUMITALIC.TTF") format("truetype");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Futura";
+  src: url("../assets/futura/FUTURA75BOLD.TTF") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Futura";
+  src: url("../assets/futura/FUTURA76BOLDITALIC.TTF") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 body {
   font-family: "BD Supper", "Filson Pro", Arial, Helvetica, sans-serif;
 }
