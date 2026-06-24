@@ -26,8 +26,10 @@ import { SociosSucursalesView } from "./SociosSucursalesView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
+import { BannerSocioMobileCarousel } from "@/components/molecules/socios/BannerSocioMobileCarousel";
 import { BeneficiosCarousel } from "@/components/molecules/socios/BeneficiosCarousel";
 import cuotasBanner from "@/assets/sociosa-img/cuotas-banner.jpg";
+import { CuotasMobileCarousel } from "@/components/molecules/socios/CuotasMobileCarousel";
 import {
   formatPortalCurrency,
   formatPortalDateTime,
@@ -639,7 +641,15 @@ export function SociosViews({
           </p>
         </div>
 
-        <BannerCarousel />
+        {/* Desktop */}
+        <div className="hidden sm:block">
+          <BannerCarousel />
+        </div>
+
+        {/* Mobile: banner-socio1 y banner-socio2 */}
+        <div className="sm:hidden">
+          <BannerSocioMobileCarousel />
+        </div>
 
         <div className={styles.quickAccessGrid}>
           {quickAccessItems.map((item) => (
@@ -651,15 +661,21 @@ export function SociosViews({
           ))}
         </div>
 
-        <div className={styles.cuotasBanner}>
+        {/* Desktop */}
+        <div className={`${styles.cuotasBanner} hidden sm:block`}>
           <Image
             src={cuotasBanner}
             alt="NaranjaX y Cordobesa — 4 cuotas sin interés en todas tus compras"
             width={cuotasBanner.width}
             height={cuotasBanner.height}
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) calc(100vw - 16rem), 80rem"
+            sizes="(max-width: 1280px) calc(100vw - 16rem), 80rem"
             className={styles.cuotasImg}
           />
+        </div>
+
+        {/* Mobile: carrusel de cards */}
+        <div className="sm:hidden">
+          <CuotasMobileCarousel />
         </div>
 
         <BeneficiosCarousel />
