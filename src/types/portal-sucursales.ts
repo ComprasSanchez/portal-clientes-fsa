@@ -18,3 +18,11 @@ export type PortalSucursalesResponse =
       items?: PortalSucursalOption[];
       data?: PortalSucursalOption[];
     };
+
+export type PortalHorarioSucursalItem = {
+  id: number;
+  sucursal_id: number;
+  dia_id: number;
+  hora_apertura: string;
+  hora_cierre: string;
+};

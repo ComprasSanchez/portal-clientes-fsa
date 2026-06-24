@@ -115,63 +115,51 @@ export function Sidebar({
       >
         <div className="flex h-full flex-col">
           <div className="hidden border-b border-[#e6e1ef] p-4 lg:block">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-3 overflow-hidden">
-                {!isCollapsed && (
-                  <>
-                    <Image
-                      src={coraWordmark}
-                      alt="CORA"
-                      width={84}
-                      height={24}
-                      className="h-6 w-auto shrink-0"
-                      priority
-                    />
-                    <Image
-                      src={coraIcon}
-                      alt="CORA icono"
-                      width={40}
-                      height={40}
-                      className="h-10 w-10 shrink-0 rounded-xl"
-                      priority
-                    />
-                  </>
-                )}
-
-                {isCollapsed && (
+            <div className={` flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
+              {isCollapsed ? (
+                <button
+                  type="button"
+                  onClick={() => router.push("/cora")}
+                  className="flex flex-1 items-center justify-center"
+                >
                   <Image
                     src={coraIcon}
                     alt="CORA icono"
-                    width={36}
-                    height={36}
-                    className="h-9 w-9 shrink-0 rounded-xl"
+                    width={72}
+                    height={72}
+                    className="h-auto w-full"
                     priority
                   />
-                )}
-              </div>
+                </button>
+              ) : (
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <Image
+                    src={coraWordmark}
+                    alt="CORA"
+                    width={84}
+                    height={24}
+                    className="h-6 w-auto shrink-0"
+                    priority
+                  />
+                  <Image
+                    src={coraIcon}
+                    alt="CORA icono"
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 shrink-0 rounded-xl"
+                    priority
+                  />
+                </div>
+              )}
               <button
                 onClick={() => setIsCollapsed((prev) => !prev)}
                 className="rounded-lg p-1 text-[#7d7e96] transition-colors hover:bg-[#ece7f6]"
                 aria-label="Colapsar menu"
               >
-                {isCollapsed ? (
-                  <ChevronRight size={20} />
-                ) : (
-                  <ChevronLeft size={20} />
-                )}
+                {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
               </button>
             </div>
           </div>
-
-          <div className="border-b border-[#e6e1ef] p-4 lg:hidden">
-            <div className="text-sm">
-              <p className="text-[#8b8ca4]">Hola,</p>
-              <p className="truncate font-medium text-[#2c2d40]">
-                {perfil?.nombre}
-              </p>
-            </div>
-          </div>
-
           <nav className="flex-1 overflow-y-auto py-4">
             <ul className="space-y-1 px-3">
               {menuItems.map((item) => {

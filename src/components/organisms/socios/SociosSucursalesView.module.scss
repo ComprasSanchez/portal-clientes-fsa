@@ -5,6 +5,7 @@
   padding: 1.25rem 1rem 0;
   max-width: 100%;
   overflow: hidden;
+  font-family: "Futura", "BD Supper", Arial, Helvetica, sans-serif;
 
   @media (min-width: 1024px) {
     height: 100vh;
@@ -13,21 +14,12 @@
 }
 
 .header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
   margin-bottom: 1rem;
   flex-shrink: 0;
-
-  @media (min-width: 768px) {
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-  }
 }
 
 .title {
-  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
   font-weight: 700;
   color: #163640;
   line-height: 1.2;
@@ -35,21 +27,15 @@
 
 .subtitle {
   margin-top: 0.2rem;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   color: #617881;
 }
 
 .searchRow {
   display: flex;
   gap: 0.5rem;
-  flex-wrap: wrap;
-
-  @media (min-width: 768px) {
-    flex-wrap: nowrap;
-    min-width: 0;
-    max-width: 36rem;
-    width: 100%;
-  }
+  flex-shrink: 0;
+  width: 100%;
 }
 
 .searchInputWrap {
@@ -197,14 +183,24 @@
   color: #617881;
 }
 
-.listWrapper {
-  overflow-y: auto;
-  padding-bottom: 1.5rem;
+.listColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-height: 0;
 
   @media (min-width: 1024px) {
     flex: 1;
     min-width: 0;
   }
+}
+
+.listWrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 1.5rem;
+  flex: 1;
+  min-height: 0;
 }
 
 .branchList {
@@ -219,7 +215,6 @@
 .branchCard {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   width: 100%;
   text-align: left;
   padding: 0.875rem 1rem;
@@ -227,6 +222,7 @@
   border-radius: 0.875rem;
   background: #ffffff;
   cursor: pointer;
+  overflow: hidden;
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 
   &:hover {
@@ -279,7 +275,7 @@
 }
 
 .branchAddress {
-  font-size: 0.8125rem;
+  font-size: 1rem;
   color: #3d5f6a;
   margin-top: 0.125rem;
 }
@@ -302,7 +298,7 @@
 }
 
 .branchHorarios {
-  font-size: 0.75rem;
+  font-size: 1rem;
   color: #617881;
 }
 

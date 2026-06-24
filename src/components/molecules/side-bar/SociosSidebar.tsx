@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
 import sociosaLogo from "@/assets/sociosa-color.png";
+import sociosaIcon from "@/assets/icono-estrella.png";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 
 interface SociosSidebarProps {
@@ -72,16 +73,20 @@ export function SociosSidebar({
   return (
     <>
       <div className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-[#d3dee2] bg-[#f2f5f6] px-4 lg:hidden">
-          <button type="button" onClick={() => handleNavigate("dashboard")} className="shrink-0">
-            <Image
-              src={sociosaLogo}
-              alt="SocioSA"
-              width={140}
-              height={40}
-              className="h-9 w-auto"
-              priority
-            />
-          </button>
+        <button
+          type="button"
+          onClick={() => handleNavigate("dashboard")}
+          className="shrink-0"
+        >
+          <Image
+            src={sociosaLogo}
+            alt="SocioSA"
+            width={140}
+            height={40}
+            className="h-9 w-auto"
+            priority
+          />
+        </button>
         <button
           onClick={() => setIsMobileOpen((prev) => !prev)}
           className="rounded-lg p-2 text-[#32505a] transition-colors hover:bg-[#e0eaed]"
@@ -100,20 +105,43 @@ export function SociosSidebar({
       )}
 
       <aside
-        className={`fixed left-0 z-40 h-full border-r border-[#d3dee2] bg-[#f2f5f6] transition-all duration-300 ${isCollapsed ? "w-20" : "w-64"} lg:top-0 ${isMobileOpen ? "top-16 h-[calc(100vh-4rem)]" : "top-16 h-[calc(100vh-4rem)] -translate-x-full lg:translate-x-0"}`}
+        className={`fixed left-0 z-40 h-full border-r border-[#d3dee2] bg-[#f2f5f6] transition-all duration-300 ${isCollapsed ? "w-24" : "w-64"} lg:top-0 ${isMobileOpen ? "top-16 h-[calc(100vh-4rem)]" : "top-16 h-[calc(100vh-4rem)] -translate-x-full lg:translate-x-0"}`}
       >
         <div className="flex h-full flex-col overflow-hidden">
-          <div className="hidden border-b border-[#d3dee2] p-4 lg:block">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <button type="button" onClick={() => handleNavigate("dashboard")} className="overflow-hidden">
-                <Image
-                  src={sociosaLogo}
-                  alt="SocioSA"
-                  width={140}
-                  height={40}
-                  className={`w-auto shrink-0 ${isCollapsed ? "h-8" : "h-10"}`}
-                  priority
-                />
+          <div
+            className={`hidden border-b border-[#d3dee2] ${isCollapsed ? "justify-center" : "justify-between p-4"}  lg:block`}
+          >
+            <div
+              className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between mb-4"}`}
+            >
+              <button
+                type="button"
+                onClick={() => handleNavigate("dashboard")}
+                className={
+                  isCollapsed
+                    ? "flex flex-1 items-center justify-center"
+                    : "overflow-hidden"
+                }
+              >
+                {isCollapsed ? (
+                  <Image
+                    src={sociosaIcon}
+                    alt="SocioSA"
+                    width={72}
+                    height={72}
+                    className="h-auto w-full"
+                    priority
+                  />
+                ) : (
+                  <Image
+                    src={sociosaLogo}
+                    alt="SocioSA"
+                    width={140}
+                    height={40}
+                    className="h-10 w-auto shrink-0"
+                    priority
+                  />
+                )}
               </button>
               <button
                 onClick={() => setIsCollapsed((prev) => !prev)}
@@ -127,15 +155,6 @@ export function SociosSidebar({
                   <ChevronLeft size={20} />
                 )}
               </button>
-            </div>
-          </div>
-
-          <div className="border-b border-[#d3dee2] p-4 lg:hidden">
-            <div className="text-sm">
-              <p className="text-[#6b8087]">Hola,</p>
-              <p className="truncate font-medium text-[#17343d]">
-                {perfil?.nombre}
-              </p>
             </div>
           </div>
 

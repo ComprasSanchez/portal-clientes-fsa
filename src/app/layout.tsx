@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { BotmakerChat } from "../components/BotmakerChat";
 import { GlobalToastProvider } from "../components/ui/global-toast";
+import { ScrollToTop } from "../components/ScrollToTop";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,6 +35,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <ScrollToTop />
         <GlobalToastProvider>{children}</GlobalToastProvider>
         <BotmakerChat />
       </body>
