@@ -14,17 +14,8 @@
 }
 
 .header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
   margin-bottom: 1rem;
   flex-shrink: 0;
-
-  @media (min-width: 768px) {
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-  }
 }
 
 .title {
@@ -43,14 +34,8 @@
 .searchRow {
   display: flex;
   gap: 0.5rem;
-  flex-wrap: wrap;
-
-  @media (min-width: 768px) {
-    flex-wrap: nowrap;
-    min-width: 0;
-    max-width: 36rem;
-    width: 100%;
-  }
+  flex-shrink: 0;
+  width: 100%;
 }
 
 .searchInputWrap {
@@ -198,14 +183,24 @@
   color: #617881;
 }
 
-.listWrapper {
-  overflow-y: auto;
-  padding-bottom: 1.5rem;
+.listColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-height: 0;
 
   @media (min-width: 1024px) {
     flex: 1;
     min-width: 0;
   }
+}
+
+.listWrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 1.5rem;
+  flex: 1;
+  min-height: 0;
 }
 
 .branchList {
@@ -227,6 +222,7 @@
   border-radius: 0.875rem;
   background: #ffffff;
   cursor: pointer;
+  overflow: hidden;
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 
   &:hover {
