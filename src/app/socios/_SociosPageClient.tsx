@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Poppins } from "next/font/google";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SociosSidebar } from "@/components/molecules/side-bar/SociosSidebar";
 import { SociosViews } from "@/components/organisms/socios/SociosViews";
@@ -11,13 +10,11 @@ import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import { type SociosView } from "@/types/socios";
 
+const FUTURA = '"Futura", "BD Supper", Arial, Helvetica, sans-serif';
+
 const DEFAULT_VIEW: SociosView = "dashboard";
 const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales"];
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
 
 export function SociosPageClient() {
   const [currentView, setCurrentView] = useState<SociosView>(() => {
@@ -109,7 +106,7 @@ export function SociosPageClient() {
   };
 
   return (
-    <div className={`${poppins.className} min-h-screen bg-linear-to-br from-[#edf1f2] via-[#f7f9fa] to-white`}>
+    <div className="min-h-screen bg-linear-to-br from-[#edf1f2] via-[#f7f9fa] to-white" style={{ fontFamily: FUTURA }}>
       {convenioLocked && convenio && !convenioChecking && (
         <ConvenioVerificacionModal
           convenio={convenio}
