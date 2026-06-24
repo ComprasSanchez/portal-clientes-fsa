@@ -109,28 +109,6 @@ export function SociosSucursalesView() {
               : `${filtered.length} sucursal${filtered.length !== 1 ? "es" : ""} disponible${filtered.length !== 1 ? "s" : ""}${userLocation ? " · ordenadas por cercanía" : ""}`}
           </p>
         </div>
-        <div className={styles.searchRow}>
-          <div className={styles.searchInputWrap}>
-            <Search size={16} className={styles.searchIcon} />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por nombre o dirección…"
-              className={styles.searchInput}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className={styles.searchClear}
-                aria-label="Limpiar búsqueda"
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-        </div>
       </section>
 
       <div className={styles.storeLocator}>
@@ -161,6 +139,29 @@ export function SociosSucursalesView() {
           </button>
         </div>
 
+        <div className={styles.listColumn}>
+          <div className={styles.searchRow}>
+            <div className={styles.searchInputWrap}>
+              <Search size={16} className={styles.searchIcon} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar por nombre o dirección…"
+                className={styles.searchInput}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className={styles.searchClear}
+                  aria-label="Limpiar búsqueda"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </div>
         <div className={styles.listWrapper}>
           {isSucursalesLoading ? (
             <ul className={styles.branchList}>
@@ -286,6 +287,7 @@ export function SociosSucursalesView() {
               })}
             </ul>
           )}
+        </div>
         </div>
       </div>
     </main>
