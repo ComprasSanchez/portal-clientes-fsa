@@ -63,7 +63,6 @@ const HomePage = () => {
         <footer className="relative left-1/2 mt-auto -translate-x-1/2 border-t border-border bg-white py-6">
           <div className="mx-auto max-w-7xl px-4 text-center text-sm text-muted-foreground sm:px-6 lg:px-8">
             <p className="mb-2">© 2026 CORA - Todos los derechos reservados</p>
-            <p className="text-xs">Empatia · Claridad · Cercania</p>
           </div>
         </footer>
       </div>
