@@ -51,9 +51,10 @@ export function SorteoCard({ onNavigate, documentNumber }: SorteoCardProps) {
         <Image
           src={sorteoImg}
           alt={sorteo?.nombre ?? "Sorteo SocioSA"}
-          fill
+          width={sorteoImg.width}
+          height={sorteoImg.height}
           className={styles.image}
-          sizes="(max-width: 640px) 40vw, 14rem"
+          sizes="(max-width: 639px) 100vw, 14rem"
         />
         {drawDate && (
           <span className={styles.dateBadge}>
