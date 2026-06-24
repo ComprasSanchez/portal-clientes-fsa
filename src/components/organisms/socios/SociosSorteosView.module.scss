@@ -3,6 +3,7 @@
   width: 100%;
   max-width: 80rem;
   padding: 2rem 1rem;
+  font-family: "Futura", "BD Supper", Arial, Helvetica, sans-serif;
 }
 
 .heroCard {
@@ -29,12 +30,14 @@
   margin-top: 0.6rem;
   font-size: clamp(2rem, 4.4vw, 2.5rem);
   font-weight: 700;
+  font-size: 2rem;
 }
 
 .description {
   margin-top: 0.45rem;
-  max-width: 42rem;
+  max-width: 60rem;
   color: rgba(255, 255, 255, 0.84);
+  font-size: 1.6rem
 }
 
 .grid {

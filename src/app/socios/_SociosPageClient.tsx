@@ -77,7 +77,8 @@ export function SociosPageClient() {
     if (convenioLocked) return;
     setCurrentView(view);
     const url = view === DEFAULT_VIEW ? "/socios" : `/socios?view=${view}`;
-    router.replace(url, { scroll: false });
+    router.push(url, { scroll: false });
+    window.scrollTo(0, 0);
   };
 
   const handleLogout = () => {

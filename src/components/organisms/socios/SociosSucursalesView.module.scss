@@ -5,6 +5,7 @@
   padding: 1.25rem 1rem 0;
   max-width: 100%;
   overflow: hidden;
+  font-family: "Futura", "BD Supper", Arial, Helvetica, sans-serif;
 
   @media (min-width: 1024px) {
     height: 100vh;
@@ -27,7 +28,7 @@
 }
 
 .title {
-  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
   font-weight: 700;
   color: #163640;
   line-height: 1.2;
@@ -35,7 +36,7 @@
 
 .subtitle {
   margin-top: 0.2rem;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   color: #617881;
 }
 
@@ -219,7 +220,6 @@
 .branchCard {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   width: 100%;
   text-align: left;
   padding: 0.875rem 1rem;
@@ -279,7 +279,7 @@
 }
 
 .branchAddress {
-  font-size: 0.8125rem;
+  font-size: 1rem;
   color: #3d5f6a;
   margin-top: 0.125rem;
 }
@@ -302,7 +302,7 @@
 }
 
 .branchHorarios {
-  font-size: 0.75rem;
+  font-size: 1rem;
   color: #617881;
 }
 
