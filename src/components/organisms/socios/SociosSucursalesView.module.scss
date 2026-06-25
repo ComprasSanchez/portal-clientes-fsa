@@ -19,7 +19,7 @@
 }
 
 .title {
-  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+  font-size: var(--fs-page-title);
   font-weight: 700;
   color: #163640;
   line-height: 1.2;

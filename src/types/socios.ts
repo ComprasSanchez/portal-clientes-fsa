@@ -1,1 +1,1 @@
-﻿export type SociosView = "dashboard" | "mi-cuenta" | "facturas" | "puntos" | "sorteos" | "sucursales";
+﻿export type SociosView = "dashboard" | "mi-cuenta" | "facturas" | "puntos" | "sorteos" | "sucursales" | "pedidos";
