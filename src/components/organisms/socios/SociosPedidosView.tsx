@@ -133,7 +133,11 @@ function PedidoListCard({
       <div className={styles.orderCardBottomRow}>
         <div className={styles.orderCardMeta}>
           {isRetiro ? <MapPin size={13} /> : <Truck size={13} />}
-          <span>{isRetiro ? "Retiro en sucursal" : "Envío a domicilio"}</span>
+          <span>
+            {isRetiro
+              ? (pedido.nombre_sucursal ?? "Retiro en sucursal")
+              : "Envío a domicilio"}
+          </span>
         </div>
         <span className={styles.orderCardAmount}>
           {formatPortalCurrency(pedido.importe)}
@@ -219,13 +223,49 @@ function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
         </div>
       </div>
 
+      {/* Productos */}
+      {pedido.productos.length > 0 && (
+        <div>
+          <p className={styles.sectionLabel}>Productos</p>
+          <div className={styles.detailBox}>
+            {pedido.productos.map((prod) => (
+              <div key={prod.product_id} className={styles.detailBoxRow}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className={styles.detailBoxValue}>{prod.producto ?? "Producto"}</p>
+                    {prod.presentacion && (
+                      <p className={styles.detailBoxLabel}>{prod.presentacion}</p>
+                    )}
+                  </div>
+                  <span className="shrink-0 text-xs font-semibold text-[#007c98]">
+                    x{prod.qty}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Detalle adicional */}
       {((!isRetiro && pedido.domicilio) ||
+        (isRetiro && pedido.nombre_sucursal) ||
         pedido.referencia_pago ||
         pedido.observacion) && (
         <div>
           <p className={styles.sectionLabel}>Detalle</p>
           <div className={styles.detailBox}>
+            {isRetiro && pedido.nombre_sucursal && (
+              <div className={styles.detailBoxRow}>
+                <div className="flex items-start gap-3">
+                  <MapPin size={15} className="mt-0.5 shrink-0 text-[#007c98]" />
+                  <div>
+                    <p className={styles.detailBoxLabel}>Sucursal de retiro</p>
+                    <p className={styles.detailBoxValue}>{pedido.nombre_sucursal}</p>
+                  </div>
+                </div>
+              </div>
+            )}
             {!isRetiro && pedido.domicilio && (
               <div className={styles.detailBoxRow}>
                 <div className="flex items-start gap-3">
@@ -307,8 +347,11 @@ export function SociosPedidosView() {
 
   const filteredPedidos = useMemo(() => {
     return allPedidos.filter((p) => {
+      const q = search.toLowerCase();
       const matchSearch =
-        !search || p.id_pedido.toLowerCase().includes(search.toLowerCase());
+        !search ||
+        p.id_pedido.toLowerCase().includes(q) ||
+        (p.nombre_sucursal?.toLowerCase().includes(q) ?? false);
       return matchSearch && matchesFilter(p, activeFilter);
     });
   }, [allPedidos, search, activeFilter]);
@@ -373,7 +416,7 @@ export function SociosPedidosView() {
               />
               <input
                 type="search"
-                placeholder="Buscar por número de pedido..."
+                placeholder="Buscar por número o sucursal..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);

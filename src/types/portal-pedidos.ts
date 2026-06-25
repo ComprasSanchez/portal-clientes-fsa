@@ -1,3 +1,10 @@
+export type PedidoProducto = {
+  product_id: number;
+  qty: number;
+  producto: string | null;
+  presentacion: string | null;
+};
+
 export type PedidoNormalizado = {
   id_pedido: string;
   fecha: string;
@@ -14,8 +21,10 @@ export type PedidoNormalizado = {
   tipo_pago: string;
   observacion: string;
   id_sucursal: number;
+  nombre_sucursal: string | null;
   referencia_pago: string;
   importe: number;
+  productos: PedidoProducto[];
 };
 
 export type PedidosResponse = {
