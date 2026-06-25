@@ -7,6 +7,7 @@ import {
   Heart,
   MapPin,
   Ticket,
+  ShoppingBag,
   User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -23,6 +24,7 @@ import {
 import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { SociosSorteosView } from "./SociosSorteosView";
 import { SociosSucursalesView } from "./SociosSucursalesView";
+import { SociosPedidosView } from "./SociosPedidosView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
@@ -67,6 +69,10 @@ const viewContent: Record<
     title: "Mi perfil",
     description:
       "Informacion personal, datos de contacto y referencia de afiliacion en un solo lugar.",
+  },
+  pedidos: {
+    title: "Mis pedidos",
+    description: "Seguimiento del estado, preparacion y entrega de tu pedido.",
   },
   facturas: {
     title: "Facturas",
@@ -238,6 +244,12 @@ export function SociosViews({
     { label: "Sorteos", view: "sorteos", icon: Ticket, tone: "socios" },
     { label: "Sucursales", view: "sucursales", icon: MapPin, tone: "socios" },
     {
+      label: "Mis pedidos",
+      view: "pedidos",
+      icon: ShoppingBag,
+      tone: "socios",
+    },
+    {
       label: "CORA",
       icon: Heart,
       onClick: () => router.push("/cora"),
@@ -259,6 +271,14 @@ export function SociosViews({
 
   if (currentView === "sucursales") {
     return <SociosSucursalesView />;
+  }
+
+  if (currentView === "pedidos") {
+    return (
+      <main className={styles.container}>
+        <SociosPedidosView />
+      </main>
+    );
   }
 
   if (currentView === "sorteos") {
@@ -353,7 +373,10 @@ export function SociosViews({
                             : "—";
                       const tipoNorm = item.tipo.toLowerCase();
                       const montoLabel =
-                        (tipoNorm === "compra" || tipoNorm === "devolucion" || tipoNorm === "canje") && delta !== 0
+                        (tipoNorm === "compra" ||
+                          tipoNorm === "devolucion" ||
+                          tipoNorm === "canje") &&
+                        delta !== 0
                           ? formatPortalCurrency(Math.abs(delta) / 10)
                           : "—";
 

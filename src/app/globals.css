@@ -148,6 +148,26 @@ body {
 }
 
 :root {
+  /* ── Escala tipográfica global ──────────────────────────────────────────
+     Usada en todos los *.module.scss del proyecto.
+     Base: 16px (browser default, sin override en html).
+     -------------------------------------------------------------------- */
+  --fs-badge:        0.75rem;                        /*  12px — chips, badges    */
+  --fs-meta:         0.8125rem;                      /*  13px — eyebrows, labels */
+  --fs-sm:           0.875rem;                       /*  14px — texto secundario */
+  --fs-body:         1rem;                           /*  16px — cuerpo normal    */
+  --fs-md:           1.1rem;                         /* ~18px — ligeramente mayor*/
+  --fs-subtitle-sm:  1.25rem;                        /*  20px — subtítulo chico  */
+  --fs-subtitle:     1.4rem;                         /*  22px — subtítulo normal */
+  --fs-description:  clamp(1.2rem, 1.4rem, 1.6rem);                         /*  26px — descripción      */
+  --fs-value:        1.75rem;                        /*  28px — valores destacados*/
+  --fs-panel-title:  clamp(1.7rem, 3.8vw, 1.875rem); /* 27–30px — título panel   */
+  --fs-section-title:clamp(1.8rem, 3.5vw, 2.1rem);  /* 29–34px — título sección */
+  --fs-page-title:   clamp(2rem, 4vw, 2.25rem);     /* 32–36px — título página  */
+  --fs-display:      clamp(2rem, 4.8vw, 2.5rem);    /* 32–40px — hero/display   */
+  --fs-value-lg:     clamp(1.6rem, 3.8vw, 1.875rem);/* igual totalAmount SCSS   */
+  --fs-order-number: clamp(1.8rem, 3vw, 2.25rem);   /* 29–36px — número de orden*/
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
