@@ -1,17 +1,21 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckCircle2,
   ChevronLeft,
+  ChevronRight,
   MapPin,
   Search,
   ShoppingBag,
   Truck,
   XCircle,
 } from "lucide-react";
-import { PLEX_ESTADO_LABELS, type PedidoNormalizado } from "@/types/portal-pedidos";
+import {
+  PLEX_ESTADO_LABELS,
+  type PedidoNormalizado,
+} from "@/types/portal-pedidos";
 import { usePortalPedidos } from "@/lib/use-portal-pedidos";
 import { formatPortalCurrency } from "@/lib/portal-compras";
 import styles from "./SociosPedidosView.module.scss";
@@ -106,7 +110,7 @@ function matchesFilter(p: PedidoNormalizado, f: FilterKey): boolean {
   return p.id_estado !== 2 && p.id_estado < 7;
 }
 
-// ── Card de la lista izquierda ─────────────────────────────────────────────
+// â”€â”€ Card de la lista izquierda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PedidoListCard({
   pedido,
@@ -147,7 +151,7 @@ function PedidoListCard({
   );
 }
 
-// ── Panel de detalle derecho ───────────────────────────────────────────────
+// â”€â”€ Panel de detalle derecho â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
   const isRechazado = pedido.id_estado === 2;
@@ -232,9 +236,13 @@ function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
               <div key={prod.product_id} className={styles.detailBoxRow}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className={styles.detailBoxValue}>{prod.producto ?? "Producto"}</p>
+                    <p className={styles.detailBoxValue}>
+                      {prod.producto ?? "Producto"}
+                    </p>
                     {prod.presentacion && (
-                      <p className={styles.detailBoxLabel}>{prod.presentacion}</p>
+                      <p className={styles.detailBoxLabel}>
+                        {prod.presentacion}
+                      </p>
                     )}
                   </div>
                   <span className="shrink-0 text-xs font-semibold text-[#007c98]">
@@ -258,10 +266,15 @@ function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
             {isRetiro && pedido.nombre_sucursal && (
               <div className={styles.detailBoxRow}>
                 <div className="flex items-start gap-3">
-                  <MapPin size={15} className="mt-0.5 shrink-0 text-[#007c98]" />
+                  <MapPin
+                    size={15}
+                    className="mt-0.5 shrink-0 text-[#007c98]"
+                  />
                   <div>
                     <p className={styles.detailBoxLabel}>Sucursal de retiro</p>
-                    <p className={styles.detailBoxValue}>{pedido.nombre_sucursal}</p>
+                    <p className={styles.detailBoxValue}>
+                      {pedido.nombre_sucursal}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -269,9 +282,14 @@ function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
             {!isRetiro && pedido.domicilio && (
               <div className={styles.detailBoxRow}>
                 <div className="flex items-start gap-3">
-                  <MapPin size={15} className="mt-0.5 shrink-0 text-[#007c98]" />
+                  <MapPin
+                    size={15}
+                    className="mt-0.5 shrink-0 text-[#007c98]"
+                  />
                   <div>
-                    <p className={styles.detailBoxLabel}>Dirección de entrega</p>
+                    <p className={styles.detailBoxLabel}>
+                      Dirección de entrega
+                    </p>
                     <p className={styles.detailBoxValue}>{pedido.domicilio}</p>
                   </div>
                 </div>
@@ -280,12 +298,14 @@ function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
             {pedido.referencia_pago && (
               <div className={styles.detailBoxRow}>
                 <p className={styles.detailBoxLabel}>Referencia de pago</p>
-                <p className={styles.detailBoxValue}>{pedido.referencia_pago}</p>
+                <p className={styles.detailBoxValue}>
+                  {pedido.referencia_pago}
+                </p>
               </div>
             )}
             {pedido.observacion && (
               <div className={styles.detailBoxRow}>
-                <p className={styles.detailBoxLabel}>Observación</p>
+                <p className={styles.detailBoxLabel}>ObservaciÃ³n</p>
                 <p className={styles.detailBoxValue}>{pedido.observacion}</p>
               </div>
             )}
@@ -309,7 +329,7 @@ function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
   );
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────────────
+// â”€â”€ Skeleton â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PedidosSkeleton() {
   return (
@@ -318,11 +338,17 @@ function PedidosSkeleton() {
         <div className="h-11 animate-pulse rounded-xl bg-[#e6f7fb]/70" />
         <div className="flex gap-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-9 w-24 animate-pulse rounded-full bg-[#e6f7fb]/70" />
+            <div
+              key={i}
+              className="h-9 w-24 animate-pulse rounded-full bg-[#e6f7fb]/70"
+            />
           ))}
         </div>
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-22 animate-pulse rounded-xl bg-[#e6f7fb]/70" />
+          <div
+            key={i}
+            className="h-22 animate-pulse rounded-xl bg-[#e6f7fb]/70"
+          />
         ))}
       </div>
       <div className="h-130 animate-pulse rounded-2xl bg-[#e6f7fb]/70" />
@@ -330,7 +356,8 @@ function PedidosSkeleton() {
   );
 }
 
-// ── Vista principal ────────────────────────────────────────────────────────
+// â”€â”€ Vista principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 
 export function SociosPedidosView() {
   const { data, isLoading, error } = usePortalPedidos({
@@ -340,10 +367,14 @@ export function SociosPedidosView() {
   const allPedidos = data?.pedidos ?? [];
   const total = data?.total ?? allPedidos.length;
 
+
+  const PAGE_SIZE = 7;
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("todos");
+  const [page, setPage] = useState(0);
 
   const filteredPedidos = useMemo(() => {
     return allPedidos.filter((p) => {
@@ -356,13 +387,19 @@ export function SociosPedidosView() {
     });
   }, [allPedidos, search, activeFilter]);
 
+  const totalPages = Math.ceil(filteredPedidos.length / PAGE_SIZE);
+  const pagedPedidos = filteredPedidos.slice(
+    page * PAGE_SIZE,
+    (page + 1) * PAGE_SIZE,
+  );
+
   const effectiveId =
-    selectedId && filteredPedidos.some((p) => p.id_pedido === selectedId)
+    selectedId && pagedPedidos.some((p) => p.id_pedido === selectedId)
       ? selectedId
-      : (filteredPedidos[0]?.id_pedido ?? null);
+      : (pagedPedidos[0]?.id_pedido ?? null);
 
   const selectedPedido =
-    filteredPedidos.find((p) => p.id_pedido === effectiveId) ?? null;
+    pagedPedidos.find((p) => p.id_pedido === effectiveId) ?? null;
 
   const visibleFilters = FILTERS.filter(
     (f) => f.key === "todos" || allPedidos.some((p) => matchesFilter(p, f.key)),
@@ -378,13 +415,12 @@ export function SociosPedidosView() {
             Seguimiento del estado, preparación y entrega de tu pedido
           </p>
         </div>
-        {!isLoading && !error && total > 0 && (
-          <span className={styles.totalCount}>
-            {total} {total === 1 ? "pedido en total" : "pedidos en total"}
-          </span>
-        )}
       </div>
-
+      {!isLoading && !error && total > 0 && (
+        <span className={styles.totalCount}>
+          {total} {total === 1 ? "pedido en total" : "pedidos en total"}
+        </span>
+      )}
       {isLoading ? (
         <PedidosSkeleton />
       ) : error ? (
@@ -399,124 +435,179 @@ export function SociosPedidosView() {
             </div>
             <p className={styles.emptyPanelTitle}>No hay pedidos registrados</p>
             <p className={styles.emptyPanelText}>
-              Tus pedidos aparecerán aquí cuando realices una compra.
+              Tus pedidos aparecerÃ¡n aquÃ­ cuando realices una compra.
             </p>
           </div>
         </div>
       ) : (
         <>
-        <div className="grid gap-4 lg:grid-cols-[400px_1fr] lg:items-start xl:grid-cols-[440px_1fr]">
-          {/* Panel izquierdo: lista */}
-          <div className="flex flex-col gap-3">
-            {/* Buscador */}
-            <div className="relative">
-              <Search
-                size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9bb3ba]"
-              />
-              <input
-                type="search"
-                placeholder="Buscar por número o sucursal..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setSelectedId(null);
-                  setMobileDetailOpen(false);
-                }}
-                className={styles.searchInput}
-              />
-            </div>
+          <div className="grid gap-4 lg:grid-cols-[400px_1fr] lg:items-start xl:grid-cols-[440px_1fr]">
+            {/* Panel izquierdo: lista */}
+            <div className="flex flex-col gap-3">
+              {/* Buscador */}
+              <div className="relative">
+                <Search
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9bb3ba]"
+                />
+                <input
+                  type="search"
+                  placeholder="Buscar por número o sucursal..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(0);
+                    setSelectedId(null);
+                    setMobileDetailOpen(false);
+                  }}
+                  className={styles.searchInput}
+                />
+              </div>
 
-            {/* Filtros */}
-            {visibleFilters.length > 1 && (
-              <div className={styles.filterBar}>
-                {visibleFilters.map((f) => (
+              {/* Filtros */}
+              {visibleFilters.length > 1 && (
+                <div className={styles.filterBar}>
+                  {visibleFilters.map((f) => (
+                    <button
+                      key={f.key}
+                      type="button"
+                      onClick={() => {
+                        setActiveFilter(f.key);
+                        setPage(0);
+                        setSelectedId(null);
+                        setMobileDetailOpen(false);
+                      }}
+                      className={`${styles.filterButton} ${
+                        activeFilter === f.key ? styles.filterButtonActive : ""
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Lista de pedidos */}
+              <div className="flex flex-col gap-2">
+                {pagedPedidos.length === 0 ? (
+                  <p className="rounded-xl border border-[#d5e4e8] bg-white p-4 text-sm text-[#698088]">
+                    No se encontraron pedidos con ese criterio.
+                  </p>
+                ) : (
+                  pagedPedidos.map((p) => (
+                    <PedidoListCard
+                      key={p.id_pedido}
+                      pedido={p}
+                      isSelected={p.id_pedido === effectiveId}
+                      onClick={() => {
+                        setSelectedId(p.id_pedido);
+                        setMobileDetailOpen(true);
+                      }}
+                    />
+                  ))
+                )}
+              </div>
+
+              {/* PaginaciÃ³n */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between gap-2 pt-1">
                   <button
-                    key={f.key}
                     type="button"
                     onClick={() => {
-                      setActiveFilter(f.key);
+                      setPage((p) => p - 1);
                       setSelectedId(null);
-                      setMobileDetailOpen(false);
                     }}
-                    className={`${styles.filterButton} ${
-                      activeFilter === f.key ? styles.filterButtonActive : ""
-                    }`}
+                    disabled={page === 0}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#d5e4e8] bg-white text-[#32505a] transition-colors hover:bg-[#e6f7fb] disabled:opacity-30"
                   >
-                    {f.label}
+                    <ChevronLeft size={16} />
                   </button>
-                ))}
-              </div>
-            )}
-
-            {/* Lista de pedidos */}
-            <div className="flex flex-col gap-2 lg:max-h-[calc(100vh-260px)] lg:overflow-y-auto">
-              {filteredPedidos.length === 0 ? (
-                <p className="rounded-xl border border-[#d5e4e8] bg-white p-4 text-sm text-[#698088]">
-                  No se encontraron pedidos con ese criterio.
-                </p>
-              ) : (
-                filteredPedidos.map((p) => (
-                  <PedidoListCard
-                    key={p.id_pedido}
-                    pedido={p}
-                    isSelected={p.id_pedido === effectiveId}
-                    onClick={() => {
-                      setSelectedId(p.id_pedido);
-                      setMobileDetailOpen(true);
-                    }}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Panel derecho: detalle — solo visible en desktop */}
-          <div className={styles.desktopDetailOnly}>
-            <div className={styles.detailPanel}>
-              {selectedPedido ? (
-                <PedidoDetail pedido={selectedPedido} />
-              ) : (
-                <div className={styles.emptyPanel}>
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e6f7fb]">
-                    <ShoppingBag size={26} className="text-[#007c98]/45" />
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setPage(i);
+                          setSelectedId(null);
+                        }}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
+                          i === page
+                            ? "bg-[#007c98] text-white"
+                            : "border border-[#d5e4e8] bg-white text-[#32505a] hover:bg-[#e6f7fb]"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
                   </div>
-                  <p className={styles.emptyPanelTitle}>
-                    Seleccioná un pedido para ver el detalle
-                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPage((p) => p + 1);
+                      setSelectedId(null);
+                    }}
+                    disabled={page === totalPages - 1}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#d5e4e8] bg-white text-[#32505a] transition-colors hover:bg-[#e6f7fb] disabled:opacity-30"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
               )}
             </div>
-          </div>
-        </div>
 
-        {/* Drawer mobile: slide desde la derecha */}
-        <AnimatePresence>
-          {mobileDetailOpen && selectedPedido && (
-            <motion.div
-              className={styles.mobileDrawer}
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "tween", ease: [0.32, 0.72, 0, 1], duration: 0.3 }}
-            >
-              <div className={styles.mobileDrawerHeader}>
-                <button
-                  type="button"
-                  onClick={() => setMobileDetailOpen(false)}
-                  className={styles.mobileDrawerBackBtn}
-                  aria-label="Volver a la lista"
-                >
-                  <ChevronLeft size={22} />
-                </button>
-                <span className={styles.mobileDrawerTitle}>Detalle del pedido</span>
+            {/* Panel derecho: detalle â€” solo visible en desktop */}
+            <div className={styles.desktopDetailOnly}>
+              <div className={styles.detailPanel}>
+                {selectedPedido ? (
+                  <PedidoDetail pedido={selectedPedido} />
+                ) : (
+                  <div className={styles.emptyPanel}>
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e6f7fb]">
+                      <ShoppingBag size={26} className="text-[#007c98]/45" />
+                    </div>
+                    <p className={styles.emptyPanelTitle}>
+                      SeleccionÃ¡ un pedido para ver el detalle
+                    </p>
+                  </div>
+                )}
               </div>
-              <div className={styles.mobileDrawerContent}>
-                <PedidoDetail pedido={selectedPedido} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Drawer mobile: slide desde la derecha */}
+          <AnimatePresence>
+            {mobileDetailOpen && selectedPedido && (
+              <motion.div
+                className={styles.mobileDrawer}
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{
+                  type: "tween",
+                  ease: [0.32, 0.72, 0, 1],
+                  duration: 0.3,
+                }}
+              >
+                <div className={styles.mobileDrawerHeader}>
+                  <button
+                    type="button"
+                    onClick={() => setMobileDetailOpen(false)}
+                    className={styles.mobileDrawerBackBtn}
+                    aria-label="Volver a la lista"
+                  >
+                    <ChevronLeft size={22} />
+                  </button>
+                  <span className={styles.mobileDrawerTitle}>
+                    Detalle del pedido
+                  </span>
+                </div>
+                <div className={styles.mobileDrawerContent}>
+                  <PedidoDetail pedido={selectedPedido} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       )}
     </div>
