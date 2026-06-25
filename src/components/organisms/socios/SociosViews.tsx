@@ -249,12 +249,12 @@ export function SociosViews({
       icon: ShoppingBag,
       tone: "socios",
     },
-    {
-      label: "CORA",
-      icon: Heart,
-      onClick: () => router.push("/cora"),
-      tone: "socios",
-    },
+    // {
+    //   label: "CORA",
+    //   icon: Heart,
+    //   onClick: () => router.push("/cora"),
+    //   tone: "socios",
+    // },
   ];
 
   if (currentView === "mi-cuenta") {
@@ -427,8 +427,12 @@ export function SociosViews({
       return (
         <main className={styles.container}>
           <section className={styles.facturasViewSection}>
-            <h1 className={styles.activeViewTitle}>{active.title}</h1>
-            <p className={styles.activeViewDescription}>{active.description}</p>
+            <div>
+              <h1 className={styles.activeViewTitle}>{active.title}</h1>
+              <p className={styles.activeViewDescription}>
+                {active.description}
+              </p>
+            </div>
             <div className={styles.activePointsWrapper}>{pointsCard}</div>
             {historialCard}
           </section>
@@ -448,8 +452,12 @@ export function SociosViews({
       return (
         <main className={styles.container}>
           <section className={styles.facturasViewSection}>
-            <h1 className={styles.activeViewTitle}>{active.title}</h1>
-            <p className={styles.activeViewDescription}>{active.description}</p>
+            <div>
+              <h1 className={styles.activeViewTitle}>{active.title}</h1>
+              <p className={styles.activeViewDescription}>
+                {active.description}
+              </p>
+            </div>
 
             <div className={styles.facturasLayout}>
               <article className={styles.panelCard}>

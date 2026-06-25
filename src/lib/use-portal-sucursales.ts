@@ -52,14 +52,18 @@ function normalizeResponse(data: PortalSucursalesResponse): PortalSucursalOption
 }
 
 // TODO: remover este set cuando se habiliten estas sucursales
-const SUCURSALES_OCULTAS = new Set([72, 76, 77, 78, 79, 80, 81]);
+const SUCURSALES_OCULTAS = new Set([66, 72, 76, 77, 78, 79, 80, 81]);
+
+const NOMBRE_OVERRIDES: Record<number, string> = {
+  28: "Sanchez Antoniolli 28 / Breve",
+};
 
 function toSucursal(s: PortalSucursalOption, horariosMap: Map<number, PortalHorarioSucursalItem[]>): Sucursal | null {
   if (SUCURSALES_OCULTAS.has(s.id)) return null;
   if (!s.latitud || !s.longitud) return null;
   return {
     id: String(s.id),
-    nombre: s.nombre,
+    nombre: NOMBRE_OVERRIDES[s.id] ?? s.nombre,
     direccion: s.direccion,
     ciudad: "",
     provincia: "",

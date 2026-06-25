@@ -472,6 +472,8 @@
     padding: 2.25rem;
     position: sticky;
     top: 1.5rem;
+    max-height: calc(120vh - 3rem);
+    overflow-y: auto;
   }
 
   .filterButton {
