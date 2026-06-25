@@ -403,6 +403,68 @@
   color: #698088;
 }
 
+/* ── Mobile drawer (slide-in desde la derecha) ───────────────────────────── */
+
+.mobileDrawer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #f3f8f9;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  will-change: transform;
+
+  @media (min-width: 1024px) {
+    display: none;
+  }
+}
+
+.mobileDrawerHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f3f8f9;
+  border-bottom: 1px solid #d5e4e8;
+  padding: 0.875rem 1.25rem;
+}
+
+.mobileDrawerBackBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  padding: 0.3rem;
+  color: #17343d;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #e6f0f3;
+  }
+}
+
+.mobileDrawerTitle {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: #17343d;
+}
+
+.mobileDrawerContent {
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* ── Desktop only: panel derecho oculto en mobile ────────────────────────── */
+
+.desktopDetailOnly {
+  display: none;
+
+  @media (min-width: 1024px) {
+    display: block;
+  }
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
 @media (min-width: 1024px) {

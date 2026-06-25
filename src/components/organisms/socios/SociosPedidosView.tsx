@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckCircle2,
+  ChevronLeft,
   MapPin,
   Search,
   ShoppingBag,
@@ -25,7 +27,7 @@ function formatFecha(fechaStr: string): string {
 }
 
 function getTrackingSteps(tipoEntrega: string) {
-  if (tipoEntrega === "R") {
+  if (tipoEntrega.trim() === "R") {
     return [
       { label: "Pedido recibido", threshold: 1 },
       { label: "En preparación", threshold: 3 },
@@ -115,7 +117,7 @@ function PedidoListCard({
   isSelected: boolean;
   onClick: () => void;
 }) {
-  const isRetiro = pedido.tipo_entrega === "R";
+  const isRetiro = pedido.tipo_entrega.trim() === "R";
 
   return (
     <button
@@ -145,7 +147,7 @@ function PedidoListCard({
 
 function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
   const isRechazado = pedido.id_estado === 2;
-  const isRetiro = pedido.tipo_entrega === "R";
+  const isRetiro = pedido.tipo_entrega.trim() === "R";
   const trackingSteps = getTrackingSteps(pedido.tipo_entrega);
 
   return (
@@ -299,6 +301,7 @@ export function SociosPedidosView() {
   const total = data?.total ?? allPedidos.length;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("todos");
 
@@ -358,6 +361,7 @@ export function SociosPedidosView() {
           </div>
         </div>
       ) : (
+        <>
         <div className="grid gap-4 lg:grid-cols-[400px_1fr] lg:items-start xl:grid-cols-[440px_1fr]">
           {/* Panel izquierdo: lista */}
           <div className="flex flex-col gap-3">
@@ -374,6 +378,7 @@ export function SociosPedidosView() {
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setSelectedId(null);
+                  setMobileDetailOpen(false);
                 }}
                 className={styles.searchInput}
               />
@@ -389,6 +394,7 @@ export function SociosPedidosView() {
                     onClick={() => {
                       setActiveFilter(f.key);
                       setSelectedId(null);
+                      setMobileDetailOpen(false);
                     }}
                     className={`${styles.filterButton} ${
                       activeFilter === f.key ? styles.filterButtonActive : ""
@@ -412,29 +418,63 @@ export function SociosPedidosView() {
                     key={p.id_pedido}
                     pedido={p}
                     isSelected={p.id_pedido === effectiveId}
-                    onClick={() => setSelectedId(p.id_pedido)}
+                    onClick={() => {
+                      setSelectedId(p.id_pedido);
+                      setMobileDetailOpen(true);
+                    }}
                   />
                 ))
               )}
             </div>
           </div>
 
-          {/* Panel derecho: detalle */}
-          <div className={styles.detailPanel}>
-            {selectedPedido ? (
-              <PedidoDetail pedido={selectedPedido} />
-            ) : (
-              <div className={styles.emptyPanel}>
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e6f7fb]">
-                  <ShoppingBag size={26} className="text-[#007c98]/45" />
+          {/* Panel derecho: detalle — solo visible en desktop */}
+          <div className={styles.desktopDetailOnly}>
+            <div className={styles.detailPanel}>
+              {selectedPedido ? (
+                <PedidoDetail pedido={selectedPedido} />
+              ) : (
+                <div className={styles.emptyPanel}>
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e6f7fb]">
+                    <ShoppingBag size={26} className="text-[#007c98]/45" />
+                  </div>
+                  <p className={styles.emptyPanelTitle}>
+                    Seleccioná un pedido para ver el detalle
+                  </p>
                 </div>
-                <p className={styles.emptyPanelTitle}>
-                  Seleccioná un pedido para ver el detalle
-                </p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Drawer mobile: slide desde la derecha */}
+        <AnimatePresence>
+          {mobileDetailOpen && selectedPedido && (
+            <motion.div
+              className={styles.mobileDrawer}
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", ease: [0.32, 0.72, 0, 1], duration: 0.3 }}
+            >
+              <div className={styles.mobileDrawerHeader}>
+                <button
+                  type="button"
+                  onClick={() => setMobileDetailOpen(false)}
+                  className={styles.mobileDrawerBackBtn}
+                  aria-label="Volver a la lista"
+                >
+                  <ChevronLeft size={22} />
+                </button>
+                <span className={styles.mobileDrawerTitle}>Detalle del pedido</span>
+              </div>
+              <div className={styles.mobileDrawerContent}>
+                <PedidoDetail pedido={selectedPedido} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        </>
       )}
     </div>
   );
