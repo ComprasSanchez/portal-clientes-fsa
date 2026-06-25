@@ -76,6 +76,14 @@ export function SociosSidebar({
     <>
       <div className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-[#d3dee2] bg-[#f2f5f6] px-4 lg:hidden">
         <button
+          onClick={() => setIsMobileOpen((prev) => !prev)}
+          className="rounded-lg p-2 text-[#32505a] transition-colors hover:bg-[#e0eaed]"
+          aria-label="Abrir menu lateral"
+          type="button"
+        >
+          {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+        <button
           type="button"
           onClick={() => handleNavigate("dashboard")}
           className="shrink-0"
@@ -88,14 +96,6 @@ export function SociosSidebar({
             className="h-9 w-auto"
             priority
           />
-        </button>
-        <button
-          onClick={() => setIsMobileOpen((prev) => !prev)}
-          className="rounded-lg p-2 text-[#32505a] transition-colors hover:bg-[#e0eaed]"
-          aria-label="Abrir menu lateral"
-          type="button"
-        >
-          {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
@@ -169,6 +169,9 @@ export function SociosSidebar({
 
                 return (
                   <li key={item.id}>
+                    {isCoraShortcut && (
+                      <div className="mx-1 mb-2 mt-1 border-t border-[#d3dee2]" />
+                    )}
                     <button
                       onClick={() => handleNavigate(item.id)}
                       className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-all ${isActive ? "bg-linear-to-r from-[#007c98] to-[#0a6c84] text-white shadow-[0_8px_18px_rgba(0,124,152,0.22)]" : isCoraShortcut ? "text-[#8f63d9] hover:bg-[#ede8f8]" : "text-[#17343d] hover:bg-[#e2ecef]"}`}
