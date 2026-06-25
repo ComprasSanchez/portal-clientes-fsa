@@ -1,0 +1,423 @@
+/* ── Fuente y contenedor ─────────────────────────────────────────────────── */
+
+.pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pageTitle {
+  font-size: var(--fs-page-title);
+  font-weight: 700;
+  color: #17343d;
+  font-family: "Futura", "BD Supper", Arial, Helvetica, sans-serif;
+}
+
+.pageSubtitle {
+  margin-top: 0.25rem;
+  font-size: var(--fs-description);
+  color: #5f7c85;
+}
+
+.totalCount {
+  flex-shrink: 0;
+  font-size: var(--fs-sm);
+  color: #698088;
+}
+
+/* ── Lista izquierda ─────────────────────────────────────────────────────── */
+
+.searchInput {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid #d5e4e8;
+  background: #ffffff;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  font-size: var(--fs-sm);
+  color: #17343d;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &::placeholder {
+    color: #9bb3ba;
+  }
+
+  &:focus {
+    border-color: #007c98;
+    box-shadow: 0 0 0 3px rgba(0, 124, 152, 0.12);
+  }
+}
+
+.filterBar {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.filterButton {
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid #d5e4e8;
+  background: #ffffff;
+  padding: 0.4rem 1rem;
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  color: #5f7c85;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: #f3f8f9;
+    border-color: #9bc8d2;
+  }
+}
+
+.filterButtonActive {
+  background: #007c98;
+  border-color: #007c98;
+  color: #ffffff;
+
+  &:hover {
+    background: #006b84;
+  }
+}
+
+/* ── Card de la lista ────────────────────────────────────────────────────── */
+
+.orderCard {
+  width: 100%;
+  border-radius: 0.9rem;
+  border: 1px solid #d5e4e8;
+  background: #ffffff;
+  padding: 1rem 1.1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: #9bc8d2;
+    background: #f9fcfd;
+  }
+}
+
+.orderCardActive {
+  border-color: #007c98;
+  background: #f0fafb;
+  box-shadow: 0 4px 12px rgba(0, 124, 152, 0.1);
+}
+
+.orderCardTopRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.orderCardId {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: #17343d;
+}
+
+.orderCardDate {
+  margin-top: 0.3rem;
+  font-size: var(--fs-sm);
+  color: #698088;
+}
+
+.orderCardBottomRow {
+  margin-top: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.orderCardMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--fs-sm);
+  color: #5f7c85;
+}
+
+.orderCardAmount {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: #17343d;
+  white-space: nowrap;
+}
+
+/* ── Badges de estado ────────────────────────────────────────────────────── */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  font-weight: 700;
+}
+
+.badgeSm {
+  padding: 0.2rem 0.6rem;
+  font-size: var(--fs-badge);
+}
+
+.badgeMd {
+  padding: 0.25rem 0.75rem;
+  font-size: var(--fs-meta);
+}
+
+.badgeActive {
+  background: #e6f7fb;
+  color: #007c98;
+}
+
+.badgeSuccess {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badgeError {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ── Panel de detalle ────────────────────────────────────────────────────── */
+
+.detailPanel {
+  border-radius: 1.25rem;
+  border: 1px solid #d5e4e8;
+  background: #ffffff;
+  padding: 1.75rem;
+  box-shadow: 0 10px 24px rgba(0, 68, 84, 0.06);
+}
+
+.detailOrderLabel {
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: #5f7c85;
+}
+
+.detailOrderNumber {
+  margin-top: 0.4rem;
+  font-size: var(--fs-order-number);
+  font-weight: 700;
+  color: #17343d;
+  font-family: "Futura", "BD Supper", Arial, Helvetica, sans-serif;
+}
+
+.detailMetaRow {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.detailDate {
+  font-size: var(--fs-sm);
+  color: #698088;
+}
+
+/* ── Seguimiento (stepper) ───────────────────────────────────────────────── */
+
+.sectionLabel {
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: #5f7c85;
+  margin-bottom: 1.25rem;
+}
+
+.trackingStep {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.stepIconCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stepCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid #cfe0e4;
+  background: #ffffff;
+  color: #cfe0e4;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.stepCircleActive {
+  border-color: #007c98;
+  background: #007c98;
+  color: #ffffff;
+}
+
+.stepCircleRejected {
+  border-color: #fca5a5;
+  background: #fee2e2;
+  color: #f87171;
+}
+
+.stepConnector {
+  width: 2px;
+  background: #d5e4e8;
+  transition: background 0.2s;
+}
+
+.stepConnectorActive {
+  background: rgba(0, 124, 152, 0.3);
+}
+
+.stepLabel {
+  padding-top: 0.5rem;
+  font-size: var(--fs-body);
+  color: #9bb3ba;
+  line-height: 1;
+}
+
+.stepLabelActive {
+  font-weight: 600;
+  color: #17343d;
+}
+
+.stepLabelRejected {
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.stepRechazadoChip {
+  display: inline-flex;
+  margin-left: 0.6rem;
+  border-radius: 9999px;
+  background: #fee2e2;
+  padding: 0.15rem 0.6rem;
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #b91c1c;
+  vertical-align: middle;
+}
+
+/* ── Caja de detalle (domicilio, referencia, observación) ────────────────── */
+
+.detailBox {
+  overflow: hidden;
+  border-radius: 0.9rem;
+  border: 1px solid #d5e4e8;
+}
+
+.detailBoxRow {
+  background: #ffffff;
+  padding: 0.9rem 1.25rem;
+
+  & + & {
+    border-top: 1px solid #d5e4e8;
+  }
+}
+
+.detailBoxLabel {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  color: #5f7c85;
+}
+
+.detailBoxValue {
+  margin-top: 0.25rem;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: #17343d;
+}
+
+/* ── Resumen del pedido ──────────────────────────────────────────────────── */
+
+.summaryBox {
+  overflow: hidden;
+  border-radius: 0.9rem;
+  border: 1px solid #d5e4e8;
+  background: #ffffff;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+}
+
+.summaryLabel {
+  font-size: var(--fs-subtitle-sm);
+  font-weight: 700;
+  color: #17343d;
+}
+
+.summaryAmount {
+  font-size: var(--fs-value-lg);
+  font-weight: 700;
+  color: #007c98;
+}
+
+/* ── Estado vacío ────────────────────────────────────────────────────────── */
+
+.emptyPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.emptyPanelTitle {
+  margin-top: 1rem;
+  font-size: var(--fs-subtitle-sm);
+  font-weight: 700;
+  color: #17343d;
+}
+
+.emptyPanelText {
+  margin-top: 0.35rem;
+  font-size: var(--fs-sm);
+  color: #698088;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (min-width: 1024px) {
+  .detailPanel {
+    padding: 2.25rem;
+    position: sticky;
+    top: 1.5rem;
+  }
+
+  .filterButton {
+    font-size: var(--fs-meta);
+    padding: 0.45rem 1.1rem;
+  }
+
+  .orderCard {
+    padding: 1.1rem 1.25rem;
+  }
+}

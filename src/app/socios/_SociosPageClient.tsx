@@ -13,7 +13,7 @@ import { type SociosView } from "@/types/socios";
 const FUTURA = '"Futura", "BD Supper", Arial, Helvetica, sans-serif';
 
 const DEFAULT_VIEW: SociosView = "dashboard";
-const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales"];
+const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos"];
 
 
 export function SociosPageClient() {
