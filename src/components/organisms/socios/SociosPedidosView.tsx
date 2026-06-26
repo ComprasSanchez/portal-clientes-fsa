@@ -305,7 +305,7 @@ function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
             )}
             {pedido.observacion && (
               <div className={styles.detailBoxRow}>
-                <p className={styles.detailBoxLabel}>ObservaciÃ³n</p>
+                <p className={styles.detailBoxLabel}>Observación</p>
                 <p className={styles.detailBoxValue}>{pedido.observacion}</p>
               </div>
             )}
@@ -435,7 +435,7 @@ export function SociosPedidosView() {
             </div>
             <p className={styles.emptyPanelTitle}>No hay pedidos registrados</p>
             <p className={styles.emptyPanelText}>
-              Tus pedidos aparecerÃ¡n aquÃ­ cuando realices una compra.
+              Tus pedidos aparecerán aquí cuando realices una compra.
             </p>
           </div>
         </div>
@@ -567,7 +567,7 @@ export function SociosPedidosView() {
                       <ShoppingBag size={26} className="text-[#007c98]/45" />
                     </div>
                     <p className={styles.emptyPanelTitle}>
-                      SeleccionÃ¡ un pedido para ver el detalle
+                      Seleccioná un pedido para ver el detalle
                     </p>
                   </div>
                 )}
