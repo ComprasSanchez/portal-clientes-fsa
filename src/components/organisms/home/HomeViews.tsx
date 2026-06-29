@@ -1,5 +1,17 @@
 import { useEffect, useRef } from "react";
-import { FileStack, FileText, Package, User, Users } from "lucide-react";
+import {
+  Clock,
+  CreditCard,
+  FileText,
+  MapPin,
+  Package,
+  Phone,
+  Pill,
+  Stethoscope,
+  Truck,
+  User,
+  Users,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
@@ -25,6 +37,7 @@ import { usePortalExpedienteActual } from "@/lib/use-portal-expediente-actual";
 import {
   CICLOS_STATE_TYPE_LABELS,
   formatContactLabel,
+  formatFriendlyLabel,
   getMappedLabel,
   PAY_TYPE_LABELS,
   SEND_TYPE_LABELS,
@@ -419,233 +432,271 @@ export function HomeViews({
           !expedienteActualError &&
           !expedienteActualNotFound &&
           expedienteActualData ? (
-            <div className={styles.detailCardsGrid}>
-              <article className={styles.cycleSummaryCard}>
-                <p className={styles.cycleSummaryEyebrow}>Tu pedido</p>
-                <div className={styles.cycleSummaryGrid}>
-                  <div>
-                    <p className={styles.cycleSummaryLabel}>Nombre</p>
-                    <p className={styles.cycleSummaryValue}>
-                      {expedienteActual?.titulo ?? "Sin dato"}
-                    </p>
+            <div className={styles.expedienteLayout}>
+              <header className={styles.expedientePatientHeader}>
+                <div className={styles.expedientePatientTop}>
+                  <div className={styles.expedienteAvatar}>
+                    {expedienteActualCliente
+                      ? `${expedienteActualCliente.nombre.charAt(0)}${expedienteActualCliente.apellido.charAt(0)}`
+                      : "?"}
                   </div>
                   <div>
-                    <p className={styles.cycleSummaryLabel}>Forma de entrega</p>
-                    <p className={styles.cycleSummaryValue}>
-                      {getMappedLabel(
-                        SEND_TYPE_LABELS,
-                        expedienteActual?.medioEntrega,
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={styles.cycleSummaryLabel}>Creado el</p>
-                    <p className={styles.cycleSummaryValue}>
-                      {formatOptionalDate(expedienteActual?.createdAt)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={styles.cycleSummaryLabel}>Actualizado</p>
-                    <p className={styles.cycleSummaryValue}>
-                      {formatOptionalDate(expedienteActual?.updatedAt)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={styles.cycleSummaryLabel}>Paciente</p>
-                    <p className={styles.cycleSummaryValue}>
+                    <p className={styles.expedientePatientName}>
                       {expedienteActualCliente
                         ? `${expedienteActualCliente.nombre} ${expedienteActualCliente.apellido}`
                         : "Sin dato"}
                     </p>
-                  </div>
-                  <div>
-                    <p className={styles.cycleSummaryLabel}>Documento</p>
-                    <p className={styles.cycleSummaryValue}>
-                      {expedienteActualCliente?.documento.numero ?? "Sin dato"}
+                    <p className={styles.expedientePatientDoc}>
+                      DNI {expedienteActualCliente?.documento.numero ?? "—"}
                     </p>
                   </div>
                 </div>
-
-                {/* {expedienteActualGeneratedAt ? (
-                  <p className={styles.trackingMessageText}>
-                    Respuesta generada el {formatOptionalDate(expedienteActualGeneratedAt)}.
-                  </p>
-                ) : null} */}
-              </article>
-
-              <article className={styles.cycleSummaryCard}>
-                <p className={styles.cycleSummaryEyebrow}>Próxima entrega</p>
-                {expedienteActualCycle ? (
-                  <div className={styles.cycleSummaryGrid}>
-                    <div>
-                      <p className={styles.cycleSummaryLabel}>Pedido</p>
-                      <p className={styles.cycleSummaryValue}>
-                        {expedienteActualCycle.titulo}
-                      </p>
-                    </div>
-                    <div>
-                      <p className={styles.cycleSummaryLabel}>Estado</p>
-                      <p className={styles.cycleSummaryValue}>
-                        {getMappedLabel(
-                          CICLOS_STATE_TYPE_LABELS,
-                          expedienteActualCycle.estado,
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <p className={styles.cycleSummaryLabel}>Fecha estimada</p>
-                      <p className={styles.cycleSummaryValue}>
-                        {formatOptionalDate(
-                          expedienteActualCycle.fechaEntregaObjetivo,
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <p className={styles.cycleSummaryLabel}>
-                        Empezamos a prepararlo
-                      </p>
-                      <p className={styles.cycleSummaryValue}>
-                        {formatOptionalDate(
-                          expedienteActualCycle.fechaInicioGestion,
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <p className={styles.cycleSummaryLabel}>
-                        Movimientos registrados
-                      </p>
-                      <p className={styles.cycleSummaryValue}>
-                        {expedienteActualEvents.length}
-                      </p>
-                    </div>
-                    <div>
-                      <p className={styles.cycleSummaryLabel}>
-                        Medicamentos en este pedido
-                      </p>
-                      <p className={styles.cycleSummaryValue}>
-                        {expedienteActualCycleItems.length}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className={styles.summaryMuted}>
-                    Todavía no tenemos el detalle de la próxima entrega.
-                  </p>
-                )}
-              </article>
-
-              <article className={styles.cycleSummaryCard}>
-                <p className={styles.cycleSummaryEyebrow}>Cómo seguimos</p>
-                <div className={styles.cycleSummaryGrid}>
+                <div className={styles.expedienteHeaderMetas}>
                   <div>
-                    <p className={styles.cycleSummaryLabel}>
-                      Canal de contacto
-                    </p>
-                    <p className={styles.cycleSummaryValue}>
-                      {expedienteActualContacto
-                        ? `${formatContactLabel(expedienteActualContacto.tipo)}: ${expedienteActualContacto.valor}`
-                        : "Sin dato"}
+                    <p className={styles.expedienteMetaLabel}>Creado</p>
+                    <p className={styles.expedienteMetaValue}>
+                      {formatOptionalDate(expedienteActual?.createdAt)}
                     </p>
                   </div>
                   <div>
-                    <p className={styles.cycleSummaryLabel}>
-                      Horario de contacto
-                    </p>
-                    <p className={styles.cycleSummaryValue}>
-                      {getMappedLabel(
-                        TIME_CONTACT_LABELS,
-                        expedienteActual?.politicaContacto ?? "",
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={styles.cycleSummaryLabel}>Lo recibís en</p>
-                    <p className={styles.cycleSummaryValue}>
-                      {formatDeliveryLocation({
-                        medioEntrega: expedienteActual?.medioEntrega,
-                        domicilioEntrega: expedienteActualDomicilio,
-                        sucursalEntrega: expedienteActualSucursal,
-                      })}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={styles.cycleSummaryLabel}>Médico</p>
-                    <p className={styles.cycleSummaryValue}>
-                      {expedienteActualMedico?.nombre ??
-                        expedienteActual?.medicoNombre ??
-                        "Sin dato"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={styles.cycleSummaryLabel}>Forma de pago</p>
-                    <p className={styles.cycleSummaryValue}>
-                      {getMappedLabel(
-                        PAY_TYPE_LABELS,
-                        expedienteActual?.medioPago,
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={styles.cycleSummaryLabel}>
-                      Medicamentos de este pedido
-                    </p>
-                    <p className={styles.cycleSummaryValue}>
-                      {cicloItemsCount}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={styles.cycleSummaryLabel}>
-                      Medicamentos del tratamiento
-                    </p>
-                    <p className={styles.cycleSummaryValue}>
-                      {expedienteActualItems.length}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={styles.cycleSummaryLabel}>
-                      Entregas anteriores
-                    </p>
-                    <p className={styles.cycleSummaryValue}>
-                      {pastCycles.length}
+                    <p className={styles.expedienteMetaLabel}>Actualizado</p>
+                    <p className={styles.expedienteMetaValue}>
+                      {formatOptionalDate(expedienteActual?.updatedAt)}
                     </p>
                   </div>
                 </div>
+              </header>
 
-                <div className={styles.itemsSection}>
-                  <p className={styles.itemsSectionTitle}>
-                    Medicamentos de este pedido
-                  </p>
-                  {expedienteActualCycleItems.length > 0 ? (
-                    <div className={styles.itemsGrid}>
-                      {expedienteActualCycleItems.map((item) => (
-                        <article key={item.id} className={styles.itemCard}>
-                          <p className={styles.itemTitle}>
-                            {item.productoNombre}
+              <div className={styles.expedienteTwoCol}>
+                <div>
+                  <section className={styles.expedienteSection}>
+                    <p className={styles.sectionEyebrow}>
+                      Medicamentos solicitados
+                    </p>
+                    {expedienteActualItems.length > 0 ? (
+                      expedienteActualItems.map((item) => (
+                        <div key={item.id} className={styles.medicamentCard}>
+                          <div className={styles.medicamentIcon}>
+                            <Pill size={16} />
+                          </div>
+                          <div className={styles.medicamentInfo}>
+                            <p className={styles.medicamentName}>
+                              {item.productoNombre}
+                            </p>
+                            {item.marcaNombre && (
+                              <p className={styles.medicamentMarca}>
+                                {item.marcaNombre}
+                              </p>
+                            )}
+                          </div>
+                          {item.cantidadEnvasesPorCiclo != null && (
+                            <div className={styles.medicamentQty}>
+                              <span className={styles.medicamentQtyLabel}>
+                                Cantidad
+                              </span>
+                              <span className={styles.medicamentQtyValue}>
+                                {item.cantidadEnvasesPorCiclo}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <p className={styles.summaryMuted}>
+                        Sin medicamentos registrados.
+                      </p>
+                    )}
+                  </section>
+
+                  {expedienteActualCycle && (
+                    <section className={styles.expedienteSection}>
+                      <p className={styles.sectionEyebrow}>Próxima entrega</p>
+                      <div className={styles.cicloCard}>
+                        <div className={styles.cicloCardLeft}>
+                          {/* <span className={styles.cicloLabel}>
+                            {expedienteActualCycle.titulo}
+                          </span> */}
+                          <p className={styles.cicloDate}>
+                            {formatOptionalDate(
+                              expedienteActualCycle.fechaInicioGestion,
+                            )}
                           </p>
-                        </article>
+                          <p className={styles.cicloScheduled}>
+                            Programada:{" "}
+                            {formatOptionalDate(
+                              expedienteActualCycle.fechaEntregaObjetivo,
+                            )}
+                          </p>
+                        </div>
+                        <div className={styles.cicloStats}>
+                          <div className={styles.cicloStat}>
+                            <span className={styles.cicloStatValue}>
+                              {expedienteActualCycleItems.length}
+                            </span>
+                            <span className={styles.cicloStatLabel}>
+                              Medicamentos
+                            </span>
+                          </div>
+                          <div className={styles.cicloStat}>
+                            <span className={styles.cicloStatValue}>
+                              {expedienteActualEvents.length}
+                            </span>
+                            <span className={styles.cicloStatLabel}>
+                              Movimientos
+                            </span>
+                          </div>
+                        </div>
+                        <span className={styles.cicloStatusBadge}>
+                          {getMappedLabel(
+                            CICLOS_STATE_TYPE_LABELS,
+                            expedienteActualCycle.estado,
+                          )}
+                        </span>
+                      </div>
+                    </section>
+                  )}
+
+                  <section className={styles.expedienteSection}>
+                    <p className={styles.sectionEyebrow}>Método de entrega</p>
+                    <div className={styles.entregaCard}>
+                      <Truck size={20} className={styles.entregaIcon} />
+                      <div className={styles.entregaBody}>
+                        <div>
+                          <p className={styles.entregaType}>
+                            {getMappedLabel(
+                              SEND_TYPE_LABELS,
+                              expedienteActual?.medioEntrega,
+                            )}
+                          </p>
+                          <p className={styles.entregaAddress}>
+                            {formatDeliveryLocation({
+                              medioEntrega: expedienteActual?.medioEntrega,
+                              domicilioEntrega: expedienteActualDomicilio,
+                              sucursalEntrega: expedienteActualSucursal,
+                            })}
+                          </p>
+                        </div>
+                        <div className={styles.entregaPago}>
+                          <CreditCard size={14} className={styles.entregaPagoIcon} />
+                          <div>
+                            <p className={styles.entregaPagoLabel}>Cobertura</p>
+                            <p className={styles.entregaPagoValue}>
+                              {getMappedLabel(
+                                PAY_TYPE_LABELS,
+                                expedienteActual?.medioPago,
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <div>
+                  <section className={styles.expedienteSection}>
+                    <p className={styles.sectionEyebrow}>Datos de contacto</p>
+                    <div className={styles.infoCard}>
+                      <div className={styles.infoRow}>
+                        <Phone size={16} className={styles.infoIcon} />
+                        <div>
+                          <p className={styles.infoLabel}>
+                            {expedienteActualContacto
+                              ? formatContactLabel(
+                                  expedienteActualContacto.tipo,
+                                )
+                              : "Teléfono"}
+                          </p>
+                          <p className={styles.infoValue}>
+                            {expedienteActualContacto?.valor ?? "Sin dato"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={styles.infoRow}>
+                        <Clock size={16} className={styles.infoIcon} />
+                        <div>
+                          <p className={styles.infoLabel}>
+                            Horario de contacto
+                          </p>
+                          <p className={styles.infoValue}>
+                            {getMappedLabel(
+                              TIME_CONTACT_LABELS,
+                              expedienteActual?.politicaContacto ?? "",
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={styles.infoRow}>
+                        <MapPin size={16} className={styles.infoIcon} />
+                        <div>
+                          <p className={styles.infoLabel}>Dirección</p>
+                          <p className={styles.infoValue}>
+                            {formatDeliveryLocation({
+                              medioEntrega: expedienteActual?.medioEntrega,
+                              domicilioEntrega: expedienteActualDomicilio,
+                              sucursalEntrega: expedienteActualSucursal,
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={styles.infoRow}>
+                        <Stethoscope size={16} className={styles.infoIcon} />
+                        <div>
+                          <p className={styles.infoLabel}>Médico</p>
+                          <p className={styles.infoValue}>
+                            {expedienteActualMedico?.nombre ??
+                              expedienteActual?.medicoNombre ??
+                              "Sin dato"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className={styles.expedienteSection}>
+                    <p className={styles.sectionEyebrow}>Resumen</p>
+                    <div className={styles.resumenCard}>
+                      <div className={styles.resumenRow}>
+                        <span className={styles.resumenLabel}>
+                          Total medicamentos
+                        </span>
+                        <span className={styles.resumenValue}>
+                          {expedienteActualItems.length}
+                        </span>
+                      </div>
+                      <div className={styles.resumenRow}>
+                        <span className={styles.resumenLabel}>
+                          En este pedido
+                        </span>
+                        <span className={styles.resumenValue}>
+                          {cicloItemsCount}
+                        </span>
+                      </div>
+                      <div className={styles.resumenRow}>
+                        <span className={styles.resumenLabel}>
+                          Entregas anteriores
+                        </span>
+                        <span className={styles.resumenValue}>
+                          {pastCycles.length}
+                        </span>
+                      </div>
+                    </div>
+                  </section>
+
+                  {expedienteActualWarnings.length > 0 && (
+                    <div className={styles.warningList}>
+                      {expedienteActualWarnings.map((warning) => (
+                        <span key={warning} className={styles.warningItem}>
+                          {warning}
+                        </span>
                       ))}
                     </div>
-                  ) : (
-                    <p className={styles.summaryMuted}>
-                      Todavía no tenemos el detalle de los medicamentos de este
-                      pedido.
-                    </p>
                   )}
                 </div>
-
-                {expedienteActualWarnings.length > 0 ? (
-                  <div className={styles.warningList}>
-                    {expedienteActualWarnings.map((warning) => (
-                      <span key={warning} className={styles.warningItem}>
-                        {warning}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-              </article>
+              </div>
             </div>
           ) : null}
-          <button
+          {/* <button
             type="button"
             onClick={() => {
               void refreshExpedienteActual();
@@ -653,7 +704,7 @@ export function HomeViews({
             className={styles.primaryButton}
           >
             Actualizar página
-          </button>
+          </button> */}
         </section>
       </main>
     );
