@@ -324,11 +324,6 @@ export function SociosViews({
                 Tus canjes y acumulaciones recientes
               </p>
             </div>
-            {historialTotal > 0 && (
-              <span className={styles.statusBadge}>
-                {historialTotal} registros
-              </span>
-            )}
           </div>
 
           {historialError ? (
@@ -469,17 +464,6 @@ export function SociosViews({
                       detalle.
                     </p>
                   </div>
-
-                  {!comprasError ? (
-                    <div className={styles.facturasHeaderMetric}>
-                      <span className={styles.facturasHeaderMetricLabel}>
-                        Comprobantes
-                      </span>
-                      <strong className={styles.facturasHeaderMetricValue}>
-                        {isComprasLoading ? "..." : comprasSummary.totalCompras}
-                      </strong>
-                    </div>
-                  ) : null}
                 </div>
 
                 {comprasError ? (
@@ -745,13 +729,15 @@ export function SociosViews({
             />
           </article> */}
 
+          {pointsCard}
+
           <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi perfil</h2>
             <p className={styles.panelSubtitle}>
               Datos personales y de contacto
             </p>
             <dl className={styles.orderList}>
-              <OrderRow label="Afiliado" value={userName} />
+              <OrderRow label="Nombre completo" value={userName} />
               <OrderRow
                 label="Documento"
                 value={documentNumber ?? "Sin dato"}
@@ -772,7 +758,6 @@ export function SociosViews({
               onClick={() => onNavigate("mi-cuenta")}
             />
           </article>
-          {pointsCard}
         </div>
 
         <SorteoCard onNavigate={onNavigate} documentNumber={documentNumber} />
