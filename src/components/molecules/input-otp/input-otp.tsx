@@ -140,7 +140,7 @@ export function InputMFA({ onSubmit, isLoading, resetTrigger }: {
           isDisabled={value.length !== 6 || isLoading}
           type="submit"
         >
-          {isLoading ? "Verificando..." : "Validar código"}
+          {isLoading ? "Verificando..." : "VERIFICAR"}
         </Button>
       </Form>
     </div>
