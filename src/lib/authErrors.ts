@@ -63,7 +63,7 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   AUTH_USERNAME_ALREADY_EXISTS: "Ese usuario ya existe. Proba con otro.",
   AUTH_EMAIL_ALREADY_EXISTS: "Ese email ya esta registrado.",
   AUTH_MFA_TICKET_INVALID:
-    "El ticket OTP es invalido o expiro. Por favor, inicia sesion nuevamente.",
+    "El código venció o no es válido. Tocá 'Reenviar código' para recibir uno nuevo.",
   AUTH_REGISTER_EMAIL_IN_USE: "Ese email ya esta registrado.",
   AUTH_MFA_COOLDOWN: "El reenvio del OTP esta en tiempo de espera.",
   AUTH_REGISTER_EMAIL_SEND_FAILED:
@@ -73,8 +73,7 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
     "La solicitud para restablecer la contrasena no es valida.",
   AUTH_RESET_CHALLENGE_EXPIRED:
     "La solicitud para restablecer la contrasena expiro. Solicita un nuevo codigo.",
-  AUTH_RESET_INVALID_CODE:
-    "El codigo de recuperacion ingresado no es valido.",
+  AUTH_RESET_INVALID_CODE: "El codigo de recuperacion ingresado no es valido.",
   AUTH_RESET_LOCKED:
     "La recuperacion de contrasena fue bloqueada temporalmente por demasiados intentos.",
   AUTH_RESET_PASSWORD_FAILED:

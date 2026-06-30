@@ -1,7 +1,16 @@
 ﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, CalendarOff, CircleAlert, CircleCheckBig, LoaderCircle, RefreshCw, Ticket, X } from "lucide-react";
+import {
+  CalendarDays,
+  CalendarOff,
+  CircleAlert,
+  CircleCheckBig,
+  LoaderCircle,
+  RefreshCw,
+  Ticket,
+  X,
+} from "lucide-react";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import styles from "./SociosSorteosView.module.scss";
 
@@ -67,17 +76,26 @@ const formatDate = (value?: string | null) => {
   }).format(date);
 };
 
-export function SociosSorteosView({ documentNumber, userName, phoneVerified, principalPhone, convenio }: SociosSorteosViewProps) {
+export function SociosSorteosView({
+  documentNumber,
+  userName,
+  phoneVerified,
+  principalPhone,
+  convenio,
+}: SociosSorteosViewProps) {
   const { refresh } = usePortalPerfilContext();
   const [activeDraw, setActiveDraw] = useState<SorteoActivo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [noSorteo, setNoSorteo] = useState(false);
   const [isParticipating, setIsParticipating] = useState(false);
-  const [participation, setParticipation] = useState<ParticiparSorteoResponse | null>(null);
+  const [participation, setParticipation] =
+    useState<ParticiparSorteoResponse | null>(null);
 
   const [isVerificacionModalOpen, setIsVerificacionModalOpen] = useState(false);
-  const [otpStep, setOtpStep] = useState<"idle" | "sending" | "waiting_whatsapp">("idle");
+  const [otpStep, setOtpStep] = useState<
+    "idle" | "sending" | "waiting_whatsapp"
+  >("idle");
   const [otpError, setOtpError] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -94,10 +112,13 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
         cache: "no-store",
       });
 
-      const data = (await response.json().catch(() => null)) as SorteoActivoResponse | null;
+      const data = (await response
+        .json()
+        .catch(() => null)) as SorteoActivoResponse | null;
 
       const errorCode = data?.error ?? null;
-      const isSinSorteo = !data?.sorteo || errorCode === "sorteo_activo_no_configurado";
+      const isSinSorteo =
+        !data?.sorteo || errorCode === "sorteo_activo_no_configurado";
 
       if (!response.ok) {
         if (isSinSorteo) {
@@ -135,18 +156,28 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
     const contactoId = principalPhone.id;
 
     pollingRef.current = setInterval(() => {
-      void fetch("/api/portal/me/perfil", { headers: { Accept: "application/json" } })
+      void fetch("/api/portal/me/perfil", {
+        headers: { Accept: "application/json" },
+      })
         .then((res) => (res.ok ? res.json() : null))
-        .then((data: { contactos?: { id?: string; verificado?: boolean }[] } | null) => {
-          if (!data) return;
-          const contacto = (data.contactos ?? []).find((c) => c.id === contactoId);
-          if (contacto?.verificado) {
-            if (pollingRef.current) clearInterval(pollingRef.current);
-            setIsVerificacionModalOpen(false);
-            setOtpStep("idle");
-            void refresh();
-          }
-        })
+        .then(
+          (
+            data: {
+              contactos?: { id?: string; verificado?: boolean }[];
+            } | null,
+          ) => {
+            if (!data) return;
+            const contacto = (data.contactos ?? []).find(
+              (c) => c.id === contactoId,
+            );
+            if (contacto?.verificado) {
+              if (pollingRef.current) clearInterval(pollingRef.current);
+              setIsVerificacionModalOpen(false);
+              setOtpStep("idle");
+              void refresh();
+            }
+          },
+        )
         .catch(() => undefined);
     }, 4000);
 
@@ -199,7 +230,9 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
         }),
       });
 
-      const data = (await response.json().catch(() => null)) as ParticiparSorteoResponse | null;
+      const data = (await response
+        .json()
+        .catch(() => null)) as ParticiparSorteoResponse | null;
 
       if (!response.ok || !data) {
         setParticipation({
@@ -246,19 +279,24 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
         !principalPhone.valor?.startsWith("+549")
       ) {
         const normalizedValor = "+549" + principalPhone.valor.slice(3);
-        const patchRes = await fetch(`/api/portal/me/contactos/${principalPhone.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tipo: "TELEFONO",
-            valor: normalizedValor,
-            regionIso2: "AR",
-            principal: principalPhone.principal ?? false,
-            verificado: principalPhone.verificado ?? false,
-          }),
-        });
+        const patchRes = await fetch(
+          `/api/portal/me/contactos/${principalPhone.id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              tipo: "TELEFONO",
+              valor: normalizedValor,
+              regionIso2: "AR",
+              principal: principalPhone.principal ?? false,
+              verificado: principalPhone.verificado ?? false,
+            }),
+          },
+        );
         if (!patchRes.ok) {
-          setOtpError("No se pudo normalizar el numero antes de verificar. Edita y guarda el telefono primero.");
+          setOtpError(
+            "No se pudo normalizar el numero antes de verificar. Edita y guarda el telefono primero.",
+          );
           setOtpStep("idle");
           return;
         }
@@ -268,9 +306,13 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
         `/api/portal/me/contactos/${principalPhone.id}/verificar`,
         { method: "POST", headers: { Accept: "application/json" } },
       );
-      const data = (await res.json().catch(() => null)) as { message?: string } | null;
+      const data = (await res.json().catch(() => null)) as {
+        message?: string;
+      } | null;
       if (!res.ok) {
-        setOtpError(data?.message ?? "No se pudo enviar el mensaje. Intenta de nuevo.");
+        setOtpError(
+          data?.message ?? "No se pudo enviar el mensaje. Intenta de nuevo.",
+        );
         setOtpStep("idle");
         return;
       }
@@ -281,8 +323,11 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
     }
   };
 
-  const participationMessage = participation?.message ?? participation?.error ?? null;
-  const canParticipate = Boolean(documentNumber && activeDraw && !isParticipating && phoneVerified);
+  const participationMessage =
+    participation?.message ?? participation?.error ?? null;
+  const canParticipate = Boolean(
+    documentNumber && activeDraw && !isParticipating && phoneVerified,
+  );
 
   return (
     <main className={styles.container}>
@@ -290,13 +335,10 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
         <div>
           <h1 className={styles.title}>Sorteos</h1>
           <p className={styles.description}>
-            Consulta el sorteo vigente y participa con el documento asociado a tu cuenta de socio.
+            Consulta el sorteo vigente y participa con el documento asociado a
+            tu cuenta de socio.
           </p>
         </div>
-        <button className={styles.secondaryButton} onClick={() => void loadActiveDraw()} type="button">
-          <RefreshCw size={16} />
-          Actualizar
-        </button>
       </section>
 
       {convenio ? (
@@ -333,9 +375,12 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
                 <CalendarOff size={26} />
               </div>
               <div>
-                <p className={styles.emptyTitle}>Sin sorteo activo por el momento</p>
+                <p className={styles.emptyTitle}>
+                  Sin sorteo activo por el momento
+                </p>
                 <p className={styles.emptyBody}>
-                  Cuando haya un sorteo en curso, vas a poder verlo y participar desde acá. Volvé pronto.
+                  Cuando haya un sorteo en curso, vas a poder verlo y participar
+                  desde acá. Volvé pronto.
                 </p>
               </div>
             </div>
@@ -352,11 +397,15 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
               <div className={styles.metaGrid}>
                 <div className={styles.metaCard}>
                   <span className={styles.metaLabel}>Inicio</span>
-                  <strong className={styles.metaValue}>{formatDate(activeDraw.fechaInicio)}</strong>
+                  <strong className={styles.metaValue}>
+                    {formatDate(activeDraw.fechaInicio)}
+                  </strong>
                 </div>
                 <div className={styles.metaCard}>
                   <span className={styles.metaLabel}>Cierre</span>
-                  <strong className={styles.metaValue}>{formatDate(activeDraw.fechaFin)}</strong>
+                  <strong className={styles.metaValue}>
+                    {formatDate(activeDraw.fechaFin)}
+                  </strong>
                 </div>
               </div>
             </div>
@@ -367,7 +416,6 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
           <div className={styles.panelHeader}>
             <div>
               <h2 className={styles.panelTitle}>Participar</h2>
-              <p className={styles.panelSubtitle}>Registramos tu participacion usando tu cuenta actual.</p>
             </div>
             <span className={styles.iconBadgeAlt}>
               <CalendarDays size={18} />
@@ -375,10 +423,10 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
           </div>
 
           <div className={styles.identityCard}>
-            <span className={styles.identityLabel}>Socio</span>
             <strong className={styles.identityValue}>{userName}</strong>
             <span className={styles.identityHint}>
-              Documento usado para participar: {documentNumber?.trim() || "No disponible en tu perfil"}
+              Documento usado para participar:{" "}
+              {documentNumber?.trim() || "No disponible en tu perfil"}
             </span>
           </div>
 
@@ -386,7 +434,10 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
             <div className={styles.warningBox}>
               <CircleAlert size={18} className={styles.warningIcon} />
               <div className={styles.warningContent}>
-                <span>Necesitas verificar tu celular para poder participar del sorteo.</span>
+                <span>
+                  Necesitas verificar tu celular para poder participar del
+                  sorteo.
+                </span>
                 {principalPhone?.id ? (
                   <button
                     type="button"
@@ -405,23 +456,40 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
           ) : null}
 
           {participationMessage ? (
-            <div className={participation?.ok ? styles.successBox : styles.errorBox} role="status">
-              {participation?.ok ? <CircleCheckBig size={18} /> : <CircleAlert size={18} />}
+            <div
+              className={
+                participation?.ok ? styles.successBox : styles.errorBox
+              }
+              role="status"
+            >
+              {participation?.ok ? (
+                <CircleCheckBig size={18} />
+              ) : (
+                <CircleAlert size={18} />
+              )}
               <div>
                 <p>{participationMessage}</p>
                 {participation?.requiresValidation ? (
                   <small className={styles.inlineHint}>
-                    La participacion quedo registrada pero requiere validacion adicional.
+                    La participacion quedo registrada pero requiere validacion
+                    adicional.
                   </small>
                 ) : null}
                 {participation?.alreadyParticipating ? (
-                  <small className={styles.inlineHint}>Ya figurabas como participante en este sorteo.</small>
+                  <small className={styles.inlineHint}>
+                    Ya figurabas como participante en este sorteo.
+                  </small>
                 ) : null}
               </div>
             </div>
           ) : null}
 
-          <button className={styles.primaryButton} disabled={!canParticipate} onClick={() => void handleParticipate()} type="button">
+          <button
+            className={styles.primaryButton}
+            disabled={!canParticipate}
+            onClick={() => void handleParticipate()}
+            type="button"
+          >
             {isParticipating ? (
               <>
                 <LoaderCircle className={styles.spinningIcon} size={16} />
@@ -438,7 +506,10 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
       </section>
 
       {isVerificacionModalOpen && principalPhone ? (
-        <div className={styles.modalOverlay} onClick={handleCloseVerificacionModal}>
+        <div
+          className={styles.modalOverlay}
+          onClick={handleCloseVerificacionModal}
+        >
           <div
             className={styles.modalDialog}
             onClick={(e) => e.stopPropagation()}
@@ -448,10 +519,15 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
           >
             <header className={styles.modalHeader}>
               <div>
-                <h2 id="verificacion-sorteo-title" className={styles.modalTitle}>
+                <h2
+                  id="verificacion-sorteo-title"
+                  className={styles.modalTitle}
+                >
                   Verificar celular
                 </h2>
-                <p className={styles.modalSubtitle}>{principalPhone.valor ?? "Tu celular"}</p>
+                <p className={styles.modalSubtitle}>
+                  {principalPhone.valor ?? "Tu celular"}
+                </p>
               </div>
               <button
                 type="button"
@@ -468,13 +544,17 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
               {otpStep === "waiting_whatsapp" ? (
                 <p className={styles.modalText}>
                   Te enviamos un mensaje de WhatsApp a{" "}
-                  <strong>{principalPhone.valor ?? "tu celular"}</strong>.
-                  Toca el boton <strong>Validar</strong> en ese mensaje para confirmar tu numero.
-                  <span className={styles.modalHint}>Esperando confirmacion...</span>
+                  <strong>{principalPhone.valor ?? "tu celular"}</strong>. Toca
+                  el boton <strong>Validar</strong> en ese mensaje para
+                  confirmar tu numero.
+                  <span className={styles.modalHint}>
+                    Esperando confirmacion...
+                  </span>
                 </p>
               ) : (
                 <p className={styles.modalText}>
-                  Te enviaremos un mensaje de WhatsApp a tu celular para confirmar que es tuyo.
+                  Te enviaremos un mensaje de WhatsApp a tu celular para
+                  confirmar que es tuyo.
                 </p>
               )}
               {otpError ? (
@@ -498,7 +578,9 @@ export function SociosSorteosView({ documentNumber, userName, phoneVerified, pri
                   onClick={() => void handleSolicitarOtp()}
                   disabled={resendCooldown > 0}
                 >
-                  {resendCooldown > 0 ? `Reenviar en ${resendCooldown}s` : "Reenviar mensaje"}
+                  {resendCooldown > 0
+                    ? `Reenviar en ${resendCooldown}s`
+                    : "Reenviar mensaje"}
                 </button>
               ) : (
                 <button

@@ -75,12 +75,11 @@ const viewContent: Record<
     description: "Seguimiento del estado, preparacion y entrega de tu pedido.",
   },
   facturas: {
-    title: "Facturas",
-    description:
-      "Consulta comprobantes, fechas de emision y accesos de descarga desde este panel.",
+    title: "Historial de compra",
+    description: "Tus compras en Farmacias Sánchez Antoniolli.",
   },
   puntos: {
-    title: "Puntos",
+    title: "Mis puntos",
     description:
       "Revisa tu saldo actual, beneficios vigentes y proximas recompensas disponibles.",
   },
@@ -159,7 +158,7 @@ export function SociosViews({
     <article className={`${styles.panelCard} ${styles.pointsPanelCard}`}>
       <div className={styles.pointsHeader}>
         <div>
-          <h2 className={styles.panelTitle}>Mis puntos</h2>
+          <h2 className={styles.panelTitle}>Tu saldo y actividad reciente</h2>
           <p className={styles.panelSubtitle}>
             Saldo acumulado y movimientos pendientes
           </p>
@@ -195,7 +194,7 @@ export function SociosViews({
             <div className={styles.pointsGrid}>
               <div className={styles.pointsMetricCard}>
                 <span className={styles.pointsMetricLabel}>
-                  Por vencer 30 d
+                  Vencen en 30 días
                 </span>
                 <strong className={styles.pointsMetricValue}>
                   {isPointsLoading
@@ -320,9 +319,9 @@ export function SociosViews({
         <article className={`${styles.panelCard} ${styles.historialCard}`}>
           <div className={styles.historialHeader}>
             <div>
-              <h2 className={styles.panelTitle}>Movimientos</h2>
+              <h2 className={styles.panelTitle}>ACTIVIDAD</h2>
               <p className={styles.panelSubtitle}>
-                Historial de operaciones ordenadas por fecha
+                Tus canjes y acumulaciones recientes
               </p>
             </div>
             {historialTotal > 0 && (
@@ -341,7 +340,8 @@ export function SociosViews({
             <div className={styles.historialLoading}>Cargando historial…</div>
           ) : historialItems.length === 0 ? (
             <div className={styles.historialEmpty}>
-              No hay operaciones registradas aún.
+              Todavía no tenés movimientos. Sumá puntos con tu próxima compra en
+              cualquier sucursal o en nuestro ecommerce.
             </div>
           ) : (
             <>
@@ -463,7 +463,7 @@ export function SociosViews({
               <article className={styles.panelCard}>
                 <div className={styles.facturasHeaderRow}>
                   <div>
-                    <h2 className={styles.panelTitle}>Ultimos comprobantes</h2>
+                    <h2 className={styles.panelTitle}>Mis compras</h2>
                     <p className={styles.panelSubtitle}>
                       Facturas agrupadas por comprobante con sus lineas de
                       detalle.
@@ -532,7 +532,7 @@ export function SociosViews({
                             <div className={styles.facturaAmountBlock}>
                               <span className={styles.facturaAccordionHintWrap}>
                                 <span className={styles.facturaAccordionHint}>
-                                  Desplegar productos
+                                  Ver detalles
                                 </span>
                                 <ChevronDown
                                   className={styles.facturaAccordionIcon}
@@ -668,7 +668,7 @@ export function SociosViews({
         <div>
           <h1 className={styles.welcomeTitle}>¡Hola, {perfil?.nombre}! 👋</h1>
           <p className={styles.welcomeSubtitle}>
-            Bienvenido a tu panel de socios
+            Tus beneficios, puntos y sorteos en un solo lugar
           </p>
         </div>
 
