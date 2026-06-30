@@ -498,7 +498,9 @@ const setPortalDomicilioAsPrincipal = async (
   domicilio: PortalPerfilDomicilio,
 ) => {
   if (!domicilio.id) {
-    throw new Error("El domicilio seleccionado no tiene id y no se puede actualizar.");
+    throw new Error(
+      "El domicilio seleccionado no tiene id y no se puede actualizar.",
+    );
   }
 
   const nextProfile = syncProfileDerivedFields({
@@ -636,7 +638,9 @@ export function ProfileView({
     const contactoId = verificandoContacto.id;
 
     pollingRef.current = setInterval(() => {
-      void fetch("/api/portal/me/perfil", { headers: { Accept: "application/json" } })
+      void fetch("/api/portal/me/perfil", {
+        headers: { Accept: "application/json" },
+      })
         .then((res) => (res.ok ? res.json() : null))
         .then((data: PortalPerfilResponse | null) => {
           if (!data) return;
@@ -700,7 +704,10 @@ export function ProfileView({
     [affiliationForm.obraSocialId, obraSocialSearchResults],
   );
   const availablePlanes = useMemo(
-    () => (selectedObraSocial?.planes ?? []).filter((plan) => plan.activo !== false),
+    () =>
+      (selectedObraSocial?.planes ?? []).filter(
+        (plan) => plan.activo !== false,
+      ),
     [selectedObraSocial],
   );
   const requiresPlanSelection = availablePlanes.length > 0;
@@ -835,7 +842,6 @@ export function ProfileView({
       setOtpStep("idle");
     }
   };
-
 
   const handleAffiliationInputChange = <T extends keyof AffiliationFormData>(
     field: T,
@@ -1055,7 +1061,7 @@ export function ProfileView({
       await setPortalDomicilioAsPrincipal(selected);
       setProfileFeedback({
         type: "success",
-        message: "Domicilio principal actualizado.",
+        message: "Domicilio actualizado.",
       });
       await refresh();
     } catch (error) {
@@ -1064,7 +1070,7 @@ export function ProfileView({
         message:
           error instanceof Error
             ? error.message
-            : "No se pudo actualizar el domicilio principal.",
+            : "No se pudo actualizar el domicilio.",
       });
     } finally {
       setIsSwitchingDomicilio(false);
@@ -1292,7 +1298,9 @@ export function ProfileView({
               <section>
                 <div className={styles.sectionHeader}>
                   <div>
-                    <h3 className={styles.sectionTitle}>Mis datos personales</h3>
+                    <h3 className={styles.sectionTitle}>
+                      Mis datos personales
+                    </h3>
                     <p className={styles.sectionSubtitle}>
                       {isEditingPersonalData
                         ? "Edita tus datos personales y administra tus contactos desde este mismo bloque."
@@ -1318,7 +1326,9 @@ export function ProfileView({
                           }}
                           disabled={isSavingPersonalData}
                         >
-                          {isSavingPersonalData ? "Guardando..." : "Guardar cambios"}
+                          {isSavingPersonalData
+                            ? "Guardando..."
+                            : "Guardar cambios"}
                         </button>
                       </>
                     ) : (
@@ -1370,7 +1380,10 @@ export function ProfileView({
                         type="date"
                         isEditing={isEditingPersonalData}
                         onChange={(value) => {
-                          handlePersonalDataFieldChange("birthDateValue", value);
+                          handlePersonalDataFieldChange(
+                            "birthDateValue",
+                            value,
+                          );
                         }}
                       />
                       <ProfileField
@@ -1382,7 +1395,9 @@ export function ProfileView({
                   </div>
 
                   <div className={styles.profileSectionColumn}>
-                    <h4 className={styles.subsectionTitle}>Datos de contacto</h4>
+                    <h4 className={styles.subsectionTitle}>
+                      Datos de contacto
+                    </h4>
                     {isEditingPersonalData ? (
                       <div className={styles.fieldsGrid}>
                         <div className={styles.selectorGroup}>
@@ -1395,7 +1410,10 @@ export function ProfileView({
                           <div className={styles.selectorRow}>
                             {activeContactEditorType === "TELEFONO" ? (
                               <div className={styles.phoneInputRow}>
-                                <span className={styles.phonePrefix} aria-hidden="true">
+                                <span
+                                  className={styles.phonePrefix}
+                                  aria-hidden="true"
+                                >
                                   {PHONE_PREFIX}
                                 </span>
                                 <input
@@ -1452,7 +1470,9 @@ export function ProfileView({
                           ) : null}
                           {preferredPhone && !preferredPhone.verificado ? (
                             <div className={styles.verificationHint}>
-                              <span>Este telefono principal aun no esta verificado.</span>
+                              <span>
+                                Este telefono principal aun no esta verificado.
+                              </span>
                               <button
                                 type="button"
                                 className={styles.verificationAction}
@@ -1479,7 +1499,9 @@ export function ProfileView({
                                 className={styles.selectorInput}
                                 value={
                                   preferredDomicilio
-                                    ? getDomicilioOptionValue(preferredDomicilio)
+                                    ? getDomicilioOptionValue(
+                                        preferredDomicilio,
+                                      )
                                     : ""
                                 }
                                 onChange={(event) =>
@@ -1488,11 +1510,14 @@ export function ProfileView({
                                   )
                                 }
                                 disabled={
-                                  domicilios.length === 0 || isSwitchingDomicilio
+                                  domicilios.length === 0 ||
+                                  isSwitchingDomicilio
                                 }
                               >
                                 {domicilios.length === 0 ? (
-                                  <option value="">No hay domicilios cargados</option>
+                                  <option value="">
+                                    No hay domicilios cargados
+                                  </option>
                                 ) : null}
                                 {domicilios.map((domicilio) => (
                                   <option
@@ -1518,7 +1543,7 @@ export function ProfileView({
                             className={styles.selectorLabel}
                             htmlFor="email-principal"
                           >
-                            Email principal
+                            Correo electrónico
                           </label>
                           <div className={styles.selectorRow}>
                             <input
@@ -1536,7 +1561,10 @@ export function ProfileView({
                               }
                               onChange={(event) =>
                                 activeContactEditorType === "EMAIL"
-                                  ? handleContactFieldChange("valor", event.target.value)
+                                  ? handleContactFieldChange(
+                                      "valor",
+                                      event.target.value,
+                                    )
                                   : undefined
                               }
                               disabled={activeContactEditorType !== "EMAIL"}
@@ -1573,7 +1601,9 @@ export function ProfileView({
                           ) : null}
                           {preferredEmail && !preferredEmail.verificado ? (
                             <div className={styles.verificationHint}>
-                              <span>Este email principal aun no esta verificado.</span>
+                              <span>
+                                Este email principal aun no esta verificado.
+                              </span>
                               <button
                                 type="button"
                                 className={styles.verificationAction}
@@ -1609,7 +1639,7 @@ export function ProfileView({
                           </div>
                         ) : null}
                         <ProfileField
-                          label="Email principal"
+                          label="Correo electrónico"
                           value={preferredEmail?.valor ?? "Sin dato"}
                           readOnly
                         />
@@ -1628,7 +1658,7 @@ export function ProfileView({
                           </div>
                         ) : null}
                         <ProfileField
-                          label="Domicilio principal"
+                          label="Domicilio"
                           value={
                             preferredDomicilio
                               ? getDomicilioOptionLabel(preferredDomicilio)
@@ -1790,7 +1820,6 @@ export function ProfileView({
           />
         </div> */}
       </article>
-
 
       {isDomicilioModalOpen ? (
         <div
@@ -2098,10 +2127,11 @@ export function ProfileView({
                       setAffiliationForm((current) => ({
                         ...current,
                         obraSocialId,
-                        planId:
-                          activePlanes.some((plan) => plan.id === current.planId)
-                            ? current.planId
-                            : "",
+                        planId: activePlanes.some(
+                          (plan) => plan.id === current.planId,
+                        )
+                          ? current.planId
+                          : "",
                       }));
                     }}
                   >
@@ -2294,10 +2324,7 @@ export function ProfileView({
           >
             <header className={styles.modalHeader}>
               <div>
-                <h2
-                  id="verificacion-modal-title"
-                  className={styles.modalTitle}
-                >
+                <h2 id="verificacion-modal-title" className={styles.modalTitle}>
                   {verificandoContacto?.tipo === "EMAIL"
                     ? "Verificar email"
                     : "Verificar contacto"}
@@ -2327,19 +2354,30 @@ export function ProfileView({
                     {verificandoContacto?.tipo === "EMAIL" ? (
                       <>
                         Te enviamos un mensaje a{" "}
-                        <strong>{verificandoContacto.valor ?? "tu email"}</strong>.
-                        Segui las instrucciones para confirmar este contacto.
+                        <strong>
+                          {verificandoContacto.valor ?? "tu email"}
+                        </strong>
+                        . Segui las instrucciones para confirmar este contacto.
                       </>
                     ) : (
                       <>
                         Te enviamos un mensaje de WhatsApp a{" "}
-                        <strong>{verificandoContacto?.valor ?? "tu celular"}</strong>.
-                        Toca el boton <strong>Validar</strong> en ese mensaje para
-                        confirmar tu numero.
+                        <strong>
+                          {verificandoContacto?.valor ?? "tu celular"}
+                        </strong>
+                        . Toca el boton <strong>Validar</strong> en ese mensaje
+                        para confirmar tu numero.
                       </>
                     )}
                   </p>
-                  <p className={styles.fieldLabel} style={{ marginTop: "0.5rem", opacity: 0.6, fontSize: "0.85em" }}>
+                  <p
+                    className={styles.fieldLabel}
+                    style={{
+                      marginTop: "0.5rem",
+                      opacity: 0.6,
+                      fontSize: "0.85em",
+                    }}
+                  >
                     Esperando confirmacion...
                   </p>
                   {otpError ? (
@@ -2397,6 +2435,3 @@ export function ProfileView({
     </section>
   );
 }
-
-
-

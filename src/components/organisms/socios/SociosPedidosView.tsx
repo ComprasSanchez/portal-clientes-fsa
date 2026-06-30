@@ -416,11 +416,6 @@ export function SociosPedidosView() {
           </p>
         </div>
       </div>
-      {!isLoading && !error && total > 0 && (
-        <span className={styles.totalCount}>
-          {total} {total === 1 ? "pedido en total" : "pedidos en total"}
-        </span>
-      )}
       {isLoading ? (
         <PedidosSkeleton />
       ) : error ? (

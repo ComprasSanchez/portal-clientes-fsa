@@ -577,7 +577,10 @@ export function HomeViews({
                           </p>
                         </div>
                         <div className={styles.entregaPago}>
-                          <CreditCard size={14} className={styles.entregaPagoIcon} />
+                          <CreditCard
+                            size={14}
+                            className={styles.entregaPagoIcon}
+                          />
                           <div>
                             <p className={styles.entregaPagoLabel}>Cobertura</p>
                             <p className={styles.entregaPagoValue}>
@@ -790,31 +793,6 @@ export function HomeViews({
           </article> */}
 
           <article className={styles.panelCard}>
-            <h2 className={styles.panelTitle}>Mi perfil</h2>
-            <p className={styles.panelSubtitle}>
-              Datos personales y de contacto
-            </p>
-            <dl className={styles.orderList}>
-              <OrderRow label="Afiliado" value={userName} />
-              <OrderRow
-                label="Documento"
-                value={documentNumber ?? "Sin dato"}
-              />
-              <OrderRow label="Mail" value={email ?? "Sin dato"} />
-              <OrderRow
-                label="Telefono"
-                value={
-                  <span className={styles.totalAmount}>
-                    {phone ?? "Sin dato"}
-                  </span>
-                }
-                hasBorder={false}
-              />
-            </dl>
-            <DetailButton onClick={() => onNavigate("mi-cuenta")} />
-          </article>
-
-          <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Ultimo pedido</h2>
             <p className={styles.panelSubtitle}>{latestOrderSubtitle}</p>
             <dl className={styles.orderList}>
@@ -866,6 +844,31 @@ export function HomeViews({
               />
             </dl>
             <DetailButton onClick={() => onNavigate("pedidos")} />
+          </article>
+
+          <article className={styles.panelCard}>
+            <h2 className={styles.panelTitle}>Mi perfil</h2>
+            <p className={styles.panelSubtitle}>
+              Datos personales y de contacto
+            </p>
+            <dl className={styles.orderList}>
+              <OrderRow label="Nombre completo" value={userName} />
+              <OrderRow
+                label="Documento"
+                value={documentNumber ?? "Sin dato"}
+              />
+              <OrderRow label="Mail" value={email ?? "Sin dato"} />
+              <OrderRow
+                label="Telefono"
+                value={
+                  <span className={styles.totalAmount}>
+                    {phone ?? "Sin dato"}
+                  </span>
+                }
+                hasBorder={false}
+              />
+            </dl>
+            <DetailButton onClick={() => onNavigate("mi-cuenta")} />
           </article>
         </div>
       </section>
