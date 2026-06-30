@@ -1061,7 +1061,7 @@ export function ProfileView({
       await setPortalDomicilioAsPrincipal(selected);
       setProfileFeedback({
         type: "success",
-        message: "Domicilio principal actualizado.",
+        message: "Domicilio actualizado.",
       });
       await refresh();
     } catch (error) {
@@ -1070,7 +1070,7 @@ export function ProfileView({
         message:
           error instanceof Error
             ? error.message
-            : "No se pudo actualizar el domicilio principal.",
+            : "No se pudo actualizar el domicilio.",
       });
     } finally {
       setIsSwitchingDomicilio(false);
@@ -1543,7 +1543,7 @@ export function ProfileView({
                             className={styles.selectorLabel}
                             htmlFor="email-principal"
                           >
-                            Email principal
+                            Correo electrónico
                           </label>
                           <div className={styles.selectorRow}>
                             <input
@@ -1639,7 +1639,7 @@ export function ProfileView({
                           </div>
                         ) : null}
                         <ProfileField
-                          label="Email principal"
+                          label="Correo electrónico"
                           value={preferredEmail?.valor ?? "Sin dato"}
                           readOnly
                         />
@@ -1658,7 +1658,7 @@ export function ProfileView({
                           </div>
                         ) : null}
                         <ProfileField
-                          label="Domicilio principal"
+                          label="Domicilio"
                           value={
                             preferredDomicilio
                               ? getDomicilioOptionLabel(preferredDomicilio)
