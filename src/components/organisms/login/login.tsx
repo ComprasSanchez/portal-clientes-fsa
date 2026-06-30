@@ -272,7 +272,7 @@ export function Login({ onLogin }: LoginProps) {
   const [hasProcessedGoogleAuthError, setHasProcessedGoogleAuthError] =
     useState(false);
 
-const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [passwordRecoveryState, setPasswordRecoveryState] =
@@ -1319,7 +1319,9 @@ const [showLoginPassword, setShowLoginPassword] = useState(false);
       }
       retries++;
       fetch("/api/auth/session", { cache: "no-store" })
-        .then((r) => r.json() as Promise<{ ok: boolean; authenticated: boolean }>)
+        .then(
+          (r) => r.json() as Promise<{ ok: boolean; authenticated: boolean }>,
+        )
         .then((data) => {
           if (data.authenticated) {
             onSuccess();
@@ -1905,7 +1907,12 @@ const [showLoginPassword, setShowLoginPassword] = useState(false);
                     <button
                       type="button"
                       className={styles.inlineLink}
-                      style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                      }}
                       onClick={() => cancelGoogleLoginRef.current?.()}
                     >
                       Cancelar
@@ -3005,7 +3012,7 @@ const [showLoginPassword, setShowLoginPassword] = useState(false);
               >
                 <header className={styles.formHeader}>
                   <div className={styles.mfaHeaderRow}>
-                    <h2 className={styles.formTitle}>Validación MFA</h2>
+                    <h2 className={styles.formTitle}>Verificá tu email</h2>
                     <button
                       type="button"
                       className={styles.mfaBackIconButton}
@@ -3016,8 +3023,9 @@ const [showLoginPassword, setShowLoginPassword] = useState(false);
                     </button>
                   </div>
                   <p className={styles.formSubtitle}>
-                    Ingresá el código enviado por{" "}
+                    Te enviamos un código de 6 dígitos a tu{" "}
                     {mfaState?.challengeChannel || "tu canal seleccionado"}.
+                    Revisá tu bandeja de entrada y/o spam
                   </p>
                 </header>
                 {errorMessage ? (

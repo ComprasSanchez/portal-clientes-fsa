@@ -1374,13 +1374,8 @@ export function ProfileView({
                         }}
                       />
                       <ProfileField
-                        label="Identificacion"
+                        label="Número de documento"
                         value={profileValues.identification}
-                        readOnly
-                      />
-                      <ProfileField
-                        label="Domicilio Legal"
-                        value={profileValues.legalAddress}
                         readOnly
                       />
                     </div>
@@ -1649,8 +1644,6 @@ export function ProfileView({
             </div>
           </div>
         </div>
-
-        <div className={styles.divider} />
 
         {/* <div
           className={`${styles.affiliationCard} ${
