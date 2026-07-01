@@ -16,6 +16,7 @@ type StartBody = {
   convenio?: string;
   canal?: string;
   aceptaTerminos?: boolean;
+  __updateTelefono?: boolean;
 };
 
 const getLegacyBaseUrl = () =>
@@ -46,6 +47,7 @@ export async function POST(req: NextRequest) {
         convenio: body?.convenio,
         canal: body?.canal,
         aceptaTerminos: body?.aceptaTerminos,
+        __updateTelefono: body?.__updateTelefono,
       },
     });
 

@@ -40,6 +40,7 @@ export function ConvenioVerificacionModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
+  const autoRegistered = useRef(false);
 
   useEffect(() => {
     if (step === "form") phoneRef.current?.focus();
@@ -83,6 +84,45 @@ export function ConvenioVerificacionModal({
 
     return () => clearInterval(interval);
   }, [step, documentNumber, convenio, phone, phoneVerified, principalPhone, onVerified]);
+
+  // Cliente ya verificado: registrar convenio sin OTP ni WhatsApp
+  useEffect(() => {
+    if (!phoneVerified || !documentNumber || !principalPhone?.valor) return;
+    if (autoRegistered.current) return;
+    autoRegistered.current = true;
+
+    const { nombre, apellido } = splitUserName(userName);
+    setLoading(true);
+
+    void (async () => {
+      try {
+        const res = await fetch("/api/legacy/clientes/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            Documento: documentNumber,
+            Nombre: nombre,
+            Apellido: apellido,
+            Telefono: principalPhone.valor,
+            convenio,
+            canal: "CONVENIO",
+            aceptaTerminos: true,
+            __updateTelefono: false,
+          }),
+        });
+        if (res.ok) {
+          onVerified();
+        } else {
+          setError("No se pudo registrar el convenio. Intentá de nuevo.");
+        }
+      } catch {
+        setError("Error de conexión.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phoneVerified, documentNumber, principalPhone?.valor]);
 
   const resetError = () => setError(null);
 

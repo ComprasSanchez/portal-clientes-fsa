@@ -540,7 +540,7 @@ export function ProfileView({
   variant = "socios",
   isLoading = false,
 }: ProfileViewProps) {
-  const { refresh, replacePerfil } = usePortalPerfilContext();
+  const { refresh, replacePerfil, summary } = usePortalPerfilContext();
   const [isAffiliationModalOpen, setIsAffiliationModalOpen] = useState(false);
   const [activeContactEditorType, setActiveContactEditorType] =
     useState<ContactType | null>(null);
@@ -572,6 +572,7 @@ export function ProfileView({
   const [isSavingPersonalData, setIsSavingPersonalData] = useState(false);
   const [profileFeedback, setProfileFeedback] =
     useState<ProfileFeedback | null>(null);
+  const [crmConvenio, setCrmConvenio] = useState<string | null>(null);
   const [isVerificacionModalOpen, setIsVerificacionModalOpen] = useState(false);
   const [verificandoContacto, setVerificandoContacto] =
     useState<PortalPerfilContacto | null>(null);
@@ -662,6 +663,19 @@ export function ProfileView({
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
   }, [otpStep, verificandoContacto?.id, refresh]);
+
+  useEffect(() => {
+    const dni = summary.documentNumber;
+    if (variant !== "socios" || !dni) return;
+    void fetch(`/api/legacy/cliente/${encodeURIComponent(dni)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { found?: boolean; convenio?: string | null } | null) => {
+        if (data?.found && data.convenio) {
+          setCrmConvenio(data.convenio);
+        }
+      })
+      .catch(() => undefined);
+  }, [summary.documentNumber, variant]);
 
   useEffect(() => {
     if (otpStep !== "waiting_whatsapp") {
@@ -1666,6 +1680,13 @@ export function ProfileView({
                           }
                           readOnly
                         />
+                        {crmConvenio ? (
+                          <ProfileField
+                            label="Convenio"
+                            value={crmConvenio}
+                            readOnly
+                          />
+                        ) : null}
                       </div>
                     )}
                   </div>
