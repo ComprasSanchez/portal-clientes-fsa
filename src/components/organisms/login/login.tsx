@@ -259,7 +259,7 @@ export function Login({ onLogin }: LoginProps) {
   const MFA_RESEND_COOLDOWN_SECONDS = 50;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [cardView, setCardView] = useState<AuthCardView>("verify-onboarding"); // TEMP: forzado para QA visual, revertir
+  const [cardView, setCardView] = useState<AuthCardView>("login");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [mfaState, setMfaState] = useState<MfaState | null>(null);
