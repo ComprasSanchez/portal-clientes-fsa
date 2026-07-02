@@ -259,7 +259,7 @@ export function Login({ onLogin }: LoginProps) {
   const MFA_RESEND_COOLDOWN_SECONDS = 50;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [cardView, setCardView] = useState<AuthCardView>("login");
+  const [cardView, setCardView] = useState<AuthCardView>("verify-onboarding"); // TEMP: forzado para QA visual, revertir
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [mfaState, setMfaState] = useState<MfaState | null>(null);
@@ -941,7 +941,7 @@ export function Login({ onLogin }: LoginProps) {
             openVerifyOnboardingCard(
               activeFlow?.destinationMasked
                 ? `Tu cuenta todavía no completó el registro. Revisá el email que enviamos a ${activeFlow.destinationMasked}.`
-                : "Tu cuenta todavía no completó el registro. Revisá el email que te enviamos para continuar.",
+                : undefined,
             );
             return;
           }
@@ -2305,8 +2305,9 @@ export function Login({ onLogin }: LoginProps) {
                     </button>
                   </div>
                   <p className={styles.formSubtitle}>
-                    Te enviamos un email para completar tu registro. Abrí el
-                    enlace para continuar.
+                    {onboardingFlow?.id
+                      ? "Te enviamos un email para completar tu registro. Abrí el enlace para continuar."
+                      : "No encontramos tu registro. Tenés que crear tu cuenta de nuevo para poder ingresar."}
                   </p>
                 </header>
                 {infoMessage ? (
@@ -2374,33 +2375,52 @@ export function Login({ onLogin }: LoginProps) {
                           : "Completar registro"}
                     </span>
                   </button>
-                  {!onboardingFlow?.id && !isAutoVerifyingOnboarding ? (
-                    <div
-                      className={`${styles.feedback} ${styles.feedbackInfo}`}
+                  {onboardingFlow?.id ? (
+                    <button
+                      type="button"
+                      className={styles.secondaryButton}
+                      disabled={isAutoVerifyingOnboarding || isResendingOnboarding}
+                      onClick={() => {
+                        void handleResendOnboarding();
+                      }}
                     >
-                      No encontramos un registro activo. Si no recibiste el
-                      email, volvé al inicio e iniciá el registro nuevamente con
-                      los mismos datos.
-                    </div>
+                      <span>
+                        {isResendingOnboarding
+                          ? "Reenviando..."
+                          : "Reenviar email"}
+                      </span>
+                    </button>
+                  ) : !isAutoVerifyingOnboarding ? (
+                    <>
+                      <div
+                        className={`${styles.feedback} ${styles.feedbackInfo}`}
+                      >
+                        Para poder ingresar, tenés que crear tu cuenta de
+                        nuevo: tocá el botón de abajo y completá otra vez tus
+                        datos (nombre, documento, contraseña, etc.). Al
+                        terminar, te va a llegar un nuevo email para
+                        confirmar tu cuenta.
+                      </div>
+                      <button
+                        type="button"
+                        className={styles.primaryButton}
+                        onClick={() => {
+                          setCardView("register");
+                          clearFeedback();
+                          setOnboardingFlow(null);
+                          registerFormik.resetForm({
+                            values: {
+                              ...initialRegisterValues,
+                              email: formik.values.username || "",
+                            },
+                          });
+                        }}
+                      >
+                        <UserPlus size={20} />
+                        <span>Crear mi cuenta de nuevo</span>
+                      </button>
+                    </>
                   ) : null}
-                  <button
-                    type="button"
-                    className={styles.secondaryButton}
-                    disabled={
-                      isAutoVerifyingOnboarding ||
-                      isResendingOnboarding ||
-                      !onboardingFlow?.id
-                    }
-                    onClick={() => {
-                      void handleResendOnboarding();
-                    }}
-                  >
-                    <span>
-                      {isResendingOnboarding
-                        ? "Reenviando..."
-                        : "Reenviar email"}
-                    </span>
-                  </button>
                 </div>
                 {legalLinks}
               </motion.div>
