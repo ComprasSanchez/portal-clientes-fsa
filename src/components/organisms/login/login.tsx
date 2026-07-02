@@ -2307,7 +2307,7 @@ export function Login({ onLogin }: LoginProps) {
                   <p className={styles.formSubtitle}>
                     {onboardingFlow?.id
                       ? "Te enviamos un email para completar tu registro. Abrí el enlace para continuar."
-                      : "No encontramos tu registro. Tenés que crear tu cuenta de nuevo para poder ingresar."}
+                      : "No encontramos tu registro. Tenés que crear tu cuenta para poder ingresar."}
                   </p>
                 </header>
                 {infoMessage ? (
@@ -2395,10 +2395,9 @@ export function Login({ onLogin }: LoginProps) {
                       <div
                         className={`${styles.feedback} ${styles.feedbackInfo}`}
                       >
-                        Para poder ingresar, tenés que crear tu cuenta de
-                        nuevo: tocá el botón de abajo y completá otra vez tus
+                        Para poder ingresar, tenés que crear tu cuenta: tocá el botón de abajo y completá otra vez tus
                         datos (nombre, documento, contraseña, etc.). Al
-                        terminar, te va a llegar un nuevo email para
+                        terminar, te va a llegar un email para
                         confirmar tu cuenta.
                       </div>
                       <button
@@ -2417,7 +2416,7 @@ export function Login({ onLogin }: LoginProps) {
                         }}
                       >
                         <UserPlus size={20} />
-                        <span>Crear mi cuenta de nuevo</span>
+                        <span>Crear mi cuenta</span>
                       </button>
                     </>
                   ) : null}
