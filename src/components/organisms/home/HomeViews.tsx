@@ -390,7 +390,9 @@ export function HomeViews({
   if (currentView === "expediente-actual") {
     return (
       <main className={styles.container}>
-        <section className={styles.activeViewCard}>
+        <section
+          className={`${styles.activeViewCard} ${styles.expedienteActualViewCard}`}
+        >
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -559,9 +561,9 @@ export function HomeViews({
                   <section className={styles.expedienteSection}>
                     <p className={styles.sectionEyebrow}>Método de entrega</p>
                     <div className={styles.entregaCard}>
-                      <Truck size={20} className={styles.entregaIcon} />
-                      <div className={styles.entregaBody}>
-                        <div>
+                      <div className={styles.entregaRow}>
+                        <Truck size={20} className={styles.entregaIcon} />
+                        <div className={styles.entregaBody}>
                           <p className={styles.entregaType}>
                             {getMappedLabel(
                               SEND_TYPE_LABELS,
@@ -576,20 +578,20 @@ export function HomeViews({
                             })}
                           </p>
                         </div>
-                        <div className={styles.entregaPago}>
-                          <CreditCard
-                            size={14}
-                            className={styles.entregaPagoIcon}
-                          />
-                          <div>
-                            <p className={styles.entregaPagoLabel}>Cobertura</p>
-                            <p className={styles.entregaPagoValue}>
-                              {getMappedLabel(
-                                PAY_TYPE_LABELS,
-                                expedienteActual?.medioPago,
-                              )}
-                            </p>
-                          </div>
+                      </div>
+                      <div className={styles.entregaPago}>
+                        <CreditCard
+                          size={20}
+                          className={styles.entregaPagoIcon}
+                        />
+                        <div>
+                          <p className={styles.entregaPagoLabel}>Cobertura</p>
+                          <p className={styles.entregaPagoValue}>
+                            {getMappedLabel(
+                              PAY_TYPE_LABELS,
+                              expedienteActual?.medioPago,
+                            )}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -673,14 +675,6 @@ export function HomeViews({
                         </span>
                         <span className={styles.resumenValue}>
                           {cicloItemsCount}
-                        </span>
-                      </div>
-                      <div className={styles.resumenRow}>
-                        <span className={styles.resumenLabel}>
-                          Entregas anteriores
-                        </span>
-                        <span className={styles.resumenValue}>
-                          {pastCycles.length}
                         </span>
                       </div>
                     </div>

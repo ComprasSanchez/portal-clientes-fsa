@@ -12,6 +12,7 @@ type HomePageProps = {
     verificationToken?: string | string[];
     onboardingToken?: string | string[];
     convenio?: string | string[];
+    canal?: string | string[];
     redirectTo?: string | string[];
   }>;
 };
@@ -37,6 +38,9 @@ export default async function Home({ searchParams }: HomePageProps) {
     : query.onboardingToken;
   const rawConvenio = Array.isArray(query.convenio) ? query.convenio[0] : query.convenio;
   const convenioParam = rawConvenio?.trim().toUpperCase() || null;
+  const rawCanal = Array.isArray(query.canal) ? query.canal[0] : query.canal;
+  const canalParam = rawCanal?.trim().toUpperCase() || null;
+  const canalQuery = canalParam ? `&canal=${encodeURIComponent(canalParam)}` : "";
   const rawRedirectTo = Array.isArray(query.redirectTo) ? query.redirectTo[0] : query.redirectTo;
 
   const hasPendingGoogleOnboarding =
@@ -55,14 +59,15 @@ export default async function Home({ searchParams }: HomePageProps) {
     !hasVerificationToken
   ) {
     const target = convenioParam
-      ? `/socios?convenio=${encodeURIComponent(convenioParam)}`
+      ? `/socios?convenio=${encodeURIComponent(convenioParam)}${canalQuery}`
       : "/socios";
     redirect(target);
   }
 
   if (convenioParam && !rawRedirectTo) {
+    const sociosTarget = `/socios?convenio=${convenioParam}${canalQuery}`;
     redirect(
-      `/?convenio=${encodeURIComponent(convenioParam)}&redirectTo=${encodeURIComponent(`/socios?convenio=${convenioParam}`)}`,
+      `/?convenio=${encodeURIComponent(convenioParam)}${canalQuery}&redirectTo=${encodeURIComponent(sociosTarget)}`,
     );
   }
 

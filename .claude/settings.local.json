@@ -8,7 +8,12 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\crm-webservice\" -Recurse -Directory)",
       "Bash(Select-Object -First 20)",
-      "Bash(dir \"c:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\" /b)"
+      "Bash(dir \"c:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\" /b)",
+      "Bash(cd \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\BFF\\\\bff-cliente-web\" && cat .env.example; echo \"---runbook---\"; find docs -iname \"*app-47*\")",
+      "Read(//c/Users/Usuario/Documents/front-fsa/BFF/bff-cliente-web/**)",
+      "Bash(xargs grep -l \"ListExpedientesQuery\")",
+      "Bash(cat \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\Cronicos\\\\cronicos-fsa-front\\\\package.json\")",
+      "Read(//c/Users/Usuario/Documents/front-fsa/Cronicos/cronicos-fsa-front/**)"
     ]
   }
 }
