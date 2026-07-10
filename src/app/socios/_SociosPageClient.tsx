@@ -68,6 +68,11 @@ export function SociosPageClient() {
       .then(({ data }) => {
         if (data.found && data.convenio?.toUpperCase() === convenio) {
           setConvenioUnlocked(true);
+          pushToast({
+            variant: "info",
+            title: "Ya estás asociado",
+            description: `Tu cuenta ya está asociada al convenio ${convenio}.`,
+          });
         }
       })
       .catch(() => undefined)
