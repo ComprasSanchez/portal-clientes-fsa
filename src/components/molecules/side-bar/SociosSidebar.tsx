@@ -42,7 +42,7 @@ const menuItems: Array<{
   { id: "puntos", label: "Puntos", icon: Star },
   { id: "sorteos", label: "Sorteos", icon: Ticket },
   { id: "sucursales", label: "Sucursales", icon: MapPin },
-  { id: "cora", label: "CORA", icon: Heart },
+  // { id: "cora", label: "CORA", icon: Heart },
 ];
 
 export function SociosSidebar({
