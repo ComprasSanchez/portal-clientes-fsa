@@ -13,6 +13,7 @@ interface PhoneContact {
 
 interface ConvenioVerificacionModalProps {
   convenio: string;
+  canal?: string;
   documentNumber: string | null;
   userName: string;
   principalPhone: PhoneContact | null;
@@ -28,6 +29,7 @@ function splitUserName(fullName: string) {
 
 export function ConvenioVerificacionModal({
   convenio,
+  canal,
   documentNumber,
   userName,
   principalPhone,
@@ -105,7 +107,7 @@ export function ConvenioVerificacionModal({
             Apellido: apellido,
             Telefono: principalPhone.valor,
             convenio,
-            canal: "CONVENIO",
+            canal: canal?.trim().toUpperCase() || "CONVENIO",
             aceptaTerminos: true,
             __updateTelefono: false,
           }),
@@ -142,7 +144,7 @@ export function ConvenioVerificacionModal({
           Apellido: apellido,
           Telefono: `+549${phone.trim()}`,
           convenio,
-          canal: "CONVENIO",
+          canal: canal?.trim().toUpperCase() || "CONVENIO",
           aceptaTerminos: true,
         }),
       });

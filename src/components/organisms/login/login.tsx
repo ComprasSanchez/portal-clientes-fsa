@@ -48,6 +48,21 @@ const SOCIOS_BENEFITS = [
   { icon: iconRegalo, text: "Sorteos exclusivos" },
 ];
 
+const SIGNUP_CANAL_STORAGE_KEY = "fsa_signup_canal";
+const SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY = "fsa_signup_sucursal_codigo";
+
+const readStoredSignupChannel = () => {
+  try {
+    return {
+      canal: localStorage.getItem(SIGNUP_CANAL_STORAGE_KEY) || undefined,
+      sucursalCodigo:
+        localStorage.getItem(SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY) || undefined,
+    };
+  } catch {
+    return { canal: undefined, sucursalCodigo: undefined };
+  }
+};
+
 const customerIdentityShape = {
   firstName: Yup.string().trim().required("Ingresá tu nombre."),
   lastName: Yup.string().trim().required("Ingresá tu apellido."),
@@ -314,6 +329,9 @@ export function Login({ onLogin }: LoginProps) {
     onboardingHint === "google" ||
     googleOnboardingHint === "pending" ||
     googleOnboardingHint === "1";
+  const convenioHint = searchParams.get("convenio");
+  const canalHint = searchParams.get("canal");
+  const sucursalCodigoHint = searchParams.get("sucursalCodigo");
 
   const clearFeedback = () => {
     setErrorMessage(null);
@@ -454,6 +472,7 @@ export function Login({ onLogin }: LoginProps) {
       clearFeedback();
       setOnboardingFlow(null);
       const derivedUsername = values.email.trim();
+      const { canal, sucursalCodigo } = readStoredSignupChannel();
 
       try {
         const { data } = await axios.post<LoginResponse>(
@@ -470,6 +489,8 @@ export function Login({ onLogin }: LoginProps) {
             accountKind: "CLIENTE",
             externalSystem: "APP",
             externalRef: derivedUsername,
+            canal,
+            sucursalCodigo,
           },
           {
             headers: {
@@ -1334,6 +1355,26 @@ export function Login({ onLogin }: LoginProps) {
         });
     }, 2000);
   };
+
+  useEffect(() => {
+    const canalValue = convenioHint
+      ? "CONVENIO"
+      : canalHint?.trim().toUpperCase() || null;
+
+    try {
+      if (canalValue) {
+        localStorage.setItem(SIGNUP_CANAL_STORAGE_KEY, canalValue);
+      }
+      if (sucursalCodigoHint?.trim()) {
+        localStorage.setItem(
+          SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY,
+          sucursalCodigoHint.trim(),
+        );
+      }
+    } catch {
+      // localStorage puede no estar disponible (modo privado, etc.)
+    }
+  }, [convenioHint, canalHint, sucursalCodigoHint]);
 
   useEffect(() => {
     if (cardView !== "mfa" || mfaResendCooldownSeconds <= 0) {

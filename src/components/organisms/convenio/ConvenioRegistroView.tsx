@@ -51,7 +51,13 @@ function primerNombre(nombreCompleto: string) {
   return nombreCompleto.trim().split(/\s+/)[0] ?? nombreCompleto;
 }
 
-export function ConvenioRegistroView({ convenio }: { convenio: string }) {
+export function ConvenioRegistroView({
+  convenio,
+  canal,
+}: {
+  convenio: string;
+  canal?: string;
+}) {
   const [flow, setFlow] = useState<FlowState>({ kind: "dni" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -145,7 +151,7 @@ export function ConvenioRegistroView({ convenio }: { convenio: string }) {
           Telefono: telefonoLimpio,
           ...(email.trim() ? { Email: email.trim() } : {}),
           convenio,
-          canal: "CONVENIO",
+          canal: canal?.trim().toUpperCase() || "CONVENIO",
           aceptaTerminos: true,
         }),
       });
