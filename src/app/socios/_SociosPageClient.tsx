@@ -29,6 +29,10 @@ export function SociosPageClient() {
     const params = new URLSearchParams(window.location.search);
     return params.get("convenio")?.trim().toUpperCase() || null;
   });
+  const [canal] = useState<string | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("canal")?.trim().toUpperCase() || null;
+  });
   const [convenioUnlocked, setConvenioUnlocked] = useState<boolean>(!convenio);
   const [convenioChecking, setConvenioChecking] = useState<boolean>(Boolean(convenio));
   const convenioLocked = Boolean(convenio && !convenioUnlocked);
@@ -110,6 +114,7 @@ export function SociosPageClient() {
       {convenioLocked && convenio && !convenioChecking && (
         <ConvenioVerificacionModal
           convenio={convenio}
+          canal={canal ?? undefined}
           documentNumber={summary.documentNumber}
           userName={summary.displayName}
           principalPhone={principalPhone}
