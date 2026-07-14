@@ -29,6 +29,7 @@ type OnboardingStartBody = {
   externalRef?: string;
   canal?: string;
   sucursalCodigo?: string;
+  convenio?: string;
 };
 
 const isNonEmptyString = (value: unknown): value is string =>
