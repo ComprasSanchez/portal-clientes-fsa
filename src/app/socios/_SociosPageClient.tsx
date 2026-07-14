@@ -25,7 +25,7 @@ export function SociosPageClient() {
     }
     return DEFAULT_VIEW;
   });
-  const [convenio] = useState<string | null>(() => {
+  const [convenio, setConvenio] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("convenio")?.trim().toUpperCase() || null;
   });
@@ -51,6 +51,32 @@ export function SociosPageClient() {
 
   const { perfil, summary, isLoading } = usePortalPerfilContext();
   const { pushToast } = useGlobalToast();
+
+  // Sin convenio en la URL: recordar el convenio de alta guardado en cliente_identity_links
+  useEffect(() => {
+    if (convenio) return;
+    let cancelled = false;
+
+    void fetch("/api/v2/auth/identity-link/status?accountKind=CLIENTE", {
+      cache: "no-store",
+      credentials: "include",
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { link?: { convenio?: string | null } } | null) => {
+        if (cancelled) return;
+        const pending = data?.link?.convenio?.trim().toUpperCase();
+        if (pending) {
+          setConvenioChecking(true);
+          setConvenioUnlocked(false);
+          setConvenio(pending);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [convenio]);
 
   // Fuente de verdad: verificar contra el CRM en cualquier dispositivo
   useEffect(() => {
