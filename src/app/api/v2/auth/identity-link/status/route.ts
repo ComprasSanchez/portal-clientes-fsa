@@ -19,6 +19,7 @@ type IdentityLinkStatusResponse = {
     lastName?: string | null;
     nombre?: string | null;
     apellido?: string | null;
+    convenio?: string | null;
   };
   profile?: {
     email?: string | null;

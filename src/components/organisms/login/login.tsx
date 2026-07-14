@@ -50,6 +50,7 @@ const SOCIOS_BENEFITS = [
 
 const SIGNUP_CANAL_STORAGE_KEY = "fsa_signup_canal";
 const SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY = "fsa_signup_sucursal_codigo";
+const SIGNUP_CONVENIO_STORAGE_KEY = "fsa_signup_convenio";
 
 const readStoredSignupChannel = () => {
   try {
@@ -57,9 +58,10 @@ const readStoredSignupChannel = () => {
       canal: localStorage.getItem(SIGNUP_CANAL_STORAGE_KEY) || undefined,
       sucursalCodigo:
         localStorage.getItem(SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY) || undefined,
+      convenio: localStorage.getItem(SIGNUP_CONVENIO_STORAGE_KEY) || undefined,
     };
   } catch {
-    return { canal: undefined, sucursalCodigo: undefined };
+    return { canal: undefined, sucursalCodigo: undefined, convenio: undefined };
   }
 };
 
@@ -472,7 +474,7 @@ export function Login({ onLogin }: LoginProps) {
       clearFeedback();
       setOnboardingFlow(null);
       const derivedUsername = values.email.trim();
-      const { canal, sucursalCodigo } = readStoredSignupChannel();
+      const { canal, sucursalCodigo, convenio } = readStoredSignupChannel();
 
       try {
         const { data } = await axios.post<LoginResponse>(
@@ -491,6 +493,7 @@ export function Login({ onLogin }: LoginProps) {
             externalRef: derivedUsername,
             canal,
             sucursalCodigo,
+            convenio,
           },
           {
             headers: {
@@ -1369,6 +1372,12 @@ export function Login({ onLogin }: LoginProps) {
         localStorage.setItem(
           SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY,
           sucursalCodigoHint.trim(),
+        );
+      }
+      if (convenioHint?.trim()) {
+        localStorage.setItem(
+          SIGNUP_CONVENIO_STORAGE_KEY,
+          convenioHint.trim().toUpperCase(),
         );
       }
     } catch {
