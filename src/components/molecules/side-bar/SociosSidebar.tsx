@@ -42,7 +42,9 @@ const menuItems: Array<{
   { id: "puntos", label: "Puntos", icon: Star },
   { id: "sorteos", label: "Sorteos", icon: Ticket },
   { id: "sucursales", label: "Sucursales", icon: MapPin },
-  // { id: "cora", label: "CORA", icon: Heart },
+  ...(process.env.NEXT_PUBLIC_CORA_ACTIVE === "true"
+    ? [{ id: "cora" as const, label: "CORA", icon: Heart }]
+    : []),
 ];
 
 export function SociosSidebar({
