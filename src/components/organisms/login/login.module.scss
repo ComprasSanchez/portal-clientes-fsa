@@ -12,6 +12,7 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   min-height: 100dvh;
   display: grid;
   background: linear-gradient(180deg, #eef7f9 0%, #ffffff 100%);
+  font-family: "Futura", "BD Supper", "Filson Pro", Arial, Helvetica, sans-serif;
 }
 
 .heroPanel {
@@ -168,7 +169,7 @@ $focus-ring: rgba(0, 124, 152, 0.18);
 }
 
 .formHeader {
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .mfaHeaderRow {
@@ -267,22 +268,24 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   color: $text-strong;
   font-size: clamp(2rem, 5vw, 2.5rem);
   line-height: 1;
+  font-weight: 800;
 }
 
 .formSubtitle {
-  margin: 10px 0 0;
+  margin: 6px 0 0;
   color: $text-muted;
   font-size: 1rem;
+  font-weight: 500;
 }
 
 .form {
   display: grid;
-  gap: 20px;
+  gap: 14px;
 }
 
 .fieldGroup {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .fieldRow {
@@ -591,7 +594,7 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 
   .formHeader {
-    margin-bottom: 18px;
+    margin-bottom: 12px;
   }
 
   .formTitle {
@@ -636,7 +639,7 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 
   .formHeader {
-    margin-bottom: 22px;
+    margin-bottom: 14px;
   }
 
   .mfaHeaderRow {
@@ -655,16 +658,16 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 
   .formSubtitle {
-    margin-top: 8px;
+    margin-top: 6px;
     font-size: 0.95rem;
   }
 
   .form {
-    gap: 16px;
+    gap: 12px;
   }
 
   .fieldGroup {
-    gap: 8px;
+    gap: 6px;
   }
 
   .fieldRow {
@@ -758,7 +761,7 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 
   .formHeader {
-    margin-bottom: 18px;
+    margin-bottom: 12px;
   }
 
   .mfaHeaderRow {
@@ -777,16 +780,16 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 
   .formSubtitle {
-    margin-top: 6px;
+    margin-top: 4px;
     font-size: 0.88rem;
   }
 
   .form {
-    gap: 14px;
+    gap: 10px;
   }
 
   .fieldGroup {
-    gap: 6px;
+    gap: 5px;
   }
 
   .fieldRow {
@@ -907,7 +910,7 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 
   .formHeader {
-    margin-bottom: 34px;
+    margin-bottom: 20px;
   }
 
   .feedback {
@@ -933,16 +936,16 @@ $focus-ring: rgba(0, 124, 152, 0.18);
   }
 
   .formSubtitle {
-    margin-top: 12px;
+    margin-top: 8px;
     font-size: 1.12rem;
   }
 
   .form {
-    gap: 24px;
+    gap: 18px;
   }
 
   .fieldGroup {
-    gap: 13px;
+    gap: 10px;
   }
 
   .fieldRow {

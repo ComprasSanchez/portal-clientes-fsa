@@ -1803,7 +1803,7 @@ export function Login({ onLogin }: LoginProps) {
               >
                 <header className={styles.formHeader}>
                   <h2 className={styles.formTitle}>Iniciar sesión</h2>
-                  <p className={styles.formSubtitle}>Ingresá a tu cuenta</p>
+                  <p className={styles.formSubtitle}>Ingresá a tu cuenta de Farmacia Sanchez Antoniolli</p>
                 </header>
                 {infoMessage ? (
                   <div className={`${styles.feedback} ${styles.feedbackInfo}`}>

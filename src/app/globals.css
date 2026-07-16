@@ -145,6 +145,7 @@
 
 body {
   font-family: "BD Supper", "Filson Pro", Arial, Helvetica, sans-serif;
+  /* line-height: calc(1em + 2pt); */
 }
 
 :root {
