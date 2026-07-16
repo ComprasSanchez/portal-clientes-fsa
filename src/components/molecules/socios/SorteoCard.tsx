@@ -45,6 +45,8 @@ export function SorteoCard({ onNavigate, documentNumber }: SorteoCardProps) {
 
   const drawDate = sorteo ? formatShortDate(sorteo.fechaFin) : null;
 
+  if (!isLoading && !sorteo) return null;
+
   return (
     <article className={styles.card}>
       <div className={styles.imageWrap}>
@@ -72,15 +74,13 @@ export function SorteoCard({ onNavigate, documentNumber }: SorteoCardProps) {
 
         {isLoading ? (
           <div className={styles.skeleton} />
-        ) : sorteo ? (
+        ) : (
           <>
-            <h3 className={styles.title}>{sorteo.nombre}</h3>
+            <h3 className={styles.title}>{sorteo!.nombre}</h3>
             {documentNumber && (
               <p className={styles.meta}>Documento: {documentNumber}</p>
             )}
           </>
-        ) : (
-          <h3 className={styles.title}>Próximamente nuevo sorteo</h3>
         )}
 
         <button
@@ -88,7 +88,7 @@ export function SorteoCard({ onNavigate, documentNumber }: SorteoCardProps) {
           className={styles.button}
           onClick={() => onNavigate("sorteos")}
         >
-          {sorteo ? "Participar" : "Ver sorteos"}
+          Participar
         </button>
       </div>
     </article>
