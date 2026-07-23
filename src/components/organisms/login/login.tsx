@@ -1360,6 +1360,15 @@ export function Login({ onLogin }: LoginProps) {
   };
 
   useEffect(() => {
+    // Solo reconciliamos el localStorage si llegó algún hint por URL en esta
+    // visita — navegar dentro del sitio sin parámetros no debe borrar la
+    // atribución previa. Si llegó algún hint, ese link es la fuente de verdad
+    // completa: lo que no trae se limpia, no queda mezclado con visitas viejas.
+    const hasAnyHint = Boolean(
+      convenioHint?.trim() || canalHint?.trim() || sucursalCodigoHint?.trim(),
+    );
+    if (!hasAnyHint) return;
+
     const canalValue = convenioHint
       ? "CONVENIO"
       : canalHint?.trim().toUpperCase() || null;
@@ -1367,18 +1376,26 @@ export function Login({ onLogin }: LoginProps) {
     try {
       if (canalValue) {
         localStorage.setItem(SIGNUP_CANAL_STORAGE_KEY, canalValue);
+      } else {
+        localStorage.removeItem(SIGNUP_CANAL_STORAGE_KEY);
       }
+
       if (sucursalCodigoHint?.trim()) {
         localStorage.setItem(
           SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY,
           sucursalCodigoHint.trim(),
         );
+      } else {
+        localStorage.removeItem(SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY);
       }
+
       if (convenioHint?.trim()) {
         localStorage.setItem(
           SIGNUP_CONVENIO_STORAGE_KEY,
           convenioHint.trim().toUpperCase(),
         );
+      } else {
+        localStorage.removeItem(SIGNUP_CONVENIO_STORAGE_KEY);
       }
     } catch {
       // localStorage puede no estar disponible (modo privado, etc.)
@@ -1803,7 +1820,7 @@ export function Login({ onLogin }: LoginProps) {
               >
                 <header className={styles.formHeader}>
                   <h2 className={styles.formTitle}>Iniciar sesión</h2>
-                  <p className={styles.formSubtitle}>Ingresá a tu cuenta de Farmacia Sanchez Antoniolli</p>
+                  <p className={styles.formSubtitle}>Ingresá a tu cuenta de Farmacias Sanchez Antoniolli</p>
                 </header>
                 {infoMessage ? (
                   <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
@@ -1931,7 +1948,7 @@ export function Login({ onLogin }: LoginProps) {
                     }}
                   >
                     <UserPlus size={20} />
-                    <span>Crear nuevo perfil</span>
+                    <span>Quiero hacerme SocioSA</span>
                   </button>
                 </form>
                 <div className={styles.separator}>
