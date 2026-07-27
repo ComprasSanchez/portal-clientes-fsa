@@ -36,10 +36,10 @@ const menuItems: Array<{
 }> = [
   { id: "dashboard", label: "Inicio", icon: Home },
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
-  { id: "mis-expedientes", label: "Mis expedientes", icon: Files },
+  { id: "mis-expedientes", label: "Mis pedidos", icon: Files },
   // { id: "productos", label: "Productos", icon: ShoppingBag },
   { id: "pedidos", label: "Segui tu pedido", icon: Package },
-  { id: "expediente-actual", label: "Expediente actual", icon: FileText },
+  { id: "expediente-actual", label: "Pedido actual", icon: FileText },
   // {
   //   id: "expediente-completo",
   //   label: "Historial completo",

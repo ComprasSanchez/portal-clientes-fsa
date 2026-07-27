@@ -6,7 +6,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import remeraPromo from "@/assets/sociosa-img/remera-promo.jpg";
-import sorteoTV from "@/assets/sociosa-img/sorteo-tv.png";
+import bannerPrinciapl from "@/assets/sociosa-img/banner-principal.jpg";
 import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [
@@ -16,9 +16,9 @@ const SLIDES = [
     href: null,
   },
   {
-    src: sorteoTV,
-    alt: "Sorteo Socio SA — Gana un Smart TV de última generación",
-    href: "/socios?view=sorteos",
+    src: bannerPrinciapl,
+    alt: "Sorteo Socio SA — Beauty Days",
+    href: "https://calendly.com/farmaciasanchezantoniolli",
   },
 ];
 
@@ -49,7 +49,7 @@ export function BannerCarousel() {
   }, [current, goTo]);
 
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || SLIDES.length <= 1) return;
     const id = setInterval(() => {
       setDirection(1);
       setCurrent((c) => (c + 1) % SLIDES.length);
@@ -114,37 +114,41 @@ export function BannerCarousel() {
         </AnimatePresence>
       </div>
 
-      <button
-        type="button"
-        className={`${styles.arrow} ${styles.arrowLeft}`}
-        onClick={prev}
-        aria-label="Slide anterior"
-      >
-        <ChevronLeft size={20} />
-      </button>
-
-      <button
-        type="button"
-        className={`${styles.arrow} ${styles.arrowRight}`}
-        onClick={next}
-        aria-label="Siguiente slide"
-      >
-        <ChevronRight size={20} />
-      </button>
-
-      <div className={styles.dots} role="tablist">
-        {SLIDES.map((slide, i) => (
+      {SLIDES.length > 1 ? (
+        <>
           <button
-            key={slide.alt}
             type="button"
-            role="tab"
-            aria-selected={i === current}
-            aria-label={`Slide ${i + 1}`}
-            className={`${styles.dot} ${i === current ? styles.dotActive : ""}`}
-            onClick={() => goTo(i, i >= current ? 1 : -1)}
-          />
-        ))}
-      </div>
+            className={`${styles.arrow} ${styles.arrowLeft}`}
+            onClick={prev}
+            aria-label="Slide anterior"
+          >
+            <ChevronLeft size={20} />
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.arrow} ${styles.arrowRight}`}
+            onClick={next}
+            aria-label="Siguiente slide"
+          >
+            <ChevronRight size={20} />
+          </button>
+
+          <div className={styles.dots} role="tablist">
+            {SLIDES.map((slide, i) => (
+              <button
+                key={slide.alt}
+                type="button"
+                role="tab"
+                aria-selected={i === current}
+                aria-label={`Slide ${i + 1}`}
+                className={`${styles.dot} ${i === current ? styles.dotActive : ""}`}
+                onClick={() => goTo(i, i >= current ? 1 : -1)}
+              />
+            ))}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
