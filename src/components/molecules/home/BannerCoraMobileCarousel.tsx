@@ -4,13 +4,33 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import bannerSocio1 from "@/assets/sociosa-img/banner-socio1.jpg";
-import bannerSocio2 from "@/assets/sociosa-img/banner-mobile-beauty.jpg";
-import styles from "./BannerCarousel.module.scss";
+import bannerCora1 from "@/assets/cora/banner-cora-1.png";
+import bannerCora2 from "@/assets/cora/banner-cora-2.png";
+import bannerCora3 from "@/assets/cora/banner-cora-3.png";
+import bannerCora4 from "@/assets/cora/banner-cora-4.jpg";
+import styles from "./BannerCoraCarousel.module.scss";
 
 const SLIDES = [
-  { src: bannerSocio1, alt: "Banner SocioSA — promo 1", href: null },
-  { src: bannerSocio2, alt: "Banner SocioSA — Beauty Days", href: "https://calendly.com/farmaciasanchezantoniolli" }
+  {
+    src: bannerCora1,
+    alt: "Estoy para acompañarte, sigo tus entregas y organizo tus recordatorios",
+    href: null,
+  },
+  {
+    src: bannerCora2,
+    alt: "Si tomás medicacion todos los meses, CORA es para vos",
+    href: null,
+  },
+  {
+    src: bannerCora3,
+    alt: "CORA es para vos",
+    href: null,
+  },
+  {
+    src: bannerCora4,
+    alt: "¿Cómo funciona?",
+    href: null,
+  },
 ];
 
 const AUTOPLAY_MS = 5000;
@@ -21,7 +41,7 @@ const slideVariants = {
   exit: (dir: number) => ({ x: dir > 0 ? "-100%" : "100%", opacity: 0 }),
 };
 
-export function BannerSocioMobileCarousel() {
+export function BannerCoraMobileCarousel() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
@@ -82,7 +102,7 @@ export function BannerSocioMobileCarousel() {
                 />
               </Link>
             ) : (
-              <Image
+              <Image  
                 src={SLIDES[current].src}
                 alt={SLIDES[current].alt}
                 fill

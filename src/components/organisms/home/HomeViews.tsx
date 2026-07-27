@@ -10,7 +10,6 @@ import {
   Stethoscope,
   Truck,
   User,
-  Users,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
@@ -47,6 +46,8 @@ import type { PortalPerfilResponse } from "@/types/portal-profile";
 import { HomeView } from "@/types/home";
 import styles from "./HomeViews.module.scss";
 import { ExpedientesManagementView } from "./ExpedientesManagementView";
+import { BannerCoraCarousel } from "@/components/molecules/home/BannerCoraCarousel";
+import { BannerCoraMobileCarousel } from "@/components/molecules/home/BannerCoraMobileCarousel";
 
 const formatOptionalDate = (value: string | null | undefined) => {
   if (!value) {
@@ -188,11 +189,6 @@ export function HomeViews({
     // { label: "Productos", view: "productos", icon: Box },
     { label: "Segui tu pedido", view: "pedidos", icon: Package },
     { label: "Expediente", view: "expediente-actual", icon: FileText },
-    {
-      label: "SocioSA",
-      icon: Users,
-      onClick: () => router.push("/socios"),
-    },
     // { label: "Historial", view: "expediente-completo", icon: TrendingUp },
   ];
 
@@ -737,10 +733,17 @@ export function HomeViews({
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
         <div>
-          <h1 className={styles.welcomeTitle}>Hola, {perfil?.nombre}</h1>
-          <p className={styles.welcomeSubtitle}>
-            Bienvenido a tu panel de gestion de pedidos
-          </p>
+          <h1 className={styles.welcomeTitle}>¡Hola, {perfil?.nombre}! 👋</h1>
+        </div>
+
+        {/* Desktop */}
+        <div className="hidden sm:block">
+          <BannerCoraCarousel />
+        </div>
+
+        {/* Mobile: banner-socio1 y banner-socio2 */}
+        <div className="sm:hidden">
+          <BannerCoraMobileCarousel />
         </div>
 
         <div className={styles.quickAccessGrid}>

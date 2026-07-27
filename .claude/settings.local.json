@@ -13,7 +13,10 @@
       "Read(//c/Users/Usuario/Documents/front-fsa/BFF/bff-cliente-web/**)",
       "Bash(xargs grep -l \"ListExpedientesQuery\")",
       "Bash(cat \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\Cronicos\\\\cronicos-fsa-front\\\\package.json\")",
-      "Read(//c/Users/Usuario/Documents/front-fsa/Cronicos/cronicos-fsa-front/**)"
+      "Read(//c/Users/Usuario/Documents/front-fsa/Cronicos/cronicos-fsa-front/**)",
+      "Bash(cd \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\Cronicos\\\\cronicos-fsa\" && ls skills/ && echo \"---controllers---\" && find src/infrastructure -iname \"*.controller.ts\" | sort)",
+      "Read(//c/Users/Usuario/Documents/front-fsa/Cronicos/cronicos-fsa/**)",
+      "Read(//c/Users/Usuario/Documents/front-fsa/Cronicos/cronicos-fsa/src/**)"
     ]
   }
 }
