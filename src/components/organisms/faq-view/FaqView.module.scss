@@ -1,0 +1,101 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.title {
+  font-size: var(--fs-page-title);
+  font-weight: 700;
+  color: #8f63d9;
+}
+
+.subtitle {
+  margin-top: 0.35rem;
+  font-size: var(--fs-sm);
+  color: #6f7088;
+}
+
+.faqCard {
+  border: 1px solid #e7e2f0;
+  border-radius: 1.5rem;
+  background: #ffffff;
+  padding: 1.75rem;
+  box-shadow: 0 10px 35px rgba(37, 24, 78, 0.06);
+}
+
+.faqHeading {
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #2b2d3f;
+}
+
+.accordion {
+  gap: 0;
+}
+
+.item {
+  border: none;
+  border-bottom: 1px solid #ece7f6;
+  border-radius: 0;
+  padding: 0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.trigger {
+  padding: 1.1rem 1rem;
+  margin: 0 -1rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  color: #8f63d9;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: #f5f0fc;
+    text-decoration: none;
+  }
+}
+
+.content {
+  height: auto !important;
+  padding-top: 0;
+  padding-bottom: 1.1rem;
+  color: #2f3042;
+  line-height: 1.55;
+}
+
+.bulletList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bulletItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.bulletIcon {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: #8f63d9;
+}
+
+@media (max-width: 640px) {
+  .faqCard {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+}

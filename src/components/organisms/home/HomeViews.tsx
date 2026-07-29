@@ -43,7 +43,8 @@ import {
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 import { HomeView } from "@/types/home";
 import styles from "./HomeViews.module.scss";
-import { ExpedientesManagementView } from "./ExpedientesManagementView";
+import { ExpedientesManagementView } from "@/components/organisms/expedientes-management/ExpedientesManagementView";
+import { FaqView } from "../faq-view/FaqView";
 import { BannerCoraCarousel } from "@/components/molecules/home/BannerCoraCarousel";
 import { BannerCoraMobileCarousel } from "@/components/molecules/home/BannerCoraMobileCarousel";
 import boxCoraIcon from "@/assets/cora/card/box-cora.svg";
@@ -165,6 +166,10 @@ const viewContent: Record<
     title: "Historial completo",
     description: "Registro historico de toda la documentacion.",
   },
+  "preguntas-frecuentes": {
+    title: "Preguntas frecuentes",
+    description: "Respuestas rápidas sobre CORA y cómo funciona.",
+  },
 };
 
 export function HomeViews({
@@ -268,7 +273,7 @@ export function HomeViews({
   const cicloWarningMessage = expedienteWarnings.includes(
     "expediente_cycles_unavailable",
   )
-    ? "El BFF devolvio expedientes, pero no pudo enriquecer los ciclos. Revisa permisos de cliente:read en el bearer final."
+    ? "Todavía estamos completando la información de tus pedidos, pero podés seguir viendo los datos disponibles."
     : null;
 
   if (currentView === "mi-cuenta") {
@@ -291,7 +296,17 @@ export function HomeViews({
           expedientes={expedienteItems}
           activeExpedienteId={activeExpediente?.expedienteId ?? null}
           refreshExpedientes={refreshExpedientes}
+          isExpedientesLoading={isExpedientesLoading}
+          expedientesError={expedientesError}
         />
+      </main>
+    );
+  }
+
+  if (currentView === "preguntas-frecuentes") {
+    return (
+      <main className={styles.container}>
+        <FaqView />
       </main>
     );
   }
@@ -314,7 +329,7 @@ export function HomeViews({
               <p className={styles.trackingMessageTitle}>
                 {requiresAccountValidation
                   ? "Necesitamos validar tu usuario"
-                  : "No pudimos cargar los expedientes"}
+                  : "No pudimos cargar tus pedidos"}
               </p>
               <p className={styles.trackingMessageText}>{expedientesError}</p>
             </div>
@@ -339,7 +354,7 @@ export function HomeViews({
           {!shouldShowTrackingLoading && expedientesPartial ? (
             <div className={styles.trackingMessageCard}>
               <p className={styles.trackingMessageTitle}>
-                Los expedientes llegaron con datos parciales
+                Tus pedidos llegaron con datos parciales
               </p>
               <p className={styles.trackingMessageText}>
                 {cicloWarningMessage ||
@@ -401,7 +416,7 @@ export function HomeViews({
               <p className={styles.trackingMessageTitle}>
                 {expedienteActualRequiresAccountValidation
                   ? "Necesitamos validar tu usuario"
-                  : "No pudimos cargar el expediente actual"}
+                  : "No pudimos cargar tu pedido actual"}
               </p>
               <p className={styles.trackingMessageText}>
                 Contactate con nuestro equipo de soporte para resolver este

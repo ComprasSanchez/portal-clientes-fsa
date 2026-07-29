@@ -6,4 +6,5 @@ export type HomeView =
   | "pedidos"
   | "facturas"
   | "pedido-actual"
-  | "pedido-completo";
+  | "pedido-completo"
+  | "preguntas-frecuentes";

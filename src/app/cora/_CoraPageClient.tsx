@@ -18,6 +18,7 @@ const VALID_VIEWS: HomeView[] = [
   "facturas",
   "pedido-actual",
   "pedido-completo",
+  "preguntas-frecuentes",
 ];
 
 const HomeViewsFallback = () => {

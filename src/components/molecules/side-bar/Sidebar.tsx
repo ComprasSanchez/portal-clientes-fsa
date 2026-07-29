@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Files,
   FileText,
+  HelpCircle,
   Home,
   LogOut,
   Menu,
@@ -37,14 +38,13 @@ const menuItems: Array<{
   { id: "dashboard", label: "Inicio", icon: Home },
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
   { id: "mis-pedidos", label: "Mis pedidos", icon: Files },
-  // { id: "productos", label: "Productos", icon: ShoppingBag },
   { id: "pedidos", label: "Segui tu pedido", icon: Package },
   { id: "pedido-actual", label: "Pedido actual", icon: FileText },
-  // {
-  //   id: "pedido-completo",
-  //   label: "Historial completo",
-  //   icon: TrendingUp,
-  // },
+  {
+    id: "preguntas-frecuentes",
+    label: "Preguntas frecuentes",
+    icon: HelpCircle,
+  },
   { id: "socios", label: "SocioSA", icon: Users },
 ];
 
@@ -116,7 +116,9 @@ export function Sidebar({
       >
         <div className="flex h-full flex-col">
           <div className="hidden border-b border-[#e6e1ef] p-4 lg:block">
-            <div className={` flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
+            <div
+              className={` flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}
+            >
               {isCollapsed ? (
                 <button
                   type="button"
@@ -157,7 +159,11 @@ export function Sidebar({
                 className="rounded-lg p-1 text-[#7d7e96] transition-colors hover:bg-[#ece7f6]"
                 aria-label="Colapsar menu"
               >
-                {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                {isCollapsed ? (
+                  <ChevronRight size={20} />
+                ) : (
+                  <ChevronLeft size={20} />
+                )}
               </button>
             </div>
           </div>
@@ -171,6 +177,9 @@ export function Sidebar({
 
                 return (
                   <li key={item.id}>
+                    {isSociosShortcut && (
+                      <div className="mx-1 mb-2 mt-1 border-t border-[#d3dee2]" />
+                    )}
                     <button
                       onClick={() => handleNavigate(item.id)}
                       className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-all

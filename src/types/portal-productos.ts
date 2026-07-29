@@ -23,3 +23,7 @@ export type PortalProductoOption = {
   laboratorio: string;
   presentacion?: string;
 };
+
+export type SelectedProductState = PortalProductoOption & {
+  periodoDias: string;
+};

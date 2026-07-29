@@ -12,7 +12,7 @@ import googleLogo from "@/assets/google-logo.svg";
 import mobileLogo from "@/assets/logo-celeste.png";
 import loginLogo from "@/assets/farmacia-logo.svg";
 import loginBackground from "@/assets/login/elementos/fondo.jpg";
-import portadaPrueba from "@/assets/portada-prueba-18.jpg.jpeg";
+import portadaPrueba from "@/assets/portada-prueba-19.jpeg";
 import iconHand from "@/assets/login/elementos/icon-hand.png";
 import iconPuntos from "@/assets/login/elementos/puntos-pay.png";
 import iconRegalo from "@/assets/login/elementos/regalo.png";
