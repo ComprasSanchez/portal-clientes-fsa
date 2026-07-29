@@ -12,7 +12,8 @@ import googleLogo from "@/assets/google-logo.svg";
 import mobileLogo from "@/assets/logo-celeste.png";
 import loginLogo from "@/assets/farmacia-logo.svg";
 import loginBackground from "@/assets/login/elementos/fondo.jpg";
-import portadaPrueba from "@/assets/portada-prueba-19.jpeg";
+import portadaPrueba from "@/assets/portada-prueba-20.jpeg";
+// import portadaPrueba from "@/assets/portada-prueba-19.jpeg";
 import iconHand from "@/assets/login/elementos/icon-hand.png";
 import iconPuntos from "@/assets/login/elementos/puntos-pay.png";
 import iconRegalo from "@/assets/login/elementos/regalo.png";
@@ -1830,7 +1831,9 @@ export function Login({ onLogin }: LoginProps) {
               >
                 <header className={styles.formHeader}>
                   <h2 className={styles.formTitle}>Iniciar sesión</h2>
-                  <p className={styles.formSubtitle}>Ingresá a tu cuenta de Farmacias Sanchez Antoniolli</p>
+                  <p className={styles.formSubtitle}>
+                    Ingresá a tu cuenta de Farmacias Sanchez Antoniolli
+                  </p>
                 </header>
                 {infoMessage ? (
                   <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
@@ -2456,7 +2459,9 @@ export function Login({ onLogin }: LoginProps) {
                     <button
                       type="button"
                       className={styles.secondaryButton}
-                      disabled={isAutoVerifyingOnboarding || isResendingOnboarding}
+                      disabled={
+                        isAutoVerifyingOnboarding || isResendingOnboarding
+                      }
                       onClick={() => {
                         void handleResendOnboarding();
                       }}
@@ -2472,10 +2477,10 @@ export function Login({ onLogin }: LoginProps) {
                       <div
                         className={`${styles.feedback} ${styles.feedbackInfo}`}
                       >
-                        Para poder ingresar, tenés que crear tu cuenta: tocá el botón de abajo y completá otra vez tus
-                        datos (nombre, documento, contraseña, etc.). Al
-                        terminar, te va a llegar un email para
-                        confirmar tu cuenta.
+                        Para poder ingresar, tenés que crear tu cuenta: tocá el
+                        botón de abajo y completá otra vez tus datos (nombre,
+                        documento, contraseña, etc.). Al terminar, te va a
+                        llegar un email para confirmar tu cuenta.
                       </div>
                       <button
                         type="button"
