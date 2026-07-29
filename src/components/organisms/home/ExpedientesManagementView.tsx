@@ -804,16 +804,16 @@ export function ExpedientesManagementView({
 
   return (
     <section className="space-y-6">
-      <div className="rounded-3xl border border-[#ebe6f4] bg-white p-6 shadow-sm">
+      {/* <div className="rounded-3xl border border-[#ebe6f4] bg-white p-6 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#8f63d9]">
           Gestión de expedientes
         </p>
-        <h2 className="mt-2 text-2xl font-semibold text-[#2f3042]">Crear y administrar tus expedientes</h2>
+        <h2 className="mt-2 text-2xl font-semibold text-[#2f3042]">Crear y administrar tus pedidos</h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-[#5f6074]">
           Desde aquí podés crear un expediente para gestionar tu tratamiento crónico, actualizar los datos de cada
           expediente y hacer seguimiento de las fechas de entrega.
         </p>
-      </div>
+      </div> */}
 
       {createdSummary ? (
         <article className="rounded-3xl border border-[#dcd0f4] bg-[#faf7ff] p-6 shadow-sm">
@@ -893,7 +893,7 @@ export function ExpedientesManagementView({
             <div>
               <p className="text-sm font-semibold text-[#2f3042]">¿Qué pasa después?</p>
               <p className="mt-1 text-sm text-[#5f6074]">
-                Una vez creado el expediente, un asesor se pondrá en contacto para confirmar los detalles y coordinar tu primera entrega.
+                Una vez hecho el pedido, un asesor se pondrá en contacto para confirmar los detalles y coordinar tu entrega.
               </p>
             </div>
           </div>

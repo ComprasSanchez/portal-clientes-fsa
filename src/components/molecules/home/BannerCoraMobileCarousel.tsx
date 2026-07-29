@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import bannerCora1 from "@/assets/cora/banner-cora-1.png";
-import bannerCora2 from "@/assets/cora/banner-cora-2.png";
-import bannerCora3 from "@/assets/cora/banner-cora-3.png";
-import bannerCora4 from "@/assets/cora/banner-cora-4.jpg";
+import bannerCora1 from "@/assets/cora/banners/banner-cora-1.png";
+import bannerCora2 from "@/assets/cora/banners/banner-cora-2.png";
+import bannerCora3 from "@/assets/cora/banners/banner-cora-3.png";
+import bannerCora4 from "@/assets/cora/banners/banner-cora-4.jpg";
 import styles from "./BannerCoraCarousel.module.scss";
 
 const SLIDES = [

@@ -12,6 +12,7 @@ import googleLogo from "@/assets/google-logo.svg";
 import mobileLogo from "@/assets/logo-celeste.png";
 import loginLogo from "@/assets/farmacia-logo.svg";
 import loginBackground from "@/assets/login/elementos/fondo.jpg";
+import portadaPrueba from "@/assets/portada-prueba-18.jpg.jpeg";
 import iconHand from "@/assets/login/elementos/icon-hand.png";
 import iconPuntos from "@/assets/login/elementos/puntos-pay.png";
 import iconRegalo from "@/assets/login/elementos/regalo.png";
@@ -1745,7 +1746,8 @@ export function Login({ onLogin }: LoginProps) {
 
   return (
     <section className={styles.root}>
-      <aside className={styles.heroPanel}>
+      <aside className={styles.heroPanel} style={{ background: "#ffffff" }}>
+        {/* Contenido original del panel — comentado temporalmente para probar portada-prueba-18
         <div className={styles.heroBanner} aria-hidden="true">
           <Image
             src={loginBackground}
@@ -1798,6 +1800,14 @@ export function Login({ onLogin }: LoginProps) {
         <p className={styles.heroFooter}>
           © 2026 Farmacias Sanchez Antoniolli - Todos los derechos reservados
         </p>
+        */}
+        <Image
+          src={portadaPrueba}
+          alt=""
+          fill
+          style={{ objectFit: "contain" }}
+          priority
+        />
       </aside>
       <div className={styles.contentPanel}>
         <Image

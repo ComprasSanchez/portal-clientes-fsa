@@ -38,9 +38,20 @@
   color: #007c98;
 }
 
+.quickAccessIconWrapPlain {
+  width: auto;
+  height: auto;
+  background: transparent;
+  color: #8f63d9;
+}
+
 .quickAccessLabel {
   font-weight: 600;
   color: #2f3042;
+}
+
+.quickAccessLabelPlain {
+  color: #8f63d9;
 }
 
 .detailButton {

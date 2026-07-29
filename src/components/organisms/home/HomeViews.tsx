@@ -2,14 +2,12 @@ import { useEffect, useRef } from "react";
 import {
   Clock,
   CreditCard,
-  FileText,
   MapPin,
-  Package,
   Phone,
   Pill,
   Stethoscope,
+  TrendingUp,
   Truck,
-  User,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
@@ -48,6 +46,9 @@ import styles from "./HomeViews.module.scss";
 import { ExpedientesManagementView } from "./ExpedientesManagementView";
 import { BannerCoraCarousel } from "@/components/molecules/home/BannerCoraCarousel";
 import { BannerCoraMobileCarousel } from "@/components/molecules/home/BannerCoraMobileCarousel";
+import boxCoraIcon from "@/assets/cora/card/box-cora.svg";
+import fileCoraIcon from "@/assets/cora/card/file-cora.svg";
+import bellCoraIcon from "@/assets/cora/card/bell-cora.svg";
 
 const formatOptionalDate = (value: string | null | undefined) => {
   if (!value) {
@@ -139,9 +140,9 @@ const viewContent: Record<
     title: "Mi perfil",
     description: "Informacion personal y datos de tu cuenta.",
   },
-  "mis-expedientes": {
-    title: "Mis expedientes",
-    description: "Creá expedientes nuevos y actualizá el expediente activo.",
+  "mis-pedidos": {
+    title: "Mis pedidos",
+    description: "Creá pedidos nuevos y actualizá el pedido activo.",
   },
   productos: {
     title: "Productos",
@@ -155,12 +156,12 @@ const viewContent: Record<
     title: "Facturas",
     description: "Consulta y descarga de comprobantes.",
   },
-  "expediente-actual": {
+  "pedido-actual": {
     title: "Tu pedido actual",
     description:
       "Acá podés ver cómo viene tu pedido, cómo te vamos a contactar y qué medicamentos incluye.",
   },
-  "expediente-completo": {
+  "pedido-completo": {
     title: "Historial completo",
     description: "Registro historico de toda la documentacion.",
   },
@@ -184,12 +185,9 @@ export function HomeViews({
   const active = viewContent[currentView];
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
   const quickAccessItems: QuickAccessItem[] = [
-    { label: "Mi perfil", view: "mi-cuenta", icon: User },
-    // { label: "Mis expedientes", view: "mis-expedientes", icon: FileStack },
-    // { label: "Productos", view: "productos", icon: Box },
-    { label: "Segui tu pedido", view: "pedidos", icon: Package },
-    { label: "Expediente", view: "expediente-actual", icon: FileText },
-    // { label: "Historial", view: "expediente-completo", icon: TrendingUp },
+    { label: "Mi pedido", view: "pedido-actual", icon: boxCoraIcon, tone: "plain" },
+    { label: "Mi historial", view: "mis-pedidos", icon: fileCoraIcon, tone: "plain" },
+    { label: "Mis recordatorios", view: "pedidos", icon: bellCoraIcon, tone: "plain" },
   ];
 
   const queryCicloId = searchParams.get("cicloId");
@@ -230,7 +228,7 @@ export function HomeViews({
     isNotFound: expedienteActualNotFound,
     refresh: refreshExpedienteActual,
   } = usePortalExpedienteActual({
-    enabled: currentView === "expediente-actual",
+    enabled: currentView === "pedido-actual",
   });
   const expedienteActualRequiresAccountValidation =
     expedienteActualError?.includes("Valida tu cuenta") ?? false;
@@ -285,7 +283,7 @@ export function HomeViews({
     );
   }
 
-  if (currentView === "mis-expedientes") {
+  if (currentView === "mis-pedidos") {
     return (
       <main className={styles.container}>
         <ExpedientesManagementView
@@ -383,7 +381,7 @@ export function HomeViews({
     );
   }
 
-  if (currentView === "expediente-actual") {
+  if (currentView === "pedido-actual") {
     return (
       <main className={styles.container}>
         <section

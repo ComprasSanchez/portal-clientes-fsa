@@ -259,10 +259,19 @@ export function CoraDashboardSkeleton() {
         <Skeleton className="h-5 w-72 max-w-full" />
       </div>
 
+      <SkeletonCard variant="cora">
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-72 max-w-full" />
+          <Skeleton className="h-5 w-full max-w-2xl" />
+          <Skeleton className="h-5 w-11/12 max-w-xl" />
+          <Skeleton className="h-11 w-32 rounded-xl" />
+        </div>
+      </SkeletonCard>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 5 }).map((_, index) => (
+        {Array.from({ length: 3 }).map((_, index) => (
           <SkeletonCard key={index} variant="cora">
-            <div className="flex min-h-[128px] flex-col items-center justify-center gap-5">
+            <div className="flex flex-col items-center justify-center gap-5">
               <Skeleton className="h-12 w-12 rounded-full" />
               <Skeleton className="h-7 w-32" />
             </div>
@@ -271,28 +280,6 @@ export function CoraDashboardSkeleton() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <SkeletonCard variant="cora">
-          <div className="space-y-3">
-            <Skeleton className="h-8 w-40" />
-            <Skeleton className="h-5 w-56 max-w-full" />
-          </div>
-
-          <div className="mt-5 rounded-3xl bg-[linear-gradient(135deg,#8f63d9_0%,#a177e7_100%)] p-5">
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-20 bg-white/20" />
-              <Skeleton className="h-10 w-44 bg-white/25" />
-              <div className="h-px bg-white/15" />
-              <Skeleton className="h-4 w-28 bg-white/20" />
-              <Skeleton className="h-10 w-52 bg-white/25" />
-              <Skeleton className="h-5 w-72 max-w-full bg-white/20" />
-            </div>
-          </div>
-
-          <div className="mt-5">
-            <Skeleton className="h-11 w-32 rounded-xl" />
-          </div>
-        </SkeletonCard>
-
         <SkeletonCard variant="cora">
           <div className="space-y-3">
             <Skeleton className="h-8 w-36" />
@@ -345,15 +332,6 @@ export function CoraDashboardSkeleton() {
           </div>
         </SkeletonCard>
       </div>
-
-      <SkeletonCard variant="cora">
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-72 max-w-full" />
-          <Skeleton className="h-5 w-full max-w-2xl" />
-          <Skeleton className="h-5 w-11/12 max-w-xl" />
-          <Skeleton className="h-11 w-32 rounded-xl" />
-        </div>
-      </SkeletonCard>
     </section>
   );
 }
