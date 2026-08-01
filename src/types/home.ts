@@ -1,10 +1,11 @@
 export type HomeView =
   | "dashboard"
   | "mi-cuenta"
-  | "mis-pedidos"
+  | "mi-historial"
   | "productos"
   | "pedidos"
   | "facturas"
   | "pedido-actual"
   | "pedido-completo"
-  | "preguntas-frecuentes";
+  | "preguntas-frecuentes"
+  | "crear-pedido";

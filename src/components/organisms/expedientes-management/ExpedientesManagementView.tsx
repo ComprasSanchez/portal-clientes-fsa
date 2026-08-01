@@ -1,24 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { Plus } from "lucide-react";
 import { AlertCircle, CalendarDays, ShieldCheck } from "lucide-react";
 import { usePortalExpedienteActual } from "@/lib/use-portal-expediente-actual";
-import {
-  formatPortalProfileDate,
-  pickPreferredAfiliacion,
-  pickPreferredContacto,
-  pickPreferredDomicilio,
-} from "@/lib/portal-profile";
+import { usePreferredPortalProfile } from "@/lib/use-preferred-portal-profile";
 import type {
   PortalExpedienteItem,
   PortalExpedientesResponse,
 } from "@/types/portal-expedientes";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
-import type { CreatedExpedienteSummary } from "@/types/portal-expediente-mutations";
-import { CreateExpedienteForm } from "./CreateExpedienteForm";
+import type { HomeView } from "@/types/home";
 import { EditExpedienteForm } from "./EditExpedienteForm";
 import { ExpedientesList } from "./ExpedientesList";
-import { formatExpedienteLabel } from "../../../helpers/expedientes-management.helpers";
 
 type ExpedientesManagementViewProps = {
   perfil: PortalPerfilResponse | null;
@@ -27,6 +21,7 @@ type ExpedientesManagementViewProps = {
   refreshExpedientes: () => Promise<PortalExpedientesResponse | null>;
   isExpedientesLoading?: boolean;
   expedientesError?: string | null;
+  onNavigate: (view: HomeView) => void;
 };
 
 export function ExpedientesManagementView({
@@ -36,6 +31,7 @@ export function ExpedientesManagementView({
   refreshExpedientes,
   isExpedientesLoading,
   expedientesError,
+  onNavigate,
 }: ExpedientesManagementViewProps) {
   const {
     expediente,
@@ -46,84 +42,45 @@ export function ExpedientesManagementView({
     refresh: refreshExpedienteActual,
   } = usePortalExpedienteActual({ enabled: true });
 
-  const contactos = useMemo(
-    () => (Array.isArray(perfil?.contactos) ? perfil.contactos : []),
-    [perfil],
-  );
-  const afiliaciones = useMemo(
-    () => (Array.isArray(perfil?.afiliaciones) ? perfil.afiliaciones : []),
-    [perfil],
-  );
-  const domicilios = useMemo(
-    () => (Array.isArray(perfil?.domicilios) ? perfil.domicilios : []),
-    [perfil],
-  );
-  const verifiedContacts = useMemo(
-    () => contactos.filter((contacto) => contacto.id && contacto.verificado === true),
-    [contactos],
-  );
-  const preferredVerifiedContact = useMemo(() => {
-    const preferredEmail = pickPreferredContacto(verifiedContacts, "EMAIL");
-    const preferredPhone = pickPreferredContacto(verifiedContacts, "TELEFONO");
+  const {
+    afiliaciones,
+    domicilios,
+    verifiedContacts,
+    hasVerifiedContact,
+    preferredVerifiedContact,
+    preferredAfiliacionId,
+    preferredDomicilioId,
+  } = usePreferredPortalProfile(perfil);
 
-    return preferredPhone ?? preferredEmail ?? verifiedContacts[0] ?? null;
-  }, [verifiedContacts]);
-  const preferredAfiliacion = useMemo(() => pickPreferredAfiliacion(afiliaciones), [afiliaciones]);
-  const preferredAfiliacionId = preferredAfiliacion?.obraSocialId ?? "";
-  const preferredDomicilio = useMemo(() => pickPreferredDomicilio(domicilios), [domicilios]);
-  const preferredDomicilioId = preferredDomicilio?.id ?? "";
-
-  const hasVerifiedContact = verifiedContacts.length > 0;
-
-  const [editExpedienteId, setEditExpedienteId] = useState<string | null>(activeExpedienteId);
+  const [editExpedienteId, setEditExpedienteId] = useState<string | null>(
+    activeExpedienteId,
+  );
   const [hasManualSelection, setHasManualSelection] = useState(false);
-  const [createdSummary, setCreatedSummary] = useState<CreatedExpedienteSummary | null>(null);
 
   const handleSelectExpedienteForEdit = (item: PortalExpedienteItem) => {
     setHasManualSelection(true);
     setEditExpedienteId(item.expedienteId);
   };
 
-  const editingItem = expedientes.find((item) => item.expedienteId === editExpedienteId) ?? null;
+  const editingItem =
+    expedientes.find((item) => item.expedienteId === editExpedienteId) ?? null;
 
   return (
     <section className="space-y-6">
-      {createdSummary ? (
-        <article className="rounded-3xl border border-[#dcd0f4] bg-[#faf7ff] p-6 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#8f63d9]">
-            Alta confirmada
-          </p>
-          <h3 className="mt-2 text-xl font-semibold text-[#2f3042]">Tu pedido ya fue creado</h3>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <div className="rounded-2xl bg-white px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f63d9]">
-                Pedido
-              </p>
-              <p className="mt-1 text-sm font-semibold text-[#2f3042]">
-                {formatExpedienteLabel(createdSummary.expedienteId)}
-              </p>
-            </div>
-            <div className="rounded-2xl bg-white px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f63d9]">
-                Fecha objetivo
-              </p>
-              <p className="mt-1 text-sm font-semibold text-[#2f3042]">
-                {formatPortalProfileDate(createdSummary.fechaObjetivoEntrega)}
-              </p>
-            </div>
-            <div className="rounded-2xl bg-white px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f63d9]">
-                Primer contacto estimado
-              </p>
-              <p className="mt-1 text-sm font-semibold text-[#2f3042]">
-                {createdSummary.fechaPrimerContacto
-                  ? formatPortalProfileDate(createdSummary.fechaPrimerContacto)
-                  : "Te vamos a confirmar pronto la fecha de contacto"}
-              </p>
-            </div>
-          </div>
-        </article>
-      ) : null}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h3 className="text-[36px] font-semibold uppercase text-[#8f63d9]">MI HISTORIAL</h3>
+          <p className="text-xl font-normal text-[#2f3042]">Contame qué medicación tomás y yo me ocupo del resto</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onNavigate("crear-pedido")}
+          className="inline-flex items-center gap-2 rounded-2xl bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#7f56c7]"
+        >
+          <Plus size={18} />
+          Nuevo pedido
+        </button>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <article className="rounded-3xl border border-[#ebe6f4] bg-white p-5 shadow-sm">
@@ -134,11 +91,12 @@ export function ExpedientesManagementView({
               <ShieldCheck size={20} />
             </span>
             <div>
-              <p className="text-sm font-semibold text-[#2f3042]">Contacto verificado</p>
+              <p className="text-sm font-semibold text-[#2f3042]">
+                Contacto verificado
+              </p>
               <p className="mt-1 text-sm text-[#5f6074]">
-                {hasVerifiedContact
-                  ? "Podemos comunicarnos con vos para coordinar cada entrega. Asegurate de tener tu teléfono o email siempre actualizados."
-                  : "Necesitás verificar al menos un teléfono o email antes de crear un pedido. Podés hacerlo desde tu perfil."}
+                Mantené tu teléfono o email actualizados para que pueda
+                comunicarme con vos.
               </p>
             </div>
           </div>
@@ -150,9 +108,11 @@ export function ExpedientesManagementView({
               <CalendarDays size={20} />
             </span>
             <div>
-              <p className="text-sm font-semibold text-[#2f3042]">Fecha de entrega estimada</p>
+              <p className="text-sm font-semibold text-[#2f3042]">
+                Fecha de entrega
+              </p>
               <p className="mt-1 text-sm text-[#5f6074]">
-                Indicá cuándo necesitás recibir tu medicación. Usamos esa fecha para coordinar el despacho y avisarte con anticipación.
+                Elegí cuándo necesitás tu medicación. Yo me encargo del resto.
               </p>
             </div>
           </div>
@@ -164,46 +124,38 @@ export function ExpedientesManagementView({
               <AlertCircle size={20} />
             </span>
             <div>
-              <p className="text-sm font-semibold text-[#2f3042]">¿Qué pasa después?</p>
+              <p className="text-sm font-semibold text-[#2f3042]">
+                ¿Qué pasa después?
+              </p>
               <p className="mt-1 text-sm text-[#5f6074]">
-                Una vez hecho el pedido, un asesor se pondrá en contacto para confirmar los detalles y coordinar tu entrega.
+                Cuando termines, voy a comunicarme con vos para coordinar la
+                primera entrega.
               </p>
             </div>
           </div>
         </article>
       </div>
 
-      <div className="grid gap-6">
-        <CreateExpedienteForm
-          hasVerifiedContact={hasVerifiedContact}
-          preferredVerifiedContact={preferredVerifiedContact}
-          preferredAfiliacionId={preferredAfiliacionId}
-          refreshExpedientes={refreshExpedientes}
-          refreshExpedienteActual={refreshExpedienteActual}
-          onCreated={setCreatedSummary}
-        />
-
-        {/* <EditExpedienteForm
-          editingItem={editingItem}
-          hasManualSelection={hasManualSelection}
-          expedienteActual={{
-            expediente,
-            sucursalEntrega,
-            isLoading: isLoadingExpedienteActual,
-            error: expedienteActualError,
-            isNotFound: expedienteActualNotFound,
-          }}
-          verifiedContacts={verifiedContacts}
-          afiliaciones={afiliaciones}
-          domicilios={domicilios}
-          preferredVerifiedContact={preferredVerifiedContact}
-          preferredAfiliacionId={preferredAfiliacionId}
-          preferredDomicilioId={preferredDomicilioId}
-          hasVerifiedContact={hasVerifiedContact}
-          refreshExpedientes={refreshExpedientes}
-          refreshExpedienteActual={refreshExpedienteActual}
-        /> */}
-      </div>
+      {/* <EditExpedienteForm
+        editingItem={editingItem}
+        hasManualSelection={hasManualSelection}
+        expedienteActual={{
+          expediente,
+          sucursalEntrega,
+          isLoading: isLoadingExpedienteActual,
+          error: expedienteActualError,
+          isNotFound: expedienteActualNotFound,
+        }}
+        verifiedContacts={verifiedContacts}
+        afiliaciones={afiliaciones}
+        domicilios={domicilios}
+        preferredVerifiedContact={preferredVerifiedContact}
+        preferredAfiliacionId={preferredAfiliacionId}
+        preferredDomicilioId={preferredDomicilioId}
+        hasVerifiedContact={hasVerifiedContact}
+        refreshExpedientes={refreshExpedientes}
+        refreshExpedienteActual={refreshExpedienteActual}
+      /> */}
 
       <ExpedientesList
         expedientes={expedientes}

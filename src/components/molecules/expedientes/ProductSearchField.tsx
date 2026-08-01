@@ -32,7 +32,6 @@ interface ProductSearchFieldProps {
   selectedProducts: SelectedProductState[];
   onAdd: (product: PortalProductoOption) => void;
   onRemove: (productId: string) => void;
-  onPeriodChange: (productId: string, value: string) => void;
   error?: string;
 }
 
@@ -40,7 +39,6 @@ export function ProductSearchField({
   selectedProducts,
   onAdd,
   onRemove,
-  onPeriodChange,
   error,
 }: ProductSearchFieldProps) {
   const { pushToast } = useGlobalToast();
@@ -159,12 +157,12 @@ export function ProductSearchField({
   );
 
   return (
-    <div className="rounded-2xl border border-dashed border-[#ddd6eb] bg-[#faf8fd] p-4 text-sm text-[#5f6074] md:col-span-2">
+    <div className="text-sm text-[#5f6074] sm:rounded-2xl sm:border sm:border-dashed sm:border-[#ddd6eb] sm:bg-[#faf8fd] sm:p-4 md:col-span-2">
       <div className="flex flex-col gap-4">
         <p>Buscador de productos</p>
-        <div className="flex flex-col gap-2 md:flex-row">
+        <div className="flex items-center gap-2">
           <input
-            className="flex-1 rounded-2xl border border-[#ddd6eb] px-4 py-3 text-sm outline-none transition focus:border-[#8f63d9]"
+            className="min-w-0 flex-1 rounded-2xl border border-[#ddd6eb] px-4 py-3 text-sm outline-none transition focus:border-[#8f63d9]"
             value={productQuery}
             onChange={(event) => setProductQuery(event.target.value)}
             onKeyDown={(event) => {
@@ -179,24 +177,20 @@ export function ProductSearchField({
             type="button"
             disabled={isSearching}
             onClick={handleSearchClick}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#d8ccef] px-4 py-3 text-sm font-semibold text-[#6c48b4] transition hover:bg-[#f7f2ff] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-[#d8ccef] px-4 py-3 text-sm font-semibold text-[#6c48b4] transition hover:bg-[#f7f2ff] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSearching ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
               <Search size={16} />
             )}
-            {isSearching ? "Buscando..." : ""}
           </button>
         </div>
 
         <div>
           {selectedProducts.length > 0 && (
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f63d9]">
-              Productos seleccionados
-              {selectedProducts.length > 0
-                ? ` (${selectedProducts.length})`
-                : ""}
+              Productos seleccionados ({selectedProducts.length})
             </p>
           )}
 
@@ -205,7 +199,7 @@ export function ProductSearchField({
               {selectedProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="flex flex-col gap-3 rounded-2xl border-l-4 border-l-[#8f63d9] border-y border-r border-[#e2daf3] bg-white p-4 md:flex-row md:items-center md:justify-between"
+                  className="flex items-center justify-between gap-2 rounded-2xl border-l-4 border-l-[#8f63d9] border-y border-r border-[#e2daf3] bg-white p-4"
                 >
                   <div className="flex items-start gap-2">
                     <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f0e9fb] text-[#8f63d9]">
@@ -220,32 +214,13 @@ export function ProductSearchField({
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-[#2f3042]">
-                        Cada
-                      </span>
-                      <input
-                        type="number"
-                        min="1"
-                        value={product.periodoDias}
-                        onChange={(event) =>
-                          onPeriodChange(product.id, event.target.value)
-                        }
-                        className="w-20 rounded-xl border border-[#ddd6eb] px-3 py-2 text-sm outline-none transition focus:border-[#8f63d9]"
-                      />
-                      <span className="text-xs font-medium text-[#2f3042]">
-                        días
-                      </span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => onRemove(product.id)}
-                      className="rounded-xl border border-[#f0dde2] px-3 py-2 text-xs font-semibold text-[#b03c55] transition hover:bg-[#fff4f6]"
-                    >
-                      Quitar
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onRemove(product.id)}
+                    className="shrink-0 rounded-xl border border-[#f0dde2] px-3 py-2 text-xs font-semibold text-[#b03c55] transition hover:bg-[#fff4f6]"
+                  >
+                    Quitar
+                  </button>
                 </div>
               ))}
             </div>

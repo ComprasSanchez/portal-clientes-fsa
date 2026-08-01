@@ -44,6 +44,7 @@ import type { PortalPerfilResponse } from "@/types/portal-profile";
 import { HomeView } from "@/types/home";
 import styles from "./HomeViews.module.scss";
 import { ExpedientesManagementView } from "@/components/organisms/expedientes-management/ExpedientesManagementView";
+import { CrearPedidoView } from "@/components/organisms/expedientes-management/crear-pedido/CrearPedidoView";
 import { FaqView } from "../faq-view/FaqView";
 import { BannerCoraCarousel } from "@/components/molecules/home/BannerCoraCarousel";
 import { BannerCoraMobileCarousel } from "@/components/molecules/home/BannerCoraMobileCarousel";
@@ -141,8 +142,8 @@ const viewContent: Record<
     title: "Mi perfil",
     description: "Informacion personal y datos de tu cuenta.",
   },
-  "mis-pedidos": {
-    title: "Mis pedidos",
+  "mi-historial": {
+    title: "Mi historial",
     description: "Creá pedidos nuevos y actualizá el pedido activo.",
   },
   productos: {
@@ -170,6 +171,10 @@ const viewContent: Record<
     title: "Preguntas frecuentes",
     description: "Respuestas rápidas sobre CORA y cómo funciona.",
   },
+  "crear-pedido": {
+    title: "Nuevo pedido",
+    description: "Elegí los productos, la fecha y cómo querés recibirlo.",
+  },
 };
 
 export function HomeViews({
@@ -191,7 +196,7 @@ export function HomeViews({
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
   const quickAccessItems: QuickAccessItem[] = [
     { label: "Mi pedido", view: "pedido-actual", icon: boxCoraIcon, tone: "plain" },
-    { label: "Mi historial", view: "mis-pedidos", icon: fileCoraIcon, tone: "plain" },
+    { label: "Mi historial", view: "mi-historial", icon: fileCoraIcon, tone: "plain" },
     { label: "Mis recordatorios", view: "pedidos", icon: bellCoraIcon, tone: "plain" },
   ];
 
@@ -288,7 +293,7 @@ export function HomeViews({
     );
   }
 
-  if (currentView === "mis-pedidos") {
+  if (currentView === "mi-historial") {
     return (
       <main className={styles.container}>
         <ExpedientesManagementView
@@ -298,6 +303,19 @@ export function HomeViews({
           refreshExpedientes={refreshExpedientes}
           isExpedientesLoading={isExpedientesLoading}
           expedientesError={expedientesError}
+          onNavigate={onNavigate}
+        />
+      </main>
+    );
+  }
+
+  if (currentView === "crear-pedido") {
+    return (
+      <main className={styles.container}>
+        <CrearPedidoView
+          perfil={perfil}
+          refreshExpedientes={refreshExpedientes}
+          onNavigate={onNavigate}
         />
       </main>
     );

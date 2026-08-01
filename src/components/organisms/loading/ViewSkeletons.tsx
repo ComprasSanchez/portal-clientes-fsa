@@ -430,3 +430,42 @@ export function SociosDashboardSkeleton() {
     </section>
   );
 }
+
+export function PedidosCoraSkeleton({
+  variant = "socios",
+}: {
+  variant?: ThemeVariant;
+}) {
+  return (
+    <section aria-hidden="true">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div
+            key={index}
+            className={`w-full rounded-2xl border p-4 ${themeCardClass[variant]}`}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32 max-w-full" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+              <Skeleton className="h-6 w-16 shrink-0 rounded-full" />
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {Array.from({ length: 3 }).map((__, rowIndex) => (
+                <div
+                  key={rowIndex}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <Skeleton className="h-3.5 w-20" />
+                  <Skeleton className="h-3.5 w-16" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}

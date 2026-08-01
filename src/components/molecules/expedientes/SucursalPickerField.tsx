@@ -10,6 +10,7 @@ interface SucursalPickerFieldProps {
 }
 
 let allSucursalesCache: PortalSucursalOption[] | null = null;
+let allSucursalesPromise: Promise<PortalSucursalOption[]> | null = null;
 
 const normalizeSucursalResult = (value: Record<string, unknown>): PortalSucursalOption => ({
   id: Number(value.id ?? value.cod_sucursal ?? 0),
@@ -47,6 +48,29 @@ const normalizeSucursalesData = (data: unknown): PortalSucursalOption[] => {
     .filter((item) => Number.isInteger(item.id) && item.id > 0);
 };
 
+function fetchAllSucursales(): Promise<PortalSucursalOption[]> {
+  if (allSucursalesCache) return Promise.resolve(allSucursalesCache);
+  if (allSucursalesPromise) return allSucursalesPromise;
+
+  allSucursalesPromise = fetch("/api/portal/me/sucursales/search?q=&limit=500", { cache: "no-store" })
+    .then(async (res) => {
+      if (!res.ok) return [];
+      const data: unknown = await res.json().catch(() => null);
+      return normalizeSucursalesData(data);
+    })
+    .catch(() => [])
+    .then((normalized) => {
+      allSucursalesCache = normalized;
+      return normalized;
+    });
+
+  return allSucursalesPromise;
+}
+
+export function prefetchSucursales(): void {
+  void fetchAllSucursales();
+}
+
 export function SucursalPickerField({ value, initialSucursal, onChange }: SucursalPickerFieldProps) {
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -54,17 +78,15 @@ export function SucursalPickerField({ value, initialSucursal, onChange }: Sucurs
   const [isLoading, setIsLoading] = useState(!allSucursalesCache);
 
   useEffect(() => {
-    if (allSucursalesCache) return;
-    fetch("/api/portal/me/sucursales/search?q=&limit=500", { cache: "no-store" })
-      .then(async (res) => {
-        if (!res.ok) return;
-        const data: unknown = await res.json().catch(() => null);
-        const normalized = normalizeSucursalesData(data);
-        allSucursalesCache = normalized;
-        setAllSucursales(normalized);
-      })
-      .catch(() => {})
-      .finally(() => setIsLoading(false));
+    let cancelled = false;
+    fetchAllSucursales().then((normalized) => {
+      if (cancelled) return;
+      setAllSucursales(normalized);
+      setIsLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const filteredSucursales = useMemo(() => {

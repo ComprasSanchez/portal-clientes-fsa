@@ -3,6 +3,7 @@
 import { formatPortalProfileDate } from "@/lib/portal-profile";
 import type { PortalExpedienteItem } from "@/types/portal-expedientes";
 import { formatExpedienteLabel } from "../../../helpers/expedientes-management.helpers";
+import { PedidosCoraSkeleton } from "@/components/organisms/loading/ViewSkeletons";
 
 interface ExpedientesListProps {
   expedientes: PortalExpedienteItem[];
@@ -30,18 +31,20 @@ export function ExpedientesList({
       <div className="mb-5">
         <h3 className="text-lg font-semibold text-[#2f3042]">Tus pedidos</h3>
         <p className="text-sm text-[#5f6074]">
-          Resumen de los pedidos detectados para el cliente autenticado.
+          Resumen de tus ultimos pedidos.
         </p>
       </div>
 
       {isLoading && visibleExpedientes.length === 0 ? (
-        <p className="text-sm text-[#5f6074]">Cargando tus pedidos...</p>
+        <PedidosCoraSkeleton />
       ) : error && visibleExpedientes.length === 0 ? (
         <div className="rounded-2xl border border-[#f0dde2] bg-[#fff7f8] px-4 py-3 text-sm text-[#7f1d2d]">
           No pudimos cargar tus pedidos. {error}
         </div>
       ) : visibleExpedientes.length === 0 ? (
-        <p className="text-sm text-[#5f6074]">Todavía no hay pedidos para mostrar.</p>
+        <p className="text-sm text-[#5f6074]">
+          Todavía no hay pedidos para mostrar.
+        </p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visibleExpedientes.map((expedienteItem) => {

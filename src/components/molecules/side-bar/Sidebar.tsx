@@ -37,7 +37,7 @@ const menuItems: Array<{
 }> = [
   { id: "dashboard", label: "Inicio", icon: Home },
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
-  { id: "mis-pedidos", label: "Mis pedidos", icon: Files },
+  { id: "mi-historial", label: "Mi historial", icon: Files },
   { id: "pedidos", label: "Segui tu pedido", icon: Package },
   { id: "pedido-actual", label: "Pedido actual", icon: FileText },
   {

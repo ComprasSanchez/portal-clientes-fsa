@@ -12,13 +12,14 @@ const DEFAULT_VIEW: HomeView = "dashboard";
 const VALID_VIEWS: HomeView[] = [
   "dashboard",
   "mi-cuenta",
-  "mis-pedidos",
+  "mi-historial",
   "productos",
   "pedidos",
   "facturas",
   "pedido-actual",
   "pedido-completo",
   "preguntas-frecuentes",
+  "crear-pedido",
 ];
 
 const HomeViewsFallback = () => {
