@@ -74,6 +74,13 @@ export function Sidebar({
   return (
     <>
       <div className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-border bg-white px-4 lg:hidden">
+        <button
+          onClick={() => setIsMobileOpen((prev) => !prev)}
+          className="rounded-lg p-2 text-[#6f7085] transition-colors hover:bg-[#f2f0f7]"
+          aria-label="Abrir menu lateral"
+        >
+          {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
         <div className="flex items-center gap-3">
           <Image
             src={coraWordmark}
@@ -92,13 +99,6 @@ export function Sidebar({
             priority
           />
         </div>
-        <button
-          onClick={() => setIsMobileOpen((prev) => !prev)}
-          className="rounded-lg p-2 text-[#6f7085] transition-colors hover:bg-[#f2f0f7]"
-          aria-label="Abrir menu lateral"
-        >
-          {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
       </div>
 
       {isMobileOpen && (

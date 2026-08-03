@@ -17,6 +17,9 @@ interface CrearPedidoStep1ProductosProps {
   perfil: {
     nombre?: string | null;
   } | null;
+  subpaso: "productos" | "frecuencia";
+  onSubpasoChange: (subpaso: "productos" | "frecuencia") => void;
+  onExit: () => void;
 }
 
 export function CrearPedidoStep1Productos({
@@ -24,10 +27,10 @@ export function CrearPedidoStep1Productos({
   productSearchResetKey,
   onContinue,
   perfil,
+  subpaso,
+  onSubpasoChange,
+  onExit,
 }: CrearPedidoStep1ProductosProps) {
-  const [subpaso, setSubpaso] = useState<"productos" | "frecuencia">(
-    "productos",
-  );
   const [recurrentes, setRecurrentes] = useState<PortalProductoRecurrente[]>(
     [],
   );
@@ -70,7 +73,7 @@ export function CrearPedidoStep1Productos({
 
   const handleContinueProductos = async () => {
     if (await validateItems()) {
-      setSubpaso("frecuencia");
+      onSubpasoChange("frecuencia");
     }
   };
 
@@ -80,7 +83,7 @@ export function CrearPedidoStep1Productos({
     }
   };
 
-  const handleBackToProductos = () => setSubpaso("productos");
+  const handleBackToProductos = () => onSubpasoChange("productos");
 
   const handleApplyToAll = (value: string) => {
     formik.setFieldValue(
@@ -126,7 +129,7 @@ export function CrearPedidoStep1Productos({
             {formik.values.items.map((item) => (
               <div
                 key={item.id}
-                className="sm:rounded-xl sm:border sm:border-[#e9e1f6] sm:bg-white sm:p-3"
+                className="rounded-xl border border-[#e9e1f6] bg-white p-3"
               >
                 <p className="text-sm font-semibold text-[#2f3042]">
                   {item.nombre}
@@ -195,13 +198,15 @@ export function CrearPedidoStep1Productos({
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleApplyToAll(item.periodoDias)}
-                  className="mt-3 w-full rounded-xl border border-[#d8ccef] px-3 py-2 text-xs font-semibold text-[#6c48b4] transition hover:bg-[#f7f2ff] sm:w-auto"
-                >
-                  Aplicar a todos
-                </button>
+                {formik.values.items.length > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => handleApplyToAll(item.periodoDias)}
+                    className="mt-3 w-full rounded-xl border border-[#d8ccef] px-3 py-2 text-xs font-semibold text-[#6c48b4] transition hover:bg-[#f7f2ff] sm:w-auto"
+                  >
+                    Aplicar a todos
+                  </button>
+                ) : null}
               </div>
             ))}
           </div>
@@ -288,7 +293,14 @@ export function CrearPedidoStep1Productos({
         }}
       />
 
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        <button
+          type="button"
+          onClick={onExit}
+          className="inline-flex items-center justify-center rounded-2xl border border-[#ddd6eb] px-5 py-3 text-sm font-semibold text-[#2f3042] transition hover:border-[#c4b5e0]"
+        >
+          Volver
+        </button>
         <button
           type="button"
           onClick={() => void handleContinueProductos()}

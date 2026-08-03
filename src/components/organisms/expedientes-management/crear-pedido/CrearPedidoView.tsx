@@ -90,12 +90,14 @@ interface CrearPedidoViewProps {
   perfil: PortalPerfilResponse | null;
   refreshExpedientes: () => Promise<PortalExpedientesResponse | null>;
   onNavigate: (view: HomeView) => void;
+  previousView: HomeView;
 }
 
 export function CrearPedidoView({
   perfil,
   refreshExpedientes,
   onNavigate,
+  previousView,
 }: CrearPedidoViewProps) {
   const { pushToast } = useGlobalToast();
   const { refresh: refreshExpedienteActual } = usePortalExpedienteActual({
@@ -110,6 +112,9 @@ export function CrearPedidoView({
   } = usePreferredPortalProfile(perfil);
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [productosSubpaso, setProductosSubpaso] = useState<
+    "productos" | "frecuencia"
+  >("productos");
   const [productSearchResetKey, setProductSearchResetKey] = useState(0);
   const [selectedSucursal, setSelectedSucursal] =
     useState<PortalSucursalOption | null>(null);
@@ -228,6 +233,7 @@ export function CrearPedidoView({
         helpers.resetForm({ values: buildInitialValues(preferredDomicilioId) });
         setProductSearchResetKey((current) => current + 1);
         setSelectedSucursal(null);
+        setProductosSubpaso("productos");
         setStep(1);
       } catch (error) {
         pushToast({
@@ -298,11 +304,9 @@ export function CrearPedidoView({
 
   return (
     <section className="space-y-4">
-      <div>
-        <h2 className="text-[36px] font-bold uppercase text-[#8f63d9]">
-          {stepTitles[step]}
-        </h2>
-      </div>
+      <h2 className="text-center text-[26px] font-bold uppercase m-0 text-[#8f63d9] sm:text-left sm:text-[36px]">
+        {stepTitles[step]}
+      </h2>
 
       <PortalStepper currentStep={step} />
 
@@ -312,6 +316,9 @@ export function CrearPedidoView({
           productSearchResetKey={productSearchResetKey}
           onContinue={() => setStep(2)}
           perfil={perfil}
+          subpaso={productosSubpaso}
+          onSubpasoChange={setProductosSubpaso}
+          onExit={() => onNavigate(previousView)}
         />
       ) : null}
 

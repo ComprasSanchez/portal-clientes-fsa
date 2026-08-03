@@ -117,6 +117,7 @@ const formatDeliveryLocation = ({
 
 interface HomeViewsProps {
   currentView: HomeView;
+  previousView?: HomeView;
   onNavigate: (view: HomeView) => void;
   userName: string;
   affiliateNumber: string | null;
@@ -179,6 +180,7 @@ const viewContent: Record<
 
 export function HomeViews({
   currentView,
+  previousView,
   onNavigate,
   userName,
   affiliateNumber,
@@ -316,6 +318,7 @@ export function HomeViews({
           perfil={perfil}
           refreshExpedientes={refreshExpedientes}
           onNavigate={onNavigate}
+          previousView={previousView ?? "mi-historial"}
         />
       </main>
     );

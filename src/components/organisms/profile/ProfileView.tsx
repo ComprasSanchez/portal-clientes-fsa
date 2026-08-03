@@ -1,9 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CalendarDays, Search, UserRound, X } from "lucide-react";
+import {
+  CalendarDays,
+  Home,
+  IdCard,
+  Mail,
+  Phone,
+  Search,
+  UserRound,
+  X,
+} from "lucide-react";
 import { ProfileViewSkeleton } from "@/components/organisms/loading/ViewSkeletons";
 import { ProfileField } from "@/components/molecules/home/ProfileField";
+import { ProfileDataRow } from "@/components/molecules/home/ProfileDataRow";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import {
   formatPortalProfileDate,
@@ -545,6 +555,8 @@ export function ProfileView({
   const [activeContactEditorType, setActiveContactEditorType] =
     useState<ContactType | null>(null);
   const [isDomicilioModalOpen, setIsDomicilioModalOpen] = useState(false);
+  const [isDomicilioPickerModalOpen, setIsDomicilioPickerModalOpen] =
+    useState(false);
   const [affiliationForm, setAffiliationForm] = useState<AffiliationFormData>(
     initialAffiliationForm,
   );
@@ -584,18 +596,6 @@ export function ProfileView({
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const allContactos = useMemo(
-    () => (Array.isArray(perfil?.contactos) ? perfil.contactos : []),
-    [perfil],
-  );
-  const telefonos = useMemo(
-    () => allContactos.filter((contacto) => contacto.tipo === "TELEFONO"),
-    [allContactos],
-  );
-  const emails = useMemo(
-    () => allContactos.filter((contacto) => contacto.tipo === "EMAIL"),
-    [allContactos],
-  );
   const domicilios = useMemo(
     () => (Array.isArray(perfil?.domicilios) ? perfil.domicilios : []),
     [perfil],
@@ -782,6 +782,19 @@ export function ProfileView({
 
     setIsDomicilioModalOpen(false);
     setDomicilioForm(buildDomicilioFormData(preferredDomicilio));
+  };
+
+  const handleOpenDomicilioPickerModal = () => {
+    setProfileFeedback(null);
+    setIsDomicilioPickerModalOpen(true);
+  };
+
+  const handleCloseDomicilioPickerModal = () => {
+    if (isSwitchingDomicilio) {
+      return;
+    }
+
+    setIsDomicilioPickerModalOpen(false);
   };
 
   const handleOpenVerificacionModal = (contacto: PortalPerfilContacto) => {
@@ -1091,12 +1104,30 @@ export function ProfileView({
     }
   };
 
+  const handleCancelContactoEditor = () => {
+    if (isSavingContacto) {
+      return;
+    }
+
+    setActiveContactEditorType(null);
+    setProfileFeedback(null);
+  };
+
   const handleSaveContacto = async (
     event: React.FormEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
 
     if (isSavingContacto) {
+      return;
+    }
+
+    const originalContacto =
+      contactForm.tipo === "TELEFONO" ? preferredPhone : preferredEmail;
+
+    if ((originalContacto?.valor ?? "") === contactForm.valor.trim()) {
+      setActiveContactEditorType(null);
+      setProfileFeedback(null);
       return;
     }
 
@@ -1279,23 +1310,24 @@ export function ProfileView({
       <header className={styles.header}>
         <div className={styles.headerText}>
           <h1 className={styles.title}>Mi perfil</h1>
-          <p className={styles.subtitle}>Informacion personal y de contacto</p>
           <p className={styles.localEditHint}>
-            Desde editar podes actualizar tus datos personales y tambien elegir
-            o cargar nuevos datos de contacto y domicilio.
+            Podes agregar, modificar o corregir tus datos personales, de
+            contacto desde esta seccion.
           </p>
         </div>
       </header>
 
       <article className={styles.card}>
         <div className={styles.profileTop}>
-          <div className={styles.identityColumn}>
+          {/* <div className={styles.identityColumn}>
             <div className={styles.avatar}>{initials}</div>
           </div>
 
-          <div className={styles.identityInfo}>
-            <h2 className={styles.fullName}>{profileValues.fullName}</h2>
+          <h2 className={`${styles.fullName} ${styles.identityName}`}>
+            {profileValues.fullName}
+          </h2> */}
 
+          <div className={styles.identityInfo}>
             {profileFeedback ? (
               <p
                 className={
@@ -1310,100 +1342,31 @@ export function ProfileView({
 
             <div className={styles.sectionsGrid}>
               <section>
-                <div className={styles.sectionHeader}>
-                  <div>
-                    <h3 className={styles.sectionTitle}>
-                      Mis datos personales
-                    </h3>
-                    <p className={styles.sectionSubtitle}>
-                      {isEditingPersonalData
-                        ? "Edita tus datos personales y administra tus contactos desde este mismo bloque."
-                        : "Consulta tus datos personales y abri editar para actualizar tambien tus contactos."}
-                    </p>
-                  </div>
-                  <div className={styles.sectionActions}>
-                    {isEditingPersonalData ? (
-                      <>
-                        <button
-                          type="button"
-                          className={styles.secondaryButton}
-                          onClick={handleCancelEditingPersonalData}
-                          disabled={isSavingPersonalData}
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.selectorActionButton}
-                          onClick={() => {
-                            void handleSavePersonalData();
-                          }}
-                          disabled={isSavingPersonalData}
-                        >
-                          {isSavingPersonalData
-                            ? "Guardando..."
-                            : "Guardar cambios"}
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.secondaryButton}
-                        onClick={handleStartEditingPersonalData}
-                      >
-                        Editar
-                      </button>
-                    )}
-                  </div>
-                </div>
+                {/* <div className={styles.sectionHeader}>
+                  <h3 className={styles.sectionTitle}>
+                    Mis datos personales
+                  </h3>
+                </div> */}
                 <div className={styles.profileSectionGrid}>
                   <div className={styles.profileSectionColumn}>
                     <h4 className={styles.subsectionTitle}>Datos personales</h4>
-                    <div className={styles.fieldsGrid}>
-                      <ProfileField
-                        label="Nombre"
-                        value={
-                          isEditingPersonalData
-                            ? profileValues.firstName
-                            : profileValues.firstName || "Sin dato"
-                        }
-                        isEditing={isEditingPersonalData}
-                        onChange={(value) => {
-                          handlePersonalDataFieldChange("firstName", value);
-                        }}
+                    <div>
+                      <ProfileDataRow
+                        icon={UserRound}
+                        value={profileValues.fullName || "Sin dato"}
+                        label="Nombre y apellido"
+                        onClick={handleStartEditingPersonalData}
                       />
-                      <ProfileField
-                        label="Apellido"
-                        value={
-                          isEditingPersonalData
-                            ? profileValues.lastName
-                            : profileValues.lastName || "Sin dato"
-                        }
-                        isEditing={isEditingPersonalData}
-                        onChange={(value) => {
-                          handlePersonalDataFieldChange("lastName", value);
-                        }}
-                      />
-                      <ProfileField
+                      <ProfileDataRow
+                        icon={CalendarDays}
+                        value={profileValues.birthDate || "Sin dato"}
                         label="Fecha de nacimiento"
-                        value={
-                          isEditingPersonalData
-                            ? profileValues.birthDateValue
-                            : profileValues.birthDate
-                        }
-                        type="date"
-                        isEditing={isEditingPersonalData}
-                        onChange={(value) => {
-                          handlePersonalDataFieldChange(
-                            "birthDateValue",
-                            value,
-                          );
-                        }}
+                        onClick={handleStartEditingPersonalData}
                       />
-                      <ProfileField
+                      <ProfileDataRow
+                        icon={IdCard}
+                        value={profileValues.identification || "Sin dato"}
                         label="Número de documento"
-                        value={profileValues.identification}
-                        readOnly
                       />
                     </div>
                   </div>
@@ -1412,283 +1375,62 @@ export function ProfileView({
                     <h4 className={styles.subsectionTitle}>
                       Datos de contacto
                     </h4>
-                    {isEditingPersonalData ? (
-                      <div className={styles.fieldsGrid}>
-                        <div className={styles.selectorGroup}>
-                          <label
-                            className={styles.selectorLabel}
-                            htmlFor="phone-principal"
-                          >
-                            Telefono principal
-                          </label>
-                          <div className={styles.selectorRow}>
-                            {activeContactEditorType === "TELEFONO" ? (
-                              <div className={styles.phoneInputRow}>
-                                <span
-                                  className={styles.phonePrefix}
-                                  aria-hidden="true"
-                                >
-                                  {PHONE_PREFIX}
-                                </span>
-                                <input
-                                  id="phone-principal"
-                                  type="tel"
-                                  inputMode="numeric"
-                                  value={contactForm.valor}
-                                  onChange={(event) =>
-                                    handleContactFieldChange(
-                                      "valor",
-                                      normalizePhoneDigits(event.target.value),
-                                    )
-                                  }
-                                  className={`${styles.fieldInput} ${styles.phoneValueInput}`}
-                                  placeholder="3511234567"
-                                />
-                              </div>
-                            ) : (
-                              <input
-                                id="phone-principal"
-                                className={styles.selectorInput}
-                                value={preferredPhone?.valor ?? "Sin dato"}
-                                disabled
-                                readOnly
-                              />
-                            )}
-                            <button
-                              type="button"
-                              className={styles.selectorActionButton}
-                              onClick={() => {
-                                if (activeContactEditorType === "TELEFONO") {
-                                  void handleSaveContacto({
-                                    preventDefault() {},
-                                  } as React.FormEvent<HTMLFormElement>);
-                                  return;
-                                }
+                    <div>
+                      <ProfileDataRow
+                        icon={Phone}
+                        value={preferredPhone?.valor ?? "Sin dato"}
+                        label="Telefono principal"
+                        status={
+                          preferredPhone
+                            ? preferredPhone.verificado
+                              ? "verified"
+                              : "pending"
+                            : undefined
+                        }
+                        onClick={() =>
+                          handleOpenContactoModal(
+                            "TELEFONO",
+                            preferredPhone ?? null,
+                          )
+                        }
+                      />
+                      <ProfileDataRow
+                        icon={Mail}
+                        value={preferredEmail?.valor ?? "Sin dato"}
+                        label="Correo electrónico"
+                        status={
+                          preferredEmail
+                            ? preferredEmail.verificado
+                              ? "verified"
+                              : "pending"
+                            : undefined
+                        }
+                        onClick={() =>
+                          handleOpenContactoModal(
+                            "EMAIL",
+                            preferredEmail ?? null,
+                          )
+                        }
+                      />
+                      <ProfileDataRow
+                        icon={Home}
+                        value={
+                          preferredDomicilio
+                            ? getDomicilioOptionLabel(preferredDomicilio)
+                            : "Sin dato"
+                        }
+                        label="Domicilio"
+                        onClick={handleOpenDomicilioPickerModal}
+                      />
+                    </div>
 
-                                handleOpenContactoModal(
-                                  "TELEFONO",
-                                  preferredPhone ?? null,
-                                );
-                              }}
-                              disabled={isSavingContacto}
-                            >
-                              {activeContactEditorType === "TELEFONO"
-                                ? "Guardar"
-                                : "Editar"}
-                            </button>
-                          </div>
-                          {telefonos.length === 0 ? (
-                            <p className={styles.contactInlineHint}>
-                              Todavia no hay telefonos guardados.
-                            </p>
-                          ) : null}
-                          {preferredPhone && !preferredPhone.verificado ? (
-                            <div className={styles.verificationHint}>
-                              <span>
-                                Este telefono principal aun no esta verificado.
-                              </span>
-                              <button
-                                type="button"
-                                className={styles.verificationAction}
-                                onClick={() =>
-                                  handleOpenVerificacionModal(preferredPhone)
-                                }
-                              >
-                                Verificar telefono
-                              </button>
-                            </div>
-                          ) : null}
-                        </div>
-                        <div className={styles.addressFieldGroup}>
-                          <div className={styles.addressInlineAction}>
-                            <label
-                              className={styles.selectorLabel}
-                              htmlFor="domicilio-select"
-                            >
-                              Elegir domicilio principal
-                            </label>
-                            <div className={styles.selectorRow}>
-                              <select
-                                id="domicilio-select"
-                                className={styles.selectorInput}
-                                value={
-                                  preferredDomicilio
-                                    ? getDomicilioOptionValue(
-                                        preferredDomicilio,
-                                      )
-                                    : ""
-                                }
-                                onChange={(event) =>
-                                  void handleSelectPrincipalDomicilio(
-                                    event.target.value,
-                                  )
-                                }
-                                disabled={
-                                  domicilios.length === 0 ||
-                                  isSwitchingDomicilio
-                                }
-                              >
-                                {domicilios.length === 0 ? (
-                                  <option value="">
-                                    No hay domicilios cargados
-                                  </option>
-                                ) : null}
-                                {domicilios.map((domicilio) => (
-                                  <option
-                                    key={getDomicilioOptionValue(domicilio)}
-                                    value={getDomicilioOptionValue(domicilio)}
-                                  >
-                                    {getDomicilioOptionLabel(domicilio)}
-                                  </option>
-                                ))}
-                              </select>
-                              <button
-                                type="button"
-                                className={styles.selectorActionButton}
-                                onClick={handleOpenDomicilioModal}
-                              >
-                                Anadir nuevo domicilio
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                        <div className={styles.selectorGroup}>
-                          <label
-                            className={styles.selectorLabel}
-                            htmlFor="email-principal"
-                          >
-                            Correo electrónico
-                          </label>
-                          <div className={styles.selectorRow}>
-                            <input
-                              id="email-principal"
-                              type="email"
-                              className={
-                                activeContactEditorType === "EMAIL"
-                                  ? styles.fieldInput
-                                  : styles.selectorInput
-                              }
-                              value={
-                                activeContactEditorType === "EMAIL"
-                                  ? contactForm.valor
-                                  : (preferredEmail?.valor ?? "Sin dato")
-                              }
-                              onChange={(event) =>
-                                activeContactEditorType === "EMAIL"
-                                  ? handleContactFieldChange(
-                                      "valor",
-                                      event.target.value,
-                                    )
-                                  : undefined
-                              }
-                              disabled={activeContactEditorType !== "EMAIL"}
-                              readOnly={activeContactEditorType !== "EMAIL"}
-                              placeholder="usuario@email.com"
-                            />
-                            <button
-                              type="button"
-                              className={styles.selectorActionButton}
-                              onClick={() => {
-                                if (activeContactEditorType === "EMAIL") {
-                                  void handleSaveContacto({
-                                    preventDefault() {},
-                                  } as React.FormEvent<HTMLFormElement>);
-                                  return;
-                                }
-
-                                handleOpenContactoModal(
-                                  "EMAIL",
-                                  preferredEmail ?? null,
-                                );
-                              }}
-                              disabled={isSavingContacto}
-                            >
-                              {activeContactEditorType === "EMAIL"
-                                ? "Guardar"
-                                : "Editar"}
-                            </button>
-                          </div>
-                          {emails.length === 0 ? (
-                            <p className={styles.contactInlineHint}>
-                              Todavia no hay emails guardados.
-                            </p>
-                          ) : null}
-                          {preferredEmail && !preferredEmail.verificado ? (
-                            <div className={styles.verificationHint}>
-                              <span>
-                                Este email principal aun no esta verificado.
-                              </span>
-                              <button
-                                type="button"
-                                className={styles.verificationAction}
-                                onClick={() =>
-                                  handleOpenVerificacionModal(preferredEmail)
-                                }
-                              >
-                                Verificar email
-                              </button>
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className={styles.fieldsGrid}>
-                        <ProfileField
-                          label="Telefono principal"
-                          value={preferredPhone?.valor ?? "Sin dato"}
-                          readOnly
-                        />
-                        {preferredPhone && !preferredPhone.verificado ? (
-                          <div className={styles.verificationHint}>
-                            <span>Tu celular aun no esta verificado.</span>
-                            <button
-                              type="button"
-                              className={styles.verificationAction}
-                              onClick={() =>
-                                handleOpenVerificacionModal(preferredPhone)
-                              }
-                            >
-                              Verificar celular
-                            </button>
-                          </div>
-                        ) : null}
-                        <ProfileField
-                          label="Correo electrónico"
-                          value={preferredEmail?.valor ?? "Sin dato"}
-                          readOnly
-                        />
-                        {preferredEmail && !preferredEmail.verificado ? (
-                          <div className={styles.verificationHint}>
-                            <span>Tu email aun no esta verificado.</span>
-                            <button
-                              type="button"
-                              className={styles.verificationAction}
-                              onClick={() =>
-                                handleOpenVerificacionModal(preferredEmail)
-                              }
-                            >
-                              Verificar email
-                            </button>
-                          </div>
-                        ) : null}
-                        <ProfileField
-                          label="Domicilio"
-                          value={
-                            preferredDomicilio
-                              ? getDomicilioOptionLabel(preferredDomicilio)
-                              : "Sin dato"
-                          }
-                          readOnly
-                        />
-                        {crmConvenio ? (
-                          <ProfileField
-                            label="Convenio"
-                            value={crmConvenio}
-                            readOnly
-                          />
-                        ) : null}
-                      </div>
-                    )}
+                    {crmConvenio ? (
+                      <ProfileField
+                        label="Convenio"
+                        value={crmConvenio}
+                        readOnly
+                      />
+                    ) : null}
                   </div>
                 </div>
               </section>
@@ -2043,6 +1785,324 @@ export function ProfileView({
                   disabled={isSavingDomicilio}
                 >
                   {isSavingDomicilio ? "Guardando..." : "Guardar domicilio"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+
+      {isDomicilioPickerModalOpen ? (
+        <div
+          className={styles.modalOverlay}
+          onClick={handleCloseDomicilioPickerModal}
+        >
+          <div
+            className={styles.modalDialog}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="domicilio-picker-modal-title"
+          >
+            <header className={styles.modalHeader}>
+              <div>
+                <h2
+                  id="domicilio-picker-modal-title"
+                  className={styles.modalTitle}
+                >
+                  Elegir domicilio
+                </h2>
+                <p className={styles.modalSubtitle}>
+                  Seleccioná cuál de tus domicilios guardados querés usar como
+                  principal.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className={styles.modalCloseButton}
+                onClick={handleCloseDomicilioPickerModal}
+                aria-label="Cerrar selección de domicilio"
+                disabled={isSwitchingDomicilio}
+              >
+                <X size={22} />
+              </button>
+            </header>
+
+            <div className={styles.modalForm}>
+              <div className={styles.fieldBlock}>
+                <label
+                  className={styles.fieldLabel}
+                  htmlFor="domicilio-picker-select"
+                >
+                  Domicilio principal
+                </label>
+                <select
+                  id="domicilio-picker-select"
+                  className={styles.fieldInput}
+                  value={
+                    preferredDomicilio
+                      ? getDomicilioOptionValue(preferredDomicilio)
+                      : ""
+                  }
+                  onChange={(event) =>
+                    void handleSelectPrincipalDomicilio(event.target.value)
+                  }
+                  disabled={domicilios.length === 0 || isSwitchingDomicilio}
+                >
+                  {domicilios.length === 0 ? (
+                    <option value="">No hay domicilios cargados</option>
+                  ) : null}
+                  {domicilios.map((domicilio) => (
+                    <option
+                      key={getDomicilioOptionValue(domicilio)}
+                      value={getDomicilioOptionValue(domicilio)}
+                    >
+                      {getDomicilioOptionLabel(domicilio)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  className={styles.secondaryAction}
+                  onClick={() => {
+                    setIsDomicilioPickerModalOpen(false);
+                    handleOpenDomicilioModal();
+                  }}
+                >
+                  Añadir nuevo domicilio
+                </button>
+                <button
+                  type="button"
+                  className={styles.primaryAction}
+                  onClick={handleCloseDomicilioPickerModal}
+                  disabled={isSwitchingDomicilio}
+                >
+                  Listo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isEditingPersonalData ? (
+        <div
+          className={styles.modalOverlay}
+          onClick={handleCancelEditingPersonalData}
+        >
+          <div
+            className={styles.modalDialog}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="personal-data-modal-title"
+          >
+            <header className={styles.modalHeader}>
+              <div>
+                <h2
+                  id="personal-data-modal-title"
+                  className={styles.modalTitle}
+                >
+                  Editar datos personales
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                className={styles.modalCloseButton}
+                onClick={handleCancelEditingPersonalData}
+                aria-label="Cerrar edición de datos personales"
+                disabled={isSavingPersonalData}
+              >
+                <X size={22} />
+              </button>
+            </header>
+
+            <div className={styles.modalForm}>
+              <div className={styles.fieldsGrid}>
+                <ProfileField
+                  label="Nombre"
+                  value={profileValues.firstName}
+                  isEditing
+                  onChange={(value) => {
+                    handlePersonalDataFieldChange("firstName", value);
+                  }}
+                />
+                <ProfileField
+                  label="Apellido"
+                  value={profileValues.lastName}
+                  isEditing
+                  onChange={(value) => {
+                    handlePersonalDataFieldChange("lastName", value);
+                  }}
+                />
+                <ProfileField
+                  label="Fecha de nacimiento"
+                  value={profileValues.birthDateValue}
+                  type="date"
+                  isEditing
+                  onChange={(value) => {
+                    handlePersonalDataFieldChange("birthDateValue", value);
+                  }}
+                />
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  className={styles.secondaryAction}
+                  onClick={handleCancelEditingPersonalData}
+                  disabled={isSavingPersonalData}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className={styles.primaryAction}
+                  onClick={() => {
+                    void handleSavePersonalData();
+                  }}
+                  disabled={isSavingPersonalData}
+                >
+                  {isSavingPersonalData ? "Guardando..." : "Guardar cambios"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {activeContactEditorType ? (
+        <div
+          className={styles.modalOverlay}
+          onClick={handleCancelContactoEditor}
+        >
+          <div
+            className={styles.modalDialog}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contacto-modal-title"
+          >
+            <header className={styles.modalHeader}>
+              <div>
+                <h2 id="contacto-modal-title" className={styles.modalTitle}>
+                  {activeContactEditorType === "TELEFONO"
+                    ? "Editar teléfono"
+                    : "Editar correo electrónico"}
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                className={styles.modalCloseButton}
+                onClick={handleCancelContactoEditor}
+                aria-label="Cerrar edición de contacto"
+                disabled={isSavingContacto}
+              >
+                <X size={22} />
+              </button>
+            </header>
+
+            <form className={styles.modalForm} onSubmit={handleSaveContacto}>
+              {activeContactEditorType === "TELEFONO" ? (
+                <div className={styles.fieldBlock}>
+                  <label
+                    className={styles.fieldLabel}
+                    htmlFor="modal-phone-value"
+                  >
+                    Teléfono principal
+                  </label>
+                  <div className={styles.phoneInputRow}>
+                    <span className={styles.phonePrefix} aria-hidden="true">
+                      {PHONE_PREFIX}
+                    </span>
+                    <input
+                      id="modal-phone-value"
+                      type="tel"
+                      inputMode="numeric"
+                      value={contactForm.valor}
+                      onChange={(event) =>
+                        handleContactFieldChange(
+                          "valor",
+                          normalizePhoneDigits(event.target.value),
+                        )
+                      }
+                      className={`${styles.fieldInput} ${styles.phoneValueInput}`}
+                      placeholder="3511234567"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.fieldBlock}>
+                  <label
+                    className={styles.fieldLabel}
+                    htmlFor="modal-email-value"
+                  >
+                    Correo electrónico
+                  </label>
+                  <input
+                    id="modal-email-value"
+                    type="email"
+                    className={styles.fieldInput}
+                    value={contactForm.valor}
+                    onChange={(event) =>
+                      handleContactFieldChange("valor", event.target.value)
+                    }
+                    placeholder="usuario@email.com"
+                  />
+                </div>
+              )}
+
+              {activeContactEditorType === "TELEFONO" &&
+              preferredPhone &&
+              !preferredPhone.verificado ? (
+                <div className={styles.verificationHint}>
+                  <span>Este teléfono principal aún no está verificado.</span>
+                  <button
+                    type="button"
+                    className={styles.verificationAction}
+                    onClick={() => handleOpenVerificacionModal(preferredPhone)}
+                  >
+                    Verificar teléfono
+                  </button>
+                </div>
+              ) : null}
+
+              {activeContactEditorType === "EMAIL" &&
+              preferredEmail &&
+              !preferredEmail.verificado ? (
+                <div className={styles.verificationHint}>
+                  <span>Este email principal aún no está verificado.</span>
+                  <button
+                    type="button"
+                    className={styles.verificationAction}
+                    onClick={() => handleOpenVerificacionModal(preferredEmail)}
+                  >
+                    Verificar email
+                  </button>
+                </div>
+              ) : null}
+
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  className={styles.secondaryAction}
+                  onClick={handleCancelContactoEditor}
+                  disabled={isSavingContacto}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className={styles.primaryAction}
+                  disabled={isSavingContacto}
+                >
+                  {isSavingContacto ? "Guardando..." : "Guardar"}
                 </button>
               </div>
             </form>

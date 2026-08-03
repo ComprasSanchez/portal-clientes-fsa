@@ -97,10 +97,10 @@ export function CrearPedidoStep2Entrega({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2f3042]">
+          <div className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2f3042]">
             Inicio del ciclo
             <InfoTooltip label="Es la fecha en la que arranca el seguimiento de este pedido. A partir de acá calculamos cuándo te vamos a contactar y cuándo debería llegarte la próxima entrega." />
-          </span>
+          </div>
           <PortalDatePicker
             value={formik.values.fechaInicioCicloBase}
             onChange={(value) => formik.setFieldValue("fechaInicioCicloBase", value)}
@@ -108,10 +108,10 @@ export function CrearPedidoStep2Entrega({
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2f3042]">
+          <div className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2f3042]">
             Fecha objetivo de entrega
             <InfoTooltip label="Es el día en que te gustaría recibir este pedido. La usamos para coordinar el despacho y para calcular cuándo te vamos a contactar antes de la entrega." />
-          </span>
+          </div>
           <PortalDatePicker
             value={formik.values.fechaObjetivoEntrega}
             onChange={(value) => formik.setFieldValue("fechaObjetivoEntrega", value)}
@@ -123,13 +123,13 @@ export function CrearPedidoStep2Entrega({
 
         {fechaContactoEstimada ? (
           <div className="md:col-span-2 rounded-2xl border border-[#e2daf3] bg-[#faf7ff] px-4 py-3">
-            <p className="inline-flex items-center gap-1.5 text-xs font-medium text-[#8f7fa0]">
+            <div className="inline-flex items-center gap-1.5 text-xs font-medium text-[#8f7fa0]">
               <CalendarDays size={14} />
               Fecha estimada del contacto
               <InfoTooltip
                 label={`Te contactamos ${DEFAULT_ANTICIPACION_DIAS} días antes de la fecha objetivo de entrega, para tener tiempo de confirmar los datos y coordinar el despacho.`}
               />
-            </p>
+            </div>
             <p className="mt-1 text-base font-semibold text-[#8f63d9]">
               {formatPortalProfileDate(fechaContactoEstimada)}
             </p>

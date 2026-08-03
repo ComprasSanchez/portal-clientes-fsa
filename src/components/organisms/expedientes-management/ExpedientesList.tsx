@@ -27,7 +27,7 @@ export function ExpedientesList({
   );
 
   return (
-    <article className="rounded-3xl border border-[#ebe6f4] bg-white p-6 shadow-sm">
+    <article className="sm:rounded-3xl sm:border sm:border-[#ebe6f4] sm:bg-white sm:p-6 sm:shadow-sm">
       <div className="mb-5">
         <h3 className="text-lg font-semibold text-[#2f3042]">Tus pedidos</h3>
         <p className="text-sm text-[#5f6074]">
@@ -69,9 +69,9 @@ export function ExpedientesList({
                     <p className="text-sm font-semibold text-[#2f3042]">
                       {expedienteItem.titulo ?? formatExpedienteLabel(expedienteItem.expedienteId)}
                     </p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[#8f63d9]">
+                    {/* <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[#8f63d9]">
                       {expedienteItem.estado}
-                    </p>
+                    </p> */}
                   </div>
                   <div className="flex shrink-0 gap-1.5">
                     {isActive ? (

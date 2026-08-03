@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HomeViews } from "@/components/organisms/home/HomeViews";
 import { CoraDashboardSkeleton } from "@/components/organisms/loading/ViewSkeletons";
@@ -43,6 +43,7 @@ export function CoraPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { perfil, summary, isLoading } = usePortalPerfilContext();
+  const previousViewRef = useRef<HomeView>(DEFAULT_VIEW);
 
   useEffect(() => {
     const view = searchParams.get("view");
@@ -54,6 +55,7 @@ export function CoraPageClient() {
   }, [searchParams]);
 
   const handleNavigate = (view: HomeView) => {
+    previousViewRef.current = currentView;
     setCurrentView(view);
     const url = view === DEFAULT_VIEW ? "/cora" : `/cora?view=${view}`;
     router.push(url, { scroll: false });
@@ -74,7 +76,7 @@ export function CoraPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-muted/30 to-white">
+    <div className="min-h-dvh bg-linear-to-br from-muted/30 to-white">
       <Sidebar
         currentView={currentView}
         onNavigate={handleNavigate}
@@ -82,10 +84,11 @@ export function CoraPageClient() {
         userName={summary.displayName}
       />
 
-      <div className="flex min-h-[calc(100vh-4rem)] flex-col pt-16 transition-all duration-300 lg:ml-64 lg:min-h-screen lg:pt-0">
+      <div className="flex min-h-[calc(100dvh_-_4rem)] flex-col pt-16 transition-all duration-300 lg:ml-64 lg:min-h-dvh lg:pt-0">
         <Suspense fallback={<HomeViewsFallback />}>
           <HomeViews
             currentView={currentView}
+            previousView={previousViewRef.current}
             onNavigate={handleNavigate}
             userName={summary.displayName}
             affiliateNumber={summary.affiliateNumber}
@@ -97,9 +100,9 @@ export function CoraPageClient() {
           />
         </Suspense>
 
-        <footer className="relative left-1/2 mt-auto -translate-x-1/2 border-t border-border bg-white py-6">
+        <footer className="relative left-1/2 mt-auto -translate-x-1/2 border-t border-border bg-white py-3">
           <div className="mx-auto max-w-7xl px-4 text-center text-sm text-muted-foreground sm:px-6 lg:px-8">
-            <p className="mb-2">© 2026 CORA - Todos los derechos reservados</p>
+            <p>© 2026 CORA - Todos los derechos reservados</p>
           </div>
         </footer>
       </div>

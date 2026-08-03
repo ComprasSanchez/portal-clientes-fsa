@@ -75,7 +75,7 @@ export function ExpedientesManagementView({
         <button
           type="button"
           onClick={() => onNavigate("crear-pedido")}
-          className="inline-flex items-center gap-2 rounded-2xl bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#7f56c7]"
+          className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 rounded-full bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#7f56c7] sm:static sm:z-auto sm:rounded-2xl sm:shadow-none"
         >
           <Plus size={18} />
           Nuevo pedido
