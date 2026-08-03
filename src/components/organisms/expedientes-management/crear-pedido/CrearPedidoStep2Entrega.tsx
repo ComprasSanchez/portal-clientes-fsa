@@ -2,7 +2,12 @@
 
 import type { FormikProps } from "formik";
 import { Calendar, CalendarDays, Clock, Info } from "lucide-react";
-import { TooltipContent, TooltipRoot, TooltipTrigger } from "@heroui/react";
+import {
+  PopoverContent,
+  PopoverDialog,
+  PopoverRoot,
+  PopoverTrigger,
+} from "@heroui/react";
 import { PortalDatePicker } from "@/components/molecules/expedientes/PortalDatePicker";
 import { SucursalPickerField } from "@/components/molecules/expedientes/SucursalPickerField";
 import { formatPortalProfileDate } from "@/lib/portal-profile";
@@ -22,14 +27,16 @@ interface InfoTooltipProps {
 }
 
 const InfoTooltip = ({ label }: InfoTooltipProps) => (
-  <TooltipRoot delay={150}>
-    <TooltipTrigger className="inline-flex items-center rounded-full p-0 align-middle text-[#8f7fa0] hover:text-[#8f63d9]">
+  <PopoverRoot>
+    <PopoverTrigger className="inline-flex items-center rounded-full p-0 align-middle text-[#8f7fa0] hover:text-[#8f63d9]">
       <Info size={14} />
-    </TooltipTrigger>
-    <TooltipContent showArrow className="max-w-[290px] text-[15px] leading-snug text-[#2f3042]">
-      {label}
-    </TooltipContent>
-  </TooltipRoot>
+    </PopoverTrigger>
+    <PopoverContent placement="top" className="max-w-[290px]">
+      <PopoverDialog className="text-[15px] leading-snug text-[#2f3042] outline-none">
+        {label}
+      </PopoverDialog>
+    </PopoverContent>
+  </PopoverRoot>
 );
 
 const STEP2_FIELDS = [

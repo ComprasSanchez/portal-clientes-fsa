@@ -8,12 +8,16 @@ const BOTMAKER_SCRIPT_SRC =
   "https://go.botmaker.com/rest/webchat/p/I6GSOHZQO4/init.js";
 const HIDE_BODY_ATTRIBUTE = "data-hide-botmaker";
 
+// Controla si el widget de chat se carga. Poné
+// NEXT_PUBLIC_SHOW_BOTMAKER_CHAT=false en el .env para desactivarlo por completo.
+const SHOW_BOTMAKER_CHAT = process.env.NEXT_PUBLIC_SHOW_BOTMAKER_CHAT !== "false";
+
 export function BotmakerChat() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (document.getElementById(BOTMAKER_SCRIPT_ID)) {
+    if (!SHOW_BOTMAKER_CHAT || document.getElementById(BOTMAKER_SCRIPT_ID)) {
       return;
     }
 
@@ -27,6 +31,10 @@ export function BotmakerChat() {
   }, []);
 
   useEffect(() => {
+    if (!SHOW_BOTMAKER_CHAT) {
+      return;
+    }
+
     const isMiHistorial =
       pathname === "/cora" && searchParams.get("view") === "mi-historial";
 

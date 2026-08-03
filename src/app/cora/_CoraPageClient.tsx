@@ -54,6 +54,24 @@ export function CoraPageClient() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const setAppHeight = () => {
+      document.documentElement.style.setProperty(
+        "--app-vh",
+        `${window.innerHeight}px`,
+      );
+    };
+
+    setAppHeight();
+    window.addEventListener("resize", setAppHeight);
+    window.addEventListener("orientationchange", setAppHeight);
+
+    return () => {
+      window.removeEventListener("resize", setAppHeight);
+      window.removeEventListener("orientationchange", setAppHeight);
+    };
+  }, []);
+
   const handleNavigate = (view: HomeView) => {
     previousViewRef.current = currentView;
     setCurrentView(view);
@@ -76,7 +94,7 @@ export function CoraPageClient() {
   };
 
   return (
-    <div className="min-h-dvh bg-linear-to-br from-muted/30 to-white">
+    <div className="min-h-[var(--app-vh,100dvh)] bg-linear-to-br from-muted/30 to-white">
       <Sidebar
         currentView={currentView}
         onNavigate={handleNavigate}
@@ -84,7 +102,7 @@ export function CoraPageClient() {
         userName={summary.displayName}
       />
 
-      <div className="flex min-h-[calc(100dvh_-_4rem)] flex-col pt-16 transition-all duration-300 lg:ml-64 lg:min-h-dvh lg:pt-0">
+      <div className="flex min-h-[calc(var(--app-vh,100dvh)_-_4rem)] flex-col pt-16 transition-all duration-300 lg:ml-64 lg:min-h-[var(--app-vh,100dvh)] lg:pt-0">
         <Suspense fallback={<HomeViewsFallback />}>
           <HomeViews
             currentView={currentView}

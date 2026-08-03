@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Check,
   ChevronLeft,
   ChevronRight,
   Loader2,
   Search,
+  X,
 } from "lucide-react";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import type {
@@ -52,8 +53,11 @@ export function ProductSearchField({
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState<number | null>(null);
   const [totalCount, setTotalCount] = useState<number | null>(null);
+  const requestIdRef = useRef(0);
 
   const runSearch = async (term: string, targetPage: number) => {
+    const requestId = ++requestIdRef.current;
+
     if (!term) {
       setHasSearched(true);
       setProductResults([]);
@@ -92,6 +96,10 @@ export function ProductSearchField({
         );
       }
 
+      if (requestIdRef.current !== requestId) {
+        return;
+      }
+
       const responsePayload =
         data && "data" in data ? (data as PortalProductosResponse) : null;
 
@@ -125,6 +133,10 @@ export function ProductSearchField({
               : null,
       );
     } catch (searchError) {
+      if (requestIdRef.current !== requestId) {
+        return;
+      }
+
       setProductResults([]);
       setHasSearched(true);
       setTotalPages(null);
@@ -138,12 +150,26 @@ export function ProductSearchField({
         variant: "error",
       });
     } finally {
-      setIsSearching(false);
+      if (requestIdRef.current === requestId) {
+        setIsSearching(false);
+      }
     }
   };
 
   const handleSearchClick = () => {
     void runSearch(productQuery.trim(), 1);
+  };
+
+  const handleClearSearch = () => {
+    requestIdRef.current += 1;
+    setIsSearching(false);
+    setProductQuery("");
+    setCommittedQuery("");
+    setProductResults([]);
+    setHasSearched(false);
+    setPage(1);
+    setTotalPages(null);
+    setTotalCount(null);
   };
 
   const canGoPrev = page > 1 && !isSearching;
@@ -161,18 +187,30 @@ export function ProductSearchField({
       <div className="flex flex-col gap-4">
         <p>Buscador de productos</p>
         <div className="flex items-center gap-2">
-          <input
-            className="min-w-0 flex-1 rounded-2xl border border-[#ddd6eb] px-4 py-3 text-sm outline-none transition focus:border-[#8f63d9]"
-            value={productQuery}
-            onChange={(event) => setProductQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                handleSearchClick();
-              }
-            }}
-            placeholder="Buscá productos para sumar al pedido"
-          />
+          <div className="relative min-w-0 flex-1">
+            <input
+              className="w-full rounded-2xl border border-[#ddd6eb] px-4 py-3 pr-10 text-sm outline-none transition focus:border-[#8f63d9]"
+              value={productQuery}
+              onChange={(event) => setProductQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  handleSearchClick();
+                }
+              }}
+              placeholder="Buscá productos para sumar al pedido"
+            />
+            {productQuery.length > 0 || hasSearched ? (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                aria-label="Limpiar búsqueda"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8f7fa0] transition hover:text-[#8f63d9]"
+              >
+                <X size={16} />
+              </button>
+            ) : null}
+          </div>
           <button
             type="button"
             disabled={isSearching}
