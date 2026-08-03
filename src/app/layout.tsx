@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { BotmakerChat } from "../components/BotmakerChat";
 import { GlobalToastProvider } from "../components/ui/global-toast";
@@ -37,7 +38,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ScrollToTop />
         <GlobalToastProvider>{children}</GlobalToastProvider>
-        <BotmakerChat />
+        <Suspense fallback={null}>
+          <BotmakerChat />
+        </Suspense>
       </body>
     </html>
   );
