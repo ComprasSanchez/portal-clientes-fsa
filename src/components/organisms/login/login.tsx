@@ -2352,8 +2352,8 @@ export function Login({ onLogin }: LoginProps) {
                     <UserPlus size={20} />
                     <span>
                       {registerFormik.isSubmitting
-                        ? "Iniciando registro..."
-                        : "Comenzar registro"}
+                        ? "Confirmando..."
+                        : "Confirmar información"}
                     </span>
                   </button>
                 </form>
@@ -2386,7 +2386,7 @@ export function Login({ onLogin }: LoginProps) {
                   </div>
                   <p className={styles.formSubtitle}>
                     {onboardingFlow?.id
-                      ? "Te enviamos un email para completar tu registro. Abrí el enlace para continuar."
+                      ? "te enviamos un email para completar tu registro.."
                       : "No encontramos tu registro. Tenés que crear tu cuenta para poder ingresar."}
                   </p>
                 </header>
@@ -2400,11 +2400,11 @@ export function Login({ onLogin }: LoginProps) {
                     {errorMessage}
                   </div>
                 ) : null}
-                {onboardingFlow?.destinationMasked ? (
+                {/* {onboardingFlow?.destinationMasked ? (
                   <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
                     Email destino: {onboardingFlow.destinationMasked}
                   </div>
-                ) : null}
+                ) : null} */}
                 {isAutoVerifyingOnboarding ? (
                   <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
                     Validando el enlace del email...

@@ -28,6 +28,8 @@ interface SidebarProps {
   onNavigate: (view: HomeView) => void;
   userName: string;
   onLogout: () => void;
+  isMobileOpen: boolean;
+  onMobileOpenChange: (open: boolean) => void;
 }
 
 const menuItems: Array<{
@@ -53,29 +55,30 @@ export function Sidebar({
   onNavigate,
   userName,
   onLogout,
+  isMobileOpen,
+  onMobileOpenChange,
 }: SidebarProps) {
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const { perfil } = usePortalPerfilContext();
 
   const handleNavigate = (view: HomeView | "socios") => {
     if (view === "socios") {
       router.push("/socios");
-      setIsMobileOpen(false);
+      onMobileOpenChange(false);
       return;
     }
 
     onNavigate(view);
-    setIsMobileOpen(false);
+    onMobileOpenChange(false);
   };
 
   return (
     <>
       <div className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-border bg-white px-4 lg:hidden">
         <button
-          onClick={() => setIsMobileOpen((prev) => !prev)}
+          onClick={() => onMobileOpenChange(!isMobileOpen)}
           className="rounded-lg p-2 text-[#6f7085] transition-colors hover:bg-[#f2f0f7]"
           aria-label="Abrir menu lateral"
         >
@@ -104,7 +107,7 @@ export function Sidebar({
       {isMobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={() => onMobileOpenChange(false)}
         />
       )}
 

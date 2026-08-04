@@ -27,7 +27,7 @@ export function ExpedientesList({
   );
 
   return (
-    <article className="sm:rounded-3xl sm:border sm:border-[#ebe6f4] sm:bg-white sm:p-6 sm:shadow-sm">
+    <article>
       <div className="mb-5">
         <h3 className="text-lg font-semibold text-[#2f3042]">Tus pedidos</h3>
         <p className="text-sm text-[#5f6074]">

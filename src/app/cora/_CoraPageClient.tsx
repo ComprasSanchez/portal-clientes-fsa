@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { HomeViews } from "@/components/organisms/home/HomeViews";
 import { CoraDashboardSkeleton } from "@/components/organisms/loading/ViewSkeletons";
 import { Sidebar } from "@/components/molecules/side-bar/Sidebar";
+import { BottomNavBar } from "@/components/molecules/side-bar/BottomNavBar";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { HomeView } from "@/types/home";
 
@@ -44,6 +45,7 @@ export function CoraPageClient() {
   const searchParams = useSearchParams();
   const { perfil, summary, isLoading } = usePortalPerfilContext();
   const previousViewRef = useRef<HomeView>(DEFAULT_VIEW);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const view = searchParams.get("view");
@@ -75,6 +77,7 @@ export function CoraPageClient() {
   const handleNavigate = (view: HomeView) => {
     previousViewRef.current = currentView;
     setCurrentView(view);
+    setIsMobileMenuOpen(false);
     const url = view === DEFAULT_VIEW ? "/cora" : `/cora?view=${view}`;
     router.push(url, { scroll: false });
     window.scrollTo(0, 0);
@@ -100,9 +103,11 @@ export function CoraPageClient() {
         onNavigate={handleNavigate}
         onLogout={handleLogout}
         userName={summary.displayName}
+        isMobileOpen={isMobileMenuOpen}
+        onMobileOpenChange={setIsMobileMenuOpen}
       />
 
-      <div className="flex min-h-[calc(var(--app-vh,100dvh)_-_4rem)] flex-col pt-16 transition-all duration-300 lg:ml-64 lg:min-h-[var(--app-vh,100dvh)] lg:pt-0">
+      <div className="flex min-h-[calc(var(--app-vh,100dvh)_-_8rem)] flex-col pt-16 pb-16 transition-all duration-300 lg:ml-64 lg:min-h-[var(--app-vh,100dvh)] lg:pt-0 lg:pb-0">
         <Suspense fallback={<HomeViewsFallback />}>
           <HomeViews
             currentView={currentView}
@@ -124,6 +129,12 @@ export function CoraPageClient() {
           </div>
         </footer>
       </div>
+
+      <BottomNavBar
+        currentView={currentView}
+        onNavigate={handleNavigate}
+        onMoreClick={() => setIsMobileMenuOpen(true)}
+      />
     </div>
   );
 }
