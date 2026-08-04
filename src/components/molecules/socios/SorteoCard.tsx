@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { CalendarDays, Ticket } from "lucide-react";
 // import sorteoImg from "@/assets/imagen-sola.png";
-import sorteoImg from "@/assets/banners-09.jpg";
+import sorteoImg from "@/assets/sociosa-img/sorteo-mobile.jpg";
 import { type SociosView } from "@/types/socios";
 import styles from "./SorteoCard.module.scss";
 
