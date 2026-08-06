@@ -760,7 +760,7 @@ export function SociosViews({
           </article>
         </div>
 
-        <SorteoCard onNavigate={onNavigate} documentNumber={documentNumber} />
+        <SorteoCard onNavigate={onNavigate} />
 
         <SucursalesPromoCard onNavigate={onNavigate} />
       </section>
