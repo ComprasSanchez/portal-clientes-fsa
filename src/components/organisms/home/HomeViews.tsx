@@ -2,14 +2,12 @@ import { useEffect, useRef } from "react";
 import {
   Clock,
   CreditCard,
-  FileText,
   MapPin,
-  Package,
   Phone,
   Pill,
   Stethoscope,
+  TrendingUp,
   Truck,
-  User,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
@@ -45,9 +43,14 @@ import {
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 import { HomeView } from "@/types/home";
 import styles from "./HomeViews.module.scss";
-import { ExpedientesManagementView } from "./ExpedientesManagementView";
+import { ExpedientesManagementView } from "@/components/organisms/expedientes-management/ExpedientesManagementView";
+import { CrearPedidoView } from "@/components/organisms/expedientes-management/crear-pedido/CrearPedidoView";
+import { FaqView } from "../faq-view/FaqView";
 import { BannerCoraCarousel } from "@/components/molecules/home/BannerCoraCarousel";
 import { BannerCoraMobileCarousel } from "@/components/molecules/home/BannerCoraMobileCarousel";
+import boxCoraIcon from "@/assets/cora/card/box-cora.svg";
+import fileCoraIcon from "@/assets/cora/card/file-cora.svg";
+import bellCoraIcon from "@/assets/cora/card/bell-cora.svg";
 
 const formatOptionalDate = (value: string | null | undefined) => {
   if (!value) {
@@ -114,6 +117,7 @@ const formatDeliveryLocation = ({
 
 interface HomeViewsProps {
   currentView: HomeView;
+  previousView?: HomeView;
   onNavigate: (view: HomeView) => void;
   userName: string;
   affiliateNumber: string | null;
@@ -139,9 +143,9 @@ const viewContent: Record<
     title: "Mi perfil",
     description: "Informacion personal y datos de tu cuenta.",
   },
-  "mis-expedientes": {
-    title: "Mis expedientes",
-    description: "Creá expedientes nuevos y actualizá el expediente activo.",
+  "mi-historial": {
+    title: "Mi historial",
+    description: "Creá pedidos nuevos y actualizá el pedido activo.",
   },
   productos: {
     title: "Productos",
@@ -155,19 +159,28 @@ const viewContent: Record<
     title: "Facturas",
     description: "Consulta y descarga de comprobantes.",
   },
-  "expediente-actual": {
+  "pedido-actual": {
     title: "Tu pedido actual",
     description:
       "Acá podés ver cómo viene tu pedido, cómo te vamos a contactar y qué medicamentos incluye.",
   },
-  "expediente-completo": {
+  "pedido-completo": {
     title: "Historial completo",
     description: "Registro historico de toda la documentacion.",
+  },
+  "preguntas-frecuentes": {
+    title: "Preguntas frecuentes",
+    description: "Respuestas rápidas sobre CORA y cómo funciona.",
+  },
+  "crear-pedido": {
+    title: "Nuevo pedido",
+    description: "Elegí los productos, la fecha y cómo querés recibirlo.",
   },
 };
 
 export function HomeViews({
   currentView,
+  previousView,
   onNavigate,
   userName,
   affiliateNumber,
@@ -184,12 +197,9 @@ export function HomeViews({
   const active = viewContent[currentView];
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
   const quickAccessItems: QuickAccessItem[] = [
-    { label: "Mi perfil", view: "mi-cuenta", icon: User },
-    // { label: "Mis expedientes", view: "mis-expedientes", icon: FileStack },
-    // { label: "Productos", view: "productos", icon: Box },
-    { label: "Segui tu pedido", view: "pedidos", icon: Package },
-    { label: "Expediente", view: "expediente-actual", icon: FileText },
-    // { label: "Historial", view: "expediente-completo", icon: TrendingUp },
+    { label: "Mi pedido", view: "pedido-actual", icon: boxCoraIcon, tone: "plain" },
+    { label: "Mi historial", view: "mi-historial", icon: fileCoraIcon, tone: "plain" },
+    { label: "Mis recordatorios", view: "pedidos", icon: bellCoraIcon, tone: "plain" },
   ];
 
   const queryCicloId = searchParams.get("cicloId");
@@ -230,7 +240,7 @@ export function HomeViews({
     isNotFound: expedienteActualNotFound,
     refresh: refreshExpedienteActual,
   } = usePortalExpedienteActual({
-    enabled: currentView === "expediente-actual",
+    enabled: currentView === "pedido-actual",
   });
   const expedienteActualRequiresAccountValidation =
     expedienteActualError?.includes("Valida tu cuenta") ?? false;
@@ -270,7 +280,7 @@ export function HomeViews({
   const cicloWarningMessage = expedienteWarnings.includes(
     "expediente_cycles_unavailable",
   )
-    ? "El BFF devolvio expedientes, pero no pudo enriquecer los ciclos. Revisa permisos de cliente:read en el bearer final."
+    ? "Todavía estamos completando la información de tus pedidos, pero podés seguir viendo los datos disponibles."
     : null;
 
   if (currentView === "mi-cuenta") {
@@ -285,7 +295,7 @@ export function HomeViews({
     );
   }
 
-  if (currentView === "mis-expedientes") {
+  if (currentView === "mi-historial") {
     return (
       <main className={styles.container}>
         <ExpedientesManagementView
@@ -293,7 +303,31 @@ export function HomeViews({
           expedientes={expedienteItems}
           activeExpedienteId={activeExpediente?.expedienteId ?? null}
           refreshExpedientes={refreshExpedientes}
+          isExpedientesLoading={isExpedientesLoading}
+          expedientesError={expedientesError}
+          onNavigate={onNavigate}
         />
+      </main>
+    );
+  }
+
+  if (currentView === "crear-pedido") {
+    return (
+      <main className={styles.container}>
+        <CrearPedidoView
+          perfil={perfil}
+          refreshExpedientes={refreshExpedientes}
+          onNavigate={onNavigate}
+          previousView={previousView ?? "mi-historial"}
+        />
+      </main>
+    );
+  }
+
+  if (currentView === "preguntas-frecuentes") {
+    return (
+      <main className={styles.container}>
+        <FaqView />
       </main>
     );
   }
@@ -316,7 +350,7 @@ export function HomeViews({
               <p className={styles.trackingMessageTitle}>
                 {requiresAccountValidation
                   ? "Necesitamos validar tu usuario"
-                  : "No pudimos cargar los expedientes"}
+                  : "No pudimos cargar tus pedidos"}
               </p>
               <p className={styles.trackingMessageText}>{expedientesError}</p>
             </div>
@@ -341,7 +375,7 @@ export function HomeViews({
           {!shouldShowTrackingLoading && expedientesPartial ? (
             <div className={styles.trackingMessageCard}>
               <p className={styles.trackingMessageTitle}>
-                Los expedientes llegaron con datos parciales
+                Tus pedidos llegaron con datos parciales
               </p>
               <p className={styles.trackingMessageText}>
                 {cicloWarningMessage ||
@@ -383,7 +417,7 @@ export function HomeViews({
     );
   }
 
-  if (currentView === "expediente-actual") {
+  if (currentView === "pedido-actual") {
     return (
       <main className={styles.container}>
         <section
@@ -403,7 +437,7 @@ export function HomeViews({
               <p className={styles.trackingMessageTitle}>
                 {expedienteActualRequiresAccountValidation
                   ? "Necesitamos validar tu usuario"
-                  : "No pudimos cargar el expediente actual"}
+                  : "No pudimos cargar tu pedido actual"}
               </p>
               <p className={styles.trackingMessageText}>
                 Contactate con nuestro equipo de soporte para resolver este

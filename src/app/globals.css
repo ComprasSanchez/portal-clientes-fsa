@@ -148,6 +148,24 @@ body {
   /* line-height: calc(1em + 2pt); */
 }
 
+/* Oculta el widget de chat de Botmaker en las pantallas donde no queremos
+   que aparezca (ver BotmakerChat.tsx). El widget renderiza su boton como
+   #wc-button (y el resto de su UI con clases wc-*). */
+body[data-hide-botmaker] #wc-button,
+body[data-hide-botmaker] [id^="wc-"],
+body[data-hide-botmaker] [class*="wc-"] {
+  display: none !important;
+}
+
+/* En mobile, CORA tiene una bottom nav fija (ver BottomNavBar.tsx) que
+   taparia el boton del chat si se queda en su posicion por defecto.
+   Lo corremos hacia arriba para dejarlo por encima de esa barra. */
+@media (max-width: 1023.98px) {
+  body[data-cora-bottom-nav] #wc-button {
+    bottom: calc(4rem + env(safe-area-inset-bottom) + 12px) !important;
+  }
+}
+
 :root {
   /* ── Escala tipográfica global ──────────────────────────────────────────
      Usada en todos los *.module.scss del proyecto.

@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import remeraPromo from "@/assets/sociosa-img/remera-promo.jpg";
 import bannerPrinciapl from "@/assets/sociosa-img/banner-principal.jpg";
+import sorteoBanner from "@/assets/sociosa-img/sorte-banner.jpg";
 import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [
@@ -19,6 +20,11 @@ const SLIDES = [
     src: bannerPrinciapl,
     alt: "Sorteo Socio SA — Beauty Days",
     href: "https://calendly.com/farmaciasanchezantoniolli",
+  },
+  {
+    src: sorteoBanner,
+    alt: "Día del niño — Sorteo Socio SA",
+    href: "/socios?view=sorteos",
   },
 ];
 

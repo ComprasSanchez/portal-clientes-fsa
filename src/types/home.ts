@@ -1,9 +1,11 @@
 export type HomeView =
   | "dashboard"
   | "mi-cuenta"
-  | "mis-expedientes"
+  | "mi-historial"
   | "productos"
   | "pedidos"
   | "facturas"
-  | "expediente-actual"
-  | "expediente-completo";
+  | "pedido-actual"
+  | "pedido-completo"
+  | "preguntas-frecuentes"
+  | "crear-pedido";
