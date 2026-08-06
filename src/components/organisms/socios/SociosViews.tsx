@@ -695,7 +695,7 @@ export function SociosViews({
 
         <BeneficiosCarousel />
 
-        <div className={styles.detailsGrid}>
+        {/* <div className={styles.detailsGrid}> */}
           {/* <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi credencial</h2>
             <p className={styles.panelSubtitle}>
@@ -729,7 +729,7 @@ export function SociosViews({
             />
           </article> */}
 
-          {pointsCard}
+          {/* {pointsCard} */}
 
           <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi perfil</h2>
@@ -758,7 +758,7 @@ export function SociosViews({
               onClick={() => onNavigate("mi-cuenta")}
             />
           </article>
-        </div>
+        {/* </div> */}
 
         <SorteoCard onNavigate={onNavigate} />
 
