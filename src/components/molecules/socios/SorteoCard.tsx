@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { CalendarDays, Ticket } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 // import sorteoImg from "@/assets/imagen-sola.png";
-import sorteoImg from "@/assets/banners-09.jpg";
+// import sorteoImg from "@/assets/sociosa-img/sorteo-mobile.jpg";
+import sorteoImg from "@/assets/seccion-sorteo-banner.jpg";
 import { type SociosView } from "@/types/socios";
 import styles from "./SorteoCard.module.scss";
 
@@ -19,7 +20,6 @@ type SorteoActivo = {
 
 interface SorteoCardProps {
   onNavigate: (view: SociosView) => void;
-  documentNumber: string | null;
 }
 
 const formatShortDate = (value?: string | null) => {
@@ -29,7 +29,7 @@ const formatShortDate = (value?: string | null) => {
   return new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "numeric" }).format(date);
 };
 
-export function SorteoCard({ onNavigate, documentNumber }: SorteoCardProps) {
+export function SorteoCard({ onNavigate }: SorteoCardProps) {
   const [sorteo, setSorteo] = useState<SorteoActivo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,7 +49,10 @@ export function SorteoCard({ onNavigate, documentNumber }: SorteoCardProps) {
 
   return (
     <article className={styles.card}>
-      <div className={styles.imageWrap}>
+      <div
+        className={styles.imageWrap}
+        style={{ "--sorteo-img-ratio": sorteoImg.width / sorteoImg.height } as React.CSSProperties}
+      >
         <Image
           src={sorteoImg}
           alt={sorteo?.nombre ?? "Sorteo SocioSA"}
@@ -67,20 +70,10 @@ export function SorteoCard({ onNavigate, documentNumber }: SorteoCardProps) {
       </div>
 
       <div className={styles.content}>
-        <span className={styles.chip}>
-          <Ticket size={13} />
-          Sorteo
-        </span>
-
         {isLoading ? (
           <div className={styles.skeleton} />
         ) : (
-          <>
-            <h3 className={styles.title}>{sorteo!.nombre}</h3>
-            {documentNumber && (
-              <p className={styles.meta}>Documento: {documentNumber}</p>
-            )}
-          </>
+          <h3 className={styles.title}>{sorteo!.nombre}</h3>
         )}
 
         <button

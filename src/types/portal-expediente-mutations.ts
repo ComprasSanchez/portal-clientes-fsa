@@ -53,3 +53,9 @@ export type PortalCreateExpedienteResponse = {
   cicloId?: string;
   eventoInicialId?: string;
 };
+
+export type CreatedExpedienteSummary = {
+  expedienteId: string;
+  fechaObjetivoEntrega: string | null;
+  fechaPrimerContacto: string | null;
+};

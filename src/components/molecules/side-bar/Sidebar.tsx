@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Files,
   FileText,
+  HelpCircle,
   Home,
   LogOut,
   Menu,
@@ -27,6 +28,8 @@ interface SidebarProps {
   onNavigate: (view: HomeView) => void;
   userName: string;
   onLogout: () => void;
+  isMobileOpen: boolean;
+  onMobileOpenChange: (open: boolean) => void;
 }
 
 const menuItems: Array<{
@@ -36,15 +39,14 @@ const menuItems: Array<{
 }> = [
   { id: "dashboard", label: "Inicio", icon: Home },
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
-  { id: "mis-expedientes", label: "Mis pedidos", icon: Files },
-  // { id: "productos", label: "Productos", icon: ShoppingBag },
+  { id: "mi-historial", label: "Mi historial", icon: Files },
   { id: "pedidos", label: "Segui tu pedido", icon: Package },
-  { id: "expediente-actual", label: "Pedido actual", icon: FileText },
-  // {
-  //   id: "expediente-completo",
-  //   label: "Historial completo",
-  //   icon: TrendingUp,
-  // },
+  { id: "pedido-actual", label: "Pedido actual", icon: FileText },
+  {
+    id: "preguntas-frecuentes",
+    label: "Preguntas frecuentes",
+    icon: HelpCircle,
+  },
   { id: "socios", label: "SocioSA", icon: Users },
 ];
 
@@ -53,27 +55,35 @@ export function Sidebar({
   onNavigate,
   userName,
   onLogout,
+  isMobileOpen,
+  onMobileOpenChange,
 }: SidebarProps) {
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const { perfil } = usePortalPerfilContext();
 
   const handleNavigate = (view: HomeView | "socios") => {
     if (view === "socios") {
       router.push("/socios");
-      setIsMobileOpen(false);
+      onMobileOpenChange(false);
       return;
     }
 
     onNavigate(view);
-    setIsMobileOpen(false);
+    onMobileOpenChange(false);
   };
 
   return (
     <>
       <div className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-border bg-white px-4 lg:hidden">
+        <button
+          onClick={() => onMobileOpenChange(!isMobileOpen)}
+          className="rounded-lg p-2 text-[#6f7085] transition-colors hover:bg-[#f2f0f7]"
+          aria-label="Abrir menu lateral"
+        >
+          {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
         <div className="flex items-center gap-3">
           <Image
             src={coraWordmark}
@@ -92,19 +102,12 @@ export function Sidebar({
             priority
           />
         </div>
-        <button
-          onClick={() => setIsMobileOpen((prev) => !prev)}
-          className="rounded-lg p-2 text-[#6f7085] transition-colors hover:bg-[#f2f0f7]"
-          aria-label="Abrir menu lateral"
-        >
-          {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
       </div>
 
       {isMobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={() => onMobileOpenChange(false)}
         />
       )}
 
@@ -116,7 +119,9 @@ export function Sidebar({
       >
         <div className="flex h-full flex-col">
           <div className="hidden border-b border-[#e6e1ef] p-4 lg:block">
-            <div className={` flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
+            <div
+              className={` flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}
+            >
               {isCollapsed ? (
                 <button
                   type="button"
@@ -157,7 +162,11 @@ export function Sidebar({
                 className="rounded-lg p-1 text-[#7d7e96] transition-colors hover:bg-[#ece7f6]"
                 aria-label="Colapsar menu"
               >
-                {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                {isCollapsed ? (
+                  <ChevronRight size={20} />
+                ) : (
+                  <ChevronLeft size={20} />
+                )}
               </button>
             </div>
           </div>
@@ -171,6 +180,9 @@ export function Sidebar({
 
                 return (
                   <li key={item.id}>
+                    {isSociosShortcut && (
+                      <div className="mx-1 mb-2 mt-1 border-t border-[#d3dee2]" />
+                    )}
                     <button
                       onClick={() => handleNavigate(item.id)}
                       className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-all

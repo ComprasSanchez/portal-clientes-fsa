@@ -12,6 +12,8 @@ import googleLogo from "@/assets/google-logo.svg";
 import mobileLogo from "@/assets/logo-celeste.png";
 import loginLogo from "@/assets/farmacia-logo.svg";
 import loginBackground from "@/assets/login/elementos/fondo.jpg";
+import portadaPrueba from "@/assets/portada-prueba-20.jpeg";
+// import portadaPrueba from "@/assets/portada-prueba-19.jpeg";
 import iconHand from "@/assets/login/elementos/icon-hand.png";
 import iconPuntos from "@/assets/login/elementos/puntos-pay.png";
 import iconRegalo from "@/assets/login/elementos/regalo.png";
@@ -1745,7 +1747,8 @@ export function Login({ onLogin }: LoginProps) {
 
   return (
     <section className={styles.root}>
-      <aside className={styles.heroPanel}>
+      <aside className={styles.heroPanel} style={{ background: "#ffffff" }}>
+        {/* Contenido original del panel — comentado temporalmente para probar portada-prueba-18
         <div className={styles.heroBanner} aria-hidden="true">
           <Image
             src={loginBackground}
@@ -1798,6 +1801,14 @@ export function Login({ onLogin }: LoginProps) {
         <p className={styles.heroFooter}>
           © 2026 Farmacias Sanchez Antoniolli - Todos los derechos reservados
         </p>
+        */}
+        <Image
+          src={portadaPrueba}
+          alt=""
+          fill
+          style={{ objectFit: "contain" }}
+          priority
+        />
       </aside>
       <div className={styles.contentPanel}>
         <Image
@@ -1820,7 +1831,9 @@ export function Login({ onLogin }: LoginProps) {
               >
                 <header className={styles.formHeader}>
                   <h2 className={styles.formTitle}>Iniciar sesión</h2>
-                  <p className={styles.formSubtitle}>Ingresá a tu cuenta de Farmacias Sanchez Antoniolli</p>
+                  <p className={styles.formSubtitle}>
+                    Ingresá a tu cuenta de Farmacias Sanchez Antoniolli
+                  </p>
                 </header>
                 {infoMessage ? (
                   <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
@@ -2339,8 +2352,8 @@ export function Login({ onLogin }: LoginProps) {
                     <UserPlus size={20} />
                     <span>
                       {registerFormik.isSubmitting
-                        ? "Iniciando registro..."
-                        : "Comenzar registro"}
+                        ? "Confirmando..."
+                        : "Confirmar información"}
                     </span>
                   </button>
                 </form>
@@ -2373,7 +2386,7 @@ export function Login({ onLogin }: LoginProps) {
                   </div>
                   <p className={styles.formSubtitle}>
                     {onboardingFlow?.id
-                      ? "Te enviamos un email para completar tu registro. Abrí el enlace para continuar."
+                      ? "te enviamos un email para completar tu registro.."
                       : "No encontramos tu registro. Tenés que crear tu cuenta para poder ingresar."}
                   </p>
                 </header>
@@ -2387,11 +2400,11 @@ export function Login({ onLogin }: LoginProps) {
                     {errorMessage}
                   </div>
                 ) : null}
-                {onboardingFlow?.destinationMasked ? (
+                {/* {onboardingFlow?.destinationMasked ? (
                   <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
                     Email destino: {onboardingFlow.destinationMasked}
                   </div>
-                ) : null}
+                ) : null} */}
                 {isAutoVerifyingOnboarding ? (
                   <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
                     Validando el enlace del email...
@@ -2446,7 +2459,9 @@ export function Login({ onLogin }: LoginProps) {
                     <button
                       type="button"
                       className={styles.secondaryButton}
-                      disabled={isAutoVerifyingOnboarding || isResendingOnboarding}
+                      disabled={
+                        isAutoVerifyingOnboarding || isResendingOnboarding
+                      }
                       onClick={() => {
                         void handleResendOnboarding();
                       }}
@@ -2462,10 +2477,10 @@ export function Login({ onLogin }: LoginProps) {
                       <div
                         className={`${styles.feedback} ${styles.feedbackInfo}`}
                       >
-                        Para poder ingresar, tenés que crear tu cuenta: tocá el botón de abajo y completá otra vez tus
-                        datos (nombre, documento, contraseña, etc.). Al
-                        terminar, te va a llegar un email para
-                        confirmar tu cuenta.
+                        Para poder ingresar, tenés que crear tu cuenta: tocá el
+                        botón de abajo y completá otra vez tus datos (nombre,
+                        documento, contraseña, etc.). Al terminar, te va a
+                        llegar un email para confirmar tu cuenta.
                       </div>
                       <button
                         type="button"

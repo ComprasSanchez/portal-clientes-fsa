@@ -55,40 +55,46 @@
 }
 
 .title {
-  font-size: var(--fs-page-title);
-  font-weight: 700;
-  color: #2b2d40;
+  font-size: 36px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #8f63d9;
 }
 
-.subtitle {
-  font-size: 1.5rem;
-  color: #70728a;
+.profileViewSocios .title {
+  color: #17343d;
 }
 
 .localEditHint {
-  max-width: 72rem;
-  font-size: var(--fs-description);
-  line-height: 1.5;
-  color: #7f718f;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #2f3042;
 }
 
 .card {
-  border: 1px solid #e7e2f0;
-  border-radius: 1.5rem;
-  background: #ffffff;
-  padding: 1.5rem;
-  box-shadow: 0 10px 35px rgba(37, 24, 78, 0.06);
+  @media (min-width: 640px) {
+    border: 1px solid #e7e2f0;
+    border-radius: 1.5rem;
+    background: #ffffff;
+    padding: 1.5rem;
+    box-shadow: 0 10px 35px rgba(37, 24, 78, 0.06);
+  }
 }
 
 .profileTop {
   display: grid;
-  gap: 1.5rem;
+  align-items: center;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "avatar name"
+    "rest rest";
 }
 
 .identityColumn {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
+  grid-area: avatar;
 }
 
 .avatar {
@@ -104,12 +110,17 @@
   color: #6a6b78;
 }
 
+.identityName {
+  grid-area: name;
+}
+
 .identityInfo {
+  grid-area: rest;
   min-width: 0;
 }
 
 .fullName {
-  font-size: var(--fs-section-title);
+  font-size: 26px;
   font-weight: 700;
   color: #2f3042;
 }
@@ -210,6 +221,13 @@
 .selectorRow {
   display: grid;
   gap: 0.75rem;
+  width: 100%;
+}
+
+.selectorRowActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   width: 100%;
 }
 
@@ -882,7 +900,9 @@
 
 @media (min-width: 1200px) {
   .profileTop {
-    grid-template-columns: 8rem 1fr;
+    grid-template-areas:
+      "avatar name"
+      "avatar rest";
     align-items: start;
   }
 

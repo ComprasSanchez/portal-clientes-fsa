@@ -6,11 +6,21 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import bannerSocio1 from "@/assets/sociosa-img/banner-socio1.jpg";
 import bannerSocio2 from "@/assets/sociosa-img/banner-mobile-beauty.jpg";
+import sorteoMobile from "@/assets/sociosa-img/sorteo-mobile.jpg";
 import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [
   { src: bannerSocio1, alt: "Banner SocioSA — promo 1", href: null },
-  { src: bannerSocio2, alt: "Banner SocioSA — Beauty Days", href: "https://calendly.com/farmaciasanchezantoniolli" }
+  {
+    src: bannerSocio2,
+    alt: "Banner SocioSA — Beauty Days",
+    href: "https://calendly.com/farmaciasanchezantoniolli",
+  },
+  {
+    src: sorteoMobile,
+    alt: "Sorteo día del niño - SocioSA",
+    href: "/socios?view=sorteos",
+  },
 ];
 
 const AUTOPLAY_MS = 5000;
