@@ -39,7 +39,7 @@ const menuItems: Array<{
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
   { id: "pedidos", label: "Mis pedidos", icon: ShoppingBag },
   { id: "facturas", label: "Facturas", icon: CreditCard },
-  // { id: "puntos", label: "Puntos", icon: Star },
+  { id: "puntos", label: "Puntos", icon: Star },
   { id: "sorteos", label: "Sorteos", icon: Ticket },
   { id: "sucursales", label: "Sucursales", icon: MapPin },
   ...(process.env.NEXT_PUBLIC_CORA_ACTIVE === "true"
