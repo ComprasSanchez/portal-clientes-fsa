@@ -182,12 +182,12 @@ export function SociosViews({
                 ? "..."
                 : formatPortalPoints(puntosSummary.disponibles)}
             </strong>
-            {!isPointsLoading && (
-              <span className={styles.pointsARS}>
-                ≈ {formatPortalCurrency(puntosToARS(puntosSummary.disponibles))}{" "}
-                para gastar
-              </span>
-            )}
+              {/* {!isPointsLoading && (
+                <span className={styles.pointsARS}>
+                  ≈ {formatPortalCurrency(puntosToARS(puntosSummary.disponibles))}{" "}
+                  para gastar
+                </span>
+              )} */}
           </div>
 
           <div className={styles.pointsSideColumn}>
@@ -239,7 +239,7 @@ export function SociosViews({
   const quickAccessItems: QuickAccessItem<SociosView>[] = [
     { label: "Mi perfil", view: "mi-cuenta", icon: User, tone: "socios" },
     { label: "Facturas", view: "facturas", icon: CreditCard, tone: "socios" },
-    // { label: "Puntos", view: "puntos", icon: Star, tone: "socios" },
+    { label: "Puntos", view: "puntos", icon: Star, tone: "socios" },
     { label: "Sorteos", view: "sorteos", icon: Ticket, tone: "socios" },
     { label: "Sucursales", view: "sucursales", icon: MapPin, tone: "socios" },
     {
@@ -695,7 +695,7 @@ export function SociosViews({
 
         <BeneficiosCarousel />
 
-        {/* <div className={styles.detailsGrid}> */}
+        <div className={styles.detailsGrid}>
           {/* <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi credencial</h2>
             <p className={styles.panelSubtitle}>
@@ -729,7 +729,7 @@ export function SociosViews({
             />
           </article> */}
 
-          {/* {pointsCard} */}
+          {pointsCard}
 
           <article className={styles.panelCard}>
             <h2 className={styles.panelTitle}>Mi perfil</h2>
@@ -758,7 +758,7 @@ export function SociosViews({
               onClick={() => onNavigate("mi-cuenta")}
             />
           </article>
-        {/* </div> */}
+        </div>
 
         <SorteoCard onNavigate={onNavigate} />
 
