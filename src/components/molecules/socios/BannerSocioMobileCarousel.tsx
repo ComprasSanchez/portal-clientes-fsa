@@ -10,16 +10,16 @@ import sorteoMobile from "@/assets/sociosa-img/sorteo-mobile.jpg";
 import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [
+  {
+    src: sorteoMobile,
+    alt: "Sorteo día del niño - SocioSA",
+    href: "/socios?view=sorteos",
+  },
   { src: bannerSocio1, alt: "Banner SocioSA — promo 1", href: null },
   {
     src: bannerSocio2,
     alt: "Banner SocioSA — Beauty Days",
     href: "https://calendly.com/farmaciasanchezantoniolli",
-  },
-  {
-    src: sorteoMobile,
-    alt: "Sorteo día del niño - SocioSA",
-    href: "/socios?view=sorteos",
   },
 ];
 

@@ -239,7 +239,7 @@ export function SociosViews({
   const quickAccessItems: QuickAccessItem<SociosView>[] = [
     { label: "Mi perfil", view: "mi-cuenta", icon: User, tone: "socios" },
     { label: "Facturas", view: "facturas", icon: CreditCard, tone: "socios" },
-    { label: "Puntos", view: "puntos", icon: Star, tone: "socios" },
+    // { label: "Puntos", view: "puntos", icon: Star, tone: "socios" },
     { label: "Sorteos", view: "sorteos", icon: Ticket, tone: "socios" },
     { label: "Sucursales", view: "sucursales", icon: MapPin, tone: "socios" },
     {
