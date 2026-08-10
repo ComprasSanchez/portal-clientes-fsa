@@ -29,30 +29,6 @@ type UpstreamResult<T> =
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
 
-const requestPrefersHtml = (req: NextRequest) =>
-  req.headers.get("accept")?.toLowerCase().includes("text/html") ?? false;
-
-const getErrorCode = (payload: unknown) => {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-
-  if ("error" in payload) {
-    const error = (payload as { error?: unknown }).error;
-
-    if (typeof error === "string") {
-      return error;
-    }
-
-    if (error && typeof error === "object" && "code" in error) {
-      const code = (error as { code?: unknown }).code;
-      return typeof code === "string" ? code : null;
-    }
-  }
-
-  return null;
-};
-
 const buildUpstreamErrorResponse = (result: Extract<UpstreamResult<unknown>, { ok: false }>) => {
   if (result.data !== null) {
     return NextResponse.json(result.data, { status: result.status });
@@ -133,24 +109,14 @@ const verifyTokenUpstream = async (
   };
 };
 
-const buildBrowserRedirect = (
-  req: NextRequest,
-  params: Record<string, string>,
-  result?: Extract<UpstreamResult<unknown>, { ok: true }>,
-) => {
+const buildBrowserRedirect = (req: NextRequest, params: Record<string, string>) => {
   const redirectUrl = new URL("/", req.url);
 
   Object.entries(params).forEach(([key, value]) => {
     redirectUrl.searchParams.set(key, value);
   });
 
-  const response = NextResponse.redirect(redirectUrl);
-
-  if (result) {
-    applyAuthCookiesFromUpstream(req, response, result.headers);
-  }
-
-  return response;
+  return NextResponse.redirect(redirectUrl);
 };
 
 export async function POST(req: NextRequest) {
@@ -177,38 +143,25 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// Este GET es el que pega el link del mail de verificación — a propósito
+// NO llama al upstream ni muta nada acá. Si lo hiciera, cualquier scanner
+// de seguridad de email (Gmail Safe Browsing, Outlook Safe Links, antivirus
+// corporativos) que visite el link antes del click real del usuario
+// consumiría el token de un solo uso, y el usuario real nunca podría
+// verificar ni recibir la cookie de trusted_device.
+// Por eso solo redirige a la home con el token: la verificación real la
+// hace `login.tsx` desde el navegador del usuario vía POST (ver useEffect
+// de `verificationTokenFromUrl`), que es donde de verdad importa que se
+// ejecute en el dispositivo/navegador que después va a hacer login.
 export async function GET(req: NextRequest) {
-  try {
-    const token = req.nextUrl.searchParams.get("token")?.trim();
+  const token = req.nextUrl.searchParams.get("token")?.trim();
 
-    if (!token) {
-      return jsonError("invalid_body", 400);
-    }
-
-    const result = await verifyTokenUpstream(req, token);
-
-    if (!result.ok) {
-      if (requestPrefersHtml(req)) {
-        const errorCode = getErrorCode(result.data) ?? "AUTH_UNKNOWN";
-        return buildBrowserRedirect(req, {
-          onboarding: "error",
-          onboardingError: errorCode,
-        });
-      }
-
-      return buildUpstreamErrorResponse(result);
-    }
-
-    if (requestPrefersHtml(req)) {
-      return buildBrowserRedirect(req, { onboarding: "verified" }, result);
-    }
-
-    return buildSuccessJsonResponse(req, result);
-  } catch (error) {
-    if (error instanceof Error && error.message === "missing_upstream_base") {
-      return jsonError("missing_upstream_base", 500);
-    }
-
-    return jsonError("proxy_failure", 500, String(error));
+  if (!token) {
+    return buildBrowserRedirect(req, {
+      onboarding: "error",
+      onboardingError: "AUTH_ONBOARDING_TOKEN_INVALID",
+    });
   }
+
+  return buildBrowserRedirect(req, { token });
 }

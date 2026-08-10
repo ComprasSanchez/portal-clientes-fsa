@@ -1,5 +1,7 @@
 # CORA Expedientes Handoff
 
+Ver tambien `docs/frontend-handoff-auth-profile-logistics.md` (comportamiento de auth por cookies/bearer en los proxies de perfil/expedientes/logistica) — ese doc cubre el "como se autentican estos proxies", este cubre el "que se construyo y por que" del alta/edicion de expedientes.
+
 ## Objetivo
 
 Habilitar que un cliente autenticado en CORA (`portal-clientes-fsa`) pueda:
@@ -81,7 +83,7 @@ Se agregó/ajustó:
 
 Archivos clave:
 
-- [src/components/organisms/home/ExpedientesManagementView.tsx](/C:/Users/Usuario/Documents/front-fsa/portal-clientes-fsa/src/components/organisms/home/ExpedientesManagementView.tsx:1)
+- [src/components/organisms/expedientes-management/ExpedientesManagementView.tsx](/C:/Users/Usuario/Documents/front-fsa/portal-clientes-fsa/src/components/organisms/expedientes-management/ExpedientesManagementView.tsx:1) (movido desde `organisms/home/` el 2026-07-29; incluye tambien el flujo `crear-pedido/` agregado el 2026-08-01, no cubierto en detalle por este doc)
 - [src/lib/use-portal-expedientes.ts](/C:/Users/Usuario/Documents/front-fsa/portal-clientes-fsa/src/lib/use-portal-expedientes.ts:1)
 - [src/app/api/portal/me/expedientes/route.ts](/C:/Users/Usuario/Documents/front-fsa/portal-clientes-fsa/src/app/api/portal/me/expedientes/route.ts:1)
 - [src/app/api/portal/me/expedientes/[expedienteId]/route.ts](/C:/Users/Usuario/Documents/front-fsa/portal-clientes-fsa/src/app/api/portal/me/expedientes/[expedienteId]/route.ts:1)
