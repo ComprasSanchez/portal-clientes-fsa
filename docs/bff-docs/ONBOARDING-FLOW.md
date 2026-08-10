@@ -56,6 +56,9 @@ x-request-id: <opcional>
 | `customerIdentity.fechaNacimiento` | string | ❌ | YYYY-MM-DD |
 | `customerIdentity.telefono` | string | ❌ | E.164: +549... |
 | `accountKind` | string | ❌ | CLIENTE o COLABORADOR |
+| `canal` | string | ❌ | Canal de origen del alta (`WEB`, `SUCURSAL`, `CONVENIO`, etc.) — capturado del link con el que el usuario entró al portal. Ver `docs/TRACKING-CANAL-ORIGEN-ALTA.md` |
+| `sucursalCodigo` | string | ❌ | Código de sucursal física, solo cuando `canal=SUCURSAL` |
+| `convenio` | string | ❌ | Nombre del convenio, solo cuando el alta viene de un link de convenio |
 
 **Respuesta (HTTP 202):**
 
@@ -87,14 +90,16 @@ x-request-id: <opcional>
 
 ### 2. Verificar Email (Usuario hace clic en el link)
 
-El frontend debe redirigir al usuario al link enviado por email:
+El frontend debe redirigir al usuario al link enviado por email. Existen **dos variantes del mismo endpoint** (ambas hacen exactamente lo mismo — `GET` es la que se usa desde el link del email; `POST` existe para llamarlo directo con `fetch` sin depender de query params):
 
 ```
-GET /api/v2/auth/onboarding/verify-token?token=<token>
+GET  /api/v2/auth/onboarding/verify-token?token=<token>
+POST /api/v2/auth/onboarding/verify-token   body: { "token": "<token>" }
 ```
 
 **URL del link:**
 El link se envía por email y tiene este formato:
+
 ```
 https://tuapp.com/api/v2/auth/onboarding/verify-token?token=abc123def456...
 ```
@@ -105,19 +110,19 @@ https://tuapp.com/api/v2/auth/onboarding/verify-token?token=abc123def456...
 2. Si hay query param `token`, hacer redirect o fetch
 3. Mostrar pantalla de verificación exitosa
 
-**Respuesta (HTTP 200):**
+**Respuesta real (HTTP 200)** — ⚠️ el shape es `flow`, NO `onboarding`, y **no incluye `clienteId`/`idempotent`/`created`** aunque el caso de uso interno los calcule (el controller no los expone en este endpoint):
 
 ```json
 {
   "ok": true,
-  "onboarding": {
+  "flow": {
+    "id": "uuid-del-flow",
     "status": "COMPLETED",
+    "emailVerified": true,
     "identityLinked": true,
-    "deviceTrusted": true,
-    "clienteId": "12345",
-    "idempotent": false,
-    "created": true
-  }
+    "deviceTrusted": true
+  },
+  "nextStep": "LOGIN"
 }
 ```
 
@@ -125,12 +130,14 @@ https://tuapp.com/api/v2/auth/onboarding/verify-token?token=abc123def456...
 
 | Campo | Descripción |
 |-------|------------|
-| `onboarding.status` | COMPLETED |
-| `onboarding.identityLinked` | true (linkeado con cliente) |
-| `onboarding.deviceTrusted` | true (dispositivo lembrado) |
-| `onboarding.clienteId` | ID del cliente en el sistema |
-| `onboarding.idempotent` | true si ya existía el cliente |
-| `onboarding.created` | true si se creó nuevo |
+| `flow.id` | ID del flow de onboarding (no confundir con `clienteId`) |
+| `flow.status` | `COMPLETED` |
+| `flow.emailVerified` | siempre `true` en una respuesta 200 |
+| `flow.identityLinked` | `true` si logró linkear con un cliente |
+| `flow.deviceTrusted` | `true` (se seteó la cookie `trusted_device_token`) |
+| `nextStep` | siempre `"LOGIN"` — el frontend debe redirigir a hacer login normal, este endpoint no loguea automáticamente ni devuelve sesión |
+
+**Si necesitás el `clienteId` en el frontend** después de este paso, no está en esta respuesta — hay que hacer login y después consultar `GET /api/v2/auth/identity-link/status` (ver más abajo), que sí lo devuelve.
 
 ---
 
@@ -219,17 +226,20 @@ Cuando el usuario verifica su email exitosamente, el backend establece las sigui
 │       │                                              │
 │       ├→ Marca email verificado                        │
 │       ├→ Upsert/linkea cliente en CRM               │
+│       ├→ Dispara email de bienvenida (fire-and-forget) │
 │       ├→ Genera trusted_device_token                 │
 │       └→ set-cookie: trusted_device_token             │
 │       │                                              │
 │       ▼                                              │
-│  { status: COMPLETED, clienteId }                   │
+│  { flow: { status: COMPLETED, ... }, nextStep: LOGIN } │
 │       │                                              │
 │       ▼                                              │
-│  [Pantalla: "¡Bienvenido!"]                           │
+│  [Pantalla: "¡Verificado! Iniciá sesión"]               │
 │       │                                              │
 │       ▼                                              │
-│  Listo. Usuario logueado.                             │
+│  Usuario NO queda logueado - redirigir a /login.       │
+│  clienteId no viene en esta respuesta; se obtiene       │
+│  despues del login vía GET /identity-link/status.       │
 │                                                          │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -298,16 +308,17 @@ export function RegisterForm() {
 
 ### Step 2: Pantalla de Verificación Exitosa
 
+No hay `clienteId` disponible en este punto — el endpoint no lo devuelve. La pantalla debe llevar a login, no a un dashboard directo:
+
 ```tsx
 // VerificationSuccess.tsx
-export function VerificationSuccess({ clienteId }: { clienteId: string }) {
+export function VerificationSuccess() {
   return (
     <div>
-      <h1>¡Bienvenido!</h1>
-      <p>Tu cuenta ha sido creada y verificada.</p>
-      <p>Tu ID de cliente: {clienteId}</p>
-      <button onClick={() => navigate('/dashboard')}>
-        Ir a mi cuenta
+      <h1>¡Cuenta verificada!</h1>
+      <p>Ya podés iniciar sesión.</p>
+      <button onClick={() => navigate('/login')}>
+        Iniciar sesión
       </button>
     </div>
   );
@@ -344,10 +355,9 @@ export function VerificationHandler() {
         .then((res) => res.json())
         .then((data) => {
           if (data.ok) {
-            // Éxito: redirigir a pantalla de bienvenida
-            navigate('/bienvenido', {
-              state: { clienteId: data.onboarding.clienteId },
-            });
+            // Éxito: no hay clienteId ni sesión acá todavía (nextStep: "LOGIN").
+            // Redirigir a login, no a un dashboard directo.
+            navigate('/login', { state: { justVerified: true } });
           } else {
             // Error
             navigate('/error-verificacion');
@@ -641,7 +651,8 @@ POST /api/v2/auth/identity-link/verify
 │          ▼                                                              │
 │  [Verificar: /onboarding/verify-token]                                   │
 │          │                                                              │
-│          ▼  200 + clienteId + set-cookie trusted_device_token            │
+│          ▼  200 { flow: {status, identityLinked}, nextStep: LOGIN }      │
+│          │  + set-cookie trusted_device_token (sin clienteId todavia)    │
 │  [Redirect a LOGIN]                                                    │
 │          │                                                              │
 │          ▼                                                              │
@@ -772,8 +783,9 @@ export function CompleteProfile() {
 1. **Cookie `trusted_device_token`**: Se setea automáticamente. No necesitás hacer nada.
 2. **Persistencia**: No es necesario guardar tokens en localStorage. La cookie es HttpOnly.
 3. **Reenvío**: Si el usuario no tiene el email, guardar `flowId` para reenviar.
-4. **Redirect**: Después de verificar, redirigir a `/bienvenido` o `/dashboard`.
-5. **Idempotente**: Si el cliente ya existía, `created: false`. Mostrar "Bienvenido de nuevo".
+4. **Redirect**: Después de verificar, redirigir a `/login` (`nextStep: "LOGIN"`) — **no** a `/dashboard` ni ninguna pantalla que asuma sesión activa, el usuario no queda logueado en este paso.
+5. **`clienteId`/`created`/`idempotent` no vienen en la respuesta de `verify-token`.** Si los necesitás, consultá `GET /identity-link/status` después del login (sí los devuelve).
+6. **Email de bienvenida**: al confirmar el email se dispara automáticamente (fire-and-forget, no bloquea la respuesta) un email de bienvenida vía `notificaciones-fsa` (`actionKey: sociosa_bienvenida`). Si falla, no afecta el flujo — solo se loguea un warning.
 
 ---
 
@@ -832,4 +844,4 @@ function useOnboarding() {
 
 ---
 
-**Última actualización:** Mayo 2026
+**Última actualización:** Agosto 2026 (respuesta de `verify-token` corregida contra el código real; agregado `canal`/`sucursalCodigo`/`convenio` en `/onboarding/start`)

@@ -3,19 +3,20 @@
 
 ## Objetivo
 
-Este documento resume el estado vigente del frontend despues del cambio de enfoque definido en `docs/bff-docs/frontend-integration.md`.
+Este documento resume el estado vigente del frontend despues del cambio de enfoque definido en `BFF/bff-cliente-web/docs/frontend-integration.md` (repo aparte, ya no se mantiene copia local).
 
 ## Documentos a conservar para reconstruir contexto
 
 Los MD que siguen siendo utiles para retomar este trabajo son:
 
 - `docs/frontend-handoff-auth-profile-logistics.md`
-- `docs/bff-docs/frontend-integration.md`
+- `BFF/bff-cliente-web/docs/frontend-integration.md` (repo aparte, ya no se mantiene copia local)
 - `docs/portal-perfil-front-integration.md`
 - `docs/google-social-login-flow.md`
 - `docs/backend-keycloak-google-oauth.md`
-- `docs/bff-docs/portal-expedientes.md`
-- `docs/bff-docs/logistica.md`
+- `BFF/bff-cliente-web/docs/portal-expedientes.md` (repo aparte)
+- `BFF/bff-cliente-web/docs/logistica.md` (repo aparte)
+- `docs/cora-expedientes-handoff.md` (diseño/decisiones del alta-edición de expedientes desde CORA)
 
 La premisa actual es esta:
 
@@ -160,6 +161,47 @@ Comportamiento actual:
 - limpia `trusted_device_token`
 - tambien limpia cookies viejas de token si quedaron de iteraciones previas
 
+### Verificación de email (onboarding) y OTP repetido (2026-08)
+
+**Problema reportado:** después de registrarse y verificar el email, el login
+siguiente volvía a pedir OTP/MFA, en vez de saltearlo por `trusted_device_token`.
+
+**Causa raíz:** el link de verificación de email apuntaba directo a un endpoint
+que mutaba estado en un `GET` de un solo uso. Cualquier scanner de seguridad de
+email (Gmail Safe Browsing, Outlook Safe Links, antivirus corporativos) que
+visitara el link antes del click real del usuario consumía el token y evitaba
+que la cookie `trusted_device_token` llegara al navegador real.
+
+**Fix aplicado:**
+
+- `BFF/bff-gateway/src/context/Auth/auth.config.ts` — default de
+  `onboardingVerifyUrl` cambiado de apuntar directo a la API a apuntar a la home
+  del portal (`http://localhost:3000/`).
+- `src/app/api/v2/auth/onboarding/verify-token/route.ts` — el `GET` ya no llama
+  al upstream ni muta nada; solo redirige a `/?token=...`. La verificación real
+  la hace `login.tsx` por `POST`, disparado desde el navegador real del usuario
+  (mismo que hará el login siguiente).
+
+**Validado en local** (bff-gateway + portal-clientes-fsa + notificaciones-fsa
+corriendo localmente): un `GET` simulando un bot al link viejo nunca llega a
+`bff-gateway` (0 requests en su log); verificar y loguear con el mismo
+`User-Agent` da `mfa.required:false, reason:trusted_device` (sin OTP).
+
+**Hallazgo colateral (informativo, no se tocó nada por esto):** el proxy del
+portal no reenvía el `User-Agent` real hacia `bff-gateway` — confirmado
+comparando llamadas directas a `bff-gateway` (ahí un UA distinto entre verificar
+y loguear sí fuerza MFA, como se espera) contra llamadas vía el proxy del
+portal (donde no fuerza nada). Conclusión: el chequeo de UA de `isTrusted()` no
+aporta protección adicional específicamente a través del portal — lo que en la
+práctica sigue exigiendo "mismo dispositivo" es que la cookie `trusted_device_token`
+(HttpOnly) solo existe en el navegador que la recibió. Si en el futuro se quiere
+que el chequeo de UA tenga efecto real vía portal, haría falta empezar a
+reenviar el `User-Agent` original en el proxy — no hay nada pendiente de hacer
+hoy, solo queda documentado.
+
+**Pendiente (ver sección "Pendientes reales" más abajo):** limpiar usuarios de
+prueba creados en Keycloak/`clientes-fsa` durante esta validación.
+
 ## Caso de negocio especial: usuario sin vínculo de cliente
 
 El backend puede devolver un `403` como este:
@@ -289,6 +331,55 @@ Hoy la deteccion y disparo del toast vive tanto en:
 
 Funciona, pero se puede refactorizar a un hook compartido para evitar duplicacion.
 
+### 3. Borrar usuarios de prueba del fix de verificación/OTP (2026-08)
+
+Al validar el fix de la sección "Verificación de email (onboarding) y OTP
+repetido" se crearon 5 usuarios de prueba contra un ambiente **compartido**
+(`KC_ISSUER_URL` de `bff-gateway/.env` no es localhost — es un realm Keycloak
+remoto/compartido):
+
+| Username | Email | Documento (DNI) | Llegó a verificar (`identityLinked`) |
+| --- | --- | --- | --- |
+| `otptestuser1` | `otptest1@example.com` | 99887766 | No (falló el envío de mail, notificaciones-fsa no estaba levantado en ese momento) |
+| `otptestuser2` | `otptest2@example.com` | 99887767 | Sí |
+| `otptestuser3` | `otptest3@example.com` | 99887768 | Sí |
+| `otptestuser4` | `otptest4@example.com` | 99887769 | Sí |
+| `otptestuser5` | `otptest5@example.com` | 99887770 | Sí |
+
+Los que llegaron a `identityLinked: true` (2 a 5) también tienen un registro
+creado en `clientes-fsa` (`cliente` + `cliente_identity_link`, mismos documentos).
+
+**Por qué no se borró ya:** ni `bff-gateway` ni `clientes-fsa` tienen hoy una
+forma de borrar un usuario/cliente:
+
+- `bff-gateway`: `KeycloakIdentityAdminAdapter`
+  (`src/context/Auth/infrastructure/adapters/keycloak-id-admin.adapter.ts`) no
+  tiene método `deleteUser` (sí tiene `createUser`, `findUserByEmail`,
+  `setPassword`, etc., y ya resuelve el token de admin internamente — agregar
+  el borrado sería una función chica).
+- `clientes-fsa`: no hay `DELETE` de cliente completo ni de
+  `cliente_identity_link` (solo de sub-recursos como contactos/domicilios).
+- Ninguno de los dos repos tiene consola/REPL/script de cleanup ya armado.
+
+**Plan cuando se retome:**
+
+1. Agregar `deleteUser(userId)` al puerto/adapter de Keycloak en `bff-gateway`
+   (reusa `getAdminToken()` ya existente — el client secret nunca sale del proceso).
+2. Script standalone (`NestFactory.createApplicationContext`, no un endpoint
+   HTTP) que resuelve `userId` de cada email vía `findUserByEmail` (ya existe),
+   borra en Keycloak, y corre una sola vez imprimiendo solo un resumen ok/error
+   por usuario (sin secretos).
+3. Decidir si conviene también borrar los registros de `clientes-fsa`
+   (documentos 99887767-99887770) o dejarlos — son datos aislados con DNI
+   falso, sin impacto real si quedan.
+4. Después de correrlo: decidir si se revierte el `deleteUser` agregado (por
+   defecto, revertir — no conviene dejar un borrado de usuarios "de yapa" en una
+   app de auth productiva sin que alguien lo pida a propósito) o se deja como
+   capacidad permanente.
+
+Nota: `bff-gateway` (puerto 3002) y `notificaciones-fsa` (puerto 3008) quedaron
+corriendo localmente a pedido para poder seguir probando.
+
 ## Decisiones tomadas
 
 ### Preferir sesion web del gateway
@@ -319,7 +410,7 @@ Durante los ultimos cambios quedaron validados estos puntos:
 Si hay que seguir este trabajo en otra sesion, el orden recomendado es:
 
 1. Leer `docs/frontend-handoff-auth-profile-logistics.md`.
-2. Leer `docs/bff-docs/frontend-integration.md` para recordar el criterio de cookies vs bearer.
+2. Leer `BFF/bff-cliente-web/docs/frontend-integration.md` (repo aparte, ya no se mantiene copia local) para recordar el criterio de cookies vs bearer.
 3. Revisar `src/app/api/_lib/proxy.ts` y los proxies de portal/logistica.
 4. Revisar `src/app/api/auth/login/route.ts` y `src/app/api/auth/mfa/verify/route.ts`.
 5. Revisar `src/lib/use-portal-expedientes.ts` y las vistas `HomeViews` y `SociosViews`.
