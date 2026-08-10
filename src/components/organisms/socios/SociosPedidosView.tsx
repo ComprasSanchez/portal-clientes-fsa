@@ -110,8 +110,6 @@ function matchesFilter(p: PedidoNormalizado, f: FilterKey): boolean {
   return p.id_estado !== 2 && p.id_estado < 7;
 }
 
-// â”€â”€ Card de la lista izquierda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 function PedidoListCard({
   pedido,
   isSelected,
@@ -150,8 +148,6 @@ function PedidoListCard({
     </button>
   );
 }
-
-// â”€â”€ Panel de detalle derecho â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
   const isRechazado = pedido.id_estado === 2;
@@ -329,8 +325,6 @@ function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
   );
 }
 
-// â”€â”€ Skeleton â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 function PedidosSkeleton() {
   return (
     <div className="grid gap-4 lg:grid-cols-[400px_1fr] xl:grid-cols-[440px_1fr]">
@@ -355,9 +349,6 @@ function PedidosSkeleton() {
     </div>
   );
 }
-
-// â”€â”€ Vista principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 
 export function SociosPedidosView() {
   const { data, isLoading, error } = usePortalPedidos({

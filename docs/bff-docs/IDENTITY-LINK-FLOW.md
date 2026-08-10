@@ -227,10 +227,17 @@ Cookie: session=<sid>
     "status": "LINKED",
     "accountKind": "CLIENTE",
     "expiresAt": 1700000000,
-    "clienteId": "CLI-000123"
+    "clienteId": "CLI-000123",
+    "convenio": "COCACOLA"
   }
 }
 ```
+
+`convenio` es opcional — viene solo si el cliente tiene un convenio pendiente sin
+confirmar (guardado en `cliente_identity_links.convenio` al momento del alta,
+via `canal=convenio` en el link de origen). El portal usa este campo para
+mostrar el popup de "recordá confirmar tu convenio" en `/socios` sin depender
+de un query param en la URL. Si no hay convenio pendiente, no viene el campo.
 
 ---
 

@@ -17,6 +17,8 @@ import {
   Ticket,
   User,
   X,
+  BoxIcon,
+  PackageCheck,
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
 import sociosaLogo from "@/assets/sociosa-color.png";
@@ -37,8 +39,8 @@ const menuItems: Array<{
 }> = [
   { id: "dashboard", label: "Inicio", icon: LayoutGrid },
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
-  { id: "pedidos", label: "Mis pedidos", icon: ShoppingBag },
-  { id: "facturas", label: "Facturas", icon: CreditCard },
+  { id: "pedidos", label: "Mis pedidos", icon: PackageCheck },
+  { id: "facturas", label: "Mis compras", icon: ShoppingBag },
   { id: "puntos", label: "Puntos", icon: Star },
   { id: "sorteos", label: "Sorteos", icon: Ticket },
   { id: "sucursales", label: "Sucursales", icon: MapPin },

@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
 import type { PedidosResponse } from "@/types/portal-pedidos";
 
 type UsePedidosOptions = {
@@ -7,55 +9,157 @@ type UsePedidosOptions = {
   offset?: number;
 };
 
+type PedidosCacheEntry = {
+  payload: PedidosResponse | null;
+  error: string | null;
+  promise: Promise<PedidosResponse | null> | null;
+};
+
+const pedidosCache = new Map<string, PedidosCacheEntry>();
+
+const getCacheKey = (limit: number, offset: number) => `${limit}:${offset}`;
+
+const getPedidosCacheEntry = (cacheKey: string): PedidosCacheEntry => {
+  const existingEntry = pedidosCache.get(cacheKey);
+
+  if (existingEntry) {
+    return existingEntry;
+  }
+
+  const nextEntry: PedidosCacheEntry = {
+    payload: null,
+    error: null,
+    promise: null,
+  };
+
+  pedidosCache.set(cacheKey, nextEntry);
+  return nextEntry;
+};
+
+const readErrorMessage = async (response: Response) => {
+  const contentType = response.headers.get("content-type") ?? "";
+  const msg = contentType.includes("application/json")
+    ? ((await response.json().catch(() => null)) as {
+        message?: string;
+      } | null)?.message
+    : await response.text().catch(() => "");
+
+  return msg || "Error al cargar pedidos";
+};
+
 export function usePortalPedidos(options: UsePedidosOptions = {}) {
   const { enabled = true, limit = 20, offset = 0 } = options;
-  const [data, setData] = useState<PedidosResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const cacheKey = getCacheKey(limit, offset);
+  const cacheEntry = getPedidosCacheEntry(cacheKey);
+
+  const [data, setData] = useState<PedidosResponse | null>(cacheEntry.payload);
+  const [isLoading, setIsLoading] = useState(
+    enabled && !cacheEntry.payload && !cacheEntry.error,
+  );
+  const [error, setError] = useState<string | null>(cacheEntry.error);
+
+  const loadPedidos = useCallback(
+    async (signal?: AbortSignal, force = false) => {
+      const currentEntry = getPedidosCacheEntry(cacheKey);
+
+      if (!enabled) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        if (force) {
+          currentEntry.payload = null;
+          currentEntry.error = null;
+          currentEntry.promise = null;
+        }
+
+        if (!currentEntry.promise) {
+          currentEntry.promise = (async () => {
+            const params = new URLSearchParams();
+            params.set("limit", String(limit));
+            params.set("offset", String(offset));
+
+            const response = await fetch(
+              `/api/portal/me/pedidos?${params.toString()}`,
+              { cache: "no-store", signal },
+            );
+
+            if (!response.ok) {
+              throw new Error(await readErrorMessage(response));
+            }
+
+            return (await response.json()) as PedidosResponse;
+          })();
+        }
+
+        const result = await currentEntry.promise;
+        currentEntry.payload = result;
+        currentEntry.error = null;
+        setData(result);
+      } catch (requestError) {
+        if (signal?.aborted) {
+          return;
+        }
+
+        const nextError =
+          requestError instanceof Error
+            ? requestError.message
+            : "Error al cargar pedidos";
+
+        currentEntry.payload = null;
+        currentEntry.error = nextError;
+        setData(null);
+        setError(nextError);
+      } finally {
+        currentEntry.promise = null;
+
+        if (!signal?.aborted) {
+          setIsLoading(false);
+        }
+      }
+    },
+    [cacheKey, enabled, limit, offset],
+  );
 
   useEffect(() => {
-    if (!enabled) return;
+    const currentEntry = getPedidosCacheEntry(cacheKey);
 
-    let cancelled = false;
-    setIsLoading(true);
-    setError(null);
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
 
-    const params = new URLSearchParams();
-    params.set("limit", String(limit));
-    params.set("offset", String(offset));
+    setData(currentEntry.payload);
+    setError(currentEntry.error);
 
-    fetch(`/api/portal/me/pedidos?${params.toString()}`)
-      .then(async (res) => {
-        if (!res.ok) {
-          const ct = res.headers.get("content-type") ?? "";
-          const msg = ct.includes("application/json")
-            ? ((await res.json()) as { message?: string }).message ??
-              "Error al cargar pedidos"
-            : await res.text();
-          throw new Error(msg);
-        }
-        return res.json() as Promise<PedidosResponse>;
-      })
-      .then((body) => {
-        if (!cancelled) setData(body);
-      })
-      .catch((err: unknown) => {
-        if (!cancelled)
-          setError(
-            err instanceof Error ? err.message : "Error al cargar pedidos",
-          );
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
+    if (currentEntry.payload || currentEntry.error) {
+      setIsLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    void loadPedidos(controller.signal);
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
-  }, [enabled, limit, offset]);
+  }, [cacheKey, enabled, loadPedidos]);
 
   const latestPedido = data?.pedidos?.[0] ?? null;
   const historial = data?.pedidos?.slice(1) ?? [];
 
-  return { data, latestPedido, historial, isLoading, error };
+  return {
+    data,
+    latestPedido,
+    historial,
+    isLoading,
+    error,
+    refresh: async () => {
+      await loadPedidos(undefined, true);
+    },
+  };
 }

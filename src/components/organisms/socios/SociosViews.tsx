@@ -258,7 +258,7 @@ export function SociosViews({
 
   if (currentView === "mi-cuenta") {
     return (
-      <main className={`${styles.container} ${styles.containerWide}`}>
+      <main className={styles.container}>
         <ProfileView
           perfil={perfil}
           variant="socios"
@@ -347,7 +347,7 @@ export function SociosViews({
                       <th>Fecha</th>
                       <th>Tipo</th>
                       <th>Referencia</th>
-                      <th>Monto</th>
+                      {/* <th>Monto</th> */}
                       <th>Puntos</th>
                     </tr>
                   </thead>
@@ -384,7 +384,7 @@ export function SociosViews({
                           <td className={styles.historialRef}>
                             {item.refOperacion ?? "—"}
                           </td>
-                          <td>{montoLabel}</td>
+                          {/* <td>{montoLabel}</td> */}
                           <td className={deltaClass}>{deltaLabel}</td>
                         </tr>
                       );
