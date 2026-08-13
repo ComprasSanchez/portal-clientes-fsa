@@ -52,7 +52,8 @@ function normalizeResponse(data: PortalSucursalesResponse): PortalSucursalOption
 }
 
 // TODO: remover este set cuando se habiliten estas sucursales
-const SUCURSALES_OCULTAS = new Set([66, 72, 76, 77, 78, 79, 80, 81]);
+// Exportado para reusar el mismo criterio en otras superficies (ej. portal-cliente magic-link).
+export const SUCURSALES_OCULTAS = new Set([66, 72, 76, 77, 78, 79, 80, 81]);
 
 const NOMBRE_OVERRIDES: Record<number, string> = {
   28: "Sanchez Antoniolli 28 / Breve",
