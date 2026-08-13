@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { MainLayout } from "../components/templates/MainLayout";
 import { Login } from "@/components/organisms/login/login";
+import { recoverConvenioFromCanal } from "@/lib/convenio-link-recovery";
 
 type HomePageProps = {
   searchParams: Promise<{
@@ -37,9 +38,20 @@ export default async function Home({ searchParams }: HomePageProps) {
     ? query.onboardingToken[0]
     : query.onboardingToken;
   const rawConvenio = Array.isArray(query.convenio) ? query.convenio[0] : query.convenio;
-  const convenioParam = rawConvenio?.trim().toUpperCase() || null;
   const rawCanal = Array.isArray(query.canal) ? query.canal[0] : query.canal;
-  const canalParam = rawCanal?.trim().toUpperCase() || null;
+  // Recuperación de links/QR mal armados (ver src/lib/convenio-link-recovery.ts):
+  // algunos vienen con el convenio embebido dentro del propio valor de `canal`
+  // (ej. `?canal=CONVENIOS=CONCI CARPINELLA`) en vez de `?convenio=` por separado.
+  // Sin esto, un usuario ya logueado que entra con ese link termina redirigido a
+  // /socios liso, sin ningún rastro de que venía de un convenio.
+  const recoveredConvenio = !rawConvenio?.trim()
+    ? recoverConvenioFromCanal(rawCanal)
+    : null;
+  const convenioParam =
+    rawConvenio?.trim().toUpperCase() || recoveredConvenio?.toUpperCase() || null;
+  const canalParam = recoveredConvenio
+    ? "CONVENIO"
+    : rawCanal?.trim().toUpperCase() || null;
   const canalQuery = canalParam ? `&canal=${encodeURIComponent(canalParam)}` : "";
   const rawRedirectTo = Array.isArray(query.redirectTo) ? query.redirectTo[0] : query.redirectTo;
 
