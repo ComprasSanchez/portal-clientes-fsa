@@ -18,6 +18,7 @@ import iconHand from "@/assets/login/elementos/icon-hand.png";
 import iconPuntos from "@/assets/login/elementos/puntos-pay.png";
 import iconRegalo from "@/assets/login/elementos/regalo.png";
 import sociosaBlanco from "@/assets/sociosa-blanco.png";
+import { recoverConvenioFromCanal } from "@/lib/convenio-link-recovery";
 import styles from "./login.module.scss";
 import {
   InputMFA,
@@ -1371,7 +1372,13 @@ export function Login({ onLogin }: LoginProps) {
     );
     if (!hasAnyHint) return;
 
-    const canalValue = convenioHint
+    // Recuperación de links/QR mal armados (ver src/lib/convenio-link-recovery.ts).
+    const effectiveConvenioHint =
+      convenioHint?.trim() ||
+      recoverConvenioFromCanal(canalHint) ||
+      null;
+
+    const canalValue = effectiveConvenioHint
       ? "CONVENIO"
       : canalHint?.trim().toUpperCase() || null;
 
@@ -1391,10 +1398,10 @@ export function Login({ onLogin }: LoginProps) {
         localStorage.removeItem(SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY);
       }
 
-      if (convenioHint?.trim()) {
+      if (effectiveConvenioHint) {
         localStorage.setItem(
           SIGNUP_CONVENIO_STORAGE_KEY,
-          convenioHint.trim().toUpperCase(),
+          effectiveConvenioHint.toUpperCase(),
         );
       } else {
         localStorage.removeItem(SIGNUP_CONVENIO_STORAGE_KEY);
