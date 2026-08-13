@@ -20,6 +20,7 @@ import type {
   Product,
   Sucursal,
 } from "@/types/magic-link-type";
+import { SUCURSALES_OCULTAS } from "@/lib/use-portal-sucursales";
 import styles from "./portal-cliente.module.scss";
 
 type PortalClienteProps = {
@@ -354,12 +355,13 @@ export default function PortalCliente({ token }: PortalClienteProps) {
         setRecurrentItems(recurring);
         setOriginalProductIds(recurring.map((item) => item.id));
         setDomicilios(domiciliosList);
+        const sucursalesList = Array.isArray(sucursalesData)
+          ? sucursalesData
+          : Array.isArray(sucursalesData.sucursales)
+            ? sucursalesData.sucursales
+            : [];
         setSucursales(
-          Array.isArray(sucursalesData)
-            ? sucursalesData
-            : Array.isArray(sucursalesData.sucursales)
-              ? sucursalesData.sucursales
-              : [],
+          sucursalesList.filter((s) => !SUCURSALES_OCULTAS.has(Number(s.id))),
         );
 
         const principal = domiciliosList.find((item) => item.principal) ?? domiciliosList[0];
