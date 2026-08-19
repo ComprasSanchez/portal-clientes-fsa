@@ -1,5 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  ChevronDown,
+  ChevronUp,
   Clock,
   CreditCard,
   MapPin,
@@ -8,7 +10,9 @@ import {
   Stethoscope,
   TrendingUp,
   Truck,
+  User,
 } from "lucide-react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
@@ -51,16 +55,61 @@ import { BannerCoraMobileCarousel } from "@/components/molecules/home/BannerCora
 import boxCoraIcon from "@/assets/cora/card/box-cora.svg";
 import fileCoraIcon from "@/assets/cora/card/file-cora.svg";
 import bellCoraIcon from "@/assets/cora/card/bell-cora.svg";
+import userCoraIcon from "@/assets/cora/card/user-cora.svg";
+import interrogationCoraIcon from "@/assets/cora/card/interrogation-cora.svg";
+
+const MEDICAMENTOS_COLLAPSED_LIMIT = 3;
+
+// Las fechas "YYYY-MM-DD" que manda el backend son solo-fecha, sin hora.
+// `new Date("YYYY-MM-DD")` las interpreta como medianoche UTC, lo que las
+// corre un día hacia atrás al formatearlas en horarios detrás de UTC
+// (ej. Argentina, UTC-3). Acá las parseamos como fecha local en cambio.
+const parseDateOnly = (value: string) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (match) {
+    const [, year, month, day] = match;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+  return new Date(value);
+};
 
 const formatOptionalDate = (value: string | null | undefined) => {
   if (!value) {
-    return "Sin dato";
+    return "No informado";
   }
 
-  const parsedDate = new Date(value);
+  const parsedDate = parseDateOnly(value);
   return Number.isNaN(parsedDate.getTime())
     ? value
     : parsedDate.toLocaleDateString("es-AR");
+};
+
+const formatDaysUntilContact = (value: string | null | undefined) => {
+  const parsedDate = value ? parseDateOnly(value) : null;
+  if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  // Comparamos por día calendario (no por horas/milisegundos) para no perder
+  // un día por diferencia de horario dentro de la misma fecha.
+  const today = new Date();
+  const startOfToday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  const startOfTarget = new Date(
+    parsedDate.getFullYear(),
+    parsedDate.getMonth(),
+    parsedDate.getDate(),
+  );
+  const diffDays = Math.round(
+    (startOfTarget.getTime() - startOfToday.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (diffDays <= 0) return "Te contactaremos hoy";
+  if (diffDays === 1) return "Te contactaremos mañana";
+  return `Te contactaremos en ${diffDays} días`;
 };
 
 const formatDeliveryLocation = ({
@@ -105,14 +154,14 @@ const formatDeliveryLocation = ({
     const area = [domicilioEntrega.localidad, domicilioEntrega.provincia]
       .filter(Boolean)
       .join(", ");
-    return [street, extra, area].filter(Boolean).join(" - ") || "Sin dato";
+    return [street, extra, area].filter(Boolean).join(" - ") || "No informado";
   }
 
   if (sucursalEntrega) {
     return `${sucursalEntrega.nombre} - ${sucursalEntrega.direccion}`;
   }
 
-  return "Sin dato";
+  return "No informado";
 };
 
 interface HomeViewsProps {
@@ -160,9 +209,9 @@ const viewContent: Record<
     description: "Consulta y descarga de comprobantes.",
   },
   "pedido-actual": {
-    title: "Tu pedido actual",
+    title: "Tu último pedido",
     description:
-      "Acá podés ver cómo viene tu pedido, cómo te vamos a contactar y qué medicamentos incluye.",
+      "Te contamos todo sobre tu pedido: estado, medicamentos y entrega.",
   },
   "pedido-completo": {
     title: "Historial completo",
@@ -194,12 +243,40 @@ export function HomeViews({
   const searchParams = useSearchParams();
   const { pushToast } = useGlobalToast();
   const hasShownValidationToastRef = useRef(false);
+  const [isMedicamentosExpanded, setIsMedicamentosExpanded] = useState(false);
   const active = viewContent[currentView];
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
   const quickAccessItems: QuickAccessItem[] = [
-    { label: "Mi pedido", view: "pedido-actual", icon: boxCoraIcon, tone: "plain" },
-    { label: "Mi historial", view: "mi-historial", icon: fileCoraIcon, tone: "plain" },
-    { label: "Mis recordatorios", view: "pedidos", icon: bellCoraIcon, tone: "plain" },
+    {
+      label: "Mi pedido",
+      view: "pedido-actual",
+      icon: boxCoraIcon,
+      tone: "plain",
+    },
+    {
+      label: "Mi historial",
+      view: "mi-historial",
+      icon: fileCoraIcon,
+      tone: "plain",
+    },
+    // {
+    //   label: "Mis recordatorios",
+    //   view: "pedidos",
+    //   icon: bellCoraIcon,
+    //   tone: "plain",
+    // },
+    {
+      label: "Mi perfil",
+      view: "mi-cuenta",
+      icon: userCoraIcon,
+      tone: "plain",
+    },
+    {
+      label: "Preguntas frecuentes",
+      view: "pedidos",
+      icon: interrogationCoraIcon,
+      tone: "plain",
+    },
   ];
 
   const queryCicloId = searchParams.get("cicloId");
@@ -229,11 +306,9 @@ export function HomeViews({
     sucursalEntrega: expedienteActualSucursal,
     medico: expedienteActualMedico,
     cycleEvents: expedienteActualEvents,
-    cycleItems: expedienteActualCycleItems,
     expedienteItems: expedienteActualItems,
     currentCycle: expedienteActualCycle,
     pastCycles,
-    cicloItemsCount,
     warnings: expedienteActualWarnings,
     isLoading: isExpedienteActualLoading,
     error: expedienteActualError,
@@ -465,40 +540,6 @@ export function HomeViews({
           !expedienteActualNotFound &&
           expedienteActualData ? (
             <div className={styles.expedienteLayout}>
-              <header className={styles.expedientePatientHeader}>
-                <div className={styles.expedientePatientTop}>
-                  <div className={styles.expedienteAvatar}>
-                    {expedienteActualCliente
-                      ? `${expedienteActualCliente.nombre.charAt(0)}${expedienteActualCliente.apellido.charAt(0)}`
-                      : "?"}
-                  </div>
-                  <div>
-                    <p className={styles.expedientePatientName}>
-                      {expedienteActualCliente
-                        ? `${expedienteActualCliente.nombre} ${expedienteActualCliente.apellido}`
-                        : "Sin dato"}
-                    </p>
-                    <p className={styles.expedientePatientDoc}>
-                      DNI {expedienteActualCliente?.documento.numero ?? "—"}
-                    </p>
-                  </div>
-                </div>
-                <div className={styles.expedienteHeaderMetas}>
-                  <div>
-                    <p className={styles.expedienteMetaLabel}>Creado</p>
-                    <p className={styles.expedienteMetaValue}>
-                      {formatOptionalDate(expedienteActual?.createdAt)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={styles.expedienteMetaLabel}>Actualizado</p>
-                    <p className={styles.expedienteMetaValue}>
-                      {formatOptionalDate(expedienteActual?.updatedAt)}
-                    </p>
-                  </div>
-                </div>
-              </header>
-
               <div className={styles.expedienteTwoCol}>
                 <div>
                   <section className={styles.expedienteSection}>
@@ -506,33 +547,61 @@ export function HomeViews({
                       Medicamentos solicitados
                     </p>
                     {expedienteActualItems.length > 0 ? (
-                      expedienteActualItems.map((item) => (
-                        <div key={item.id} className={styles.medicamentCard}>
-                          <div className={styles.medicamentIcon}>
-                            <Pill size={16} />
-                          </div>
-                          <div className={styles.medicamentInfo}>
-                            <p className={styles.medicamentName}>
-                              {item.productoNombre}
-                            </p>
-                            {item.marcaNombre && (
-                              <p className={styles.medicamentMarca}>
-                                {item.marcaNombre}
+                      <>
+                        {(isMedicamentosExpanded
+                          ? expedienteActualItems
+                          : expedienteActualItems.slice(
+                              0,
+                              MEDICAMENTOS_COLLAPSED_LIMIT,
+                            )
+                        ).map((item) => (
+                          <div key={item.id} className={styles.medicamentCard}>
+                            <div className={styles.medicamentIcon}>
+                              <Pill size={16} />
+                            </div>
+                            <div className={styles.medicamentInfo}>
+                              <p className={styles.medicamentName}>
+                                {item.productoNombre}
                               </p>
+                              {item.marcaNombre && (
+                                <p className={styles.medicamentMarca}>
+                                  {item.marcaNombre}
+                                </p>
+                              )}
+                            </div>
+                            {item.cantidadEnvasesPorCiclo != null && (
+                              <div className={styles.medicamentQty}>
+                                <span className={styles.medicamentQtyLabel}>
+                                  Cantidad
+                                </span>
+                                <span className={styles.medicamentQtyValue}>
+                                  {item.cantidadEnvasesPorCiclo}
+                                </span>
+                              </div>
                             )}
                           </div>
-                          {item.cantidadEnvasesPorCiclo != null && (
-                            <div className={styles.medicamentQty}>
-                              <span className={styles.medicamentQtyLabel}>
-                                Cantidad
-                              </span>
-                              <span className={styles.medicamentQtyValue}>
-                                {item.cantidadEnvasesPorCiclo}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      ))
+                        ))}
+
+                        {expedienteActualItems.length >
+                        MEDICAMENTOS_COLLAPSED_LIMIT ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setIsMedicamentosExpanded((prev) => !prev)
+                            }
+                            className={styles.verTodosButton}
+                          >
+                            {isMedicamentosExpanded
+                              ? "Ver menos"
+                              : `Ver todos (${expedienteActualItems.length})`}
+                            {isMedicamentosExpanded ? (
+                              <ChevronUp size={16} />
+                            ) : (
+                              <ChevronDown size={16} />
+                            )}
+                          </button>
+                        ) : null}
+                      </>
                     ) : (
                       <p className={styles.summaryMuted}>
                         Sin medicamentos registrados.
@@ -542,54 +611,23 @@ export function HomeViews({
 
                   {expedienteActualCycle && (
                     <section className={styles.expedienteSection}>
-                      <p className={styles.sectionEyebrow}>Próxima entrega</p>
+                      <p className={styles.sectionEyebrow}>FECHA ESTIMADA DE CONTACTO</p>
                       <div className={styles.cicloCard}>
                         <div className={styles.cicloCardLeft}>
-                          {/* <span className={styles.cicloLabel}>
-                            {expedienteActualCycle.titulo}
-                          </span> */}
                           <p className={styles.cicloDate}>
                             {formatOptionalDate(
                               expedienteActualCycle.fechaInicioGestion,
                             )}
                           </p>
-                          <p className={styles.cicloScheduled}>
-                            Programada:{" "}
-                            {formatOptionalDate(
-                              expedienteActualCycle.fechaEntregaObjetivo,
-                            )}
-                          </p>
                         </div>
-                        <div className={styles.cicloStats}>
-                          <div className={styles.cicloStat}>
-                            <span className={styles.cicloStatValue}>
-                              {expedienteActualCycleItems.length}
-                            </span>
-                            <span className={styles.cicloStatLabel}>
-                              Medicamentos
-                            </span>
-                          </div>
-                          <div className={styles.cicloStat}>
-                            <span className={styles.cicloStatValue}>
-                              {expedienteActualEvents.length}
-                            </span>
-                            <span className={styles.cicloStatLabel}>
-                              Movimientos
-                            </span>
-                          </div>
-                        </div>
-                        <span className={styles.cicloStatusBadge}>
-                          {getMappedLabel(
-                            CICLOS_STATE_TYPE_LABELS,
-                            expedienteActualCycle.estado,
-                          )}
-                        </span>
                       </div>
                     </section>
                   )}
+                </div>
 
+                <div>
                   <section className={styles.expedienteSection}>
-                    <p className={styles.sectionEyebrow}>Método de entrega</p>
+                    <p className={styles.sectionEyebrow}>Método de entrega y pago</p>
                     <div className={styles.entregaCard}>
                       <div className={styles.entregaRow}>
                         <Truck size={20} className={styles.entregaIcon} />
@@ -626,9 +664,7 @@ export function HomeViews({
                       </div>
                     </div>
                   </section>
-                </div>
 
-                <div>
                   <section className={styles.expedienteSection}>
                     <p className={styles.sectionEyebrow}>Datos de contacto</p>
                     <div className={styles.infoCard}>
@@ -643,7 +679,7 @@ export function HomeViews({
                               : "Teléfono"}
                           </p>
                           <p className={styles.infoValue}>
-                            {expedienteActualContacto?.valor ?? "Sin dato"}
+                            {expedienteActualContacto?.valor ?? "No informado"}
                           </p>
                         </div>
                       </div>
@@ -664,7 +700,7 @@ export function HomeViews({
                       <div className={styles.infoRow}>
                         <MapPin size={16} className={styles.infoIcon} />
                         <div>
-                          <p className={styles.infoLabel}>Dirección</p>
+                          <p className={styles.infoLabel}>Dirección de entrega</p>
                           <p className={styles.infoValue}>
                             {formatDeliveryLocation({
                               medioEntrega: expedienteActual?.medioEntrega,
@@ -681,31 +717,9 @@ export function HomeViews({
                           <p className={styles.infoValue}>
                             {expedienteActualMedico?.nombre ??
                               expedienteActual?.medicoNombre ??
-                              "Sin dato"}
+                              "No informado"}
                           </p>
                         </div>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section className={styles.expedienteSection}>
-                    <p className={styles.sectionEyebrow}>Resumen</p>
-                    <div className={styles.resumenCard}>
-                      <div className={styles.resumenRow}>
-                        <span className={styles.resumenLabel}>
-                          Total medicamentos
-                        </span>
-                        <span className={styles.resumenValue}>
-                          {expedienteActualItems.length}
-                        </span>
-                      </div>
-                      <div className={styles.resumenRow}>
-                        <span className={styles.resumenLabel}>
-                          En este pedido
-                        </span>
-                        <span className={styles.resumenValue}>
-                          {cicloItemsCount}
-                        </span>
                       </div>
                     </div>
                   </section>
@@ -830,7 +844,7 @@ export function HomeViews({
               <OrderRow
                 label="Pedido"
                 value={
-                  resolvedOrderNumber ? `#${resolvedOrderNumber}` : "Sin dato"
+                  resolvedOrderNumber ? `#${resolvedOrderNumber}` : "No informado"
                 }
               />
               <OrderRow
@@ -886,14 +900,14 @@ export function HomeViews({
               <OrderRow label="Nombre completo" value={userName} />
               <OrderRow
                 label="Documento"
-                value={documentNumber ?? "Sin dato"}
+                value={documentNumber ?? "No informado"}
               />
-              <OrderRow label="Mail" value={email ?? "Sin dato"} />
+              <OrderRow label="Mail" value={email ?? "No informado"} />
               <OrderRow
                 label="Telefono"
                 value={
                   <span className={styles.totalAmount}>
-                    {phone ?? "Sin dato"}
+                    {phone ?? "No informado"}
                   </span>
                 }
                 hasBorder={false}
@@ -901,6 +915,43 @@ export function HomeViews({
             </dl>
             <DetailButton onClick={() => onNavigate("mi-cuenta")} />
           </article>
+
+          {activeExpediente?.nextActionAt ? (
+            <article className={`${styles.panelCard} ${styles.panelCardBell}`}>
+              <div className={styles.panelBellLayout}>
+                <Image
+                  src={bellCoraIcon}
+                  alt=""
+                  width={80}
+                  height={80}
+                  className={styles.panelBellIcon}
+                />
+                <div className={styles.panelBellContent}>
+                  <h2 className={`${styles.panelTitle} ${styles.panelTitleAccent}`}>
+                    Voy a acompañarte
+                  </h2>
+                  <p className={styles.panelSubtitle}>
+                    Así seguimos tu tratamiento
+                  </p>
+                  <p className={styles.panelContactSentence}>
+                    {formatDaysUntilContact(activeExpediente.nextActionAt)}
+                  </p>
+                  {process.env.NEXT_PUBLIC_FSA_PHONE_PORTAL ? (
+                    <a
+                      href={`https://wa.me/${process.env.NEXT_PUBLIC_FSA_PHONE_PORTAL}?text=${encodeURIComponent(
+                        "Hola, quiero avisarles que cambió mi tratamiento.",
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.panelWhatsappLink}
+                    >
+                      💜 Contame si cambió tu tratamiento
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            </article>
+          ) : null}
         </div>
       </section>
     </main>

@@ -241,8 +241,7 @@ export function CrearPedidoStep1Productos({
       {habituales.length > 0 ? (
         <div className="sm:rounded-2xl sm:border sm:border-[#e2daf3] sm:bg-[#faf7ff] sm:p-4">
           <div className="mb-3">
-            <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f63d9]">
-              <History size={14} />
+            <p className="inline-flex items-center gap-1.5 text-xl font-semibold uppercase tracking-[0.14em] text-[#8f63d9]">
               ¡Hola{perfil?.nombre ? ` ${perfil.nombre}` : ""}!
             </p>
             <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f63d9]">

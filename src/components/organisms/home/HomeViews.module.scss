@@ -48,9 +48,45 @@
   color: #2e3042;
 }
 
+.panelBellLayout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.panelBellIcon {
+  flex-shrink: 0;
+}
+
+.panelBellContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.panelContactSentence {
+  margin-top: 0.75rem;
+  color: #8f63d9;
+  font-weight: 700;
+  font-size: var(--fs-value);
+}
+
+.panelTitleAccent {
+  color: #8f63d9;
+}
+
 .panelSubtitle {
   margin-top: 0.25rem;
   color: #7a7c95;
+}
+
+.panelWhatsappLink {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #8f63d9;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
 }
 
 .credentialGradient {
@@ -438,7 +474,6 @@
 
 .expedienteTwoCol {
   display: grid;
-  gap: 1.5rem;
 }
 
 .expedienteSection {
@@ -475,6 +510,26 @@
   background: #fbf8ff;
   padding: 0.85rem 1rem;
   margin-bottom: 0.5rem;
+}
+
+.verTodosButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.6rem;
+  border: none;
+  background: none;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: #8f63d9;
+  cursor: pointer;
+
+  &:hover {
+    color: #7f56c7;
+  }
 }
 
 .medicamentIcon {
@@ -696,49 +751,22 @@
   margin-top: 0.1rem;
 }
 
-.resumenCard {
-  border: 1px solid #e7e2f0;
-  border-radius: 1.25rem;
-  background: #ffffff;
-  padding: 1rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.resumenRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: var(--fs-sm);
-}
-
-.resumenLabel {
-  color: #6f7088;
-  font-weight: 500;
-}
-
-.resumenValue {
-  font-weight: 700;
-  color: #8f63d9;
-  font-size: var(--fs-value);
-}
-
 @media (min-width: 768px) {
   .expedienteTwoCol {
     grid-template-columns: 3fr 2fr;
+    gap: 1.5rem;
   }
 }
 
-@media (max-width: 640px) {
-  .expedienteActualViewCard {
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
-  }
+.expedienteActualViewCard {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
 
+@media (max-width: 640px) {
   .cicloCard {
     flex-direction: column;
     align-items: flex-start;
@@ -751,6 +779,29 @@
 
   .cicloStatusBadge {
     align-self: flex-start;
+  }
+
+  .panelBellLayout {
+    gap: 0.85rem;
+  }
+
+  .panelBellIcon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .panelBellContent {
+    .panelTitle {
+      font-size: 1.3rem;
+    }
+
+    .panelContactSentence {
+      font-size: 1.15rem;
+    }
+  }
+
+  .panelCardBell {
+    order: -1;
   }
 }
 
@@ -779,7 +830,7 @@
 
 @media (min-width: 1280px) {
   .quickAccessGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .detailsGrid {

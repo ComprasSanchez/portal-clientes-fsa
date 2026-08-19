@@ -111,7 +111,7 @@ export function SociosSidebar({
       )}
 
       <aside
-        className={`fixed left-0 z-40 h-full border-r border-[#d3dee2] bg-[#f2f5f6] transition-all duration-300 ${isCollapsed ? "w-24" : "w-64"} lg:top-0 ${isMobileOpen ? "top-16 h-[calc(100vh-4rem)]" : "top-16 h-[calc(100vh-4rem)] -translate-x-full lg:translate-x-0"}`}
+        className={`fixed left-0 z-40 h-[calc(100vh-4rem)] border-r border-[#d3dee2] bg-[#f2f5f6] transition-all duration-300 ${isCollapsed ? "w-24" : "w-64"} lg:top-0 lg:h-screen ${isMobileOpen ? "top-16" : "top-16 -translate-x-full lg:translate-x-0"}`}
       >
         <div className="flex h-full flex-col overflow-hidden">
           <div
@@ -164,7 +164,7 @@ export function SociosSidebar({
             </div>
           </div>
 
-          <nav className="flex-1 overflow-y-auto py-4">
+          <nav className="flex flex-1 flex-col overflow-y-auto py-4">
             <ul className="space-y-1 px-3">
               {menuItems.map((item) => {
                 const Icon = item.icon;
@@ -197,20 +197,20 @@ export function SociosSidebar({
                   </li>
                 );
               })}
-
-              <li className="pt-3 lg:hidden">
-                <button
-                  onClick={handleLogoutClick}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[#dd3f62] transition-colors hover:bg-[#fff0c2]"
-                  type="button"
-                >
-                  <LogOut size={18} className="shrink-0" />
-                  <span className="text-[15px] font-semibold">
-                    Cerrar sesion
-                  </span>
-                </button>
-              </li>
             </ul>
+
+            <div className="mt-auto px-3 pt-3 lg:hidden">
+              <button
+                onClick={handleLogoutClick}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[#dd3f62] transition-colors hover:bg-[#fff0c2]"
+                type="button"
+              >
+                <LogOut size={18} className="shrink-0" />
+                <span className="text-[15px] font-semibold">
+                  Cerrar sesion
+                </span>
+              </button>
+            </div>
           </nav>
 
           <div className="hidden shrink-0 border-t border-[#d3dee2] bg-[#f2f5f6] p-3 lg:block lg:bg-transparent">

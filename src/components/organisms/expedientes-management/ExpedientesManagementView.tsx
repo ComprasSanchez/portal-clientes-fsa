@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
 import { AlertCircle, CalendarDays, ShieldCheck } from "lucide-react";
 import { usePortalExpedienteActual } from "@/lib/use-portal-expediente-actual";
 import { usePreferredPortalProfile } from "@/lib/use-preferred-portal-profile";
@@ -72,14 +71,6 @@ export function ExpedientesManagementView({
           <h3 className="text-[36px] font-semibold uppercase text-[#8f63d9]">MI HISTORIAL</h3>
           <p className="text-xl font-normal text-[#2f3042]">Contame qué medicación tomás y yo me ocupo del resto</p>
         </div>
-        <button
-          type="button"
-          onClick={() => onNavigate("crear-pedido")}
-          className="hidden items-center gap-2 rounded-2xl bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#7f56c7] lg:inline-flex"
-        >
-          <Plus size={18} />
-          Nuevo pedido
-        </button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
