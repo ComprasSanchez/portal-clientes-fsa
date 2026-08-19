@@ -43,7 +43,13 @@ export function QuickAccessCard<TView extends string>({ item, onNavigate }: Quic
         className={`${styles.quickAccessIconWrap} ${isSociosTone ? styles.quickAccessIconWrapSocios : ""} ${isPlainTone ? styles.quickAccessIconWrapPlain : ""}`}
       >
         {"src" in Icon ? (
-          <Image src={Icon} alt="" width={iconSize} height={iconSize} />
+          <Image
+            src={Icon}
+            alt=""
+            width={iconSize}
+            height={iconSize}
+            style={{ width: iconSize, height: iconSize, objectFit: "contain" }}
+          />
         ) : (
           <Icon size={iconSize} />
         )}
