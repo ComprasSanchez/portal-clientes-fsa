@@ -410,7 +410,9 @@ export function HomeViews({
   if (currentView === "pedidos") {
     return (
       <main className={styles.container}>
-        <section className={styles.activeViewCard}>
+        <section
+          className={`${styles.activeViewCard} ${styles.trackingViewCard}`}
+        >
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 

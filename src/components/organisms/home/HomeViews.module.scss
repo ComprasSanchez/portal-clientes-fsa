@@ -203,7 +203,7 @@
 .activeViewTitle {
   font-size: var(--fs-page-title);
   font-weight: 700;
-  color: #2b2d3f;
+  color: #8f63d9;
 }
 
 .activeViewDescription {
@@ -758,7 +758,8 @@
   }
 }
 
-.expedienteActualViewCard {
+.expedienteActualViewCard,
+.trackingViewCard {
   border: none;
   border-radius: 0;
   background: transparent;
