@@ -718,7 +718,7 @@ export function Login({ onLogin }: LoginProps) {
       }
 
       openIdentityLinkCard(
-        "Completá tus datos para vincular tu cuenta y poder continuar.",
+        "No encontramos tu cuenta de socio. Completá estos datos para vincular tu cuenta existente, o para crear una nueva si es tu primera vez.",
       );
       applyIdentityLinkPrefill(identityStatus);
       return false;
@@ -2745,16 +2745,33 @@ export function Login({ onLogin }: LoginProps) {
                     >
                       Teléfono
                     </label>
-                    <input
-                      id="identity-link-phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="+5491112345678"
-                      value={identityLinkFormik.values.phone ?? ""}
-                      onChange={identityLinkFormik.handleChange}
-                      onBlur={identityLinkFormik.handleBlur}
-                      className={`${styles.input} ${identityLinkPhoneHasError ? styles.inputError : ""}`}
-                    />
+                    <div
+                      className={`${styles.phoneInputRow} ${identityLinkPhoneHasError ? styles.inputError : ""}`}
+                    >
+                      <span className={styles.phonePrefix} aria-hidden="true">
+                        +549
+                      </span>
+                      <input
+                        id="identity-link-phone"
+                        name="phone"
+                        type="tel"
+                        inputMode="numeric"
+                        value={(identityLinkFormik.values.phone ?? "").replace(
+                          /^\+549/,
+                          "",
+                        )}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "");
+                          void identityLinkFormik.setFieldValue(
+                            "phone",
+                            `+549${digits}`,
+                          );
+                        }}
+                        onBlur={identityLinkFormik.handleBlur}
+                        autoComplete="tel"
+                        className={styles.phoneDigitsInput}
+                      />
+                    </div>
                     {identityLinkPhoneHasError ? (
                       <p className={styles.fieldError}>
                         {identityLinkFormik.errors.phone}
@@ -2775,6 +2792,24 @@ export function Login({ onLogin }: LoginProps) {
                     </span>
                   </button>
                 </form>
+                <div className={styles.legalLinks}>
+                  <button
+                    type="button"
+                    className={styles.inlineLink}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                    }}
+                    disabled={isAbandoningIdentityLink}
+                    onClick={() => {
+                      void handleAbandonIdentityLink();
+                    }}
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
                 {legalLinks}
               </motion.div>
             ) : null}

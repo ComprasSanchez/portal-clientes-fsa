@@ -69,7 +69,11 @@ export function IdentityLinkGuard() {
           return;
         }
 
+        // Fail-closed: cualquier respuesta que no confirme explícitamente
+        // "linked: true" bloquea el paso (antes, cualquier status != 403 y
+        // != ok dejaba pasar al usuario sin cuenta vinculada).
         if (!response.ok) {
+          redirectToIdentityLink();
           return;
         }
 
