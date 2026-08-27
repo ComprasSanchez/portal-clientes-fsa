@@ -17,23 +17,24 @@ export type LoginResponse = {
         };
       };
   message?: string | string[];
-  nextStep?: string;
+  next_step?: string;
+  redirect_to?: string;
   flow?: {
     id?: string;
     status?: string;
-    expiresAt?: number;
-    emailVerified?: boolean;
-    identityLinked?: boolean;
-    deviceTrusted?: boolean;
+    expires_at?: number;
+    email_verified?: boolean;
+    identity_linked?: boolean;
+    device_trusted?: boolean;
   };
   challenge?: {
     channel?: string;
-    destinationMasked?: string;
+    destination_masked?: string;
   };
   onboarding?: {
     status?: string;
-    identityLinked?: boolean;
-    deviceTrusted?: boolean;
+    identity_linked?: boolean;
+    device_trusted?: boolean;
   };
   mfa?: {
     required?: boolean;
