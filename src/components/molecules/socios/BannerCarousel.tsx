@@ -12,11 +12,6 @@ import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [
   {
-    src: sorteoBanner,
-    alt: "Día del niño — Sorteo Socio SA",
-    href: "/socios?view=sorteos",
-  },
-  {
     src: remeraPromo,
     alt: "Sorteo Socio SA — Gana una remera exclusiva de Socio SA",
     href: null,
