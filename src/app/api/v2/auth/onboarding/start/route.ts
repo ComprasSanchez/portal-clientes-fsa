@@ -12,23 +12,23 @@ type OnboardingStartBody = {
     username?: string;
     email?: string;
     password?: string;
-    firstName?: string;
-    lastName?: string;
+    first_name?: string;
+    last_name?: string;
   };
-  customerIdentity?: {
-    tipoDocumento?: string;
-    nroDocumento?: string;
+  customer_identity?: {
+    tipo_documento?: string;
+    nro_documento?: string;
     nombre?: string;
     apellido?: string;
     sexo?: string;
-    fechaNacimiento?: string;
+    fecha_nacimiento?: string;
     telefono?: string;
   };
-  accountKind?: string;
-  externalSystem?: string;
-  externalRef?: string;
+  account_kind?: string;
+  external_system?: string;
+  external_ref?: string;
   canal?: string;
-  sucursalCodigo?: string;
+  sucursal_codigo?: string;
   convenio?: string;
 };
 
@@ -44,10 +44,10 @@ export async function POST(req: NextRequest) {
       !isNonEmptyString(body.account?.username) ||
       !isNonEmptyString(body.account?.email) ||
       !isNonEmptyString(body.account?.password) ||
-      !isNonEmptyString(body.customerIdentity?.tipoDocumento) ||
-      !isNonEmptyString(body.customerIdentity?.nroDocumento) ||
-      !isNonEmptyString(body.customerIdentity?.nombre) ||
-      !isNonEmptyString(body.customerIdentity?.apellido)
+      !isNonEmptyString(body.customer_identity?.tipo_documento) ||
+      !isNonEmptyString(body.customer_identity?.nro_documento) ||
+      !isNonEmptyString(body.customer_identity?.nombre) ||
+      !isNonEmptyString(body.customer_identity?.apellido)
     ) {
       return jsonError("invalid_body", 400);
     }

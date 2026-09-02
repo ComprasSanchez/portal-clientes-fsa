@@ -19,7 +19,9 @@
       "Read(//c/Users/Usuario/Documents/front-fsa/Cronicos/cronicos-fsa/src/**)",
       "Bash(cd \"c:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\BFF\\\\bff-cliente-web\" && grep -n \"ensureVerifiedContacto\\\\|ensureAfiliacionBelongsToCliente\\\\|ensureEntregaSelection\" -A 40 src/infrastructure/Portal/controllers/portal-me.controller.ts | head -220)",
       "Bash(find \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\BFF\\\\bff-gateway\\\\src\\\\context\\\\Auth\\\\infrastructure\\\\dto\" -iname \"*identity-link-start*\" -o -iname \"*identity-link-verify*\")",
-      "Read(//c/Users/Usuario/Documents/front-fsa/BFF/bff-gateway/src/context/Auth/infrastructure/dto/**)"
+      "Read(//c/Users/Usuario/Documents/front-fsa/BFF/bff-gateway/src/context/Auth/infrastructure/dto/**)",
+      "Bash(ls \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\clientes-fsa\" 2>/dev/null | head -30)",
+      "Read(//c/Users/Usuario/Documents/front-fsa/clientes-fsa/**)"
     ]
   }
 }

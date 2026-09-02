@@ -8,14 +8,14 @@ import {
 } from "@/app/api/_lib/proxy";
 
 type ResendBody = {
-  flowId?: string;
+  flow_id?: string;
 };
 
 export async function POST(req: NextRequest) {
   try {
     const body = await readJsonBody<ResendBody>(req);
 
-    if (!body || typeof body.flowId !== "string" || body.flowId.trim().length === 0) {
+    if (!body || typeof body.flow_id !== "string" || body.flow_id.trim().length === 0) {
       return jsonError("invalid_body", 400);
     }
 
