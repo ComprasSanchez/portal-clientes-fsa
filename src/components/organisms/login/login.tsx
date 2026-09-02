@@ -225,6 +225,18 @@ type IdentityLinkResponse = LoginResponse & {
     expiresAt?: number;
     created?: boolean;
   };
+  // El backend manda esto en delivery, no en challenge (a diferencia de onboarding) —
+  // override explícito para no heredar por accidente el challenge.destinationMasked de onboarding.
+  challenge?: {
+    linkId?: string;
+    status?: string;
+    channel?: string;
+    expiresAt?: number;
+  };
+  delivery?: {
+    destinationMasked?: string;
+    provider?: string;
+  };
 };
 
 const maskEmail = (email: string): string => {
@@ -253,13 +265,29 @@ const getErrorCode = (payload: LoginResponse | null) => {
   return null;
 };
 
+// Personalización por marca de la pantalla "Completá tu perfil" cuando el
+// alta con Google arranca desde un sistema externo (Breve/Farma). Vacío
+// hasta que tengamos sus assets de marca (logo + color) — sin entrada para
+// un sistema, esa pantalla se ve igual que hoy (genérica del Portal).
+type ExternalSystemBranding = {
+  displayName: string;
+  logoUrl?: string;
+  accentColor?: string;
+};
+
+const EXTERNAL_SYSTEM_BRANDING: Partial<Record<string, ExternalSystemBranding>> =
+  {
+    // BREVE: { displayName: "Breve", logoUrl: "/brands/breve-logo.svg", accentColor: "#..." },
+    // FARMA: { displayName: "Farma", logoUrl: "/brands/farma-logo.svg", accentColor: "#..." },
+  };
+
 const buildCustomerIdentityPayload = (values: GoogleOnboardingFormValues) => ({
-  tipoDocumento: values.documentType.trim(),
-  nroDocumento: values.documentNumber.trim(),
+  tipo_documento: values.documentType.trim(),
+  nro_documento: values.documentNumber.trim(),
   nombre: values.firstName.trim(),
   apellido: values.lastName.trim(),
   sexo: values.sex.trim(),
-  fechaNacimiento: values.birthDate,
+  fecha_nacimiento: values.birthDate,
   telefono: values.phone.trim(),
 });
 
@@ -334,6 +362,13 @@ export function Login({ onLogin }: LoginProps) {
     onboardingHint === "google" ||
     googleOnboardingHint === "pending" ||
     googleOnboardingHint === "1";
+  // Presente cuando el login con Google arrancó desde un sistema externo
+  // (Breve/Farma) — ver providers/google/callback en bff-gateway. Determina
+  // adónde volver al terminar de completar el perfil.
+  const externalSystemHint = searchParams.get("externalSystem");
+  const externalSystemBranding = externalSystemHint
+    ? EXTERNAL_SYSTEM_BRANDING[externalSystemHint]
+    : undefined;
   const convenioHint = searchParams.get("convenio");
   const canalHint = searchParams.get("canal");
   const sucursalCodigoHint = searchParams.get("sucursalCodigo");
@@ -487,15 +522,15 @@ export function Login({ onLogin }: LoginProps) {
               username: derivedUsername,
               email: values.email.trim(),
               password: values.password,
-              firstName: values.firstName.trim(),
-              lastName: values.lastName.trim(),
+              first_name: values.firstName.trim(),
+              last_name: values.lastName.trim(),
             },
-            customerIdentity: buildCustomerIdentityPayload(values),
-            accountKind: "CLIENTE",
-            externalSystem: "APP",
-            externalRef: derivedUsername,
+            customer_identity: buildCustomerIdentityPayload(values),
+            account_kind: "CLIENTE",
+            external_system: "APP",
+            external_ref: derivedUsername,
             canal,
-            sucursalCodigo,
+            sucursal_codigo: sucursalCodigo,
             convenio,
           },
           {
@@ -508,13 +543,13 @@ export function Login({ onLogin }: LoginProps) {
         setOnboardingFlow({
           id: data.flow?.id ?? "",
           status: data.flow?.status,
-          expiresAt: data.flow?.expiresAt,
-          destinationMasked: data.challenge?.destinationMasked,
+          expiresAt: data.flow?.expires_at,
+          destinationMasked: data.challenge?.destination_masked,
           channel: data.challenge?.channel,
         });
         openVerifyOnboardingCard(
-          data.challenge?.destinationMasked
-            ? `Te enviamos un link de validación a ${data.challenge.destinationMasked}.`
+          data.challenge?.destination_masked
+            ? `Te enviamos un link de validación a ${data.challenge.destination_masked}.`
             : "Te enviamos un link de validación por email para completar el registro.",
         );
         helpers.resetForm();
@@ -549,13 +584,13 @@ export function Login({ onLogin }: LoginProps) {
       setIsCompletingGoogleOnboarding(true);
 
       try {
-        await axios.post<LoginResponse>(
+        const { data } = await axios.post<LoginResponse>(
           "/api/v2/auth/onboarding/google/complete",
           {
-            customerIdentity: buildCustomerIdentityPayload(values),
-            accountKind: "CLIENTE",
-            externalSystem: "APP",
-            externalRef: values.documentNumber.trim(),
+            customer_identity: buildCustomerIdentityPayload(values),
+            account_kind: "CLIENTE",
+            external_system: externalSystemHint || "APP",
+            external_ref: values.documentNumber.trim(),
           },
           {
             headers: {
@@ -566,6 +601,12 @@ export function Login({ onLogin }: LoginProps) {
 
         helpers.resetForm();
         setGoogleProfilePrefill(null);
+
+        if (data.redirect_to) {
+          window.location.assign(data.redirect_to);
+          return;
+        }
+
         window.location.assign(redirectTo);
         return;
       } catch (error) {
@@ -633,14 +674,14 @@ export function Login({ onLogin }: LoginProps) {
           expiresAt:
             challengeResponse.data.link?.expiresAt ?? data.link?.expiresAt,
           destinationMasked:
-            challengeResponse.data.challenge?.destinationMasked,
+            challengeResponse.data.delivery?.destinationMasked,
           channel: challengeResponse.data.challenge?.channel ?? "email",
         });
         identityLinkVerifyFormik.resetForm();
         setCardView("identity-link-verify");
         setInfoMessage(
-          challengeResponse.data.challenge?.destinationMasked
-            ? `Te enviamos un código a ${challengeResponse.data.challenge.destinationMasked}.`
+          challengeResponse.data.delivery?.destinationMasked
+            ? `Te enviamos un código a ${challengeResponse.data.delivery.destinationMasked}.`
             : "Te enviamos un código por email para confirmar la vinculación.",
         );
       } catch (error) {
@@ -718,7 +759,7 @@ export function Login({ onLogin }: LoginProps) {
       }
 
       openIdentityLinkCard(
-        "Completá tus datos para vincular tu cuenta y poder continuar.",
+        "No encontramos tu cuenta de socio. Completá estos datos para vincular tu cuenta existente, o para crear una nueva si es tu primera vez.",
       );
       applyIdentityLinkPrefill(identityStatus);
       return false;
@@ -1174,7 +1215,7 @@ export function Login({ onLogin }: LoginProps) {
       const { data } = await axios.post<LoginResponse>(
         "/api/v2/auth/onboarding/resend",
         {
-          flowId: onboardingFlow.id,
+          flow_id: onboardingFlow.id,
         },
         {
           headers: {
@@ -1188,16 +1229,16 @@ export function Login({ onLogin }: LoginProps) {
           ? {
               ...current,
               status: data.flow?.status ?? current.status,
-              expiresAt: data.flow?.expiresAt ?? current.expiresAt,
+              expiresAt: data.flow?.expires_at ?? current.expiresAt,
               destinationMasked:
-                data.challenge?.destinationMasked ?? current.destinationMasked,
+                data.challenge?.destination_masked ?? current.destinationMasked,
               channel: data.challenge?.channel ?? current.channel,
             }
           : current,
       );
       setInfoMessage(
-        data.challenge?.destinationMasked
-          ? `Te reenviamos el email de validación a ${data.challenge.destinationMasked}.`
+        data.challenge?.destination_masked
+          ? `Te reenviamos el email de validación a ${data.challenge.destination_masked}.`
           : "Te reenviamos el email de validación.",
       );
     } catch (error) {
@@ -1517,7 +1558,7 @@ export function Login({ onLogin }: LoginProps) {
       setInfoMessage("Estamos validando el enlace que llegó por email...");
 
       try {
-        await axios.post<LoginResponse>(
+        const { data } = await axios.post<LoginResponse>(
           "/api/v2/auth/onboarding/verify-token",
           {
             token: verificationTokenFromUrl,
@@ -1528,6 +1569,11 @@ export function Login({ onLogin }: LoginProps) {
             },
           },
         );
+
+        if (data.redirect_to) {
+          window.location.assign(data.redirect_to);
+          return;
+        }
 
         setCardView("login");
         setOnboardingFlow(null);
@@ -1954,7 +2000,7 @@ export function Login({ onLogin }: LoginProps) {
                     <span>
                       {formik.isSubmitting
                         ? "Ingresando..."
-                        : "Ingresar al sistema"}
+                        : "Ingresar al portal"}
                     </span>
                   </button>
                   <button
@@ -2745,16 +2791,33 @@ export function Login({ onLogin }: LoginProps) {
                     >
                       Teléfono
                     </label>
-                    <input
-                      id="identity-link-phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="+5491112345678"
-                      value={identityLinkFormik.values.phone ?? ""}
-                      onChange={identityLinkFormik.handleChange}
-                      onBlur={identityLinkFormik.handleBlur}
-                      className={`${styles.input} ${identityLinkPhoneHasError ? styles.inputError : ""}`}
-                    />
+                    <div
+                      className={`${styles.phoneInputRow} ${identityLinkPhoneHasError ? styles.inputError : ""}`}
+                    >
+                      <span className={styles.phonePrefix} aria-hidden="true">
+                        +549
+                      </span>
+                      <input
+                        id="identity-link-phone"
+                        name="phone"
+                        type="tel"
+                        inputMode="numeric"
+                        value={(identityLinkFormik.values.phone ?? "").replace(
+                          /^\+549/,
+                          "",
+                        )}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "");
+                          void identityLinkFormik.setFieldValue(
+                            "phone",
+                            `+549${digits}`,
+                          );
+                        }}
+                        onBlur={identityLinkFormik.handleBlur}
+                        autoComplete="tel"
+                        className={styles.phoneDigitsInput}
+                      />
+                    </div>
                     {identityLinkPhoneHasError ? (
                       <p className={styles.fieldError}>
                         {identityLinkFormik.errors.phone}
@@ -2775,6 +2838,24 @@ export function Login({ onLogin }: LoginProps) {
                     </span>
                   </button>
                 </form>
+                <div className={styles.legalLinks}>
+                  <button
+                    type="button"
+                    className={styles.inlineLink}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                    }}
+                    disabled={isAbandoningIdentityLink}
+                    onClick={() => {
+                      void handleAbandonIdentityLink();
+                    }}
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
                 {legalLinks}
               </motion.div>
             ) : null}
@@ -2887,7 +2968,28 @@ export function Login({ onLogin }: LoginProps) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -32 }}
                 transition={{ duration: 0.32, ease: "easeInOut" }}
+                style={
+                  externalSystemBranding?.accentColor
+                    ? ({
+                        "--brand-accent": externalSystemBranding.accentColor,
+                      } as React.CSSProperties)
+                    : undefined
+                }
               >
+                {externalSystemBranding ? (
+                  <div className={styles.feedbackInfo}>
+                    {externalSystemBranding.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={externalSystemBranding.logoUrl}
+                        alt={externalSystemBranding.displayName}
+                        style={{ height: 24, marginRight: 8 }}
+                      />
+                    ) : null}
+                    Continuando tu registro para{" "}
+                    <strong>{externalSystemBranding.displayName}</strong>
+                  </div>
+                ) : null}
                 <header className={styles.formHeader}>
                   <div className={styles.mfaHeaderRow}>
                     <h2 className={styles.formTitle}>
@@ -2906,8 +3008,7 @@ export function Login({ onLogin }: LoginProps) {
                     </button>
                   </div>
                   <p className={styles.formSubtitle}>
-                    Confirmá tus datos personales para vincular la identidad y
-                    confiar este dispositivo.
+                    Confirmá tus datos personales para vincular tu cuenta de Google.
                   </p>
                 </header>
                 {infoMessage ? (

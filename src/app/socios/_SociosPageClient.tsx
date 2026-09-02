@@ -52,9 +52,18 @@ export function SociosPageClient() {
   const { perfil, summary, isLoading } = usePortalPerfilContext();
   const { pushToast } = useGlobalToast();
 
-  // Sin convenio en la URL: recordar el convenio de alta guardado en cliente_identity_links
+  const principalPhone =
+    perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
+    perfil?.contactos?.find((c) => c.tipo === "TELEFONO") ??
+    null;
+  const phoneVerified = principalPhone?.verificado === true;
+
+  // Sin convenio en la URL: recordar el convenio de alta guardado en cliente_identity_links.
+  // Solo si el teléfono todavía NO está verificado — si ya lo está, la asociación al
+  // convenio quedó resuelta hace tiempo y no hay que volver a bloquear ni reintentar
+  // registrar contra el CRM en cada login futuro (era el bug: se repetía siempre).
   useEffect(() => {
-    if (convenio) return;
+    if (convenio || isLoading || phoneVerified) return;
     let cancelled = false;
 
     void fetch("/api/v2/auth/identity-link/status?accountKind=CLIENTE", {
@@ -76,7 +85,7 @@ export function SociosPageClient() {
     return () => {
       cancelled = true;
     };
-  }, [convenio]);
+  }, [convenio, isLoading, phoneVerified]);
 
   // Fuente de verdad: verificar contra el CRM en cualquier dispositivo
   useEffect(() => {
@@ -123,12 +132,6 @@ export function SociosPageClient() {
       }
     })();
   };
-
-  const principalPhone =
-    perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
-    perfil?.contactos?.find((c) => c.tipo === "TELEFONO") ??
-    null;
-  const phoneVerified = principalPhone?.verificado === true;
 
   const handleConvenioVerified = () => {
     setConvenioUnlocked(true);

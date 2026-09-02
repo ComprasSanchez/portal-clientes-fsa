@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
+import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HomeViews } from "@/components/organisms/home/HomeViews";
 import { CoraDashboardSkeleton } from "@/components/organisms/loading/ViewSkeletons";
@@ -97,7 +98,18 @@ export function CoraPageClient() {
   };
 
   return (
-    <div className="min-h-[var(--app-vh,100dvh)] bg-linear-to-br from-muted/30 to-white">
+    <div className="bg-linear-to-br from-muted/30 to-white">
+      {currentView !== "crear-pedido" ? (
+        <button
+          type="button"
+          onClick={() => handleNavigate("crear-pedido")}
+          className="fixed right-6 top-6 z-40 hidden items-center gap-2 rounded-2xl bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#7f56c7] lg:inline-flex"
+        >
+          <Plus size={18} />
+          Nuevo pedido
+        </button>
+      ) : null}
+
       <Sidebar
         currentView={currentView}
         onNavigate={handleNavigate}
@@ -107,7 +119,7 @@ export function CoraPageClient() {
         onMobileOpenChange={setIsMobileMenuOpen}
       />
 
-      <div className="flex min-h-[calc(var(--app-vh,100dvh)_-_8rem)] flex-col pt-16 pb-16 transition-all duration-300 lg:ml-64 lg:min-h-[var(--app-vh,100dvh)] lg:pt-0 lg:pb-0">
+      <div className="flex min-h-[calc(var(--app-vh,100dvh)_-_4rem)] flex-col pt-16 transition-all duration-300 lg:ml-64 lg:min-h-[var(--app-vh,100dvh)] lg:pt-0">
         <Suspense fallback={<HomeViewsFallback />}>
           <HomeViews
             currentView={currentView}

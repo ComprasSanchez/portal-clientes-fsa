@@ -2,18 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { buildForwardHeaders, getRequiredBaseUrl, jsonError, readJsonBody } from "@/app/api/_lib/proxy";
 
 type GoogleCompleteBody = {
-  customerIdentity?: {
-    tipoDocumento?: string;
-    nroDocumento?: string;
+  customer_identity?: {
+    tipo_documento?: string;
+    nro_documento?: string;
     nombre?: string;
     apellido?: string;
     sexo?: string;
-    fechaNacimiento?: string;
+    fecha_nacimiento?: string;
     telefono?: string;
   };
-  accountKind?: string;
-  externalSystem?: string;
-  externalRef?: string;
+  account_kind?: string;
+  external_system?: string;
+  external_ref?: string;
 };
 
 export async function POST(req: NextRequest) {
@@ -22,13 +22,13 @@ export async function POST(req: NextRequest) {
 
     if (
       !body ||
-      typeof body.customerIdentity?.tipoDocumento !== "string" ||
-      typeof body.customerIdentity?.nroDocumento !== "string" ||
-      typeof body.customerIdentity?.nombre !== "string" ||
-      typeof body.customerIdentity?.apellido !== "string" ||
-      typeof body.customerIdentity?.sexo !== "string" ||
-      typeof body.customerIdentity?.fechaNacimiento !== "string" ||
-      typeof body.customerIdentity?.telefono !== "string"
+      typeof body.customer_identity?.tipo_documento !== "string" ||
+      typeof body.customer_identity?.nro_documento !== "string" ||
+      typeof body.customer_identity?.nombre !== "string" ||
+      typeof body.customer_identity?.apellido !== "string" ||
+      typeof body.customer_identity?.sexo !== "string" ||
+      typeof body.customer_identity?.fecha_nacimiento !== "string" ||
+      typeof body.customer_identity?.telefono !== "string"
     ) {
       return jsonError("invalid_body", 400);
     }
