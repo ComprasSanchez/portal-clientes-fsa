@@ -22,6 +22,7 @@ const VALID_VIEWS: HomeView[] = [
   "pedido-completo",
   "preguntas-frecuentes",
   "crear-pedido",
+  "revision-pendiente",
 ];
 
 const HomeViewsFallback = () => {
@@ -35,11 +36,17 @@ const HomeViewsFallback = () => {
 export function CoraPageClient() {
   const [currentView, setCurrentView] = useState<HomeView>(() => {
     const params = new URLSearchParams(window.location.search);
+    if (params.get("portalToken")) {
+      return "revision-pendiente";
+    }
     const view = params.get("view");
     if (view && VALID_VIEWS.includes(view as HomeView)) {
       return view as HomeView;
     }
     return DEFAULT_VIEW;
+  });
+  const [portalToken, setPortalToken] = useState<string | null>(() => {
+    return new URLSearchParams(window.location.search).get("portalToken");
   });
 
   const router = useRouter();
@@ -49,6 +56,13 @@ export function CoraPageClient() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    const token = searchParams.get("portalToken");
+    setPortalToken(token);
+    if (token) {
+      setCurrentView("revision-pendiente");
+      return;
+    }
+
     const view = searchParams.get("view");
     if (view && VALID_VIEWS.includes(view as HomeView)) {
       setCurrentView(view as HomeView);
@@ -99,7 +113,7 @@ export function CoraPageClient() {
 
   return (
     <div className="bg-linear-to-br from-muted/30 to-white">
-      {currentView !== "crear-pedido" ? (
+      {currentView !== "crear-pedido" && currentView !== "revision-pendiente" ? (
         <button
           type="button"
           onClick={() => handleNavigate("crear-pedido")}
@@ -132,6 +146,7 @@ export function CoraPageClient() {
             phone={summary.phone}
             perfil={perfil}
             isProfileLoading={isLoading}
+            portalToken={portalToken}
           />
         </Suspense>
 

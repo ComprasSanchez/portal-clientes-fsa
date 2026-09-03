@@ -8,4 +8,5 @@ export type HomeView =
   | "pedido-actual"
   | "pedido-completo"
   | "preguntas-frecuentes"
-  | "crear-pedido";
+  | "crear-pedido"
+  | "revision-pendiente";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader } from "@/components/atoms/loader/loader";
 import Header from "@/components/molecules/header/header";
 import CartView, { CartViewItem } from "@/components/molecules/cart-view/cart-view";
@@ -216,6 +216,7 @@ export default function PortalCliente({ token }: PortalClienteProps) {
 
   const orderConfirmedStorageKey = `portal-order-confirmed:${token}`;
   const orderCodeStorageKey = `portal-order-code:${token}`;
+  const linkAbiertoSentRef = useRef(false);
 
   const cartItems = useMemo<CartViewItem[]>(
     () =>
@@ -313,6 +314,19 @@ export default function PortalCliente({ token }: PortalClienteProps) {
 
     const decoded = decodeJwt(token);
     setTokenData(decoded);
+
+    if (decoded && !linkAbiertoSentRef.current) {
+      linkAbiertoSentRef.current = true;
+      fetch(`/api/magic/portal-clientes/${token}/movimientos`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tipo: "LINK_ABIERTO" }),
+      }).catch(() => {
+        // Ignorado: no debe bloquear la carga del portal.
+      });
+    }
 
     if (window.localStorage.getItem(orderConfirmedStorageKey) === "true") {
       setOrderConfirmed(true);
