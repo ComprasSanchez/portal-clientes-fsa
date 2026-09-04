@@ -215,7 +215,7 @@ export function ProductSearchField({
             type="button"
             disabled={isSearching}
             onClick={handleSearchClick}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-[#d8ccef] px-4 py-3 text-sm font-semibold text-[#6c48b4] transition hover:bg-[#f7f2ff] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#8f63d9] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#7f56c7] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSearching ? (
               <Loader2 size={16} className="animate-spin" />

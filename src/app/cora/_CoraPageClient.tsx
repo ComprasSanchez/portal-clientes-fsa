@@ -133,7 +133,13 @@ export function CoraPageClient() {
         onMobileOpenChange={setIsMobileMenuOpen}
       />
 
-      <div className="flex min-h-[calc(var(--app-vh,100dvh)_-_4rem)] flex-col pt-16 transition-all duration-300 lg:ml-64 lg:min-h-[var(--app-vh,100dvh)] lg:pt-0">
+      <div
+        className={`flex flex-col transition-all duration-300 lg:ml-64 lg:min-h-[var(--app-vh,100dvh)] lg:pt-0 ${
+          currentView === "revision-pendiente"
+            ? "min-h-[var(--app-vh,100dvh)]"
+            : "min-h-[calc(var(--app-vh,100dvh)_-_4rem)] pt-16"
+        }`}
+      >
         <Suspense fallback={<HomeViewsFallback />}>
           <HomeViews
             currentView={currentView}
@@ -147,6 +153,7 @@ export function CoraPageClient() {
             perfil={perfil}
             isProfileLoading={isLoading}
             portalToken={portalToken}
+            onOpenSidebar={() => setIsMobileMenuOpen(true)}
           />
         </Suspense>
 

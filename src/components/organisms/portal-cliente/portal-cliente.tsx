@@ -25,6 +25,7 @@ import styles from "./portal-cliente.module.scss";
 
 type PortalClienteProps = {
   token: string;
+  onOpenSidebar?: () => void;
 };
 
 type DeliverySelection = {
@@ -62,6 +63,8 @@ type PortalProductItem = {
 };
 
 const PAGE_SIZE = 4;
+const SEARCH_AUTOCOMPLETE_MIN_CHARS = 3;
+const SEARCH_AUTOCOMPLETE_DEBOUNCE_MS = 400;
 const CONFIRM_STATES = new Set([
   "ACCEPTED",
   "CONFIRMED",
@@ -186,8 +189,14 @@ const getFriendlyPortalError = (
   };
 };
 
-export default function PortalCliente({ token }: PortalClienteProps) {
+export default function PortalCliente({
+  token,
+  onOpenSidebar,
+}: PortalClienteProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [productosSubpaso, setProductosSubpaso] = useState<
+    "revisar" | "agregar"
+  >("revisar");
   const [openCart, setOpenCart] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -200,6 +209,7 @@ export default function PortalCliente({ token }: PortalClienteProps) {
   const [hasSearched, setHasSearched] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
+  const searchRequestIdRef = useRef(0);
   const [domicilios, setDomicilios] = useState<Domicilio[]>([]);
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
   const [expediente, setExpediente] = useState<ItemRecurrente | null>(null);
@@ -460,11 +470,15 @@ export default function PortalCliente({ token }: PortalClienteProps) {
 
   const handleSearch = async (page: number = 1) => {
     if (!searchQuery.trim()) {
+      searchRequestIdRef.current += 1;
       setHasSearched(true);
       setSearchResults([]);
       setTotalResults(0);
       return;
     }
+
+    searchRequestIdRef.current += 1;
+    const requestId = searchRequestIdRef.current;
 
     try {
       setHasSearched(true);
@@ -480,6 +494,12 @@ export default function PortalCliente({ token }: PortalClienteProps) {
         `/api/magic/portal-clientes/${token}/productos?${params.toString()}`,
       );
       const data = await toJson<ApiProductsResponse>(response);
+
+      // Puede haber una búsqueda más nueva en vuelo (autocompletado) que ya
+      // arrancó después de esta — si es así, descartamos esta respuesta vieja
+      // en vez de pisar resultados más frescos.
+      if (searchRequestIdRef.current !== requestId) return;
+
       const list = Array.isArray(data.data)
         ? data.data
         : data.data
@@ -494,12 +514,40 @@ export default function PortalCliente({ token }: PortalClienteProps) {
       setTotalResults(data.meta?.total ?? list.length);
       setCurrentPage(page);
     } catch {
+      if (searchRequestIdRef.current !== requestId) return;
       setSearchResults([]);
       setTotalResults(0);
     } finally {
-      setSearchLoading(false);
+      if (searchRequestIdRef.current === requestId) {
+        setSearchLoading(false);
+      }
     }
   };
+
+  // Autocompletado: busca sola mientras el usuario tipea, con debounce y un
+  // mínimo de caracteres para no disparar una request por cada tecla.
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+
+    if (trimmed.length === 0) {
+      searchRequestIdRef.current += 1;
+      setHasSearched(false);
+      setSearchResults([]);
+      setTotalResults(0);
+      return;
+    }
+
+    if (trimmed.length < SEARCH_AUTOCOMPLETE_MIN_CHARS) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void handleSearch(1);
+    }, SEARCH_AUTOCOMPLETE_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -780,13 +828,28 @@ export default function PortalCliente({ token }: PortalClienteProps) {
     return <OrderProcessingLoader />;
   }
 
+  const handleBackStep = () => {
+    setStep((current) => {
+      if (current === 2) {
+        // Al volver de "Coordinamos tu entrega" a productos, reabrimos en
+        // "agregar" (buscador) en vez de reiniciar en "revisar" — es de
+        // donde el usuario probablemente estaba antes de avanzar.
+        setProductosSubpaso("agregar");
+        return 1;
+      }
+      if (current === 3) return 2;
+      return current;
+    });
+  };
+
   return (
     <div className={styles.root}>
       <Header
         showBackButton={step > 1 && !orderConfirmed}
-        onBack={() => setStep((current) => (current === 1 ? 1 : ((current - 1) as 1 | 2 | 3)))}
+        onBack={handleBackStep}
         onCartClick={() => setOpenCart(true)}
         cartCount={cartItems.length}
+        onMenuClick={onOpenSidebar}
       />
 
       <CartView
@@ -834,6 +897,9 @@ export default function PortalCliente({ token }: PortalClienteProps) {
             onContactAdvisor={() => {
               void handleContactAdvisor();
             }}
+            splitProductSteps={Boolean(onOpenSidebar)}
+            subpaso={productosSubpaso}
+            onSubpasoChange={setProductosSubpaso}
           />
         )}
 
@@ -851,6 +917,7 @@ export default function PortalCliente({ token }: PortalClienteProps) {
             onContactAdvisor={() => {
               void handleContactAdvisor();
             }}
+            onBack={onOpenSidebar ? handleBackStep : undefined}
           />
         )}
 
@@ -881,6 +948,7 @@ export default function PortalCliente({ token }: PortalClienteProps) {
               onContactAdvisor={() => {
                 void handleContactAdvisor();
               }}
+              onBack={onOpenSidebar && !orderConfirmed ? handleBackStep : undefined}
             />
           </>
         )}

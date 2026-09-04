@@ -1,5 +1,5 @@
 import React from "react";
-import { Search } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import PortalStepper from "../../stepper/stepper";
 import PedidoAccordion, {
   PedidoItem,
@@ -7,6 +7,8 @@ import PedidoAccordion, {
 import PortalInput from "../../portal-input/input";
 import PortalButton from "@/components/atoms/button/button";
 import type { Product } from "@/types/magic-link-type";
+
+type ProductosSubpaso = "revisar" | "agregar";
 
 type PedidosStep1Props = {
   items: PedidoItem[];
@@ -26,6 +28,18 @@ type PedidosStep1Props = {
   onNextPage: () => void;
   onContinue: () => void;
   onContactAdvisor: () => void;
+  /**
+   * Si está activo, separa "revisar tus productos habituales" y "agregar
+   * más productos" en dos pantallas en vez de mostrar todo junto.
+   */
+  splitProductSteps?: boolean;
+  /**
+   * Controlado por el padre (no estado interno): así, al volver desde
+   * "Coordinamos tu entrega", se puede reabrir directo en "agregar" en vez
+   * de reiniciar siempre en "revisar".
+   */
+  subpaso: ProductosSubpaso;
+  onSubpasoChange: (subpaso: ProductosSubpaso) => void;
 };
 
 const PedidosStep1 = ({
@@ -46,71 +60,87 @@ const PedidosStep1 = ({
   onNextPage,
   onContinue,
   onContactAdvisor,
+  splitProductSteps = false,
+  subpaso,
+  onSubpasoChange,
 }: PedidosStep1Props) => {
   const totalPages = Math.max(1, Math.ceil(totalResults / pageSize));
   const selectedCount = items.filter((item) => item.checked).length;
+  const showAccordion = !splitProductSteps || subpaso === "revisar";
+  const showSearch = !splitProductSteps || subpaso === "agregar";
 
   return (
     <div>
       <div className="w-full p-5">
-        <h4 className="flex items-center justify-center pt-6 text-[#8C6FAF] text-bold text-[22px]">
+        <h4 className="flex items-center justify-center gap-2 pt-6 text-[#8C6FAF] text-bold text-[22px]">
+          {splitProductSteps && subpaso === "agregar" && (
+            <button
+              type="button"
+              onClick={() => onSubpasoChange("revisar")}
+              aria-label="Volver"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#ddd6eb] bg-white text-[#8C6FAF] transition hover:border-[#c4b5e0] hover:bg-[#f7f2ff]"
+            >
+              <ArrowLeft size={20} />
+            </button>
+          )}
           Preparación de tu pedido
         </h4>
         <PortalStepper currentStep={1} />
-        <div className="flex flex-col">
-          <p className="flex text-center items-center justify-center text-[#8C6FAF] text-bold text-[18px]">
-            Estos son los productos que usás habitualmente:
-          </p>
-        </div>
 
-        <div className="mx-auto py-6">
-          {items.length > 0 ? (
-            <PedidoAccordion items={items} onToggle={onToggleItem} />
-          ) : (
-            <div className="rounded-3xl bg-white p-6 text-center text-[#8C6FAF] shadow-sm">
-              No hay productos seleccionados en este momento.
+        {showAccordion && (
+          <>
+            <div className="flex flex-col">
+              <p className="flex text-center items-center justify-center text-[#8C6FAF] text-bold text-[18px]">
+                Estos son los productos que usás habitualmente:
+              </p>
             </div>
-          )}
-        </div>
+
+            <div className="mx-auto py-6">
+              {items.length > 0 ? (
+                <PedidoAccordion items={items} onToggle={onToggleItem} />
+              ) : (
+                <div className="rounded-3xl bg-white p-6 text-center text-[#8C6FAF] shadow-sm">
+                  No hay productos seleccionados en este momento.
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
         <div className="flex flex-col gap-5">
-          <PortalInput
-            label="Buscar producto"
-            variant="add-product"
-            value={searchQuery}
-            onChange={onSearchChange}
-            onSearchClick={onSearch}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                onSearch();
-              }
-            }}
-          />
+          {showSearch && splitProductSteps && (
+            <p className="text-center text-[#8C6FAF] text-bold text-[18px]">
+              ¿Querés agregar más productos a tu pedido? Buscalos acá:
+            </p>
+          )}
 
-          <p
-            style={{
-              color: "#8C6FAF",
-              fontSize: "0.95rem",
-              fontWeight: 500,
-              margin: "14px 0 20px",
-            }}
-          >
-            Buscá y agregá nuevos productos a tu carrito
-          </p>
-
-          {searchLoading && (
+          {showSearch && (
+            <PortalInput
+              label="Buscá y agregá nuevos productos a tu carrito"
+              variant="add-product"
+              value={searchQuery}
+              onChange={onSearchChange}
+              onSearchClick={onSearch}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  onSearch();
+                }
+              }}
+            />
+          )}
+          {showSearch && searchLoading && (
             <p className="text-center text-sm text-[#8C6FAF]">
               Buscando productos...
             </p>
           )}
 
-          {hasSearched && !searchLoading && searchResults.length === 0 && (
+          {showSearch && hasSearched && !searchLoading && searchResults.length === 0 && (
             <div className="rounded-3xl bg-white p-5 text-center text-[#8C6FAF] shadow-sm">
               No encontramos productos para esa búsqueda.
             </div>
           )}
 
-          {searchResults.length > 0 && (
+          {showSearch && searchResults.length > 0 && (
             <div className="grid gap-4 sm:grid-cols-2">
               {searchResults.map((product) => {
                 const selected = isProductSelected(product);
@@ -175,10 +205,20 @@ const PedidosStep1 = ({
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <PortalButton
               variant="primary"
-              onClick={onContinue}
-              disabled={selectedCount === 0}
+              onClick={
+                splitProductSteps && subpaso === "revisar"
+                  ? () => onSubpasoChange("agregar")
+                  : onContinue
+              }
+              disabled={
+                splitProductSteps && subpaso === "revisar"
+                  ? false
+                  : selectedCount === 0
+              }
             >
-              Confirmar pedido
+              {splitProductSteps && subpaso === "revisar"
+                ? "Continuar"
+                : "Confirmar pedido"}
             </PortalButton>
 
             <PortalButton variant="secondary" withChatIcon onClick={onContactAdvisor}>

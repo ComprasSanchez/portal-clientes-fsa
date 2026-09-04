@@ -177,6 +177,7 @@ interface HomeViewsProps {
   perfil: PortalPerfilResponse | null;
   isProfileLoading?: boolean;
   portalToken?: string | null;
+  onOpenSidebar?: () => void;
 }
 
 const viewContent: Record<
@@ -245,6 +246,7 @@ export function HomeViews({
   perfil,
   isProfileLoading = false,
   portalToken,
+  onOpenSidebar,
 }: HomeViewsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -385,8 +387,8 @@ export function HomeViews({
     }
 
     return (
-      <main className={styles.container}>
-        <PortalCliente token={portalToken} />
+      <main>
+        <PortalCliente token={portalToken} onOpenSidebar={onOpenSidebar} />
       </main>
     );
   }

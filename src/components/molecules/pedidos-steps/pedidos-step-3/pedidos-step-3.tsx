@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Calendar, CheckCircle2, Clock, Package, Truck } from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle2, Clock, Package, Truck } from "lucide-react";
 import PortalStepper from "../../stepper/stepper";
 import PortalButton from "@/components/atoms/button/button";
 import ConfirmProductsAccordion, {
@@ -27,6 +27,7 @@ type PedidosStep3Props = {
   cicloId?: string;
   onConfirm: () => void;
   onContactAdvisor: () => void;
+  onBack?: () => void;
 };
 
 const PedidosStep3 = ({
@@ -39,6 +40,7 @@ const PedidosStep3 = ({
   cicloId,
   onConfirm,
   onContactAdvisor,
+  onBack,
 }: PedidosStep3Props) => {
   const [parentOrders, setParentOrders] = useState<ParentOrder[]>([]);
   const [trackingStatus, setTrackingStatus] =
@@ -211,7 +213,17 @@ const PedidosStep3 = ({
   return (
     <div>
       <div className="w-full p-5">
-        <h4 className="flex items-center justify-center pt-6 text-[#8C6FAF] text-bold text-[22px]">
+        <h4 className="flex items-center justify-center gap-2 pt-6 text-[#8C6FAF] text-bold text-[22px]">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="Volver"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#ddd6eb] bg-white text-[#8C6FAF] transition hover:border-[#c4b5e0] hover:bg-[#f7f2ff]"
+            >
+              <ArrowLeft size={20} />
+            </button>
+          )}
           Ya casi terminamos
         </h4>
         <PortalStepper currentStep={3} />
