@@ -49,6 +49,7 @@ import { HomeView } from "@/types/home";
 import styles from "./HomeViews.module.scss";
 import { ExpedientesManagementView } from "@/components/organisms/expedientes-management/ExpedientesManagementView";
 import { CrearPedidoView } from "@/components/organisms/expedientes-management/crear-pedido/CrearPedidoView";
+import PortalCliente from "@/components/organisms/portal-cliente/portal-cliente";
 import { FaqView } from "../faq-view/FaqView";
 import { BannerCoraCarousel } from "@/components/molecules/home/BannerCoraCarousel";
 import { BannerCoraMobileCarousel } from "@/components/molecules/home/BannerCoraMobileCarousel";
@@ -175,6 +176,8 @@ interface HomeViewsProps {
   phone: string | null;
   perfil: PortalPerfilResponse | null;
   isProfileLoading?: boolean;
+  portalToken?: string | null;
+  onOpenSidebar?: () => void;
 }
 
 const viewContent: Record<
@@ -225,6 +228,10 @@ const viewContent: Record<
     title: "Nuevo pedido",
     description: "Elegí los productos, la fecha y cómo querés recibirlo.",
   },
+  "revision-pendiente": {
+    title: "Revisá tu pedido",
+    description: "Confirmá los productos y la entrega de tu próximo pedido.",
+  },
 };
 
 export function HomeViews({
@@ -238,6 +245,8 @@ export function HomeViews({
   phone,
   perfil,
   isProfileLoading = false,
+  portalToken,
+  onOpenSidebar,
 }: HomeViewsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -357,6 +366,32 @@ export function HomeViews({
   )
     ? "Todavía estamos completando la información de tus pedidos, pero podés seguir viendo los datos disponibles."
     : null;
+
+  if (currentView === "revision-pendiente") {
+    if (!portalToken) {
+      return (
+        <main className={styles.container}>
+          <section className={styles.activeViewCard}>
+            <h1 className={styles.activeViewTitle}>{active.title}</h1>
+            <p className={styles.activeViewDescription}>{active.description}</p>
+
+            <button
+              onClick={() => onNavigate("dashboard")}
+              className={styles.primaryButton}
+            >
+              Volver a Inicio
+            </button>
+          </section>
+        </main>
+      );
+    }
+
+    return (
+      <main>
+        <PortalCliente token={portalToken} onOpenSidebar={onOpenSidebar} />
+      </main>
+    );
+  }
 
   if (currentView === "mi-cuenta") {
     return (

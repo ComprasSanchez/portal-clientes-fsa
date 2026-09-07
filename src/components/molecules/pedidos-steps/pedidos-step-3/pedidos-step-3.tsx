@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Calendar, CheckCircle2, Clock, Package, Truck } from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle2, Clock, Package, Truck } from "lucide-react";
 import PortalStepper from "../../stepper/stepper";
 import PortalButton from "@/components/atoms/button/button";
 import ConfirmProductsAccordion, {
@@ -27,6 +27,7 @@ type PedidosStep3Props = {
   cicloId?: string;
   onConfirm: () => void;
   onContactAdvisor: () => void;
+  onBack?: () => void;
 };
 
 const PedidosStep3 = ({
@@ -39,6 +40,7 @@ const PedidosStep3 = ({
   cicloId,
   onConfirm,
   onContactAdvisor,
+  onBack,
 }: PedidosStep3Props) => {
   const [parentOrders, setParentOrders] = useState<ParentOrder[]>([]);
   const [trackingStatus, setTrackingStatus] =
@@ -90,6 +92,15 @@ const PedidosStep3 = ({
     [orderNumber, parentOrders],
   );
 
+  // "Listo para entrega o retiro" es ambiguo — una vez que sabemos qué
+  // eligió el cliente, mostramos el texto específico que le corresponde.
+  const logisticaLabel =
+    trackingStatus === "listo_para_envio"
+      ? entrega?.tipo === "sucursal"
+        ? "Listo para retirar"
+        : "Listo para envío"
+      : TRACKING_LABELS[trackingStatus];
+
   if (orderConfirmed) {
     return (
       <div className="w-full p-5">
@@ -125,7 +136,7 @@ const PedidosStep3 = ({
                 </span>
               </div>
               <p className="text-sm font-semibold text-[#8C6FAF]">
-                {isTrackingLoading ? "Consultando estado..." : TRACKING_LABELS[trackingStatus]}
+                {isTrackingLoading ? "Consultando estado..." : logisticaLabel}
               </p>
             </div>
 
@@ -211,7 +222,17 @@ const PedidosStep3 = ({
   return (
     <div>
       <div className="w-full p-5">
-        <h4 className="flex items-center justify-center pt-6 text-[#8C6FAF] text-bold text-[22px]">
+        <h4 className="flex items-center justify-center gap-2 pt-6 text-[#8C6FAF] text-bold text-[22px]">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="Volver"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#ddd6eb] bg-white text-[#8C6FAF] transition hover:border-[#c4b5e0] hover:bg-[#f7f2ff]"
+            >
+              <ArrowLeft size={20} />
+            </button>
+          )}
           Ya casi terminamos
         </h4>
         <PortalStepper currentStep={3} />

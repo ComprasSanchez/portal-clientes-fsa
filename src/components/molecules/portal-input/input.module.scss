@@ -84,16 +84,18 @@ $focus-ring: rgba(140, 111, 175, 0.2);
   width: 36px;
   height: 36px;
   border: 0;
-  background: transparent;
-  color: rgba(140, 111, 175, 0.7);
+  border-radius: 50%;
+  background: $purple;
+  color: $white;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: color 0.18s ease;
+  flex-shrink: 0;
+  transition: filter 0.18s ease;
 
   &:hover:not(:disabled) {
-    color: $purple;
+    filter: brightness(0.92);
   }
 
   &:disabled {

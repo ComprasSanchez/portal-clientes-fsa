@@ -59,24 +59,10 @@ $bg-white: #ffffff;
 
 .row {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 14px;
   padding: 10px 0;
-}
-
-.iconBox {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: $purple-soft;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.productIcon {
-  color: $purple;
 }
 
 .info {
@@ -117,8 +103,6 @@ $bg-white: #ffffff;
   :global(button[data-slot="switch"]) {
     background-color: rgba(140, 111, 175, 0.35);
     border: 1px solid rgba(140, 111, 175, 0.2);
-    width: 56px;
-    height: 32px;
   }
 
   :global(button[data-state="checked"][data-slot="switch"]) {
@@ -146,13 +130,8 @@ $bg-white: #ffffff;
   }
 
   .row {
-    grid-template-columns: 52px minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 16px;
-  }
-
-  .iconBox {
-    width: 52px;
-    height: 52px;
   }
 
   .name {

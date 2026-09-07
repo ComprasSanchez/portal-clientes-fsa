@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ShoppingCart, Package } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -66,10 +66,6 @@ export default function PedidoAccordion({
             {localItems.map((item, index) => (
               <React.Fragment key={item.id}>
                 <div className={styles.row}>
-                  <div className={styles.iconBox}>
-                    <Package size={20} className={styles.productIcon} />
-                  </div>
-
                   <div className={styles.info}>
                     <p className={styles.name}>{item.nombre}</p>
                     <p className={styles.brand}>{item.laboratorio}</p>

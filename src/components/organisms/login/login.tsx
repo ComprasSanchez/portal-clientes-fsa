@@ -54,18 +54,80 @@ const SOCIOS_BENEFITS = [
 const SIGNUP_CANAL_STORAGE_KEY = "fsa_signup_canal";
 const SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY = "fsa_signup_sucursal_codigo";
 const SIGNUP_CONVENIO_STORAGE_KEY = "fsa_signup_convenio";
+// El registro por email sale de la app (mail de verificación) y vuelve sin
+// query params propios — persistimos el redirectTo acá para que sobreviva
+// ese viaje y el usuario termine donde lo mandó el link original (ej. CORA)
+// en vez de un login pelado. Mismo patrón que canal/convenio arriba.
+const SIGNUP_REDIRECT_TO_STORAGE_KEY = "fsa_signup_redirect_to";
+
+// TTL para todo lo que guardamos acá (canal/convenio/sucursalCodigo/
+// redirectTo): sin esto, un hint capturado de un link viejo queda pegado en
+// el navegador indefinidamente y se termina aplicando a un registro no
+// relacionado meses después (ej. alguien que ya usó un link de convenio hace
+// tiempo y ahora se crea una cuenta nueva sin venir de ningún link).
+const SIGNUP_HINT_TTL_MS = 24 * 60 * 60 * 1000;
+
+type StoredHint = { value: string; expiresAt: number };
+
+const setStoredHint = (key: string, value: string) => {
+  try {
+    const payload: StoredHint = {
+      value,
+      expiresAt: Date.now() + SIGNUP_HINT_TTL_MS,
+    };
+    localStorage.setItem(key, JSON.stringify(payload));
+  } catch {
+    // localStorage puede no estar disponible (modo privado, etc.)
+  }
+};
+
+const removeStoredHint = (key: string) => {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // localStorage puede no estar disponible (modo privado, etc.)
+  }
+};
+
+const getStoredHint = (key: string): string | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as Partial<StoredHint>;
+    if (
+      typeof parsed?.value !== "string" ||
+      typeof parsed?.expiresAt !== "number" ||
+      Date.now() > parsed.expiresAt
+    ) {
+      localStorage.removeItem(key);
+      return null;
+    }
+
+    return parsed.value;
+  } catch {
+    // Valor viejo guardado como string plano (antes de este TTL) u otro
+    // formato inesperado — lo tratamos como vencido y lo limpiamos.
+    removeStoredHint(key);
+    return null;
+  }
+};
 
 const readStoredSignupChannel = () => {
-  try {
-    return {
-      canal: localStorage.getItem(SIGNUP_CANAL_STORAGE_KEY) || undefined,
-      sucursalCodigo:
-        localStorage.getItem(SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY) || undefined,
-      convenio: localStorage.getItem(SIGNUP_CONVENIO_STORAGE_KEY) || undefined,
-    };
-  } catch {
-    return { canal: undefined, sucursalCodigo: undefined, convenio: undefined };
-  }
+  return {
+    canal: getStoredHint(SIGNUP_CANAL_STORAGE_KEY) || undefined,
+    sucursalCodigo:
+      getStoredHint(SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY) || undefined,
+    convenio: getStoredHint(SIGNUP_CONVENIO_STORAGE_KEY) || undefined,
+  };
+};
+
+const readStoredRedirectTo = (): string | null =>
+  getStoredHint(SIGNUP_REDIRECT_TO_STORAGE_KEY);
+
+const clearStoredRedirectTo = () => {
+  removeStoredHint(SIGNUP_REDIRECT_TO_STORAGE_KEY);
 };
 
 const customerIdentityShape = {
@@ -349,7 +411,10 @@ export function Login({ onLogin }: LoginProps) {
   const [hasOpenedIdentityLinkFromHint, setHasOpenedIdentityLinkFromHint] =
     useState(false);
 
-  const redirectTo = getSafeRedirectPath(searchParams.get("redirectTo"));
+  const redirectToParam = searchParams.get("redirectTo");
+  const redirectTo = getSafeRedirectPath(
+    redirectToParam || readStoredRedirectTo(),
+  );
   const identityLinkHint = searchParams.get("identityLink");
   const onboardingHint = searchParams.get("onboarding");
   const onboardingErrorCode = searchParams.get("onboardingError");
@@ -607,6 +672,7 @@ export function Login({ onLogin }: LoginProps) {
           return;
         }
 
+        clearStoredRedirectTo();
         window.location.assign(redirectTo);
         return;
       } catch (error) {
@@ -753,6 +819,7 @@ export function Login({ onLogin }: LoginProps) {
 
       if (identityStatus.link?.linked) {
         onLogin?.(username, password);
+        clearStoredRedirectTo();
         router.push(redirectTo);
         router.refresh();
         return true;
@@ -859,6 +926,7 @@ export function Login({ onLogin }: LoginProps) {
         setIdentityLinkFlow(null);
         setCardView("login");
         onLogin?.(formik.values.username, formik.values.password);
+        clearStoredRedirectTo();
         router.push(redirectTo);
         router.refresh();
       } catch (error) {
@@ -1338,6 +1406,7 @@ export function Login({ onLogin }: LoginProps) {
       done = true;
       stopAll();
       setIsGooglePopupLoading(false);
+      clearStoredRedirectTo();
       window.location.assign(redirectTo);
     };
 
@@ -1423,34 +1492,41 @@ export function Login({ onLogin }: LoginProps) {
       ? "CONVENIO"
       : canalHint?.trim().toUpperCase() || null;
 
-    try {
-      if (canalValue) {
-        localStorage.setItem(SIGNUP_CANAL_STORAGE_KEY, canalValue);
-      } else {
-        localStorage.removeItem(SIGNUP_CANAL_STORAGE_KEY);
-      }
+    if (canalValue) {
+      setStoredHint(SIGNUP_CANAL_STORAGE_KEY, canalValue);
+    } else {
+      removeStoredHint(SIGNUP_CANAL_STORAGE_KEY);
+    }
 
-      if (sucursalCodigoHint?.trim()) {
-        localStorage.setItem(
-          SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY,
-          sucursalCodigoHint.trim(),
-        );
-      } else {
-        localStorage.removeItem(SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY);
-      }
+    if (sucursalCodigoHint?.trim()) {
+      setStoredHint(
+        SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY,
+        sucursalCodigoHint.trim(),
+      );
+    } else {
+      removeStoredHint(SIGNUP_SUCURSAL_CODIGO_STORAGE_KEY);
+    }
 
-      if (effectiveConvenioHint) {
-        localStorage.setItem(
-          SIGNUP_CONVENIO_STORAGE_KEY,
-          effectiveConvenioHint.toUpperCase(),
-        );
-      } else {
-        localStorage.removeItem(SIGNUP_CONVENIO_STORAGE_KEY);
-      }
-    } catch {
-      // localStorage puede no estar disponible (modo privado, etc.)
+    if (effectiveConvenioHint) {
+      setStoredHint(
+        SIGNUP_CONVENIO_STORAGE_KEY,
+        effectiveConvenioHint.toUpperCase(),
+      );
+    } else {
+      removeStoredHint(SIGNUP_CONVENIO_STORAGE_KEY);
     }
   }, [convenioHint, canalHint, sucursalCodigoHint]);
+
+  useEffect(() => {
+    // Igual que canal/convenio arriba: si llegó un redirectTo válido por URL,
+    // lo guardamos para que sobreviva el viaje por el mail de verificación
+    // (que vuelve sin este query param) y el login manual posterior lo pueda
+    // seguir usando.
+    if (!redirectToParam || !redirectToParam.startsWith("/") || redirectToParam.startsWith("//")) {
+      return;
+    }
+    setStoredHint(SIGNUP_REDIRECT_TO_STORAGE_KEY, redirectToParam);
+  }, [redirectToParam]);
 
   useEffect(() => {
     if (cardView !== "mfa" || mfaResendCooldownSeconds <= 0) {
@@ -1480,6 +1556,7 @@ export function Login({ onLogin }: LoginProps) {
         const identityStatus = await getIdentityLinkStatus();
 
         if (identityStatus.link?.linked) {
+          clearStoredRedirectTo();
           router.replace(redirectTo);
           return;
         }

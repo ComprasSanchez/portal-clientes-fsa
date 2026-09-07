@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { ArrowLeft } from "lucide-react";
 import PortalStepper from "../../stepper/stepper";
 import PortalButton from "@/components/atoms/button/button";
 import AddressSelector, {
@@ -30,6 +31,7 @@ type PedidosStep2Props = {
   }) => void;
   onSaveOccasionalAddress: (address: OccasionalAddress) => Promise<void>;
   onContactAdvisor: () => void;
+  onBack?: () => void;
 };
 
 type AddressFormValues = OccasionalAddress & {
@@ -88,6 +90,7 @@ const PedidosStep2 = ({
   onConfirmSelection,
   onSaveOccasionalAddress,
   onContactAdvisor,
+  onBack,
 }: PedidosStep2Props) => {
   const [deliveryMethod, setDeliveryMethod] = useState<"domicilio" | "sucursal">(
     selectedMethod,
@@ -249,7 +252,17 @@ const PedidosStep2 = ({
   return (
     <div>
       <div className="w-full p-5">
-        <h4 className="flex items-center justify-center pt-6 text-[#8C6FAF] text-bold text-[22px]">
+        <h4 className="flex items-center justify-center gap-2 pt-6 text-[#8C6FAF] text-bold text-[22px]">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="Volver"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#ddd6eb] bg-white text-[#8C6FAF] transition hover:border-[#c4b5e0] hover:bg-[#f7f2ff]"
+            >
+              <ArrowLeft size={20} />
+            </button>
+          )}
           Coordinamos tu entrega
         </h4>
         <PortalStepper currentStep={2} />
