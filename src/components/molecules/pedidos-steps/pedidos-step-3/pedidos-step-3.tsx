@@ -92,6 +92,15 @@ const PedidosStep3 = ({
     [orderNumber, parentOrders],
   );
 
+  // "Listo para entrega o retiro" es ambiguo — una vez que sabemos qué
+  // eligió el cliente, mostramos el texto específico que le corresponde.
+  const logisticaLabel =
+    trackingStatus === "listo_para_envio"
+      ? entrega?.tipo === "sucursal"
+        ? "Listo para retirar"
+        : "Listo para envío"
+      : TRACKING_LABELS[trackingStatus];
+
   if (orderConfirmed) {
     return (
       <div className="w-full p-5">
@@ -127,7 +136,7 @@ const PedidosStep3 = ({
                 </span>
               </div>
               <p className="text-sm font-semibold text-[#8C6FAF]">
-                {isTrackingLoading ? "Consultando estado..." : TRACKING_LABELS[trackingStatus]}
+                {isTrackingLoading ? "Consultando estado..." : logisticaLabel}
               </p>
             </div>
 

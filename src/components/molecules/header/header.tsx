@@ -30,10 +30,12 @@ export default function PortalHeader({
             // Cuando este header vive embebido en /cora, el acceso al
             // sidebar (☰) tiene prioridad siempre — nunca lo tapa la flecha
             // de "volver" del wizard, que en ese caso se muestra junto al
-            // título de cada paso en el cuerpo en su lugar.
+            // título de cada paso en el cuerpo en su lugar. En desktop el
+            // sidebar ya queda fijo/visible (mismo breakpoint que Sidebar.tsx),
+            // así que ahí el botón no hace falta.
             <button
               type="button"
-              className={styles.iconButton}
+              className={`${styles.iconButton} ${styles.menuButtonMobileOnly}`}
               onClick={onMenuClick}
               aria-label="Abrir menú"
             >

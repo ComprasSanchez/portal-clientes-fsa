@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Check,
   ChevronLeft,
@@ -18,6 +18,8 @@ import type {
 import { Label } from "@heroui/react";
 
 const PAGE_SIZE = 5;
+const SEARCH_AUTOCOMPLETE_MIN_CHARS = 3;
+const SEARCH_AUTOCOMPLETE_DEBOUNCE_MS = 400;
 
 const normalizeProductResult = (
   value: Record<string, unknown>,
@@ -68,6 +70,7 @@ export function ProductSearchField({
 
     try {
       setIsSearching(true);
+      setHasSearched(true);
       const params = new URLSearchParams({
         busqueda: term,
         paginanro: String(targetPage),
@@ -159,6 +162,35 @@ export function ProductSearchField({
   const handleSearchClick = () => {
     void runSearch(productQuery.trim(), 1);
   };
+
+  // Autocompletado: busca sola mientras se tipea, con debounce y un mínimo
+  // de caracteres para no disparar una request por cada tecla.
+  useEffect(() => {
+    const trimmed = productQuery.trim();
+
+    if (trimmed.length === 0) {
+      requestIdRef.current += 1;
+      setIsSearching(false);
+      setHasSearched(false);
+      setProductResults([]);
+      setCommittedQuery("");
+      setPage(1);
+      setTotalPages(null);
+      setTotalCount(null);
+      return;
+    }
+
+    if (trimmed.length < SEARCH_AUTOCOMPLETE_MIN_CHARS) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void runSearch(trimmed, 1);
+    }, SEARCH_AUTOCOMPLETE_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productQuery]);
 
   const handleClearSearch = () => {
     requestIdRef.current += 1;

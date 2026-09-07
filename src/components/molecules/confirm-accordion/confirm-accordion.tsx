@@ -49,7 +49,7 @@ export default function ConfirmProductsAccordion({
                 <div className={styles.row}>
                   <div className={styles.left}>
                     <div className={styles.productLine}>
-                      <ShoppingCart size={14} className={styles.smallIcon} />
+                      {/* <ShoppingCart size={14} className={styles.smallIcon} /> */}
                       <p className={styles.name}>{item.nombre}</p>
                     </div>
 
