@@ -68,6 +68,19 @@
   }
 }
 
+// Solo para el botón de abrir el sidebar de /cora: en desktop (mismo
+// breakpoint que Sidebar.tsx, lg = 1024px) el sidebar ya queda fijo/visible,
+// así que el botón sobra ahí. Se define acá (no con la utilidad `lg:hidden`
+// de Tailwind) para no depender del orden de carga entre Tailwind y este
+// módulo — como los dos reglas tienen la misma especificidad, si el CSS de
+// este módulo se inyecta después, terminaba ganándole el `display: flex`
+// de .iconButton a `lg:hidden` en la práctica.
+.menuButtonMobileOnly {
+  @media (min-width: 1024px) {
+    display: none;
+  }
+}
+
 .badge {
   position: absolute;
   top: -4px;

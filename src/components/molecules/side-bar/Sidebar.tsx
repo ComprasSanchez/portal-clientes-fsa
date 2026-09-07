@@ -62,6 +62,10 @@ export function Sidebar({
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const { perfil } = usePortalPerfilContext();
+  // En "revision-pendiente" el contenido ya trae su propio header (con
+  // carrito) — evitamos duplicar la barra superior móvil, pero el drawer
+  // sigue abriéndose igual desde el botón de menú de ese header.
+  const showMobileTopBar = currentView !== "revision-pendiente";
 
   const handleNavigate = (view: HomeView | "socios") => {
     if (view === "socios") {
@@ -76,33 +80,35 @@ export function Sidebar({
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-border bg-white px-4 lg:hidden">
-        <button
-          onClick={() => onMobileOpenChange(!isMobileOpen)}
-          className="rounded-lg p-2 text-[#6f7085] transition-colors hover:bg-[#f2f0f7]"
-          aria-label="Abrir menu lateral"
-        >
-          {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-        <div className="flex items-center gap-3" onClick={() => router.push("/cora")}>
-          <Image
-            src={coraWordmark}
-            alt="CORA"
-            width={70}
-            height={20}
-            className="h-5 w-auto"
-            priority
-          />
-          <Image
-            src={coraIcon}
-            alt="CORA icono"
-            width={36}
-            height={36}
-            className="h-9 w-9 rounded-xl"
-            priority
-          />
+      {showMobileTopBar && (
+        <div className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-border bg-white px-4 lg:hidden">
+          <button
+            onClick={() => onMobileOpenChange(!isMobileOpen)}
+            className="rounded-lg p-2 text-[#6f7085] transition-colors hover:bg-[#f2f0f7]"
+            aria-label="Abrir menu lateral"
+          >
+            {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+          <div className="flex items-center gap-3" onClick={() => router.push("/cora")}>
+            <Image
+              src={coraWordmark}
+              alt="CORA"
+              width={70}
+              height={20}
+              className="h-5 w-auto"
+              priority
+            />
+            <Image
+              src={coraIcon}
+              alt="CORA icono"
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-xl"
+              priority
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {isMobileOpen && (
         <div
@@ -112,10 +118,11 @@ export function Sidebar({
       )}
 
       <aside
-        className={`fixed left-0 z-40 h-[calc(100vh-4rem)] border-r border-[#e6e1ef] bg-[#f8f7fc] transition-all duration-300
+        className={`fixed left-0 z-40 border-r border-[#e6e1ef] bg-[#f8f7fc] transition-all duration-300
           ${isCollapsed ? "w-20" : "w-64"}
           lg:top-0 lg:h-screen
-          ${isMobileOpen ? "top-16" : "top-16 -translate-x-full lg:translate-x-0"}`}
+          ${showMobileTopBar ? "top-16 h-[calc(100vh-4rem)]" : "top-0 h-screen"}
+          ${isMobileOpen ? "" : "-translate-x-full lg:translate-x-0"}`}
       >
         <div className="flex h-full flex-col">
           <div className="hidden border-b border-[#e6e1ef] p-4 lg:block">

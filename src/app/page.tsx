@@ -70,9 +70,15 @@ export default async function Home({ searchParams }: HomePageProps) {
     !hasPendingGoogleOnboarding &&
     !hasVerificationToken
   ) {
-    const target = convenioParam
-      ? `/socios?convenio=${encodeURIComponent(convenioParam)}${canalQuery}`
-      : "/socios";
+    const safeRedirectTo =
+      rawRedirectTo?.startsWith("/") && !rawRedirectTo.startsWith("//")
+        ? rawRedirectTo
+        : null;
+    const target =
+      safeRedirectTo ??
+      (convenioParam
+        ? `/socios?convenio=${encodeURIComponent(convenioParam)}${canalQuery}`
+        : "/socios");
     redirect(target);
   }
 

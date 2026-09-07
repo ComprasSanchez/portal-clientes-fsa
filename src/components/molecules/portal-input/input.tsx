@@ -33,7 +33,7 @@ export default function PortalInput({
 
   return (
     <div className={styles.wrapper}>
-      {label ? <label className={styles.label}>{label}</label> : null}
+      {/* {label ? <label className={styles.label}>{label}</label> : null} */}
 
       <div className={styles.inputBox}>
         <div className={styles.left}>
@@ -58,7 +58,7 @@ export default function PortalInput({
           aria-label="Buscar"
           disabled={disabled}
         >
-          <Search size={22} />
+          <Search size={18} />
         </button>
       </div>
     </div>
