@@ -41,6 +41,22 @@
   letter-spacing: 0.02em;
 }
 
+.logoButton {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
 .iconButton {
   position: relative;
   width: 40px;

@@ -23,7 +23,10 @@ type ToastInput = {
 
 type ToastRecord = ToastInput & {
   id: string;
+  exiting?: boolean;
 };
+
+const EXIT_TRANSITION_MS = 300;
 
 type GlobalToastContextValue = {
   pushToast: (toast: ToastInput) => void;
@@ -58,7 +61,11 @@ const GlobalToastViewport = ({
         return (
           <section
             key={toast.id}
-            className={`pointer-events-auto rounded-2xl border px-4 py-3 shadow-[0_16px_40px_rgba(26,31,44,0.12)] backdrop-blur-sm ${variantClasses[variant]}`}
+            className={`pointer-events-auto rounded-2xl border px-4 py-3 shadow-[0_16px_40px_rgba(26,31,44,0.12)] backdrop-blur-sm transition-all duration-300 ease-in ${
+              toast.exiting
+                ? "translate-x-2 opacity-0"
+                : "translate-x-0 opacity-100"
+            } ${variantClasses[variant]}`}
             role="status"
             aria-live="polite"
           >
@@ -98,7 +105,17 @@ export function GlobalToastProvider({ children }: { children: ReactNode }) {
       timersRef.current.delete(id);
     }
 
-    setToasts((current) => current.filter((toast) => toast.id !== id));
+    // Marca "saliendo" primero para que la transición de opacidad/traslado
+    // se vea, y recién después de esa animación lo saca del array.
+    setToasts((current) =>
+      current.map((toast) =>
+        toast.id === id ? { ...toast, exiting: true } : toast,
+      ),
+    );
+
+    setTimeout(() => {
+      setToasts((current) => current.filter((toast) => toast.id !== id));
+    }, EXIT_TRANSITION_MS);
   }, []);
 
   const pushToast = useCallback(

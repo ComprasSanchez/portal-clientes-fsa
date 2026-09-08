@@ -4,6 +4,7 @@ import { IdentityLinkGuard } from "@/components/auth/IdentityLinkGuard";
 import { SessionExpiryGuard } from "@/components/auth/SessionExpiryGuard";
 import { PortalExpedientesProvider } from "@/lib/portal-expedientes-context";
 import { PortalPerfilProvider } from "@/lib/portal-perfil-context";
+import { PortalNotificacionesProvider } from "@/lib/portal-notificaciones-context";
 
 export const metadata: Metadata = {
   title: "CORA",
@@ -22,11 +23,13 @@ export default function HomeLayout({
   return (
     <PortalPerfilProvider>
       <PortalExpedientesProvider>
-        <Suspense fallback={null}>
-          <SessionExpiryGuard />
-          <IdentityLinkGuard />
-        </Suspense>
-        {children}
+        <PortalNotificacionesProvider>
+          <Suspense fallback={null}>
+            <SessionExpiryGuard />
+            <IdentityLinkGuard />
+          </Suspense>
+          {children}
+        </PortalNotificacionesProvider>
       </PortalExpedientesProvider>
     </PortalPerfilProvider>
   );
