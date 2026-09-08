@@ -9,4 +9,5 @@ export type HomeView =
   | "pedido-completo"
   | "preguntas-frecuentes"
   | "crear-pedido"
-  | "revision-pendiente";
+  | "revision-pendiente"
+  | "notificaciones";

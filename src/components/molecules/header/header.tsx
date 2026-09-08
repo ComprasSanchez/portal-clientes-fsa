@@ -7,6 +7,7 @@ import styles from "./header.module.scss";
 type PortalHeaderProps = {
   cartCount?: number;
   showBackButton?: boolean;
+  showCart?: boolean;
   onCartClick?: () => void;
   onBack?: () => void;
   onMenuClick?: () => void;
@@ -16,6 +17,7 @@ type PortalHeaderProps = {
 export default function PortalHeader({
   cartCount = 0,
   showBackButton = true,
+  showCart = true,
   onCartClick,
   onBack,
   onMenuClick,
@@ -56,19 +58,30 @@ export default function PortalHeader({
         </div>
 
         <div className={styles.brand}>
-          <h1 className={styles.logo}>CORA</h1>
+          <button
+            type="button"
+            className={styles.logoButton}
+            onClick={() => router.push("/cora")}
+            aria-label="Volver a CORA"
+          >
+            <h1 className={styles.logo}>CORA</h1>
+          </button>
         </div>
 
         <div className={styles.side}>
-          <button
-            type="button"
-            className={styles.iconButton}
-            onClick={onCartClick}
-            aria-label="Carrito"
-          >
-            <ShoppingCart size={20} />
-            {cartCount > 0 && <span className={styles.badge}>{cartCount}</span>}
-          </button>
+          {showCart ? (
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={onCartClick}
+              aria-label="Carrito"
+            >
+              <ShoppingCart size={20} />
+              {cartCount > 0 && <span className={styles.badge}>{cartCount}</span>}
+            </button>
+          ) : (
+            <div className={styles.placeholder} />
+          )}
         </div>
       </div>
 

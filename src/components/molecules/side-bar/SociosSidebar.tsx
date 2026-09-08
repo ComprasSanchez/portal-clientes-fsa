@@ -24,6 +24,7 @@ import { type SociosView } from "@/types/socios";
 import sociosaLogo from "@/assets/sociosa-color.png";
 import sociosaIcon from "@/assets/icono-estrella.png";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
+import { NotificationBell } from "./NotificationBell";
 
 interface SociosSidebarProps {
   currentView: SociosView;
@@ -87,20 +88,25 @@ export function SociosSidebar({
         >
           {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
-        <button
-          type="button"
-          onClick={() => handleNavigate("dashboard")}
-          className="shrink-0"
-        >
-          <Image
-            src={sociosaLogo}
-            alt="SocioSA"
-            width={140}
-            height={40}
-            className="h-9 w-auto"
-            priority
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => handleNavigate("dashboard")}
+            className="shrink-0"
+          >
+            <Image
+              src={sociosaLogo}
+              alt="SocioSA"
+              width={140}
+              height={40}
+              className="h-9 w-auto"
+              priority
+            />
+          </button>
+          <NotificationBell
+            onOpenInbox={() => router.push("/cora?view=notificaciones")}
           />
-        </button>
+        </div>
       </div>
 
       {isMobileOpen && (

@@ -22,6 +22,7 @@ import { type HomeView } from "@/types/home";
 import coraWordmark from "@/assets/cora-morado.svg";
 import coraIcon from "@/assets/cora-icono.svg";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
+import { NotificationBell } from "./NotificationBell";
 
 interface SidebarProps {
   currentView: HomeView;
@@ -89,22 +90,30 @@ export function Sidebar({
           >
             {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-          <div className="flex items-center gap-3" onClick={() => router.push("/cora")}>
-            <Image
-              src={coraWordmark}
-              alt="CORA"
-              width={70}
-              height={20}
-              className="h-5 w-auto"
-              priority
-            />
-            <Image
-              src={coraIcon}
-              alt="CORA icono"
-              width={36}
-              height={36}
-              className="h-9 w-9 rounded-xl"
-              priority
+          <div className="flex items-center gap-3">
+            <div
+              className="flex items-center gap-3"
+              onClick={() => router.push("/cora")}
+            >
+              <Image
+                src={coraWordmark}
+                alt="CORA"
+                width={70}
+                height={20}
+                className="h-5 w-auto"
+                priority
+              />
+              <Image
+                src={coraIcon}
+                alt="CORA icono"
+                width={36}
+                height={36}
+                className="h-9 w-9 rounded-xl"
+                priority
+              />
+            </div>
+            <NotificationBell
+              onOpenInbox={() => handleNavigate("notificaciones")}
             />
           </div>
         </div>
