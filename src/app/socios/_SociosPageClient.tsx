@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SociosSidebar } from "@/components/molecules/side-bar/SociosSidebar";
+import { NotificationBell } from "@/components/molecules/side-bar/NotificationBell";
 import { SociosViews } from "@/components/organisms/socios/SociosViews";
 import { ConvenioVerificacionModal } from "@/components/organisms/convenio/ConvenioVerificacionModal";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
@@ -157,6 +158,10 @@ export function SociosPageClient() {
           onLogout={handleLogout}
         />
       )}
+
+      <div className="fixed right-6 top-6 z-40 hidden lg:flex">
+        <NotificationBell />
+      </div>
 
       <SociosSidebar
         currentView={currentView}

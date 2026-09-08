@@ -7,6 +7,7 @@ import { HomeViews } from "@/components/organisms/home/HomeViews";
 import { CoraDashboardSkeleton } from "@/components/organisms/loading/ViewSkeletons";
 import { Sidebar } from "@/components/molecules/side-bar/Sidebar";
 import { BottomNavBar } from "@/components/molecules/side-bar/BottomNavBar";
+import { NotificationBell } from "@/components/molecules/side-bar/NotificationBell";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { HomeView } from "@/types/home";
 
@@ -23,6 +24,7 @@ const VALID_VIEWS: HomeView[] = [
   "preguntas-frecuentes",
   "crear-pedido",
   "revision-pendiente",
+  "notificaciones",
 ];
 
 const HomeViewsFallback = () => {
@@ -114,14 +116,18 @@ export function CoraPageClient() {
   return (
     <div className="bg-linear-to-br from-muted/30 to-white">
       {currentView !== "crear-pedido" && currentView !== "revision-pendiente" ? (
-        <button
-          type="button"
-          onClick={() => handleNavigate("crear-pedido")}
-          className="fixed right-6 top-6 z-40 hidden items-center gap-2 rounded-2xl bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#7f56c7] lg:inline-flex"
-        >
-          <Plus size={18} />
-          Nuevo pedido
-        </button>
+        <div className="fixed right-6 top-6 z-40 hidden items-center gap-3 lg:flex">
+          <NotificationBell />
+
+          <button
+            type="button"
+            onClick={() => handleNavigate("crear-pedido")}
+            className="inline-flex items-center gap-2 rounded-2xl bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#7f56c7]"
+          >
+            <Plus size={18} />
+            Nuevo pedido
+          </button>
+        </div>
       ) : null}
 
       <Sidebar

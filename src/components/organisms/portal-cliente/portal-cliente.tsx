@@ -147,6 +147,14 @@ const getFriendlyPortalError = (
 
   const details = extractErrorDetails(rawError).join(" ").toLowerCase();
 
+  if (details.includes("expirado") || details.includes("expired")) {
+    return {
+      title: "Este enlace ya venció",
+      message:
+        "Estos enlaces tienen un tiempo límite por seguridad.\nSi ya confirmaste tu pedido, quedate tranquilo 😊 Está todo bien y no tenés que hacer nada más.\nSi todavía te falta completar algo, escribinos y seguimos juntos 💜",
+    };
+  }
+
   if (details.includes("sucursalentregaid")) {
     return {
       title: "No pudimos confirmar la sucursal",
@@ -842,10 +850,13 @@ export default function PortalCliente({
     });
   };
 
+  const hasLoadFailed = Boolean(error) && !expediente;
+
   return (
     <div className={styles.root}>
       <Header
         showBackButton={step > 1 && !orderConfirmed}
+        showCart={!hasLoadFailed}
         onBack={handleBackStep}
         onCartClick={() => setOpenCart(true)}
         cartCount={cartItems.length}
@@ -865,12 +876,21 @@ export default function PortalCliente({
       <main className={styles.content}>
 
 
-        {!loading && error && !expediente && (
+        {!loading && hasLoadFailed && (
           <div className={`${styles.statusCard} ${styles.error}`}>
             <p className={styles.statusTitle}>{loadErrorContent?.title ?? "No pudimos abrir el portal"}</p>
             <p className={styles.statusText}>
               {loadErrorContent?.message ?? "Ocurrió un problema inesperado al cargar el portal."}
             </p>
+            <button
+              type="button"
+              className={styles.statusAction}
+              onClick={() => {
+                void handleContactAdvisor();
+              }}
+            >
+              Hablar con CORA
+            </button>
           </div>
         )}
 
