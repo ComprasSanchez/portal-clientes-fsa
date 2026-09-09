@@ -51,8 +51,10 @@ interface CrearPedidoStep2EntregaProps {
   domicilios: PortalPerfilDomicilio[];
   selectedSucursal: PortalSucursalOption | null;
   onSelectSucursal: (sucursal: PortalSucursalOption | null) => void;
-  onBack: () => void;
-  onContinue: () => void;
+  onBack?: () => void;
+  onContinue?: () => void;
+  /** Oculta el campo "Inicio del ciclo" — se usa cuando ese valor queda fijo en el día de hoy. */
+  hideInicioCiclo?: boolean;
 }
 
 export function CrearPedidoStep2Entrega({
@@ -62,6 +64,7 @@ export function CrearPedidoStep2Entrega({
   onSelectSucursal,
   onBack,
   onContinue,
+  hideInicioCiclo = false,
 }: CrearPedidoStep2EntregaProps) {
   const fechaContactoEstimada = formik.values.fechaObjetivoEntrega
     ? subtractDaysFromIsoDate(
@@ -87,7 +90,7 @@ export function CrearPedidoStep2Entrega({
       (field) => Boolean((errors as Record<string, unknown>)[field]),
     );
     if (!hasStepError) {
-      onContinue();
+      onContinue?.();
     }
   };
 
@@ -103,16 +106,18 @@ export function CrearPedidoStep2Entrega({
       </p>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <div className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2f3042]">
-            Inicio del ciclo
-            <InfoTooltip label="Es la fecha en la que arranca el seguimiento de este pedido. A partir de acá calculamos cuándo te vamos a contactar y cuándo debería llegarte la próxima entrega." />
+        {!hideInicioCiclo && (
+          <div className="flex flex-col gap-2">
+            <div className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2f3042]">
+              Inicio del ciclo
+              <InfoTooltip label="Es la fecha en la que arranca el seguimiento de este pedido. A partir de acá calculamos cuándo te vamos a contactar y cuándo debería llegarte la próxima entrega." />
+            </div>
+            <PortalDatePicker
+              value={formik.values.fechaInicioCicloBase}
+              onChange={(value) => formik.setFieldValue("fechaInicioCicloBase", value)}
+            />
           </div>
-          <PortalDatePicker
-            value={formik.values.fechaInicioCicloBase}
-            onChange={(value) => formik.setFieldValue("fechaInicioCicloBase", value)}
-          />
-        </div>
+        )}
 
         <div className="flex flex-col gap-2">
           <div className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2f3042]">
@@ -203,22 +208,30 @@ export function CrearPedidoStep2Entrega({
         ) : null}
       </div>
 
-      <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center justify-center rounded-2xl border border-[#ddd6eb] px-5 py-3 text-sm font-semibold text-[#2f3042] transition hover:border-[#c4b5e0]"
-        >
-          Atrás
-        </button>
-        <button
-          type="button"
-          onClick={() => void handleContinue()}
-          className="inline-flex items-center justify-center rounded-2xl bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#7f56c7]"
-        >
-          Continuar
-        </button>
-      </div>
+      {(onBack || onContinue) && (
+        <div className="flex justify-between">
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex items-center justify-center rounded-2xl border border-[#ddd6eb] px-5 py-3 text-sm font-semibold text-[#2f3042] transition hover:border-[#c4b5e0]"
+            >
+              Atrás
+            </button>
+          ) : (
+            <span />
+          )}
+          {onContinue && (
+            <button
+              type="button"
+              onClick={() => void handleContinue()}
+              className="inline-flex items-center justify-center rounded-2xl bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#7f56c7]"
+            >
+              Continuar
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
