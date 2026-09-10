@@ -21,7 +21,6 @@ import type { SelectedProductState } from "@/types/portal-productos";
 import type { PortalSucursalOption } from "@/types/portal-sucursales";
 import type { HomeView } from "@/types/home";
 import {
-  DEFAULT_ANTICIPACION_DIAS,
   formatExpedienteLabel,
   getAutoTitulo,
   getDomicilioLabel,
@@ -32,7 +31,7 @@ import { CrearPedidoStep2Entrega } from "./CrearPedidoStep2Entrega";
 
 export interface CreateFormValues {
   fechaInicioCicloBase: string;
-  fechaObjetivoEntrega: string;
+  fechaContactoDeseada: string;
   medioEntrega: string;
   domicilioEntregaId: string;
   sucursalEntregaId: string;
@@ -41,7 +40,7 @@ export interface CreateFormValues {
 
 const buildInitialValues = (domicilioEntregaId = ""): CreateFormValues => ({
   fechaInicioCicloBase: todayIso(),
-  fechaObjetivoEntrega: "",
+  fechaContactoDeseada: "",
   medioEntrega: "",
   domicilioEntregaId,
   sucursalEntregaId: "",
@@ -52,11 +51,11 @@ const createSchema = Yup.object({
   fechaInicioCicloBase: Yup.string().required(
     "Ingresá la fecha de inicio del ciclo.",
   ),
-  fechaObjetivoEntrega: Yup.string()
-    .required("Ingresá la fecha objetivo de entrega.")
+  fechaContactoDeseada: Yup.string()
+    .required("Ingresá el día en que querés que te contactemos.")
     .test(
       "not-in-past",
-      "La fecha objetivo de entrega no puede ser anterior a hoy.",
+      "El día de contacto no puede ser anterior a hoy.",
       (value) => !value || value >= todayIso(),
     ),
   medioEntrega: Yup.string().required("Elegí cómo querés recibir tu pedido."),
@@ -180,7 +179,7 @@ export function CrearPedidoView({
         titulo: getAutoTitulo(values.items),
         contactoId: preferredVerifiedContact?.id ?? null,
         afiliacionOSId: preferredAfiliacionId || null,
-        anticipacionDias: DEFAULT_ANTICIPACION_DIAS,
+        anticipacionDias: 0,
         medioEntrega: values.medioEntrega || null,
         domicilioEntregaId:
           values.medioEntrega === "ENVIO_DOMICILIO"
@@ -192,7 +191,7 @@ export function CrearPedidoView({
             : null,
         medioPago: null,
         fechaInicioCicloBase: values.fechaInicioCicloBase || null,
-        proximaFechaEntregaForzada: values.fechaObjetivoEntrega || null,
+        proximaFechaEntregaForzada: values.fechaContactoDeseada || null,
         items: values.items.map((product) => ({
           productoIdOrSkuExt: product.id,
           productoNombre: product.nombre,
@@ -282,12 +281,10 @@ export function CrearPedidoView({
         setCreatedSummary({
           expedienteId: createResult?.expedienteId ?? "",
           clienteId,
-          fechaObjetivoEntrega:
-            createdExpediente?.cicloActual?.fechaEntregaObjetivo ??
+          fechaContacto:
+            createdExpediente?.cicloActual?.fechaInicioGestion ??
             payload.proximaFechaEntregaForzada ??
             null,
-          fechaPrimerContacto:
-            createdExpediente?.cicloActual?.fechaInicioGestion ?? null,
           recetaUploadFailed,
         });
 
@@ -321,7 +318,7 @@ export function CrearPedidoView({
         <h3 className="mt-2 text-xl font-semibold text-[#2f3042]">
           Tu pedido ya fue creado
         </h3>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
           <div className="rounded-2xl bg-white px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f63d9]">
               Pedido
@@ -332,19 +329,11 @@ export function CrearPedidoView({
           </div>
           <div className="rounded-2xl bg-white px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f63d9]">
-              Fecha objetivo
+              Fecha de contacto
             </p>
             <p className="mt-1 text-sm font-semibold text-[#2f3042]">
-              {formatPortalProfileDate(createdSummary.fechaObjetivoEntrega)}
-            </p>
-          </div>
-          <div className="rounded-2xl bg-white px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f63d9]">
-              Primer contacto estimado
-            </p>
-            <p className="mt-1 text-sm font-semibold text-[#2f3042]">
-              {createdSummary.fechaPrimerContacto
-                ? formatPortalProfileDate(createdSummary.fechaPrimerContacto)
+              {createdSummary.fechaContacto
+                ? formatPortalProfileDate(createdSummary.fechaContacto)
                 : "Te vamos a confirmar pronto la fecha de contacto"}
             </p>
           </div>
@@ -511,8 +500,8 @@ export function CrearPedidoView({
 
       <Section
         number={3}
-        title="Elegí cuándo y dónde lo necesitás"
-        description="Te contactamos unos días antes para tenerlo listo a tiempo."
+        title="Elegí cuándo te contactamos y dónde lo recibís"
+        description="Coordinamos la entrega en esa llamada."
       >
         <CrearPedidoStep2Entrega
           formik={formik}
