@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Loader } from "@/components/atoms/loader/loader";
 import Header from "@/components/molecules/header/header";
 import CartView, { CartViewItem } from "@/components/molecules/cart-view/cart-view";
@@ -43,10 +44,12 @@ type ApiProductsResponse = {
   };
 };
 
-type DraftOrderResponse = {
-  id?: string;
-  code?: string;
+type PagoPreferenciaResponse = {
+  initPoint?: string;
+  pagoId?: string;
 };
+
+type PaymentStatus = "idle" | "redirecting" | "processing" | "rejected" | "pending";
 
 type FriendlyPortalError = {
   title: string;
@@ -231,10 +234,15 @@ export default function PortalCliente({
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("idle");
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const orderConfirmedStorageKey = `portal-order-confirmed:${token}`;
   const orderCodeStorageKey = `portal-order-code:${token}`;
   const linkAbiertoSentRef = useRef(false);
+  const pagoStatusHandledRef = useRef(false);
 
   const cartItems = useMemo<CartViewItem[]>(
     () =>
@@ -352,6 +360,103 @@ export default function PortalCliente({
       setStep(3);
     }
   }, [orderCodeStorageKey, orderConfirmedStorageKey, token]);
+
+  // Al volver de Mercado Pago, el link trae ?pagoStatus=approved|rejected|pending.
+  // Lo leemos una sola vez y lo sacamos de la URL para no dejarlo pegado ahí.
+  useEffect(() => {
+    if (pagoStatusHandledRef.current) {
+      return;
+    }
+
+    const pagoStatus = searchParams.get("pagoStatus");
+    if (!pagoStatus) {
+      return;
+    }
+
+    pagoStatusHandledRef.current = true;
+    setStep(3);
+
+    if (pagoStatus === "approved") {
+      setPaymentStatus("processing");
+    } else if (pagoStatus === "rejected") {
+      setPaymentStatus("rejected");
+    } else if (pagoStatus === "pending") {
+      setPaymentStatus("pending");
+    }
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete("pagoStatus");
+    const query = nextParams.toString();
+    router.replace(`/portal-cliente/${token}${query ? `?${query}` : ""}`);
+  }, [router, searchParams, token]);
+
+  // Al volver con pagoStatus=approved, el webhook de Mercado Pago puede
+  // tardar unos segundos más que el propio redirect del navegador — se
+  // reintenta un puñado de veces antes de confiar igual en el resultado que
+  // ya nos dio Mercado Pago, para no dejar al cliente esperando sin fin.
+  useEffect(() => {
+    if (paymentStatus !== "processing" || !tokenData?.cicloId) {
+      return;
+    }
+
+    let cancelled = false;
+    let attempt = 0;
+    const MAX_ATTEMPTS = 5;
+    const RETRY_DELAY_MS = 2500;
+
+    const confirmarComoAprobado = (code?: string | null) => {
+      if (cancelled) return;
+      setOrderConfirmed(true);
+      setOrderNumber(code ?? null);
+      setPaymentStatus("idle");
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(orderConfirmedStorageKey, "true");
+        if (code) {
+          window.localStorage.setItem(orderCodeStorageKey, code);
+        }
+      }
+    };
+
+    const poll = async () => {
+      attempt += 1;
+      try {
+        const response = await fetch(
+          `/api/magic/portal-clientes/${token}/order-cycles/${tokenData.cicloId}/parent-orders`,
+        );
+
+        if (response.ok) {
+          const parentOrders = (await response.json()) as Array<{
+            status?: string;
+            code?: string;
+          }>;
+          const currentOrder = parentOrders[0];
+
+          if (currentOrder?.status && CONFIRM_STATES.has(currentOrder.status)) {
+            confirmarComoAprobado(currentOrder.code);
+            return;
+          }
+        }
+      } catch {
+        // Reintenta igual, ver comentario arriba.
+      }
+
+      if (cancelled) return;
+
+      if (attempt < MAX_ATTEMPTS) {
+        window.setTimeout(() => {
+          void poll();
+        }, RETRY_DELAY_MS);
+      } else {
+        confirmarComoAprobado(null);
+      }
+    };
+
+    void poll();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderCodeStorageKey, orderConfirmedStorageKey, paymentStatus, token, tokenData]);
 
   useEffect(() => {
     let cancelled = false;
@@ -780,27 +885,6 @@ export default function PortalCliente({
         ),
       );
 
-      const draftOrder = await fetch(`/api/magic/portal-clientes/${token}/parent-orders/draft`, {
-        method: "POST",
-      }).then(toJson<DraftOrderResponse>);
-
-      if (draftOrder.id) {
-        try {
-          await fetch(`/api/order-cycles/parent-orders/${draftOrder.id}/status`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              status: "ACCEPTED",
-              reason: "Cliente confirmó en portal",
-            }),
-          });
-        } catch {
-          // No bloquea la confirmación visual si el endpoint todavía no existe.
-        }
-      }
-
       await fetch(`/api/magic/portal-clientes/${token}/movimientos`, {
         method: "POST",
         headers: {
@@ -809,14 +893,19 @@ export default function PortalCliente({
         body: JSON.stringify({ tipo: "DECISION_GUARDADA" }),
       }).then(toJson<Record<string, unknown>>);
 
-      setOrderConfirmed(true);
-      setOrderNumber(draftOrder.code ?? null);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(orderConfirmedStorageKey, "true");
-        if (draftOrder.code) {
-          window.localStorage.setItem(orderCodeStorageKey, draftOrder.code);
-        }
+      // El ParentOrder ya no se crea acá directo: nace del lado del backend
+      // (en PENDING_PAYMENT) recién cuando se arma la preferencia de pago,
+      // y pasa a confirmado cuando Mercado Pago aprueba el pago (webhook).
+      const pago = await fetch(`/api/magic/portal-clientes/${token}/pago/preferencia`, {
+        method: "POST",
+      }).then(toJson<PagoPreferenciaResponse>);
+
+      if (!pago.initPoint) {
+        throw new Error("No se pudo generar el link de pago");
       }
+
+      setPaymentStatus("redirecting");
+      window.location.assign(pago.initPoint);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -828,11 +917,38 @@ export default function PortalCliente({
     }
   };
 
+  // Reintento inmediato tras un rechazo: el cliente sigue en el portal, así
+  // que alcanza con una preferencia de pago nueva — no hace falta un link
+  // nuevo por WhatsApp (eso es para cuando ya se fue, ver PortalTokenCheckJob).
+  const handleRetryPayment = async () => {
+    setPaymentStatus("redirecting");
+    setError(null);
+
+    try {
+      const pago = await fetch(`/api/magic/portal-clientes/${token}/pago/preferencia`, {
+        method: "POST",
+      }).then(toJson<PagoPreferenciaResponse>);
+
+      if (!pago.initPoint) {
+        throw new Error("No se pudo generar el link de pago");
+      }
+
+      window.location.assign(pago.initPoint);
+    } catch (requestError) {
+      setPaymentStatus("rejected");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "No se pudo reintentar el pago",
+      );
+    }
+  };
+
   if (loading) {
     return <Loader />;
   }
 
-  if (submittingOrder) {
+  if (submittingOrder || paymentStatus === "redirecting" || paymentStatus === "processing") {
     return <OrderProcessingLoader />;
   }
 
@@ -960,10 +1076,14 @@ export default function PortalCliente({
               isSubmitting={submittingOrder}
               orderConfirmed={orderConfirmed}
               orderNumber={orderNumber}
+              paymentStatus={paymentStatus}
               token={token}
               cicloId={tokenData?.cicloId}
               onConfirm={() => {
                 void handleConfirmOrder();
+              }}
+              onRetryPayment={() => {
+                void handleRetryPayment();
               }}
               onContactAdvisor={() => {
                 void handleContactAdvisor();
