@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import bannerSocio1 from "@/assets/sociosa-img/banner-socio1.jpg";
-import bannerSocio2 from "@/assets/sociosa-img/banner-mobile-beauty.jpg";
+import bannerSocio2 from "@/assets/sociosa-img/banner-mobile-beauty.jpeg";
 import sorteoMobile from "@/assets/sociosa-img/sorteo-mobile.jpg";
 import styles from "./BannerCarousel.module.scss";
 
