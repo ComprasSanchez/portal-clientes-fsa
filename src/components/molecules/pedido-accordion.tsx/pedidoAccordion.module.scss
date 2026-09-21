@@ -5,6 +5,7 @@ $text-dark: #2f2a43;
 $text-soft: rgba(47, 42, 67, 0.58);
 $border-soft: #d8d8de;
 $bg-white: #ffffff;
+$violeta-tinta: #4a2e73;
 
 .accordion {
   width: 100%;
@@ -94,6 +95,14 @@ $bg-white: #ffffff;
   line-height: 1.2;
 }
 
+.price {
+  margin: 4px 0 0;
+  color: $purple;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .switchWrap {
   display: flex;
   align-items: center;
@@ -118,6 +127,27 @@ $bg-white: #ffffff;
   height: 1px;
   background: $border-soft;
   margin: 8px 0;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  margin-top: 6px;
+  border-top: 1px solid $purple-line;
+}
+
+.footerLabel {
+  color: $text-soft;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.footerTotal {
+  color: $violeta-tinta;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 @media (min-width: 481px) {

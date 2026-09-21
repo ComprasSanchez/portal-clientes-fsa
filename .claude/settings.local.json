@@ -22,7 +22,8 @@
       "Read(//c/Users/Usuario/Documents/front-fsa/BFF/bff-gateway/src/context/Auth/infrastructure/dto/**)",
       "Bash(ls \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\clientes-fsa\" 2>/dev/null | head -30)",
       "Read(//c/Users/Usuario/Documents/front-fsa/clientes-fsa/**)",
-      "Bash(cd \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\Cronicos\\\\cronicos-fsa\" && grep -n \"getClienteById\" src/domain/external/clientes/cliente.port.ts)"
+      "Bash(cd \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\Cronicos\\\\cronicos-fsa\" && grep -n \"getClienteById\" src/domain/external/clientes/cliente.port.ts)",
+      "Bash(cd \"C:\\\\Users\\\\Usuario\\\\Documents\\\\front-fsa\\\\Cronicos\\\\cronicos-fsa\" && grep -rn \"refreshSucursalAttribution\\\\|sucursalId\" src/application/Pedidos/services/*.ts src/domain/Pedidos/**/*.ts 2>/dev/null | grep -i sucursal | head -50)"
     ]
   }
 }

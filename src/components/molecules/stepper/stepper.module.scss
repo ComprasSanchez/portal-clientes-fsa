@@ -3,6 +3,9 @@ $primary-70: rgba(140, 111, 174, 0.7);
 $neutral-border: rgba(140, 111, 174, 0.45);
 $neutral-line: rgba(140, 111, 174, 0.25);
 $white: #ffffff;
+$green: #1e7a52;
+$active-bg: #e4e3e8;
+$active-icon: #6d6480;
 
 .stepper {
   display: flex;
@@ -33,15 +36,26 @@ $white: #ffffff;
 }
 
 .active {
-  background: $primary-70;
+  background: $active-bg;
   border-color: $primary-70;
-  color: $white;
+  color: $active-icon;
+  animation: heartbeat 1.6s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
 }
 
 .completed {
-  background: rgba(140, 111, 174, 0.22);
-  border-color: $primary-70;
-  color: $primary;
+  background: $green;
+  border-color: $green;
+  color: $white;
 }
 
 .upcoming {
@@ -63,7 +77,7 @@ $white: #ffffff;
 .connectorFill {
   width: 0%;
   height: 100%;
-  background: $primary-70;
+  background: $green;
   border-radius: 999px;
   transition: width 0.25s ease;
 }

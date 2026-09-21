@@ -27,6 +27,8 @@ import {
 
 type PaymentStatus = "idle" | "redirecting" | "processing" | "rejected" | "pending";
 
+type ConfirmOrderChoice = "pagar_ahora" | "contactenme";
+
 type PedidosStep3Props = {
   productos: ConfirmProductItem[];
   entrega: ConfirmDeliveryData | null;
@@ -36,10 +38,12 @@ type PedidosStep3Props = {
   paymentStatus?: PaymentStatus;
   token?: string;
   cicloId?: string;
-  onConfirm: () => void;
+  onConfirm: (choice: ConfirmOrderChoice) => void;
   onRetryPayment?: () => void;
   onContactAdvisor: () => void;
   onBack?: () => void;
+  onRemoveProduct?: (id: string) => void;
+  onChangeProductQuantity?: (id: string, delta: number) => void;
 };
 
 const PedidosStep3 = ({
@@ -55,11 +59,14 @@ const PedidosStep3 = ({
   onRetryPayment,
   onContactAdvisor,
   onBack,
+  onRemoveProduct,
+  onChangeProductQuantity,
 }: PedidosStep3Props) => {
   const [parentOrders, setParentOrders] = useState<ParentOrder[]>([]);
   const [trackingStatus, setTrackingStatus] =
     useState<TrackingOrderStatus>("pendiente");
   const [isTrackingLoading, setIsTrackingLoading] = useState(false);
+  const [showPaymentChoice, setShowPaymentChoice] = useState(false);
 
   useEffect(() => {
     if (!orderConfirmed || !token || !cicloId) {
@@ -312,17 +319,48 @@ const PedidosStep3 = ({
           </p>
         </div>
         <div className="flex flex-col gap-5">
-          <ConfirmProductsAccordion items={productos} />
+          <ConfirmProductsAccordion
+            items={productos}
+            onRemove={onRemoveProduct}
+            onChangeQuantity={onChangeProductQuantity}
+          />
           {entrega && <ConfirmDeliveryAccordion data={entrega} />}
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <PortalButton variant="primary" onClick={onConfirm} disabled={isSubmitting || !entrega}>
-              {isSubmitting ? "Confirmando pedido..." : "Confirmar selección"}
-            </PortalButton>
+            {showPaymentChoice ? (
+              <>
+                <PortalButton
+                  variant="mercadopago"
+                  onClick={() => onConfirm("pagar_ahora")}
+                  disabled={isSubmitting || !entrega}
+                >
+                  {isSubmitting ? "Confirmando pedido..." : "Pagar con Mercado Pago"}
+                </PortalButton>
 
-            <PortalButton variant="secondary" withChatIcon onClick={onContactAdvisor}>
-              Hablar con CORA
-            </PortalButton>
+                <PortalButton
+                  variant="secondary"
+                  withChatIcon
+                  onClick={() => onConfirm("contactenme")}
+                  disabled={isSubmitting || !entrega}
+                >
+                  {isSubmitting ? "Confirmando pedido..." : "Hablar con CORA"}
+                </PortalButton>
+              </>
+            ) : (
+              <>
+                <PortalButton
+                  variant="primary"
+                  onClick={() => setShowPaymentChoice(true)}
+                  disabled={isSubmitting || !entrega}
+                >
+                  Continuar
+                </PortalButton>
+
+                <PortalButton variant="secondary" withChatIcon onClick={onContactAdvisor}>
+                  Hablar con CORA
+                </PortalButton>
+              </>
+            )}
           </div>
         </div>
       </div>

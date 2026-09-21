@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import PortalStepper from "../../stepper/stepper";
 import PortalButton from "@/components/atoms/button/button";
 import AddressSelector, {
@@ -291,7 +291,17 @@ const PedidosStep2 = ({
 
         <div className="flex flex-col gap-5">
           <div className="flex flex-col">
-            <p className="flex text-center items-center justify-center text-[#8C6FAF] text-bold text-[18px]">
+            <p className="flex items-center justify-center gap-2 text-center text-[#8C6FAF] text-bold text-[18px]">
+              {deliveryMethod === "domicilio" && addressMode === "ocasional" && (
+                <button
+                  type="button"
+                  onClick={() => setAddressMode("guardado")}
+                  aria-label="Volver a domicilios guardados"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-[#ddd6eb] bg-white text-[#8C6FAF] transition hover:border-[#c4b5e0] hover:bg-[#f7f2ff]"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+              )}
               {deliveryMethod === "domicilio"
                 ? "¿Dónde lo querés recibir?"
                 : "Elegí la sucursal de retiro"}
@@ -404,15 +414,21 @@ const PedidosStep2 = ({
                     <PortalButton type="submit" disabled={savingAddress}>
                       {savingAddress ? "Guardando dirección..." : "Guardar dirección"}
                     </PortalButton>
-                    <PortalButton variant="secondary" onClick={() => setAddressMode("guardado")}>
-                      Volver a domicilios guardados
-                    </PortalButton>
                   </div>
                 </form>
               ) : (
-                <PortalButton variant="secondary" onClick={() => setAddressMode("ocasional")}>
-                  Agregar otra dirección
-                </PortalButton>
+                <button
+                  type="button"
+                  onClick={() => setAddressMode("ocasional")}
+                  className="flex items-center gap-3 rounded-3xl border border-dashed border-[#8C6FAF]/35 bg-[#8C6FAF]/3 p-4 text-left transition hover:border-[#8C6FAF] hover:bg-[#8C6FAF]/8"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-dashed border-[#8C6FAF]/35 text-[#8C6FAF]">
+                    <Plus size={18} />
+                  </div>
+                  <span className="text-sm font-semibold text-[#8C6FAF]">
+                    Agregar otra dirección
+                  </span>
+                </button>
               )}
             </>
           ) : (
