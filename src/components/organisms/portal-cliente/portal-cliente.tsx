@@ -205,6 +205,19 @@ const getFriendlyPortalError = (
     };
   }
 
+  if (details.includes("sin stock suficiente")) {
+    const rawMessage = extractErrorDetails(rawError).join(" ");
+    const match = rawMessage.match(/sin stock suficiente para:\s*(.+)/i);
+    const productos = match?.[1]?.trim();
+
+    return {
+      title: "Sin stock disponible",
+      message: productos
+        ? `Por ahora no tenemos stock suficiente de: ${productos}. Ajustá las cantidades o quitá esos productos para poder continuar.`
+        : "Por ahora no tenemos stock suficiente para completar tu pedido. Ajustá las cantidades o quitá algún producto para poder continuar.",
+    };
+  }
+
   if (context === "confirm") {
     return {
       title: "No pudimos confirmar tu pedido",
@@ -245,6 +258,13 @@ export default function PortalCliente({
   const [originalProductIds, setOriginalProductIds] = useState<string[]>([]);
   const [originalRecurringQuantities, setOriginalRecurringQuantities] =
     useState<Record<string, number>>({});
+  // Ids de items recurrentes ya marcados SKIPPED en el backend en este
+  // intento de confirmación — evita reenviar el PATCH (y duplicar el
+  // historial del ciclo) si handleConfirmOrder se reintenta tras una falla
+  // más adelante en el flujo (ver originalProductIds, mismo problema).
+  const [syncedSkippedItemIds, setSyncedSkippedItemIds] = useState<string[]>(
+    [],
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -931,7 +951,8 @@ export default function PortalCliente({
 
       const skippedItemIds = recurrentItems
         .filter((item) => !item.checked)
-        .map((item) => item.id);
+        .map((item) => item.id)
+        .filter((itemId) => !syncedSkippedItemIds.includes(itemId));
 
       await Promise.all(
         skippedItemIds.map((itemId) =>
@@ -940,6 +961,12 @@ export default function PortalCliente({
           }).then(toJson<Record<string, unknown>>),
         ),
       );
+
+      if (skippedItemIds.length > 0) {
+        // Idem newProducts: si un paso posterior falla y se reintenta todo
+        // desde acá, no volver a marcar SKIPPED (duplicaría el historial).
+        setSyncedSkippedItemIds((prev) => [...prev, ...skippedItemIds]);
+      }
 
       const changedQuantityItems = recurrentItems.filter(
         (item) => item.cantidad !== (originalRecurringQuantities[item.id] ?? 1),
@@ -956,6 +983,18 @@ export default function PortalCliente({
           }).then(toJson<Record<string, unknown>>),
         ),
       );
+
+      if (changedQuantityItems.length > 0) {
+        // Idem: no volver a mandar la misma cantidad en un reintento (cada
+        // PATCH crea un evento nuevo en el historial del ciclo).
+        setOriginalRecurringQuantities((prev) => {
+          const next = { ...prev };
+          for (const item of changedQuantityItems) {
+            next[item.id] = item.cantidad;
+          }
+          return next;
+        });
+      }
 
       const newProducts = addedProducts.filter(
         (product) => !originalProductIds.includes(product.id),
@@ -984,6 +1023,17 @@ export default function PortalCliente({
           }).then(toJson<Record<string, unknown>>),
         ),
       );
+
+      if (newProducts.length > 0) {
+        // Evita que un reintento tras una falla más adelante (ej. pago
+        // rechazado por stock) vuelva a ver estos productos como "nuevos" y
+        // los cree de nuevo — handleConfirmOrder no es idempotente, así que
+        // cada sub-paso debe marcar su propio progreso ni bien se confirma.
+        setOriginalProductIds((prev) => [
+          ...prev,
+          ...newProducts.map((product) => product.id),
+        ]);
+      }
 
       await fetch(`/api/magic/portal-clientes/${token}/movimientos`, {
         method: "POST",
