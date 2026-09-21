@@ -469,15 +469,15 @@ export default function PortalCliente({
 
     const confirmarComoAprobado = (code?: string | null) => {
       if (cancelled) return;
-      setOrderConfirmed(true);
-      setOrderNumber(code ?? null);
-      setPaymentStatus("idle");
       if (typeof window !== "undefined") {
         window.localStorage.setItem(orderConfirmedStorageKey, "true");
         if (code) {
           window.localStorage.setItem(orderCodeStorageKey, code);
         }
       }
+      // Pago confirmado: en vez de quedarse en el link público, lo mandamos
+      // directo a la vista de pedidos del portal autenticado.
+      router.push("/cora?view=pedidos");
     };
 
     const poll = async () => {
@@ -519,7 +519,7 @@ export default function PortalCliente({
     return () => {
       cancelled = true;
     };
-  }, [orderCodeStorageKey, orderConfirmedStorageKey, paymentStatus, token, tokenData]);
+  }, [orderCodeStorageKey, orderConfirmedStorageKey, paymentStatus, router, token, tokenData]);
 
   useEffect(() => {
     let cancelled = false;
