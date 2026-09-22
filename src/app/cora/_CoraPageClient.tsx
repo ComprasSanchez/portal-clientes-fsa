@@ -140,7 +140,7 @@ export function CoraPageClient() {
       />
 
       <div
-        className={`flex flex-col transition-all duration-300 lg:ml-64 lg:min-h-[var(--app-vh,100dvh)] lg:pt-0 ${
+        className={`flex flex-col transition-all duration-300 lg:ml-64 lg:min-h-[var(--app-vh,100dvh)] lg:pb-0 lg:pt-0 pb-[calc(4rem+env(safe-area-inset-bottom))] ${
           currentView === "revision-pendiente"
             ? "min-h-[var(--app-vh,100dvh)]"
             : "min-h-[calc(var(--app-vh,100dvh)_-_4rem)] pt-16"

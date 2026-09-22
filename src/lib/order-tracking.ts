@@ -83,6 +83,7 @@ export const TRACKING_LABELS: Record<TrackingOrderStatus, string> = {
 };
 
 export const PARENT_ORDER_STATUS_LABELS: Record<string, string> = {
+  PENDING_PAYMENT: "Pendiente de pago",
   ACCEPTED: "Aceptado",
   CONFIRMED: "Confirmado",
   IN_PREPARATION: "En preparación",

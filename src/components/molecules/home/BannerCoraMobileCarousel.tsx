@@ -4,18 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import bannerCoraMobile1 from "@/assets/cora/banners/banners-mobile-01.jpg";
 import bannerCoraMobile2 from "@/assets/cora/banners/banners mobile-02.jpg";
 import bannerCoraMobile3 from "@/assets/cora/banners/banners mobile-03.jpg";
 import bannerCoraMobile4 from "@/assets/cora/banners/banners mobile-04.jpg";
 import styles from "./BannerCoraCarousel.module.scss";
 
 const SLIDES = [
-  {
-    src: bannerCoraMobile1,
-    alt: "Estoy para acompañarte, sigo tus entregas y organizo tus recordatorios",
-    href: null,
-  },
   {
     src: bannerCoraMobile2,
     alt: "Si tomás medicacion todos los meses, CORA es para vos",

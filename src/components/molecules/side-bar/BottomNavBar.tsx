@@ -1,7 +1,33 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Files, Home, Menu, Plus, User } from "lucide-react";
 import { type HomeView } from "@/types/home";
+
+// En iOS Safari los elementos `position: fixed` no se corren cuando aparece
+// el teclado virtual (quedan anclados al layout viewport, no al visual
+// viewport que se achica) — terminan flotando a mitad de pantalla, tapando
+// el contenido. Se oculta el nav mientras el teclado esté abierto.
+function useKeyboardOpen(): boolean {
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const handleResize = () => {
+      const heightDiff = window.innerHeight - viewport.height;
+      setKeyboardOpen(heightDiff > 150);
+    };
+
+    viewport.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => viewport.removeEventListener("resize", handleResize);
+  }, []);
+
+  return keyboardOpen;
+}
 
 interface BottomNavBarProps {
   currentView: HomeView;
@@ -30,10 +56,13 @@ export function BottomNavBar({
   onMoreClick,
 }: BottomNavBarProps) {
   const isCreatingOrder = currentView === "crear-pedido";
+  const keyboardOpen = useKeyboardOpen();
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-stretch border-t border-[#e6e1ef] bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className={`fixed bottom-0 left-0 right-0 z-40 flex h-16 items-stretch border-t border-[#e6e1ef] bg-white pb-[env(safe-area-inset-bottom)] lg:hidden ${
+        keyboardOpen ? "hidden" : ""
+      }`}
       aria-label="Navegacion principal"
     >
       {sideItems.map((item) => {

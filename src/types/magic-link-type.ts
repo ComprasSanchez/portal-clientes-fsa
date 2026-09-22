@@ -4,6 +4,9 @@ export type Product = {
   lab: string;
   rubro?: string;
   presentacion?: string;
+  precio?: number | null;
+  precioBase?: number | null;
+  descuentoPct?: number;
 };
 
 export type ItemRecurrenteDetalle = {
@@ -24,6 +27,9 @@ export type ItemRecurrenteDetalle = {
   productoNombre: string | null;
   marcaNombre: string | null;
   activo: boolean | null;
+  precio?: number | null;
+  precioBase?: number | null;
+  descuentoPct?: number;
 };
 
 export type ItemDetalleNotInCycle = {

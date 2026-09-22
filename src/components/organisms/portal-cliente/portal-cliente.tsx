@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Loader } from "@/components/atoms/loader/loader";
 import Header from "@/components/molecules/header/header";
 import CartView, { CartViewItem } from "@/components/molecules/cart-view/cart-view";
@@ -43,10 +44,20 @@ type ApiProductsResponse = {
   };
 };
 
-type DraftOrderResponse = {
-  id?: string;
-  code?: string;
+type PagoPreferenciaResponse = {
+  initPoint?: string;
+  pagoId?: string;
 };
+
+type ParentOrderDraftResponse = {
+  parentOrderId?: string;
+  code?: string;
+  created?: boolean;
+};
+
+type ConfirmOrderChoice = "pagar_ahora" | "contactenme";
+
+type PaymentStatus = "idle" | "redirecting" | "processing" | "rejected" | "pending";
 
 type FriendlyPortalError = {
   title: string;
@@ -60,6 +71,9 @@ type PortalProductItem = {
   cantidad: number;
   checked: boolean;
   recurring: boolean;
+  precio: number | null;
+  precioBase: number | null;
+  descuentoPct: number;
 };
 
 const PAGE_SIZE = 4;
@@ -96,6 +110,9 @@ const toProduct = (value: Record<string, unknown>): Product => ({
   lab: String(value.lab ?? value.marcaNombre ?? "Laboratorio sin dato"),
   presentacion:
     typeof value.presentacion === "string" ? value.presentacion : undefined,
+  precio: typeof value.precio === "number" ? value.precio : null,
+  precioBase: typeof value.precioBase === "number" ? value.precioBase : null,
+  descuentoPct: typeof value.descuentoPct === "number" ? value.descuentoPct : 0,
 });
 
 const toJson = async <T,>(response: Response): Promise<T> => {
@@ -114,9 +131,15 @@ const mapRecurringItems = (expediente: ItemRecurrente): PortalProductItem[] =>
       id: item.id,
       nombre: item.productoNombre || "Producto sin nombre",
       laboratorio: item.marcaNombre || "Laboratorio sin dato",
-      cantidad: 1,
+      cantidad:
+        typeof item.plannedUnits === "number" && item.plannedUnits > 0
+          ? item.plannedUnits
+          : 1,
       checked: String(item.status || "").toUpperCase() !== "SKIPPED",
       recurring: true,
+      precio: typeof item.precio === "number" ? item.precio : null,
+      precioBase: typeof item.precioBase === "number" ? item.precioBase : null,
+      descuentoPct: typeof item.descuentoPct === "number" ? item.descuentoPct : 0,
     }));
 
 const extractErrorDetails = (rawError: string): string[] => {
@@ -182,6 +205,19 @@ const getFriendlyPortalError = (
     };
   }
 
+  if (details.includes("sin stock suficiente")) {
+    const rawMessage = extractErrorDetails(rawError).join(" ");
+    const match = rawMessage.match(/sin stock suficiente para:\s*(.+)/i);
+    const productos = match?.[1]?.trim();
+
+    return {
+      title: "Sin stock disponible",
+      message: productos
+        ? `Por ahora no tenemos stock suficiente de: ${productos}. Ajustá las cantidades o quitá esos productos para poder continuar.`
+        : "Por ahora no tenemos stock suficiente para completar tu pedido. Ajustá las cantidades o quitá algún producto para poder continuar.",
+    };
+  }
+
   if (context === "confirm") {
     return {
       title: "No pudimos confirmar tu pedido",
@@ -202,6 +238,15 @@ export default function PortalCliente({
   onOpenSidebar,
 }: PortalClienteProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
+
+  // Al pasar de paso (adelante o atrás), volver arriba — si no, la nueva
+  // vista arranca en el scroll donde había quedado la anterior.
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo(0, 0);
+    }
+  }, [step]);
+
   const [productosSubpaso, setProductosSubpaso] = useState<
     "revisar" | "agregar"
   >("revisar");
@@ -211,6 +256,15 @@ export default function PortalCliente({
   const [recurrentItems, setRecurrentItems] = useState<PortalProductItem[]>([]);
   const [addedProducts, setAddedProducts] = useState<PortalProductItem[]>([]);
   const [originalProductIds, setOriginalProductIds] = useState<string[]>([]);
+  const [originalRecurringQuantities, setOriginalRecurringQuantities] =
+    useState<Record<string, number>>({});
+  // Ids de items recurrentes ya marcados SKIPPED en el backend en este
+  // intento de confirmación — evita reenviar el PATCH (y duplicar el
+  // historial del ciclo) si handleConfirmOrder se reintenta tras una falla
+  // más adelante en el flujo (ver originalProductIds, mismo problema).
+  const [syncedSkippedItemIds, setSyncedSkippedItemIds] = useState<string[]>(
+    [],
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -231,10 +285,15 @@ export default function PortalCliente({
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("idle");
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const orderConfirmedStorageKey = `portal-order-confirmed:${token}`;
   const orderCodeStorageKey = `portal-order-code:${token}`;
   const linkAbiertoSentRef = useRef(false);
+  const pagoStatusHandledRef = useRef(false);
 
   const cartItems = useMemo<CartViewItem[]>(
     () =>
@@ -243,6 +302,9 @@ export default function PortalCliente({
         nombre: item.nombre,
         laboratorio: item.laboratorio,
         cantidad: item.cantidad,
+        precio: item.precio,
+        precioBase: item.precioBase,
+        descuentoPct: item.descuentoPct,
       })),
     [addedProducts, recurrentItems],
   );
@@ -255,19 +317,28 @@ export default function PortalCliente({
         laboratorio: item.laboratorio,
         cantidad: item.cantidad,
         checked: item.checked,
+        precio: item.precio,
+        precioBase: item.precioBase,
+        descuentoPct: item.descuentoPct,
       })),
     [addedProducts, recurrentItems],
   );
 
   const productosConfirmacion = useMemo<ConfirmProductItem[]>(
     () =>
-      cartItems.map((item) => ({
-        id: item.id,
-        nombre: item.nombre,
-        laboratorio: item.laboratorio,
-        cantidad: item.cantidad ?? 1,
-      })),
-    [cartItems],
+      [...recurrentItems.filter((item) => item.checked), ...addedProducts].map(
+        (item) => ({
+          id: item.id,
+          nombre: item.nombre,
+          laboratorio: item.laboratorio,
+          cantidad: item.cantidad ?? 1,
+          precio: item.precio,
+          precioBase: item.precioBase,
+          descuentoPct: item.descuentoPct,
+          recurring: item.recurring,
+        }),
+      ),
+    [addedProducts, recurrentItems],
   );
 
   const entregaConfirmacion = useMemo<ConfirmDeliveryData | null>(() => {
@@ -353,6 +424,103 @@ export default function PortalCliente({
     }
   }, [orderCodeStorageKey, orderConfirmedStorageKey, token]);
 
+  // Al volver de Mercado Pago, el link trae ?pagoStatus=approved|rejected|pending.
+  // Lo leemos una sola vez y lo sacamos de la URL para no dejarlo pegado ahí.
+  useEffect(() => {
+    if (pagoStatusHandledRef.current) {
+      return;
+    }
+
+    const pagoStatus = searchParams.get("pagoStatus");
+    if (!pagoStatus) {
+      return;
+    }
+
+    pagoStatusHandledRef.current = true;
+    setStep(3);
+
+    if (pagoStatus === "approved") {
+      setPaymentStatus("processing");
+    } else if (pagoStatus === "rejected") {
+      setPaymentStatus("rejected");
+    } else if (pagoStatus === "pending") {
+      setPaymentStatus("pending");
+    }
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete("pagoStatus");
+    const query = nextParams.toString();
+    router.replace(`/portal-cliente/${token}${query ? `?${query}` : ""}`);
+  }, [router, searchParams, token]);
+
+  // Al volver con pagoStatus=approved, el webhook de Mercado Pago puede
+  // tardar unos segundos más que el propio redirect del navegador — se
+  // reintenta un puñado de veces antes de confiar igual en el resultado que
+  // ya nos dio Mercado Pago, para no dejar al cliente esperando sin fin.
+  useEffect(() => {
+    if (paymentStatus !== "processing" || !tokenData?.cicloId) {
+      return;
+    }
+
+    let cancelled = false;
+    let attempt = 0;
+    const MAX_ATTEMPTS = 5;
+    const RETRY_DELAY_MS = 2500;
+
+    const confirmarComoAprobado = (code?: string | null) => {
+      if (cancelled) return;
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(orderConfirmedStorageKey, "true");
+        if (code) {
+          window.localStorage.setItem(orderCodeStorageKey, code);
+        }
+      }
+      // Pago confirmado: en vez de quedarse en el link público, lo mandamos
+      // directo a la vista de pedidos del portal autenticado.
+      router.push("/cora?view=pedidos");
+    };
+
+    const poll = async () => {
+      attempt += 1;
+      try {
+        const response = await fetch(
+          `/api/magic/portal-clientes/${token}/order-cycles/${tokenData.cicloId}/parent-orders`,
+        );
+
+        if (response.ok) {
+          const parentOrders = (await response.json()) as Array<{
+            status?: string;
+            code?: string;
+          }>;
+          const currentOrder = parentOrders[0];
+
+          if (currentOrder?.status && CONFIRM_STATES.has(currentOrder.status)) {
+            confirmarComoAprobado(currentOrder.code);
+            return;
+          }
+        }
+      } catch {
+        // Reintenta igual, ver comentario arriba.
+      }
+
+      if (cancelled) return;
+
+      if (attempt < MAX_ATTEMPTS) {
+        window.setTimeout(() => {
+          void poll();
+        }, RETRY_DELAY_MS);
+      } else {
+        confirmarComoAprobado(null);
+      }
+    };
+
+    void poll();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderCodeStorageKey, orderConfirmedStorageKey, paymentStatus, router, token, tokenData]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -386,6 +554,9 @@ export default function PortalCliente({
         setExpediente(expedienteData);
         setRecurrentItems(recurring);
         setOriginalProductIds(recurring.map((item) => item.id));
+        setOriginalRecurringQuantities(
+          Object.fromEntries(recurring.map((item) => [item.id, item.cantidad])),
+        );
         setDomicilios(domiciliosList);
         const sucursalesList = Array.isArray(sucursalesData)
           ? sucursalesData
@@ -602,6 +773,9 @@ export default function PortalCliente({
           cantidad: 1,
           checked: true,
           recurring: false,
+          precio: product.precio ?? null,
+          precioBase: product.precioBase ?? null,
+          descuentoPct: product.descuentoPct ?? 0,
         },
       ];
     });
@@ -609,6 +783,39 @@ export default function PortalCliente({
 
   const isProductSelected = (product: Product) =>
     addedProducts.some((item) => item.id === product.id);
+
+  const getProductQuantity = (id: string) =>
+    [...recurrentItems, ...addedProducts].find((item) => item.id === id)
+      ?.cantidad ?? 1;
+
+  const handleChangeProductQuantity = (id: string, delta: number) => {
+    if (recurrentItems.some((item) => item.id === id)) {
+      // Un item recurrente nunca se saca por cantidad — para eso está el
+      // switch (lo desmarca en vez de desaparecer). El mínimo acá es 1.
+      setRecurrentItems((items) =>
+        items.map((item) =>
+          item.id === id
+            ? { ...item, cantidad: Math.max(1, item.cantidad + delta) }
+            : item,
+        ),
+      );
+      return;
+    }
+
+    setAddedProducts((items) => {
+      const current = items.find((item) => item.id === id);
+      if (!current) return items;
+
+      const nextCantidad = current.cantidad + delta;
+      if (nextCantidad < 1) {
+        return items.filter((item) => item.id !== id);
+      }
+
+      return items.map((item) =>
+        item.id === id ? { ...item, cantidad: nextCantidad } : item,
+      );
+    });
+  };
 
   const handleRemoveFromCart = (id: string) => {
     if (recurrentItems.some((item) => item.id === id)) {
@@ -657,6 +864,15 @@ export default function PortalCliente({
     setStep(3);
   };
 
+  const redirectToWhatsApp = () => {
+    if (typeof window === "undefined") return;
+    const phone = process.env.NEXT_PUBLIC_FSA_PHONE_PORTAL;
+    if (!phone) return;
+    const message =
+      "Hola, estoy armando mi pedido mensual y necesito ayuda para continuar.";
+    window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  };
+
   const handleContactAdvisor = async () => {
     try {
       await fetch(`/api/magic/portal-clientes/${token}/movimientos`, {
@@ -670,17 +886,10 @@ export default function PortalCliente({
       // Ignorado para no cortar el contacto con el asesor.
     }
 
-    if (typeof window !== "undefined") {
-      const phone = process.env.NEXT_PUBLIC_FSA_PHONE_PORTAL;
-      if (phone) {
-        const message =
-          "Hola, estoy armando mi pedido mensual y necesito ayuda para continuar.";
-        window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-      }
-    }
+    redirectToWhatsApp();
   };
-
-  const handleConfirmOrder = async () => {
+  
+  const handleConfirmOrder = async (choice: ConfirmOrderChoice) => {
     if (!tokenData?.cicloId || !tokenData.clienteId || !tokenData.expedienteId) {
       setError("El token no tiene la información necesaria para confirmar el pedido");
       return;
@@ -742,7 +951,8 @@ export default function PortalCliente({
 
       const skippedItemIds = recurrentItems
         .filter((item) => !item.checked)
-        .map((item) => item.id);
+        .map((item) => item.id)
+        .filter((itemId) => !syncedSkippedItemIds.includes(itemId));
 
       await Promise.all(
         skippedItemIds.map((itemId) =>
@@ -751,6 +961,40 @@ export default function PortalCliente({
           }).then(toJson<Record<string, unknown>>),
         ),
       );
+
+      if (skippedItemIds.length > 0) {
+        // Idem newProducts: si un paso posterior falla y se reintenta todo
+        // desde acá, no volver a marcar SKIPPED (duplicaría el historial).
+        setSyncedSkippedItemIds((prev) => [...prev, ...skippedItemIds]);
+      }
+
+      const changedQuantityItems = recurrentItems.filter(
+        (item) => item.cantidad !== (originalRecurringQuantities[item.id] ?? 1),
+      );
+
+      await Promise.all(
+        changedQuantityItems.map((item) =>
+          fetch(`/api/magic/portal-clientes/${token}/ciclos/${tokenData.cicloId}/items/${item.id}/cantidad`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ plannedUnits: item.cantidad }),
+          }).then(toJson<Record<string, unknown>>),
+        ),
+      );
+
+      if (changedQuantityItems.length > 0) {
+        // Idem: no volver a mandar la misma cantidad en un reintento (cada
+        // PATCH crea un evento nuevo en el historial del ciclo).
+        setOriginalRecurringQuantities((prev) => {
+          const next = { ...prev };
+          for (const item of changedQuantityItems) {
+            next[item.id] = item.cantidad;
+          }
+          return next;
+        });
+      }
 
       const newProducts = addedProducts.filter(
         (product) => !originalProductIds.includes(product.id),
@@ -774,31 +1018,21 @@ export default function PortalCliente({
               unidadesPorEnvase: 30,
               dosisPorToma: 1,
               tomasPorDia: 1,
-              cantidadEnvasesPorCiclo: 1,
+              cantidadEnvasesPorCiclo: product.cantidad,
             }),
           }).then(toJson<Record<string, unknown>>),
         ),
       );
 
-      const draftOrder = await fetch(`/api/magic/portal-clientes/${token}/parent-orders/draft`, {
-        method: "POST",
-      }).then(toJson<DraftOrderResponse>);
-
-      if (draftOrder.id) {
-        try {
-          await fetch(`/api/order-cycles/parent-orders/${draftOrder.id}/status`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              status: "ACCEPTED",
-              reason: "Cliente confirmó en portal",
-            }),
-          });
-        } catch {
-          // No bloquea la confirmación visual si el endpoint todavía no existe.
-        }
+      if (newProducts.length > 0) {
+        // Evita que un reintento tras una falla más adelante (ej. pago
+        // rechazado por stock) vuelva a ver estos productos como "nuevos" y
+        // los cree de nuevo — handleConfirmOrder no es idempotente, así que
+        // cada sub-paso debe marcar su propio progreso ni bien se confirma.
+        setOriginalProductIds((prev) => [
+          ...prev,
+          ...newProducts.map((product) => product.id),
+        ]);
       }
 
       await fetch(`/api/magic/portal-clientes/${token}/movimientos`, {
@@ -809,14 +1043,37 @@ export default function PortalCliente({
         body: JSON.stringify({ tipo: "DECISION_GUARDADA" }),
       }).then(toJson<Record<string, unknown>>);
 
-      setOrderConfirmed(true);
-      setOrderNumber(draftOrder.code ?? null);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(orderConfirmedStorageKey, "true");
-        if (draftOrder.code) {
-          window.localStorage.setItem(orderCodeStorageKey, draftOrder.code);
+      if (choice === "contactenme") {
+        const draft = await fetch(
+          `/api/magic/portal-clientes/${token}/parent-orders/draft`,
+          { method: "POST" },
+        ).then(toJson<ParentOrderDraftResponse>);
+
+        setOrderConfirmed(true);
+        setOrderNumber(draft.code ?? null);
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(orderConfirmedStorageKey, "true");
+          if (draft.code) {
+            window.localStorage.setItem(orderCodeStorageKey, draft.code);
+          }
         }
+        redirectToWhatsApp();
+        return;
       }
+
+      // El ParentOrder ya no se crea acá directo: nace del lado del backend
+      // (en PENDING_PAYMENT) recién cuando se arma la preferencia de pago,
+      // y pasa a confirmado cuando Mercado Pago aprueba el pago (webhook).
+      const pago = await fetch(`/api/magic/portal-clientes/${token}/pago/preferencia`, {
+        method: "POST",
+      }).then(toJson<PagoPreferenciaResponse>);
+
+      if (!pago.initPoint) {
+        throw new Error("No se pudo generar el link de pago");
+      }
+
+      setPaymentStatus("redirecting");
+      window.location.assign(pago.initPoint);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -828,11 +1085,38 @@ export default function PortalCliente({
     }
   };
 
+  // Reintento inmediato tras un rechazo: el cliente sigue en el portal, así
+  // que alcanza con una preferencia de pago nueva — no hace falta un link
+  // nuevo por WhatsApp (eso es para cuando ya se fue, ver PortalTokenCheckJob).
+  const handleRetryPayment = async () => {
+    setPaymentStatus("redirecting");
+    setError(null);
+
+    try {
+      const pago = await fetch(`/api/magic/portal-clientes/${token}/pago/preferencia`, {
+        method: "POST",
+      }).then(toJson<PagoPreferenciaResponse>);
+
+      if (!pago.initPoint) {
+        throw new Error("No se pudo generar el link de pago");
+      }
+
+      window.location.assign(pago.initPoint);
+    } catch (requestError) {
+      setPaymentStatus("rejected");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "No se pudo reintentar el pago",
+      );
+    }
+  };
+
   if (loading) {
     return <Loader />;
   }
 
-  if (submittingOrder) {
+  if (submittingOrder || paymentStatus === "redirecting" || paymentStatus === "processing") {
     return <OrderProcessingLoader />;
   }
 
@@ -911,6 +1195,8 @@ export default function PortalCliente({
             onToggleItem={handleToggleItem}
             onToggleProduct={handleToggleProduct}
             isProductSelected={isProductSelected}
+            getProductQuantity={getProductQuantity}
+            onChangeProductQuantity={handleChangeProductQuantity}
             onPrevPage={handlePrevPage}
             onNextPage={handleNextPage}
             onContinue={handleContinueToDelivery}
@@ -960,15 +1246,21 @@ export default function PortalCliente({
               isSubmitting={submittingOrder}
               orderConfirmed={orderConfirmed}
               orderNumber={orderNumber}
+              paymentStatus={paymentStatus}
               token={token}
               cicloId={tokenData?.cicloId}
-              onConfirm={() => {
-                void handleConfirmOrder();
+              onConfirm={(choice) => {
+                void handleConfirmOrder(choice);
+              }}
+              onRetryPayment={() => {
+                void handleRetryPayment();
               }}
               onContactAdvisor={() => {
                 void handleContactAdvisor();
               }}
               onBack={onOpenSidebar && !orderConfirmed ? handleBackStep : undefined}
+              onRemoveProduct={handleRemoveFromCart}
+              onChangeProductQuantity={handleChangeProductQuantity}
             />
           </>
         )}
