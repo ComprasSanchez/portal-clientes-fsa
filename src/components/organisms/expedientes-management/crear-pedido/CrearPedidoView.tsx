@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { CheckCircle2, FileText, Pill } from "lucide-react";
+import {
+  CalendarDays,
+  CheckCircle2,
+  FileText,
+  Pill,
+  ShieldCheck,
+  Zap,
+} from "lucide-react";
 import { prefetchSucursales } from "@/components/molecules/expedientes/SucursalPickerField";
 import { RecetaDropzone } from "@/components/molecules/receta-dropzone/receta-dropzone";
 import { useGlobalToast } from "@/components/ui/global-toast";
@@ -21,13 +28,15 @@ import type { SelectedProductState } from "@/types/portal-productos";
 import type { PortalSucursalOption } from "@/types/portal-sucursales";
 import type { HomeView } from "@/types/home";
 import {
-  formatExpedienteLabel,
   getAutoTitulo,
   getDomicilioLabel,
   todayIso,
 } from "../../../../helpers/expedientes-management.helpers";
 import { CrearPedidoStep1Productos } from "./CrearPedidoStep1Productos";
 import { CrearPedidoStep2Entrega } from "./CrearPedidoStep2Entrega";
+
+/** Subida de receta en CORA — controlada por env var, no se borró nada, solo se oculta. */
+const RECETA_UPLOAD_ENABLED = process.env.NEXT_PUBLIC_CORA_RECETA_UPLOAD_ENABLED === "true";
 
 export interface CreateFormValues {
   fechaInicioCicloBase: string;
@@ -169,7 +178,9 @@ export function CrearPedidoView({
 
       if (!recetaFile && values.items.length === 0) {
         setSubmitBlockedMessage(
-          "Subí tu receta o elegí al menos un producto para poder confirmar el pedido.",
+          RECETA_UPLOAD_ENABLED
+            ? "Subí tu receta o elegí al menos un producto para poder confirmar el pedido."
+            : "Elegí al menos un producto para poder confirmar el pedido.",
         );
         return;
       }
@@ -198,6 +209,7 @@ export function CrearPedidoView({
           marcaNombre: product.laboratorio,
           activo: true,
           periodoDias: Number(product.periodoDias),
+          cantidadEnvasesPorCiclo: product.cantidadEnvasesPorCiclo || 1,
         })),
       };
 
@@ -311,48 +323,66 @@ export function CrearPedidoView({
 
   if (createdSummary) {
     return (
-      <article className="rounded-3xl border border-[#dcd0f4] bg-[#faf7ff] p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#8f63d9]">
-          Alta confirmada
-        </p>
-        <h3 className="mt-2 text-xl font-semibold text-[#2f3042]">
-          Tu pedido ya fue creado
-        </h3>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <div className="rounded-2xl bg-white px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f63d9]">
-              Pedido
-            </p>
-            <p className="mt-1 text-sm font-semibold text-[#2f3042]">
-              {formatExpedienteLabel(createdSummary.expedienteId)}
-            </p>
-          </div>
-          <div className="rounded-2xl bg-white px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f63d9]">
-              Fecha de contacto
-            </p>
-            <p className="mt-1 text-sm font-semibold text-[#2f3042]">
-              {createdSummary.fechaContacto
-                ? formatPortalProfileDate(createdSummary.fechaContacto)
-                : "Te vamos a confirmar pronto la fecha de contacto"}
-            </p>
+      <article className="overflow-hidden rounded-3xl border border-[#e4d9f5] bg-white shadow-sm">
+        <div className="relative overflow-hidden bg-[#4a2e73] px-6 py-7 sm:px-8">
+          <div className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/5" />
+          <div className="pointer-events-none absolute -bottom-14 right-10 h-24 w-24 rounded-full bg-white/5" />
+
+          <span className="relative inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white">
+            <Zap size={12} />
+            Alta confirmada
+          </span>
+
+          <div className="relative mt-4 flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#4a2e73]">
+              <CheckCircle2 size={26} />
+            </span>
+            <div>
+              <h3 className="text-xl font-bold text-white sm:text-2xl">
+                Tu pedido ya fue creado
+              </h3>
+              <p className="mt-1 text-sm text-white/75">
+                Registramos tu solicitud correctamente. Te vamos a contactar
+                en la fecha indicada.
+              </p>
+            </div>
           </div>
         </div>
 
-        {createdSummary.recetaUploadFailed && (
-          <div className="mt-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            No pudimos subir tu receta. Podés reintentar más adelante desde
-            &quot;Mi historial&quot; o mandarla por WhatsApp.
+        <div className="space-y-4 p-6 sm:p-8">
+          <div className="rounded-2xl border border-[#f3e2bd] bg-[#fdf6e6] px-4 py-3">
+            <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#a15a10]">
+              <CalendarDays size={13} />
+              Fecha de contacto
+            </p>
+            <p className="mt-1 text-lg font-bold text-[#a15a10]">
+              {createdSummary.fechaContacto
+                ? formatPortalProfileDate(createdSummary.fechaContacto)
+                : "A confirmar"}
+            </p>
           </div>
-        )}
 
-        <button
-          type="button"
-          onClick={() => onNavigate("mi-historial")}
-          className="mt-6 inline-flex items-center justify-center rounded-2xl bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#7f56c7]"
-        >
-          Volver a Mi historial
-        </button>
+          {createdSummary.recetaUploadFailed && (
+            <div className="rounded-2xl border border-[#f3e2bd] bg-[#fdf6e6] px-4 py-3 text-sm text-[#a15a10]">
+              No pudimos subir tu receta. Podés reintentar más adelante desde
+              &quot;Mi historial&quot; o mandarla por WhatsApp.
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3 border-t border-[#efe8f7] pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="inline-flex items-center gap-1.5 text-xs text-[#6d6480]">
+              <ShieldCheck size={14} />
+              Tu pedido quedó guardado en tu historial.
+            </p>
+            <button
+              type="button"
+              onClick={() => onNavigate("mi-historial")}
+              className="inline-flex items-center justify-center rounded-2xl bg-[#a06ed9] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#9158c4]"
+            >
+              Volver a Mi historial
+            </button>
+          </div>
+        </div>
       </article>
     );
   }
@@ -376,43 +406,53 @@ export function CrearPedidoView({
 
       <Section
         number={1}
-        title="Cargá tu receta o agregá productos"
-        description="Subí una foto o PDF de tu receta, elegí los productos manualmente, o ambos."
+        title={
+          RECETA_UPLOAD_ENABLED
+            ? "Cargá tu receta o agregá productos"
+            : "Agregá productos"
+        }
+        description={
+          RECETA_UPLOAD_ENABLED
+            ? "Subí una foto o PDF de tu receta, elegí los productos manualmente, o ambos."
+            : "Elegí los productos que necesitás."
+        }
       >
-        <div className="mb-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setRecetaPanelOpen((open) => !open)}
-            className={`inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
-              recetaPanelOpen
-                ? "border-[#8f63d9] bg-[#8f63d9] text-white"
-                : "border-[#ddd6eb] bg-white text-[#2f3042] hover:border-[#c4b5e0]"
-            }`}
-          >
-            <FileText size={16} />
-            {recetaFile
-              ? "Receta adjuntada"
-              : recetaOmitida
-                ? "Receta pendiente"
-                : "Subir receta"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowProductPicker((open) => !open)}
-            className={`inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
-              showProductPicker
-                ? "border-[#8f63d9] bg-[#8f63d9] text-white"
-                : "border-[#ddd6eb] bg-white text-[#2f3042] hover:border-[#c4b5e0]"
-            }`}
-          >
-            <Pill size={16} />
-            {formik.values.items.length > 0
-              ? `Productos (${formik.values.items.length})`
-              : "Agregar productos"}
-          </button>
-        </div>
+        {RECETA_UPLOAD_ENABLED && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setRecetaPanelOpen((open) => !open)}
+              className={`inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
+                recetaPanelOpen
+                  ? "border-[#8f63d9] bg-[#8f63d9] text-white"
+                  : "border-[#ddd6eb] bg-white text-[#2f3042] hover:border-[#c4b5e0]"
+              }`}
+            >
+              <FileText size={16} />
+              {recetaFile
+                ? "Receta adjuntada"
+                : recetaOmitida
+                  ? "Receta pendiente"
+                  : "Subir receta"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowProductPicker((open) => !open)}
+              className={`inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
+                showProductPicker
+                  ? "border-[#8f63d9] bg-[#8f63d9] text-white"
+                  : "border-[#ddd6eb] bg-white text-[#2f3042] hover:border-[#c4b5e0]"
+              }`}
+            >
+              <Pill size={16} />
+              {formik.values.items.length > 0
+                ? `Productos (${formik.values.items.length})`
+                : "Agregar productos"}
+            </button>
+          </div>
+        )}
 
-        {recetaPanelOpen && (
+        {RECETA_UPLOAD_ENABLED && recetaPanelOpen && (
           <div className="space-y-2">
             {!recetaFile && !recetaOmitida && (
               <>
@@ -457,8 +497,14 @@ export function CrearPedidoView({
           </div>
         )}
 
-        {showProductPicker && (
-          <div className={recetaPanelOpen ? "mt-4 border-t border-[#f0e9fb] pt-4" : ""}>
+        {(RECETA_UPLOAD_ENABLED ? showProductPicker : true) && (
+          <div
+            className={
+              RECETA_UPLOAD_ENABLED && recetaPanelOpen
+                ? "mt-4 border-t border-[#f0e9fb] pt-4"
+                : ""
+            }
+          >
             <CrearPedidoStep1Productos
               formik={formik}
               productSearchResetKey={productSearchResetKey}
@@ -518,8 +564,9 @@ export function CrearPedidoView({
         description="Cuando confirmes, te contactamos para coordinar la entrega."
       >
         <p className="text-sm text-[#6f7085]">
-          Un asesor va a revisar tu receta y tus productos, y te va a
-          contactar para coordinar todo antes de la entrega.
+          {RECETA_UPLOAD_ENABLED
+            ? "Un asesor va a revisar tu receta y tus productos, y te va a contactar para coordinar todo antes de la entrega."
+            : "Un asesor va a revisar tu pedido y te va a contactar para coordinar todo antes de la entrega."}
         </p>
       </Section>
 

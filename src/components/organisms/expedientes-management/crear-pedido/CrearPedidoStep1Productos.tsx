@@ -110,8 +110,26 @@ export function CrearPedidoStep1Productos({
         nombre: producto.nombre,
         laboratorio: "",
         periodoDias: CADENCIA_DEFAULT,
+        cantidadEnvasesPorCiclo: 1,
       },
     ]);
+  };
+
+  const handleChangeQuantity = (productId: string, delta: number) => {
+    formik.setFieldValue(
+      "items",
+      formik.values.items.map((item) =>
+        item.id === productId
+          ? {
+              ...item,
+              cantidadEnvasesPorCiclo: Math.max(
+                1,
+                (item.cantidadEnvasesPorCiclo ?? 1) + delta,
+              ),
+            }
+          : item,
+      ),
+    );
   };
 
   if (subpaso === "frecuencia") {
@@ -281,7 +299,11 @@ export function CrearPedidoStep1Productos({
           }
           formik.setFieldValue("items", [
             ...formik.values.items,
-            { ...product, periodoDias: CADENCIA_DEFAULT },
+            {
+              ...product,
+              periodoDias: CADENCIA_DEFAULT,
+              cantidadEnvasesPorCiclo: 1,
+            },
           ]);
         }}
         onRemove={(productId) => {
@@ -290,6 +312,7 @@ export function CrearPedidoStep1Productos({
             formik.values.items.filter((item) => item.id !== productId),
           );
         }}
+        onChangeQuantity={handleChangeQuantity}
       />
 
       <div className="flex justify-between">

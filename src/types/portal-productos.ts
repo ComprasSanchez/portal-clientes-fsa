@@ -5,6 +5,9 @@ export type PortalProductoRaw = {
   lab?: string;
   marcaNombre?: string;
   presentacion?: string;
+  precio?: number | null;
+  precioBase?: number | null;
+  descuentoPct?: number;
 };
 
 export type PortalProductosResponse = {
@@ -22,10 +25,14 @@ export type PortalProductoOption = {
   nombre: string;
   laboratorio: string;
   presentacion?: string;
+  precio?: number | null;
+  precioBase?: number | null;
+  descuentoPct?: number;
 };
 
 export type SelectedProductState = PortalProductoOption & {
   periodoDias: string;
+  cantidadEnvasesPorCiclo: number;
 };
 
 export type PortalProductoRecurrente = {
