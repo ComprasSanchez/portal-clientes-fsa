@@ -11,6 +11,7 @@ import {
 import PortalStepper from "../../stepper/stepper";
 import PortalButton from "@/components/atoms/button/button";
 import { RecetaUploader } from "@/components/molecules/receta-uploader/receta-uploader";
+import { RECETA_UPLOAD_ENABLED } from "@/lib/feature-flags";
 import ConfirmProductsAccordion, {
   ConfirmProductItem,
 } from "../../confirm-accordion/confirm-accordion";
@@ -345,7 +346,9 @@ const PedidosStep3 = ({
           />
           {entrega && <ConfirmDeliveryAccordion data={entrega} />}
 
-          {token && <RecetaUploader onUpload={handleUploadReceta} />}
+          {RECETA_UPLOAD_ENABLED && token && (
+            <RecetaUploader onUpload={handleUploadReceta} />
+          )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {showPaymentChoice ? (

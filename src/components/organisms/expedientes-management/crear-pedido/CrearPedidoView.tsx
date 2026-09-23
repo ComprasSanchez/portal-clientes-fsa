@@ -34,9 +34,7 @@ import {
 } from "../../../../helpers/expedientes-management.helpers";
 import { CrearPedidoStep1Productos } from "./CrearPedidoStep1Productos";
 import { CrearPedidoStep2Entrega } from "./CrearPedidoStep2Entrega";
-
-/** Subida de receta en CORA — controlada por env var, no se borró nada, solo se oculta. */
-const RECETA_UPLOAD_ENABLED = process.env.NEXT_PUBLIC_CORA_RECETA_UPLOAD_ENABLED === "true";
+import { RECETA_UPLOAD_ENABLED } from "@/lib/feature-flags";
 
 export interface CreateFormValues {
   fechaInicioCicloBase: string;
