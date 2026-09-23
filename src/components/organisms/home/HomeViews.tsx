@@ -213,7 +213,7 @@ const viewContent: Record<
     description: "Consulta y descarga de comprobantes.",
   },
   "pedido-actual": {
-    title: "Tu último pedido",
+    title: "Seguimiento de pedido actual",
     description:
       "Te contamos todo sobre tu pedido: estado, medicamentos y entrega.",
   },
@@ -537,6 +537,22 @@ export function HomeViews({
               />
             </div>
           ) : null}
+
+          {!shouldShowTrackingLoading &&
+          hasCicloId &&
+          !pedidoTrackingError &&
+          !latestParentOrder ? (
+            <div className={styles.trackingMessageCard}>
+              <p className={styles.trackingMessageTitle}>
+                Todavía no hay seguimiento para mostrarte
+              </p>
+              <p className={styles.trackingMessageText}>
+                Tu pedido está registrado, pero todavía no tiene novedades de
+                preparación o entrega. En cuanto haya un movimiento, lo vas a
+                ver acá.
+              </p>
+            </div>
+          ) : null}
         </section>
       </main>
     );
@@ -613,11 +629,6 @@ export function HomeViews({
                               <p className={styles.medicamentName}>
                                 {item.productoNombre}
                               </p>
-                              {item.marcaNombre && (
-                                <p className={styles.medicamentMarca}>
-                                  {item.marcaNombre}
-                                </p>
-                              )}
                             </div>
                             {item.cantidadEnvasesPorCiclo != null && (
                               <div className={styles.medicamentQty}>
@@ -705,10 +716,12 @@ export function HomeViews({
                         <div>
                           <p className={styles.entregaPagoLabel}>Cobertura</p>
                           <p className={styles.entregaPagoValue}>
-                            {getMappedLabel(
-                              PAY_TYPE_LABELS,
-                              expedienteActual?.medioPago,
-                            )}
+                            {expedienteActual?.medioPago
+                              ? getMappedLabel(
+                                  PAY_TYPE_LABELS,
+                                  expedienteActual.medioPago,
+                                )
+                              : "A confirmar"}
                           </p>
                         </div>
                       </div>
@@ -760,6 +773,12 @@ export function HomeViews({
                           </p>
                         </div>
                       </div>
+                    </div>
+                  </section>
+
+                  <section className={styles.expedienteSection}>
+                    <p className={styles.sectionEyebrow}>Datos médicos</p>
+                    <div className={styles.infoCard}>
                       <div className={styles.infoRow}>
                         <Stethoscope size={16} className={styles.infoIcon} />
                         <div>

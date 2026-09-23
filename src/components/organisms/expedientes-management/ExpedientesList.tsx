@@ -79,11 +79,6 @@ export function ExpedientesList({
                         Activo
                       </span>
                     ) : null}
-                    {isSelectedForEdit ? (
-                      <span className="rounded-full bg-[#1f5ea8] px-2.5 py-1 text-xs font-semibold text-white">
-                        Editando
-                      </span>
-                    ) : null}
                   </div>
                 </div>
 
@@ -92,12 +87,6 @@ export function ExpedientesList({
                     <dt>Inicio</dt>
                     <dd className="text-right text-[#2f3042]">
                       {formatPortalProfileDate(expedienteItem.openedAt ?? null)}
-                    </dd>
-                  </div>
-                  <div className="flex items-center justify-between gap-3">
-                    <dt>Objetivo actual</dt>
-                    <dd className="text-right text-[#2f3042]">
-                      {formatPortalProfileDate(expedienteItem.cicloActual?.fechaEntregaObjetivo ?? null)}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between gap-3">
