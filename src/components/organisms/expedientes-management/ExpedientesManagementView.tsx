@@ -68,8 +68,8 @@ export function ExpedientesManagementView({
     <section className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h3 className="text-[36px] font-semibold uppercase text-[#8f63d9]">MI HISTORIAL</h3>
-          <p className="text-xl font-normal text-[#2f3042]">Contame qué medicación tomás y yo me ocupo del resto</p>
+          <h3 className="cora-title-page text-[#8f63d9]">Mi historial</h3>
+          <p className="cora-read text-[#2f3042]">Contame qué medicación tomás y yo me ocupo del resto</p>
         </div>
       </div>
 
@@ -82,10 +82,10 @@ export function ExpedientesManagementView({
               <ShieldCheck size={20} />
             </span>
             <div>
-              <p className="text-sm font-semibold text-[#2f3042]">
+              <p className="cora-card-subtitle text-[#2f3042]">
                 Contacto verificado
               </p>
-              <p className="mt-1 text-sm text-[#5f6074]">
+              <p className="mt-1 cora-read text-[#5f6074]">
                 Mantené tu teléfono o email actualizados para que pueda
                 comunicarme con vos.
               </p>
@@ -99,10 +99,10 @@ export function ExpedientesManagementView({
               <CalendarDays size={20} />
             </span>
             <div>
-              <p className="text-sm font-semibold text-[#2f3042]">
+              <p className="cora-card-subtitle text-[#2f3042]">
                 Fecha de entrega
               </p>
-              <p className="mt-1 text-sm text-[#5f6074]">
+              <p className="mt-1 cora-read text-[#5f6074]">
                 Elegí cuándo necesitás tu medicación. Yo me encargo del resto.
               </p>
             </div>
@@ -115,10 +115,10 @@ export function ExpedientesManagementView({
               <AlertCircle size={20} />
             </span>
             <div>
-              <p className="text-sm font-semibold text-[#2f3042]">
+              <p className="cora-card-subtitle text-[#2f3042]">
                 ¿Qué pasa después?
               </p>
-              <p className="mt-1 text-sm text-[#5f6074]">
+              <p className="mt-1 cora-read text-[#5f6074]">
                 Cuando termines, voy a comunicarme con vos para coordinar la
                 primera entrega.
               </p>

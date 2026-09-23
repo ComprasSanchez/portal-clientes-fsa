@@ -294,10 +294,10 @@ export function EditExpedienteForm({
             <FilePenLine size={20} />
           </span>
           <div>
-            <h3 className="text-lg font-semibold text-[#2f3042]">
+            <h3 className="cora-title-section text-[#2f3042]">
               {editingItem?.titulo ? `Editando: ${editingItem.titulo}` : "Editar pedido"}
             </h3>
-            <p className="text-sm text-[#5f6074]">
+            <p className="cora-read text-[#5f6074]">
               {editingItem
                 ? "Modificá los datos y guardá los cambios."
                 : "Seleccioná un pedido de la lista para editarlo."}

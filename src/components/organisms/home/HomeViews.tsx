@@ -888,7 +888,7 @@ export function HomeViews({
           </article> */}
 
           <article className={styles.panelCard}>
-            <h2 className={styles.panelTitle}>Ultimo pedido</h2>
+            <h2 className={styles.panelTitle}>Último pedido</h2>
             <p className={styles.panelSubtitle}>{latestOrderSubtitle}</p>
             <dl className={styles.orderList}>
               <OrderRow

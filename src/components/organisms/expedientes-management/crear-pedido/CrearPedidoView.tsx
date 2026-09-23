@@ -113,8 +113,8 @@ function Section({ number, title, description, children }: SectionProps) {
           {number}
         </span>
         <div>
-          <p className="text-base font-semibold text-[#2f3042]">{title}</p>
-          <p className="text-sm text-[#6f7085]">{description}</p>
+          <p className="cora-card-subtitle text-[#2f3042]">{title}</p>
+          <p className="cora-read text-[#6f7085]">{description}</p>
         </div>
       </div>
       {children}
@@ -326,7 +326,7 @@ export function CrearPedidoView({
           <div className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/5" />
           <div className="pointer-events-none absolute -bottom-14 right-10 h-24 w-24 rounded-full bg-white/5" />
 
-          <span className="relative inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white">
+          <span className="cora-data-label relative inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 uppercase tracking-[0.16em] text-white">
             <Zap size={12} />
             Alta confirmada
           </span>
@@ -336,10 +336,10 @@ export function CrearPedidoView({
               <CheckCircle2 size={26} />
             </span>
             <div>
-              <h3 className="text-xl font-bold text-white sm:text-2xl">
+              <h3 className="cora-title-section text-white">
                 Tu pedido ya fue creado
               </h3>
-              <p className="mt-1 text-sm text-white/75">
+              <p className="mt-1 cora-read text-white/75">
                 Registramos tu solicitud correctamente. Te vamos a contactar
                 en la fecha indicada.
               </p>
@@ -349,11 +349,11 @@ export function CrearPedidoView({
 
         <div className="space-y-4 p-6 sm:p-8">
           <div className="rounded-2xl border border-[#f3e2bd] bg-[#fdf6e6] px-4 py-3">
-            <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#a15a10]">
+            <p className="cora-data-label inline-flex items-center gap-1.5 uppercase tracking-[0.16em] text-[#a15a10]">
               <CalendarDays size={13} />
               Fecha de contacto
             </p>
-            <p className="mt-1 text-lg font-bold text-[#a15a10]">
+            <p className="mt-1 cora-card-subtitle text-[#a15a10]">
               {createdSummary.fechaContacto
                 ? formatPortalProfileDate(createdSummary.fechaContacto)
                 : "A confirmar"}
@@ -361,14 +361,14 @@ export function CrearPedidoView({
           </div>
 
           {createdSummary.recetaUploadFailed && (
-            <div className="rounded-2xl border border-[#f3e2bd] bg-[#fdf6e6] px-4 py-3 text-sm text-[#a15a10]">
+            <div className="cora-read rounded-2xl border border-[#f3e2bd] bg-[#fdf6e6] px-4 py-3 text-[#a15a10]">
               No pudimos subir tu receta. Podés reintentar más adelante desde
               &quot;Mi historial&quot; o mandarla por WhatsApp.
             </div>
           )}
 
           <div className="flex flex-col gap-3 border-t border-[#efe8f7] pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="inline-flex items-center gap-1.5 text-xs text-[#6d6480]">
+            <p className="cora-aux inline-flex items-center gap-1.5 text-[#6d6480]">
               <ShieldCheck size={14} />
               Tu pedido quedó guardado en tu historial.
             </p>
@@ -394,10 +394,10 @@ export function CrearPedidoView({
   return (
     <section className="space-y-4">
       <div className="text-center sm:text-left">
-        <h2 className="text-[26px] font-bold uppercase text-[#8f63d9] sm:text-[36px]">
+        <h2 className="cora-title-page uppercase text-[#8f63d9]">
           Armemos tu pedido
         </h2>
-        <p className="text-sm text-[#6f7085]">
+        <p className="cora-read text-[#6f7085]">
           Contame qué necesitás y yo me ocupo del resto.
         </p>
       </div>
@@ -570,7 +570,7 @@ export function CrearPedidoView({
 
       {formik.values.medioEntrega && (
         <div className="rounded-2xl border border-[#ebe6f4] px-4 py-3 text-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#8f7fa0]">
+          <p className="cora-data-label uppercase tracking-[0.14em] text-[#8f7fa0]">
             Resumen de entrega
           </p>
           <p className="mt-1 font-semibold text-[#2f3042]">

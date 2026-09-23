@@ -29,8 +29,8 @@ export function ExpedientesList({
   return (
     <article>
       <div className="mb-5">
-        <h3 className="text-lg font-semibold text-[#2f3042]">Tus pedidos</h3>
-        <p className="text-sm text-[#5f6074]">
+        <h3 className="cora-title-section text-[#2f3042]">Tus pedidos</h3>
+        <p className="cora-read text-[#5f6074]">
           Resumen de tus ultimos pedidos.
         </p>
       </div>
@@ -66,7 +66,7 @@ export function ExpedientesList({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-[#2f3042]">
+                    <p className="cora-card-subtitle text-[#2f3042]">
                       {expedienteItem.titulo ?? formatExpedienteLabel(expedienteItem.expedienteId)}
                     </p>
                     {/* <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[#8f63d9]">

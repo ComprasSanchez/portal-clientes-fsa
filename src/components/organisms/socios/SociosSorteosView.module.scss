@@ -3,7 +3,7 @@
   width: 100%;
   max-width: 80rem;
   padding: 2rem 1rem;
-  font-family: "Futura", "BD Supper", Arial, Helvetica, sans-serif;
+  font-family: var(--font-socios, "Poppins", "BD Supper", Arial, Helvetica, sans-serif);
 }
 
 .heroCard {
@@ -19,8 +19,8 @@
 }
 
 .eyebrow {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--fs-socios-data-label, 0.75rem);
+  font-weight: var(--fw-socios-data-label, 700);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.72);
@@ -28,16 +28,16 @@
 
 .title {
   margin-top: 0.6rem;
-  font-size: clamp(2rem, 4.4vw, 2.5rem);
-  font-weight: 700;
-  font-size: 2rem;
+  font-size: var(--fs-socios-title-page, 2rem);
+  font-weight: var(--fw-socios-title-page, 700);
 }
 
 .description {
   margin-top: 0.45rem;
   max-width: 60rem;
   color: rgba(255, 255, 255, 0.84);
-  font-size: 1.6rem
+  font-size: var(--fs-socios-read, 1.6rem);
+  font-weight: var(--fw-socios-read, 400);
 }
 
 .grid {
@@ -62,15 +62,16 @@
 }
 
 .panelTitle {
-  font-size: clamp(1.3rem, 3vw, 1.7rem);
-  font-weight: 700;
+  font-size: var(--fs-socios-title-section, clamp(1.3rem, 3vw, 1.7rem));
+  font-weight: var(--fw-socios-title-section, 700);
   color: #17343d;
 }
 
 .panelSubtitle {
   margin-top: 0.25rem;
   color: #698088;
-  font-size: 1.1rem;
+  font-size: var(--fs-socios-read, 1.1rem);
+  font-weight: var(--fw-socios-read, 400);
 }
 
 .iconBadge,
@@ -150,13 +151,15 @@
 }
 
 .emptyTitle {
-  font-weight: 700;
+  font-size: var(--fs-socios-card-subtitle, inherit);
+  font-weight: var(--fw-socios-card-subtitle, 700);
   color: #3a5560;
 }
 
 .emptyBody {
   margin-top: 0.3rem;
-  font-size: 0.875rem;
+  font-size: var(--fs-socios-read, 0.875rem);
+  font-weight: var(--fw-socios-read, 400);
   color: #607982;
   line-height: 1.5;
 }
@@ -172,8 +175,8 @@
 }
 
 .drawCode {
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: var(--fs-socios-data-label, 0.78rem);
+  font-weight: var(--fw-socios-data-label, 700);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #68828a;
@@ -181,14 +184,16 @@
 
 .drawName {
   margin-top: 0.55rem;
-  font-size: clamp(1.5rem, 3.8vw, 2rem);
-  font-weight: 700;
+  font-size: var(--fs-socios-title-section, clamp(1.5rem, 3.8vw, 2rem));
+  font-weight: var(--fw-socios-title-section, 700);
   color: #163640;
 }
 
 .drawDescription {
   margin-top: 0.55rem;
   color: #58727a;
+  font-size: var(--fs-socios-read, inherit);
+  font-weight: var(--fw-socios-read, 400);
 }
 
 .metaGrid {
@@ -208,7 +213,8 @@
 .metaLabel,
 .identityLabel {
   display: block;
-  font-size: 1rem;
+  font-size: var(--fs-socios-data-label, 1rem);
+  font-weight: var(--fw-socios-data-label, 400);
   color: #698088;
 }
 
@@ -229,7 +235,8 @@
   display: block;
   margin-top: 0.5rem;
   color: #607982;
-  font-size: 1rem;
+  font-size: var(--fs-socios-aux, 1rem);
+  font-weight: var(--fw-socios-aux, 400);
 }
 
 .primaryButton,
@@ -274,7 +281,8 @@
 .inlineHint {
   display: block;
   margin-top: 0.4rem;
-  font-size: 0.8125rem;
+  font-size: var(--fs-socios-aux, 0.8125rem);
+  font-weight: var(--fw-socios-aux, 400);
 }
 
 .spinningIcon {
@@ -302,7 +310,8 @@
 }
 
 .warningHint {
-  font-size: 0.8125rem;
+  font-size: var(--fs-socios-aux, 0.8125rem);
+  font-weight: var(--fw-socios-aux, 400);
   opacity: 0.8;
 }
 
@@ -351,14 +360,15 @@
 }
 
 .modalTitle {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: var(--fs-socios-title-section, 1.2rem);
+  font-weight: var(--fw-socios-title-section, 700);
   color: #17343d;
 }
 
 .modalSubtitle {
   margin-top: 0.2rem;
-  font-size: 0.9rem;
+  font-size: var(--fs-socios-read, 0.9rem);
+  font-weight: var(--fw-socios-read, 400);
   color: #607982;
 }
 
@@ -392,12 +402,15 @@
 .modalText {
   color: #3a5560;
   line-height: 1.6;
+  font-size: var(--fs-socios-read, inherit);
+  font-weight: var(--fw-socios-read, 400);
 }
 
 .modalHint {
   display: block;
   margin-top: 0.5rem;
-  font-size: 0.85em;
+  font-size: var(--fs-socios-aux, 0.85em);
+  font-weight: var(--fw-socios-aux, 400);
   opacity: 0.65;
 }
 
@@ -488,14 +501,15 @@
 }
 
 .convenioStepTitle {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: var(--fs-socios-card-subtitle, 1.05rem);
+  font-weight: var(--fw-socios-card-subtitle, 700);
   color: #17343d;
 }
 
 .convenioStepSubtitle {
   margin-top: 0.2rem;
-  font-size: 0.875rem;
+  font-size: var(--fs-socios-read, 0.875rem);
+  font-weight: var(--fw-socios-read, 400);
   color: #3a5a68;
   line-height: 1.5;
 }
@@ -513,8 +527,8 @@
 }
 
 .convenioStepLabel {
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: var(--fs-socios-data-label, 0.8125rem);
+  font-weight: var(--fw-socios-data-label, 600);
   color: #3a5560;
 }
 
@@ -548,7 +562,8 @@
 }
 
 .convenioStepHint {
-  font-size: 0.775rem;
+  font-size: var(--fs-socios-aux, 0.775rem);
+  font-weight: var(--fw-socios-aux, 400);
   color: #5a8898;
 }
 
@@ -594,8 +609,8 @@
 }
 
 .convenioBannerLabel {
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: var(--fs-socios-data-label, 0.78rem);
+  font-weight: var(--fw-socios-data-label, 700);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #4a8090;
@@ -603,8 +618,8 @@
 }
 
 .convenioBannerName {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--fs-socios-card-subtitle, 1rem);
+  font-weight: var(--fw-socios-card-subtitle, 700);
   color: #17343d;
   letter-spacing: 0.03em;
 }

@@ -1311,8 +1311,8 @@ export function ProfileView({
         <div className={styles.headerText}>
           <h1 className={styles.title}>Mi perfil</h1>
           <p className={styles.localEditHint}>
-            Podes agregar, modificar o corregir tus datos personales, de
-            contacto desde esta seccion.
+            Podés agregar, modificar o corregir tus datos personales, de
+            contacto desde esta sección.
           </p>
         </div>
       </header>

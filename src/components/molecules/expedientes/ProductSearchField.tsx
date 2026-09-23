@@ -269,7 +269,7 @@ export function ProductSearchField({
 
         <div>
           {selectedProducts.length > 0 && (
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f63d9]">
+            <p className="cora-card-subtitle mb-2 text-[#8f63d9]">
               Productos seleccionados ({selectedProducts.length})
             </p>
           )}
@@ -363,7 +363,7 @@ export function ProductSearchField({
 
         {hasSearched ? (
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f7fa0]">
+            <p className="cora-card-subtitle mb-2 text-[#8f7fa0]">
               Resultados de búsqueda
             </p>
 

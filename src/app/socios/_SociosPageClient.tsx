@@ -11,8 +11,6 @@ import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import { type SociosView } from "@/types/socios";
 
-const FUTURA = '"Futura", "BD Supper", Arial, Helvetica, sans-serif';
-
 const DEFAULT_VIEW: SociosView = "dashboard";
 const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos"];
 
@@ -145,7 +143,7 @@ export function SociosPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-[#edf1f2] via-[#f7f9fa] to-white" style={{ fontFamily: FUTURA }}>
+    <div className="socios-app min-h-screen bg-linear-to-br from-[#edf1f2] via-[#f7f9fa] to-white">
       {convenioLocked && convenio && !convenioChecking && (
         <ConvenioVerificacionModal
           convenio={convenio}

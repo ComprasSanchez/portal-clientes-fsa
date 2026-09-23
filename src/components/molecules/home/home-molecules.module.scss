@@ -46,7 +46,9 @@
 }
 
 .quickAccessLabel {
-  font-weight: 600;
+  font-family: var(--font-cora-body, inherit);
+  font-size: var(--fs-cora-card-subtitle, inherit);
+  font-weight: var(--fw-cora-card-subtitle, 600);
   color: #2f3042;
 }
 

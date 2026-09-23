@@ -114,7 +114,7 @@ export function CoraPageClient() {
   };
 
   return (
-    <div className="bg-linear-to-br from-muted/30 to-white">
+    <div className="cora-app bg-linear-to-br from-muted/30 to-white">
       {currentView !== "crear-pedido" && currentView !== "revision-pendiente" ? (
         <div className="fixed right-6 top-6 z-40 hidden items-center gap-3 lg:flex">
           <NotificationBell />
