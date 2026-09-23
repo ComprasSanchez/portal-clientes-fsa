@@ -56,6 +56,7 @@ export type PortalCreateExpedienteResponse = {
 
 export type CreatedExpedienteSummary = {
   expedienteId: string;
-  fechaObjetivoEntrega: string | null;
-  fechaPrimerContacto: string | null;
+  clienteId: string;
+  fechaContacto: string | null;
+  recetaUploadFailed?: boolean;
 };

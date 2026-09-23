@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import PortalStepper from "../../stepper/stepper";
 import PortalButton from "@/components/atoms/button/button";
+import { RecetaUploader } from "@/components/molecules/receta-uploader/receta-uploader";
+import { RECETA_UPLOAD_ENABLED } from "@/lib/feature-flags";
 import ConfirmProductsAccordion, {
   ConfirmProductItem,
 } from "../../confirm-accordion/confirm-accordion";
@@ -112,6 +114,24 @@ const PedidosStep3 = ({
     () => parentOrders[0]?.code ?? orderNumber,
     [orderNumber, parentOrders],
   );
+
+  const handleUploadReceta = async (file: File) => {
+    if (!token) {
+      throw new Error("No se encontró el token del portal");
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`/api/magic/portal-clientes/${token}/recetas`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("No pudimos subir la receta");
+    }
+  };
 
   // "Listo para entrega o retiro" es ambiguo — una vez que sabemos qué
   // eligió el cliente, mostramos el texto específico que le corresponde.
@@ -325,6 +345,10 @@ const PedidosStep3 = ({
             onChangeQuantity={onChangeProductQuantity}
           />
           {entrega && <ConfirmDeliveryAccordion data={entrega} />}
+
+          {RECETA_UPLOAD_ENABLED && token && (
+            <RecetaUploader onUpload={handleUploadReceta} />
+          )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {showPaymentChoice ? (

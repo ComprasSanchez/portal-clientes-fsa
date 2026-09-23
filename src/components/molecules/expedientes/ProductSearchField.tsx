@@ -6,6 +6,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Minus,
+  Plus,
   Search,
   X,
 } from "lucide-react";
@@ -16,6 +18,8 @@ import type {
   SelectedProductState,
 } from "@/types/portal-productos";
 import { Label } from "@heroui/react";
+import PriceTag from "@/components/atoms/price-tag/price-tag";
+import { formatPortalCurrency } from "@/lib/portal-compras";
 
 const PAGE_SIZE = 5;
 const SEARCH_AUTOCOMPLETE_MIN_CHARS = 3;
@@ -29,12 +33,17 @@ const normalizeProductResult = (
   laboratorio: String(value.lab ?? value.marcaNombre ?? "Laboratorio sin dato"),
   presentacion:
     typeof value.presentacion === "string" ? value.presentacion : undefined,
+  precio: typeof value.precio === "number" ? value.precio : null,
+  precioBase: typeof value.precioBase === "number" ? value.precioBase : null,
+  descuentoPct:
+    typeof value.descuentoPct === "number" ? value.descuentoPct : undefined,
 });
 
 interface ProductSearchFieldProps {
   selectedProducts: SelectedProductState[];
   onAdd: (product: PortalProductoOption) => void;
   onRemove: (productId: string) => void;
+  onChangeQuantity: (productId: string, delta: number) => void;
   error?: string;
 }
 
@@ -42,6 +51,7 @@ export function ProductSearchField({
   selectedProducts,
   onAdd,
   onRemove,
+  onChangeQuantity,
   error,
 }: ProductSearchFieldProps) {
   const { pushToast } = useGlobalToast();
@@ -282,17 +292,67 @@ export function ProductSearchField({
                       <p className="text-xs text-[#6f7085]">
                         Laboratorio: {product.laboratorio}
                       </p>
+                      <PriceTag
+                        precio={product.precio}
+                        precioBase={product.precioBase}
+                        descuentoPct={product.descuentoPct}
+                        cantidad={product.cantidadEnvasesPorCiclo}
+                      />
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => onRemove(product.id)}
-                    className="shrink-0 rounded-xl border border-[#f0dde2] px-3 py-2 text-xs font-semibold text-[#b03c55] transition hover:bg-[#fff4f6]"
-                  >
-                    Quitar
-                  </button>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <div className="flex items-center gap-1 rounded-xl border border-[#ddd6eb]">
+                      <button
+                        type="button"
+                        onClick={() => onChangeQuantity(product.id, -1)}
+                        aria-label="Quitar una unidad"
+                        className="flex h-8 w-8 items-center justify-center text-[#8f63d9] transition hover:bg-[#f7f2ff]"
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="min-w-6 text-center text-sm font-semibold text-[#2f3042]">
+                        {product.cantidadEnvasesPorCiclo}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => onChangeQuantity(product.id, 1)}
+                        aria-label="Agregar una unidad"
+                        className="flex h-8 w-8 items-center justify-center text-[#8f63d9] transition hover:bg-[#f7f2ff]"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onRemove(product.id)}
+                      className="shrink-0 rounded-xl border border-[#f0dde2] px-3 py-2 text-xs font-semibold text-[#b03c55] transition hover:bg-[#fff4f6]"
+                    >
+                      Quitar
+                    </button>
+                  </div>
                 </div>
               ))}
+
+              {selectedProducts.some(
+                (product) => typeof product.precio === "number",
+              ) && (
+                <div className="flex items-center justify-between rounded-2xl border border-[#e2daf3] bg-[#faf7ff] px-4 py-3">
+                  <span className="text-sm font-semibold text-[#2f3042]">
+                    Total
+                  </span>
+                  <span className="text-base font-bold text-[#8f63d9]">
+                    {formatPortalCurrency(
+                      selectedProducts.reduce(
+                        (sum, product) =>
+                          sum +
+                          (product.precio ?? 0) *
+                            (product.cantidadEnvasesPorCiclo ?? 1),
+                        0,
+                      ),
+                    )}
+                  </span>
+                </div>
+              )}
             </div>
           ) : null}
         </div>
@@ -339,6 +399,11 @@ export function ProductSearchField({
                               ? ` · ${product.presentacion}`
                               : ""}
                           </p>
+                          <PriceTag
+                            precio={product.precio}
+                            precioBase={product.precioBase}
+                            descuentoPct={product.descuentoPct}
+                          />
                         </div>
                         <button
                           type="button"
