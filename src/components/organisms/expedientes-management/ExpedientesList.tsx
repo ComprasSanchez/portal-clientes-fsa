@@ -28,13 +28,6 @@ export function ExpedientesList({
 
   return (
     <article>
-      <div className="mb-5">
-        <h3 className="cora-title-section text-[#2f3042]">Tus pedidos</h3>
-        <p className="cora-read text-[#5f6074]">
-          Resumen de tus ultimos pedidos.
-        </p>
-      </div>
-
       {isLoading && visibleExpedientes.length === 0 ? (
         <PedidosCoraSkeleton />
       ) : error && visibleExpedientes.length === 0 ? (

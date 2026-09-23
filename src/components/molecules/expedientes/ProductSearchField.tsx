@@ -267,95 +267,96 @@ export function ProductSearchField({
           </button>
         </div>
 
-        <div>
-          {selectedProducts.length > 0 && (
+        {/* {selectedProducts.length > 0 && (
+          <p className="cora-card-subtitle mb-2 text-[#8f63d9]">
+            Productos seleccionados ({selectedProducts.length})
+          </p>
+        )} */}
+
+        {selectedProducts.length > 0 ? (
+          <div className="grid gap-3">
             <p className="cora-card-subtitle mb-2 text-[#8f63d9]">
               Productos seleccionados ({selectedProducts.length})
             </p>
-          )}
-
-          {selectedProducts.length > 0 ? (
-            <div className="grid gap-3">
-              {selectedProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="flex items-center justify-between gap-2 rounded-2xl border-l-4 border-l-[#8f63d9] border-y border-r border-[#e2daf3] bg-white p-4"
-                >
-                  <div className="flex items-start gap-2">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f0e9fb] text-[#8f63d9]">
-                      <Check size={12} strokeWidth={3} />
-                    </span>
-                    <div>
-                      <p className="font-semibold text-[#2f3042]">
-                        {product.nombre}
-                      </p>
-                      <p className="text-xs text-[#6f7085]">
-                        Laboratorio: {product.laboratorio}
-                      </p>
-                      <PriceTag
-                        precio={product.precio}
-                        precioBase={product.precioBase}
-                        descuentoPct={product.descuentoPct}
-                        cantidad={product.cantidadEnvasesPorCiclo}
-                      />
-                    </div>
+            {selectedProducts.map((product) => (
+              <div
+                key={product.id}
+                className="flex items-center justify-between gap-2 rounded-2xl border-l-4 border-l-[#8f63d9] border-y border-r border-[#e2daf3] bg-white p-4"
+              >
+                <div className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f0e9fb] text-[#8f63d9]">
+                    <Check size={12} strokeWidth={3} />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-[#2f3042]">
+                      {product.nombre}
+                    </p>
+                    <p className="text-xs text-[#6f7085]">
+                      Laboratorio: {product.laboratorio}
+                    </p>
+                    <PriceTag
+                      precio={product.precio}
+                      precioBase={product.precioBase}
+                      descuentoPct={product.descuentoPct}
+                      cantidad={product.cantidadEnvasesPorCiclo}
+                    />
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <div className="flex items-center gap-1 rounded-xl border border-[#ddd6eb]">
-                      <button
-                        type="button"
-                        onClick={() => onChangeQuantity(product.id, -1)}
-                        aria-label="Quitar una unidad"
-                        className="flex h-8 w-8 items-center justify-center text-[#8f63d9] transition hover:bg-[#f7f2ff]"
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className="min-w-6 text-center text-sm font-semibold text-[#2f3042]">
-                        {product.cantidadEnvasesPorCiclo}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => onChangeQuantity(product.id, 1)}
-                        aria-label="Agregar una unidad"
-                        className="flex h-8 w-8 items-center justify-center text-[#8f63d9] transition hover:bg-[#f7f2ff]"
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex items-center gap-1 rounded-xl border border-[#ddd6eb]">
                     <button
                       type="button"
-                      onClick={() => onRemove(product.id)}
-                      className="shrink-0 rounded-xl border border-[#f0dde2] px-3 py-2 text-xs font-semibold text-[#b03c55] transition hover:bg-[#fff4f6]"
+                      onClick={() => onChangeQuantity(product.id, -1)}
+                      aria-label="Quitar una unidad"
+                      className="flex h-8 w-8 items-center justify-center text-[#8f63d9] transition hover:bg-[#f7f2ff]"
                     >
-                      Quitar
+                      <Minus size={14} />
+                    </button>
+                    <span className="min-w-6 text-center text-sm font-semibold text-[#2f3042]">
+                      {product.cantidadEnvasesPorCiclo}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onChangeQuantity(product.id, 1)}
+                      aria-label="Agregar una unidad"
+                      className="flex h-8 w-8 items-center justify-center text-[#8f63d9] transition hover:bg-[#f7f2ff]"
+                    >
+                      <Plus size={14} />
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => onRemove(product.id)}
+                    className="shrink-0 rounded-xl border border-[#f0dde2] px-3 py-2 text-xs font-semibold text-[#b03c55] transition hover:bg-[#fff4f6]"
+                  >
+                    Quitar
+                  </button>
                 </div>
-              ))}
+              </div>
+            ))}
 
-              {selectedProducts.some(
-                (product) => typeof product.precio === "number",
-              ) && (
-                <div className="flex items-center justify-between rounded-2xl border border-[#e2daf3] bg-[#faf7ff] px-4 py-3">
-                  <span className="text-sm font-semibold text-[#2f3042]">
-                    Total
-                  </span>
-                  <span className="text-base font-bold text-[#8f63d9]">
-                    {formatPortalCurrency(
-                      selectedProducts.reduce(
-                        (sum, product) =>
-                          sum +
-                          (product.precio ?? 0) *
-                            (product.cantidadEnvasesPorCiclo ?? 1),
-                        0,
-                      ),
-                    )}
-                  </span>
-                </div>
-              )}
-            </div>
-          ) : null}
-        </div>
+            {selectedProducts.some(
+              (product) => typeof product.precio === "number",
+            ) && (
+              <div className="flex items-center justify-between rounded-2xl border border-[#e2daf3] bg-[#faf7ff] px-4 py-3">
+                <span className="text-sm font-semibold text-[#2f3042]">
+                  Total
+                </span>
+                <span className="text-base font-bold text-[#8f63d9]">
+                  {formatPortalCurrency(
+                    selectedProducts.reduce(
+                      (sum, product) =>
+                        sum +
+                        (product.precio ?? 0) *
+                          (product.cantidadEnvasesPorCiclo ?? 1),
+                      0,
+                    ),
+                  )}
+                </span>
+              </div>
+            )}
+          </div>
+        ) : null}
 
         {error ? (
           <p className="text-sm font-medium text-[#b03c55]">{error}</p>
@@ -363,10 +364,6 @@ export function ProductSearchField({
 
         {hasSearched ? (
           <div>
-            <p className="cora-card-subtitle mb-2 text-[#8f7fa0]">
-              Resultados de búsqueda
-            </p>
-
             {isSearching ? (
               <div className="flex items-center gap-2 rounded-2xl border border-[#e9e1f6] bg-white p-4 text-sm text-[#6c48b4]">
                 <Loader2 size={16} className="animate-spin" />
