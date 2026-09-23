@@ -567,13 +567,35 @@ export default function PortalCliente({
           sucursalesList.filter((s) => !SUCURSALES_OCULTAS.has(Number(s.id))),
         );
 
-        const principal = domiciliosList.find((item) => item.principal) ?? domiciliosList[0];
-        if (principal) {
-          setDeliverySelection((current) => ({
-            ...current,
+        // Si el cliente ya había elegido cómo recibir el pedido en un ciclo
+        // anterior (guardado en el expediente), respetamos esa elección acá
+        // en vez de arrancar siempre en "domicilio" — si no, cada link nuevo
+        // le hace elegir de cero aunque ya tenga una sucursal/domicilio fijo.
+        if (
+          expedienteData.medioEntrega === "RETIRA_SUCURSAL" &&
+          expedienteData.sucursalEntregaId
+        ) {
+          setDeliverySelection({
+            method: "sucursal",
+            sucursalId: expedienteData.sucursalEntregaId,
+          });
+        } else if (
+          expedienteData.medioEntrega === "ENVIO_DOMICILIO" &&
+          expedienteData.domicilioEntregaId
+        ) {
+          setDeliverySelection({
             method: "domicilio",
-            domicilioId: current.domicilioId ?? principal.id,
-          }));
+            domicilioId: expedienteData.domicilioEntregaId,
+          });
+        } else {
+          const principal = domiciliosList.find((item) => item.principal) ?? domiciliosList[0];
+          if (principal) {
+            setDeliverySelection((current) => ({
+              ...current,
+              method: "domicilio",
+              domicilioId: current.domicilioId ?? principal.id,
+            }));
+          }
         }
       } catch (requestError) {
         if (!cancelled) {

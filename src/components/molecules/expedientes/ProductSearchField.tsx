@@ -267,12 +267,6 @@ export function ProductSearchField({
           </button>
         </div>
 
-        {/* {selectedProducts.length > 0 && (
-          <p className="cora-card-subtitle mb-2 text-[#8f63d9]">
-            Productos seleccionados ({selectedProducts.length})
-          </p>
-        )} */}
-
         {selectedProducts.length > 0 ? (
           <div className="grid gap-3">
             <p className="cora-card-subtitle mb-2 text-[#8f63d9]">

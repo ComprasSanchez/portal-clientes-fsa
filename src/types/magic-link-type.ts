@@ -62,6 +62,9 @@ export type ItemDetalleNotInCycle = {
 export type ItemRecurrente = {
   cicloItems: ItemRecurrenteDetalle[];
   treatmentItemsNotInCycle: ItemDetalleNotInCycle[];
+  medioEntrega?: "RETIRA_SUCURSAL" | "ENVIO_DOMICILIO" | null;
+  sucursalEntregaId?: number | null;
+  domicilioEntregaId?: string | null;
 };
 
 export type DecodedToken = {
