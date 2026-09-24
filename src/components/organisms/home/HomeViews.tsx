@@ -62,10 +62,6 @@ import interrogationCoraIcon from "@/assets/cora/card/interrogation-cora.svg";
 
 const MEDICAMENTOS_COLLAPSED_LIMIT = 3;
 
-// Las fechas "YYYY-MM-DD" que manda el backend son solo-fecha, sin hora.
-// `new Date("YYYY-MM-DD")` las interpreta como medianoche UTC, lo que las
-// corre un día hacia atrás al formatearlas en horarios detrás de UTC
-// (ej. Argentina, UTC-3). Acá las parseamos como fecha local en cambio.
 const parseDateOnly = (value: string) => {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (match) {
@@ -273,12 +269,6 @@ export function HomeViews({
       icon: fileCoraIcon,
       tone: "plain",
     },
-    // {
-    //   label: "Mis recordatorios",
-    //   view: "pedidos",
-    //   icon: bellCoraIcon,
-    //   tone: "plain",
-    // },
     {
       label: "Mi perfil",
       view: "mi-cuenta",
@@ -363,6 +353,15 @@ export function HomeViews({
     hasCicloId,
     refresh,
   } = useAuthLogisticaTracking({ cicloId });
+
+  const previousViewRef = useRef<HomeView | null>(null);
+  useEffect(() => {
+    if (currentView === "pedidos" && previousViewRef.current !== "pedidos") {
+      void refresh();
+    }
+    previousViewRef.current = currentView;
+  }, [currentView, refresh]);
+
   const trackingBlockedByExpedientes = !queryCicloId && !currentCycleId;
   const shouldShowTrackingLoading =
     isExpedientesLoading || isPedidoTrackingLoading;

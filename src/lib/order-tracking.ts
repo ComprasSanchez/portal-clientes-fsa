@@ -41,12 +41,23 @@ export const getTrackingStatus = (parentOrder: ParentOrder): TrackingOrderStatus
     return "confirmado";
   }
 
-  if (parentOrder.status === "IN_PREPARATION") {
+  // PARTIALLY_PREPARED (no "PREPARED_PARTIAL" — ese nombre no existe en el
+  // backend, era un typo) se trata igual que IN_PREPARATION: todavía no está
+  // 100% listo, no hay un paso propio para "parcial" en este tracker.
+  if (parentOrder.status === "IN_PREPARATION" || parentOrder.status === "PARTIALLY_PREPARED") {
     return "en_preparacion";
   }
 
-  if (parentOrder.status === "PREPARED" || parentOrder.status === "PREPARED_PARTIAL") {
+  if (parentOrder.status === "PREPARED") {
     return "listo_para_envio";
+  }
+
+  if (parentOrder.status === "IN_TRANSIT") {
+    return "en_camino";
+  }
+
+  if (parentOrder.status === "DELIVERED") {
+    return "entregado";
   }
 
   let highestChildStatus = 0;
@@ -87,8 +98,10 @@ export const PARENT_ORDER_STATUS_LABELS: Record<string, string> = {
   ACCEPTED: "Aceptado",
   CONFIRMED: "Confirmado",
   IN_PREPARATION: "En preparación",
-  PREPARED_PARTIAL: "Preparado parcial",
+  PARTIALLY_PREPARED: "Preparado parcial",
   PREPARED: "Preparado",
+  IN_TRANSIT: "En camino",
+  DELIVERED: "Entregado",
   CANCELLED: "Cancelado",
   REJECTED: "Rechazado",
 };
