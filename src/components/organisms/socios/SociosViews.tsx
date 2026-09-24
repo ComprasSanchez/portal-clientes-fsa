@@ -93,6 +93,11 @@ const viewContent: Record<
     description:
       "Encontrá la sucursal más cercana, consultá horarios y accedé a indicaciones.",
   },
+  colaboradores: {
+    title: "Colaboradores",
+    description:
+      "Un espacio exclusivo para quienes forman parte de Farmacias Sánchez Antoniolli.",
+  },
 };
 
 const hasProductDiscount = (producto: PortalComprasProducto) => {
@@ -276,6 +281,24 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <SociosPedidosView />
+      </main>
+    );
+  }
+
+  if (currentView === "colaboradores") {
+    const active = viewContent.colaboradores;
+    return (
+      <main className={styles.container}>
+        <section className={styles.activeViewCard}>
+          <h1 className={styles.activeViewTitle}>
+            ¡Hola, {perfil?.nombre ?? userName}!
+          </h1>
+          <p className={styles.activeViewDescription}>{active.description}</p>
+          <p className={styles.activeViewDescription}>
+            Muy pronto vas a encontrar acá beneficios y novedades pensados para
+            vos.
+          </p>
+        </section>
       </main>
     );
   }

@@ -8,11 +8,12 @@ import { NotificationBell } from "@/components/molecules/side-bar/NotificationBe
 import { SociosViews } from "@/components/organisms/socios/SociosViews";
 import { ConvenioVerificacionModal } from "@/components/organisms/convenio/ConvenioVerificacionModal";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
+import { usePortalColaborador } from "@/lib/use-portal-colaborador";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import { type SociosView } from "@/types/socios";
 
 const DEFAULT_VIEW: SociosView = "dashboard";
-const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos"];
+const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", "colaboradores"];
 
 
 export function SociosPageClient() {
@@ -49,7 +50,15 @@ export function SociosPageClient() {
   }, [searchParams]);
 
   const { perfil, summary, isLoading } = usePortalPerfilContext();
+  const { esColaborador, isLoading: isColaboradorLoading } = usePortalColaborador();
   const { pushToast } = useGlobalToast();
+
+  // Acceso directo por URL a ?view=colaboradores sin ser colaborador activo: volver a Inicio.
+  useEffect(() => {
+    if (currentView !== "colaboradores" || isColaboradorLoading || esColaborador) return;
+    setCurrentView(DEFAULT_VIEW);
+    router.replace("/socios", { scroll: false });
+  }, [currentView, esColaborador, isColaboradorLoading, router]);
 
   const principalPhone =
     perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
@@ -166,11 +175,14 @@ export function SociosPageClient() {
         onNavigate={handleNavigate}
         onLogout={handleLogout}
         userName={summary.displayName}
+        esColaborador={esColaborador}
       />
 
       <div className="flex min-h-[calc(100vh-4rem)] flex-col pt-16 transition-all duration-300 lg:ml-64 lg:min-h-screen lg:pt-0">
         <SociosViews
-          currentView={currentView}
+          currentView={
+            currentView === "colaboradores" && !esColaborador ? DEFAULT_VIEW : currentView
+          }
           onNavigate={handleNavigate}
           userName={summary.displayName}
           affiliateNumber={summary.affiliateNumber}

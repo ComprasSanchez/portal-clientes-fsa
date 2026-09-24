@@ -19,6 +19,7 @@ import {
   X,
   BoxIcon,
   PackageCheck,
+  BadgeCheck,
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
 import sociosaLogo from "@/assets/sociosa-color.png";
@@ -31,13 +32,22 @@ interface SociosSidebarProps {
   onNavigate: (view: SociosView) => void;
   userName: string;
   onLogout: () => void;
+  esColaborador?: boolean;
 }
 
-const menuItems: Array<{
+type MenuItem = {
   id: SociosView | "cora";
   label: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
-}> = [
+};
+
+const colaboradoresMenuItem: MenuItem = {
+  id: "colaboradores",
+  label: "Colaboradores",
+  icon: BadgeCheck,
+};
+
+const menuItems: MenuItem[] = [
   { id: "dashboard", label: "Inicio", icon: LayoutGrid },
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
   { id: "pedidos", label: "Mis pedidos", icon: PackageCheck },
@@ -55,8 +65,16 @@ export function SociosSidebar({
   onNavigate,
   userName,
   onLogout,
+  esColaborador = false,
 }: SociosSidebarProps) {
   const router = useRouter();
+  const visibleMenuItems = esColaborador
+    ? [
+        ...menuItems.filter((item) => item.id !== "cora"),
+        colaboradoresMenuItem,
+        ...menuItems.filter((item) => item.id === "cora"),
+      ]
+    : menuItems;
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -172,7 +190,7 @@ export function SociosSidebar({
 
           <nav className="flex flex-1 flex-col overflow-y-auto py-4">
             <ul className="space-y-1 px-3">
-              {menuItems.map((item) => {
+              {visibleMenuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.id !== "cora" && currentView === item.id;
                 const isCoraShortcut = item.id === "cora";
