@@ -1878,60 +1878,6 @@ export function Login({ onLogin }: LoginProps) {
   return (
     <section className={styles.root}>
       <aside className={styles.heroPanel} style={{ background: "#ffffff" }}>
-        {/* Contenido original del panel — comentado temporalmente para probar portada-prueba-18
-        <div className={styles.heroBanner} aria-hidden="true">
-          <Image
-            src={loginBackground}
-            alt=""
-            fill
-            style={{ objectFit: "cover" }}
-            priority
-          />
-        </div>
-        <div className={styles.heroContent}>
-          <Image
-            src={loginLogo}
-            alt="Farmacias Sanchez Antoniolli"
-            width={160}
-            height={54}
-            className={styles.heroLogo}
-            priority
-          />
-          <div className={styles.heroCenter}>
-            <div className={styles.sociosaPromo}>
-              <span className={styles.sociosaPromoText}>
-                Portal exclusivo para
-              </span>
-              <Image
-                src={sociosaBlanco}
-                alt="SocioSA"
-                width={160}
-                height={50}
-                className={styles.sociosaLogo}
-              />
-            </div>
-            <h2 className={styles.heroTitle}>Todo en un solo lugar</h2>
-            <ul className={styles.benefitsList}>
-              {SOCIOS_BENEFITS.map((benefit) => (
-                <li key={benefit.text} className={styles.benefitItem}>
-                  <Image
-                    src={benefit.icon}
-                    alt=""
-                    width={88}
-                    height={88}
-                    className={styles.benefitIcon}
-                    unoptimized
-                  />
-                  <span>{benefit.text}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <p className={styles.heroFooter}>
-          © 2026 Farmacias Sanchez Antoniolli - Todos los derechos reservados
-        </p>
-        */}
         <Image
           src={portadaPrueba}
           alt=""
