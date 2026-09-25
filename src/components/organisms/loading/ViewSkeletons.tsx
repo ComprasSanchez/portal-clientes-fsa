@@ -431,6 +431,39 @@ export function SociosDashboardSkeleton() {
   );
 }
 
+export function ColaboradorVentasSkeleton() {
+  return (
+    <section className="space-y-4" aria-hidden="true">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <SkeletonCard key={index} variant="socios">
+            <div className="space-y-3">
+              <Skeleton className="h-3.5 w-28" />
+              <Skeleton className="h-8 w-36" />
+              <Skeleton className="h-3.5 w-24" />
+            </div>
+          </SkeletonCard>
+        ))}
+      </div>
+
+      <SkeletonCard variant="socios">
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-48" />
+          <div className="flex h-56 items-end gap-2">
+            {Array.from({ length: 14 }).map((_, index) => (
+              <Skeleton
+                key={index}
+                className="w-full rounded-b-none"
+                style={{ height: `${30 + ((index * 37) % 60)}%` }}
+              />
+            ))}
+          </div>
+        </div>
+      </SkeletonCard>
+    </section>
+  );
+}
+
 export function PedidosCoraSkeleton({
   variant = "socios",
 }: {

@@ -1,0 +1,48 @@
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid #d5e4e8;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(0, 68, 84, 0.06);
+}
+
+.label {
+  font-size: var(--fs-socios-data-label, var(--fs-badge));
+  font-weight: var(--fw-socios-data-label, 600);
+  color: #698088;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.value {
+  font-size: var(--fs-value-lg, 1.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #17343d;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  font-size: var(--fs-socios-aux, var(--fs-badge));
+  font-weight: var(--fw-socios-aux, 400);
+  color: #627880;
+}
+
+.primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, #007c98 0%, #0e6277 100%);
+
+  .label,
+  .hint {
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .value {
+    color: #fff;
+  }
+}

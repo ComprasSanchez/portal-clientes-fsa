@@ -25,6 +25,7 @@ import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { SociosSorteosView } from "./SociosSorteosView";
 import { SociosSucursalesView } from "./SociosSucursalesView";
 import { SociosPedidosView } from "./SociosPedidosView";
+import { SociosColaboradoresView } from "./SociosColaboradoresView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
@@ -286,19 +287,9 @@ export function SociosViews({
   }
 
   if (currentView === "colaboradores") {
-    const active = viewContent.colaboradores;
     return (
       <main className={styles.container}>
-        <section className={styles.activeViewCard}>
-          <h1 className={styles.activeViewTitle}>
-            ¡Hola, {perfil?.nombre ?? userName}!
-          </h1>
-          <p className={styles.activeViewDescription}>{active.description}</p>
-          <p className={styles.activeViewDescription}>
-            Muy pronto vas a encontrar acá beneficios y novedades pensados para
-            vos.
-          </p>
-        </section>
+        <SociosColaboradoresView />
       </main>
     );
   }

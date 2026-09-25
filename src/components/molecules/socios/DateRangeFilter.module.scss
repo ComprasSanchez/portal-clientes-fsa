@@ -1,0 +1,77 @@
+.filter {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #d5e4e8;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(0, 68, 84, 0.06);
+
+  @media (max-width: 639px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.fieldLabel {
+  font-size: var(--fs-socios-data-label, var(--fs-badge));
+  font-weight: var(--fw-socios-data-label, 600);
+  color: #698088;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 639px) {
+    button {
+      flex: 1;
+    }
+  }
+}
+
+.applyButton,
+.resetButton {
+  min-height: 2.9rem;
+  padding: 0 1.1rem;
+  border-radius: 0.9rem;
+  font-size: var(--fs-sm, 0.875rem);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+}
+
+.applyButton {
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, #007c98 0%, #0e6277 100%);
+}
+
+.resetButton {
+  border: 1px solid #d5e4e8;
+  color: #17343d;
+  background: #fff;
+
+  &:not(:disabled):hover {
+    background: #f3f8f9;
+  }
+}
