@@ -51,9 +51,7 @@ export function SociosColaboradoresView() {
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Mis ventas</h1>
         <p className={styles.pageSubtitle}>
-          {ventas
-            ? `Del ${formatFecha(ventas.desde)} al ${formatFecha(ventas.hasta)}`
-            : "Tu desempeño en el mostrador, día a día."}
+          Tu desempeño en el mostrador, día a día
         </p>
       </header>
 
@@ -75,8 +73,13 @@ export function SociosColaboradoresView() {
           <span>{error}</span>
         </div>
       ) : resumen && ventas ? (
-        <div className={`${styles.content} ${isLoading ? styles.refreshing : ""}`}>
-          <section className={styles.statsGrid} aria-label="Resumen del período">
+        <div
+          className={`${styles.content} ${isLoading ? styles.refreshing : ""}`}
+        >
+          <section
+            className={styles.statsGrid}
+            aria-label="Resumen del período"
+          >
             <StatTile
               tone="primary"
               label="Total del período"
@@ -102,7 +105,10 @@ export function SociosColaboradoresView() {
             />
           </section>
 
-          <section className={styles.statsGrid} aria-label="Ventas por tipo de atención">
+          <section
+            className={styles.statsGrid}
+            aria-label="Ventas por tipo de atención"
+          >
             <StatTile
               label="Particular"
               value={formatPortalCurrency(resumen.particular)}
