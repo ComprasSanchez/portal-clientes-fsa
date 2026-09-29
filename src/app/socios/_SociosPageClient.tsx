@@ -10,20 +10,30 @@ import { ConvenioVerificacionModal } from "@/components/organisms/convenio/Conve
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { usePortalColaborador } from "@/lib/use-portal-colaborador";
 import { useGlobalToast } from "@/components/ui/global-toast";
-import { type SociosView } from "@/types/socios";
+import {
+  COLABORADORES_VIEWS,
+  isColaboradoresView,
+  type SociosView,
+} from "@/types/socios";
 
 const DEFAULT_VIEW: SociosView = "dashboard";
-const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", "colaboradores"];
+const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", ...COLABORADORES_VIEWS];
+// Links viejos (?view=colaboradores) de antes de separar Ventas / Aplicaciones FSA.
+const VIEW_ALIASES: Record<string, SociosView> = {
+  colaboradores: "colaboradores-ventas",
+};
+
+const parseView = (value: string | null): SociosView | null => {
+  if (!value) return null;
+  const view = VIEW_ALIASES[value] ?? value;
+  return VALID_VIEWS.includes(view as SociosView) ? (view as SociosView) : null;
+};
 
 
 export function SociosPageClient() {
   const [currentView, setCurrentView] = useState<SociosView>(() => {
     const params = new URLSearchParams(window.location.search);
-    const view = params.get("view");
-    if (view && VALID_VIEWS.includes(view as SociosView)) {
-      return view as SociosView;
-    }
-    return DEFAULT_VIEW;
+    return parseView(params.get("view")) ?? DEFAULT_VIEW;
   });
   const [convenio, setConvenio] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
@@ -41,10 +51,11 @@ export function SociosPageClient() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const view = searchParams.get("view");
-    if (view && VALID_VIEWS.includes(view as SociosView)) {
-      setCurrentView(view as SociosView);
-    } else if (!view) {
+    const raw = searchParams.get("view");
+    const view = parseView(raw);
+    if (view) {
+      setCurrentView(view);
+    } else if (!raw) {
       setCurrentView(DEFAULT_VIEW);
     }
   }, [searchParams]);
@@ -53,9 +64,9 @@ export function SociosPageClient() {
   const { esColaborador, isLoading: isColaboradorLoading } = usePortalColaborador();
   const { pushToast } = useGlobalToast();
 
-  // Acceso directo por URL a ?view=colaboradores sin ser colaborador activo: volver a Inicio.
+  // Acceso directo por URL a una vista de colaboradores sin ser colaborador activo: volver a Inicio.
   useEffect(() => {
-    if (currentView !== "colaboradores" || isColaboradorLoading || esColaborador) return;
+    if (!isColaboradoresView(currentView) || isColaboradorLoading || esColaborador) return;
     setCurrentView(DEFAULT_VIEW);
     router.replace("/socios", { scroll: false });
   }, [currentView, esColaborador, isColaboradorLoading, router]);
@@ -181,7 +192,7 @@ export function SociosPageClient() {
       <div className="flex min-h-[calc(100vh-4rem)] flex-col pt-16 transition-all duration-300 lg:ml-64 lg:min-h-screen lg:pt-0">
         <SociosViews
           currentView={
-            currentView === "colaboradores" && !esColaborador ? DEFAULT_VIEW : currentView
+            isColaboradoresView(currentView) && !esColaborador ? DEFAULT_VIEW : currentView
           }
           onNavigate={handleNavigate}
           userName={summary.displayName}

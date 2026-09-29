@@ -25,7 +25,8 @@ import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { SociosSorteosView } from "./SociosSorteosView";
 import { SociosSucursalesView } from "./SociosSucursalesView";
 import { SociosPedidosView } from "./SociosPedidosView";
-import { SociosColaboradoresView } from "./SociosColaboradoresView";
+import { SociosColaboradorVentasView } from "./SociosColaboradorVentasView";
+import { SociosColaboradorAplicacionesView } from "./SociosColaboradorAplicacionesView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
@@ -94,10 +95,13 @@ const viewContent: Record<
     description:
       "Encontrá la sucursal más cercana, consultá horarios y accedé a indicaciones.",
   },
-  colaboradores: {
-    title: "Colaboradores",
-    description:
-      "Un espacio exclusivo para quienes forman parte de Farmacias Sánchez Antoniolli.",
+  "colaboradores-ventas": {
+    title: "Mis ventas",
+    description: "Tu desempeño en el mostrador, día a día.",
+  },
+  "colaboradores-aplicaciones": {
+    title: "Aplicaciones FSA",
+    description: "Accedé a las herramientas que usás en tu día a día.",
   },
 };
 
@@ -286,10 +290,18 @@ export function SociosViews({
     );
   }
 
-  if (currentView === "colaboradores") {
+  if (currentView === "colaboradores-ventas") {
     return (
       <main className={styles.container}>
-        <SociosColaboradoresView />
+        <SociosColaboradorVentasView />
+      </main>
+    );
+  }
+
+  if (currentView === "colaboradores-aplicaciones") {
+    return (
+      <main className={styles.container}>
+        <SociosColaboradorAplicacionesView />
       </main>
     );
   }

@@ -9,7 +9,7 @@ import { ColaboradorVentasSkeleton } from "@/components/organisms/loading/ViewSk
 import { formatPortalCurrency } from "@/lib/portal-compras";
 import { formatPortalPoints } from "@/lib/portal-puntos";
 import { usePortalVentasColaborador } from "@/lib/use-portal-ventas-colaborador";
-import styles from "./SociosColaboradoresView.module.scss";
+import styles from "./SociosColaboradorVentasView.module.scss";
 
 type Rango = { desde: string; hasta: string };
 
@@ -29,7 +29,7 @@ const formatFecha = (fecha: string) => {
 const porcentaje = (parte: number, total: number) =>
   total > 0 ? `${Math.round((parte / total) * 100)}% del total` : undefined;
 
-export function SociosColaboradoresView() {
+export function SociosColaboradorVentasView() {
   // `null` = mes en curso (el rango lo define el servidor).
   const [rango, setRango] = useState<Rango | null>(null);
   const hoy = useMemo(() => hoyLocal(), []);
