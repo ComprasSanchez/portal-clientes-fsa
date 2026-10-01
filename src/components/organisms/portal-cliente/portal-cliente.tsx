@@ -56,7 +56,7 @@ type ParentOrderDraftResponse = {
   created?: boolean;
 };
 
-type ConfirmOrderChoice = "pagar_ahora" | "contactenme";
+type ConfirmOrderChoice = "pagar_ahora" | "contactenme" | "confirmar";
 
 type PaymentStatus = "idle" | "redirecting" | "processing" | "rejected" | "pending";
 
@@ -1084,7 +1084,7 @@ export default function PortalCliente({
         body: JSON.stringify({ tipo: "DECISION_GUARDADA" }),
       }).then(toJson<Record<string, unknown>>);
 
-      if (choice === "contactenme") {
+      if (choice === "contactenme" || choice === "confirmar") {
         const draft = await fetch(
           `/api/magic/portal-clientes/${token}/parent-orders/draft`,
           { method: "POST" },
@@ -1098,7 +1098,13 @@ export default function PortalCliente({
             window.localStorage.setItem(orderCodeStorageKey, draft.code);
           }
         }
-        redirectToWhatsApp();
+        // "contactenme" es el botón "Hablar con CORA" (crea el pedido y
+        // además abre WhatsApp); "confirmar" es el botón simple de
+        // confirmación (con el pago por Mercado Pago desactivado) — solo
+        // crea el pedido, sin redirigir a WhatsApp.
+        if (choice === "contactenme") {
+          redirectToWhatsApp();
+        }
         return;
       }
 

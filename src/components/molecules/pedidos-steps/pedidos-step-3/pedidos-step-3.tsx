@@ -29,7 +29,7 @@ import {
 
 type PaymentStatus = "idle" | "redirecting" | "processing" | "rejected" | "pending";
 
-type ConfirmOrderChoice = "pagar_ahora" | "contactenme";
+type ConfirmOrderChoice = "pagar_ahora" | "contactenme" | "confirmar";
 
 type PedidosStep3Props = {
   productos: ConfirmProductItem[];
@@ -355,7 +355,7 @@ const PedidosStep3 = ({
               <>
                 <PortalButton
                   variant="primary"
-                  onClick={() => onConfirm("contactenme")}
+                  onClick={() => onConfirm("confirmar")}
                   disabled={isSubmitting || !entrega}
                 >
                   {isSubmitting ? "Confirmando pedido..." : "Confirmar selección"}
