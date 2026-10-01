@@ -35,6 +35,8 @@ import {
 import { CrearPedidoStep1Productos } from "./CrearPedidoStep1Productos";
 import { CrearPedidoStep2Entrega } from "./CrearPedidoStep2Entrega";
 import { RECETA_UPLOAD_ENABLED } from "@/lib/feature-flags";
+import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
+import { DomicilioFormModal } from "@/components/organisms/profile/DomicilioFormModal";
 
 export interface CreateFormValues {
   fechaInicioCicloBase: string;
@@ -155,6 +157,8 @@ export function CrearPedidoView({
   const [submitBlockedMessage, setSubmitBlockedMessage] = useState<
     string | null
   >(null);
+  const [isDomicilioModalOpen, setIsDomicilioModalOpen] = useState(false);
+  const { refresh: refreshPerfil } = usePortalPerfilContext();
 
   useEffect(() => {
     prefetchSucursales();
@@ -318,6 +322,30 @@ export function CrearPedidoView({
       }
     },
   });
+
+  // Después de cargar un domicilio desde el pedido: se recarga el perfil y se
+  // deja seleccionado el domicilio nuevo (el que no estaba antes en la lista),
+  // así la persona no pierde lo que ya cargó en el pedido.
+  const handleDomicilioCreated = async () => {
+    const idsPrevios = new Set(domicilios.map((domicilio) => domicilio.id));
+    const perfilActualizado = await refreshPerfil();
+    const nuevos = (perfilActualizado?.domicilios ?? []).filter(
+      (domicilio) => domicilio.id && !idsPrevios.has(domicilio.id),
+    );
+    const nuevo = nuevos.find((domicilio) => domicilio.principal) ?? nuevos[0];
+
+    if (nuevo?.id) {
+      await formik.setFieldValue("domicilioEntregaId", nuevo.id);
+    }
+    setIsDomicilioModalOpen(false);
+    pushToast({
+      variant: "success",
+      title: "Domicilio guardado",
+      description: nuevo
+        ? "Lo dejamos seleccionado para la entrega de este pedido."
+        : "Ya podés elegirlo como domicilio de entrega.",
+    });
+  };
 
   if (createdSummary) {
     return (
@@ -552,6 +580,7 @@ export function CrearPedidoView({
           domicilios={domicilios}
           selectedSucursal={selectedSucursal}
           onSelectSucursal={setSelectedSucursal}
+          onAddDomicilio={() => setIsDomicilioModalOpen(true)}
           hideInicioCiclo
         />
       </Section>
@@ -612,6 +641,14 @@ export function CrearPedidoView({
           </a>
         )}
       </div>
+
+      {isDomicilioModalOpen ? (
+        <DomicilioFormModal
+          variant="cora"
+          onClose={() => setIsDomicilioModalOpen(false)}
+          onCreated={handleDomicilioCreated}
+        />
+      ) : null}
     </section>
   );
 }

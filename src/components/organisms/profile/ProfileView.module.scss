@@ -348,6 +348,13 @@
 .addressGrid {
   display: grid;
   gap: 1rem;
+
+  // La separación entre filas ya la da `gap`. Sin esto, la regla general
+  // `.fieldBlock + .fieldBlock` le sumaba margen a todos menos al primero y
+  // desalineaba la primera fila (Calle vs Número).
+  > .fieldBlock + .fieldBlock {
+    margin-top: 0;
+  }
 }
 
 .contactTypeGrid {

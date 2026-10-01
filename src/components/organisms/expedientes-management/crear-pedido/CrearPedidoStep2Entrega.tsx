@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormikProps } from "formik";
-import { Calendar, Clock, Info } from "lucide-react";
+import { Calendar, Clock, Info, Plus } from "lucide-react";
 import {
   PopoverContent,
   PopoverDialog,
@@ -48,6 +48,8 @@ interface CrearPedidoStep2EntregaProps {
   domicilios: PortalPerfilDomicilio[];
   selectedSucursal: PortalSucursalOption | null;
   onSelectSucursal: (sucursal: PortalSucursalOption | null) => void;
+  /** Si viene, muestra un botón para cargar un domicilio nuevo sin salir del paso. */
+  onAddDomicilio?: () => void;
   onBack?: () => void;
   onContinue?: () => void;
   /** Oculta el campo "Inicio del ciclo" — se usa cuando ese valor queda fijo en el día de hoy. */
@@ -59,6 +61,7 @@ export function CrearPedidoStep2Entrega({
   domicilios,
   selectedSucursal,
   onSelectSucursal,
+  onAddDomicilio,
   onBack,
   onContinue,
   hideInicioCiclo = false,
@@ -147,24 +150,46 @@ export function CrearPedidoStep2Entrega({
         </div>
 
         {formik.values.medioEntrega === "ENVIO_DOMICILIO" ? (
-          <label className="flex flex-col gap-2 md:col-span-2">
-            <span className="text-sm font-medium text-[#2f3042]">Domicilio de entrega</span>
-            <select
-              name="domicilioEntregaId"
-              className="rounded-2xl border border-[#ddd6eb] px-4 py-3 text-sm outline-none transition focus:border-[#8f63d9]"
-              value={formik.values.domicilioEntregaId}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
+          <div className="flex flex-col gap-2 md:col-span-2">
+            <label
+              htmlFor="crear-pedido-domicilio"
+              className="text-sm font-medium text-[#2f3042]"
             >
-              <option value="">Seleccioná un domicilio</option>
-              {domicilios.map((domicilio) => (
-                <option key={getDomicilioValue(domicilio)} value={domicilio.id ?? ""}>
-                  {getDomicilioLabel(domicilio)}
-                </option>
-              ))}
-            </select>
+              Domicilio de entrega
+            </label>
+            {domicilios.length > 0 ? (
+              <select
+                id="crear-pedido-domicilio"
+                name="domicilioEntregaId"
+                className="rounded-2xl border border-[#ddd6eb] px-4 py-3 text-sm outline-none transition focus:border-[#8f63d9]"
+                value={formik.values.domicilioEntregaId}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              >
+                <option value="">Seleccioná un domicilio</option>
+                {domicilios.map((domicilio) => (
+                  <option key={getDomicilioValue(domicilio)} value={domicilio.id ?? ""}>
+                    {getDomicilioLabel(domicilio)}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="text-sm text-[#6f7085]">
+                Todavía no tenés domicilios cargados.
+              </p>
+            )}
             {showError("domicilioEntregaId")}
-          </label>
+            {onAddDomicilio ? (
+              <button
+                type="button"
+                onClick={onAddDomicilio}
+                className="inline-flex items-center gap-1.5 self-start rounded-2xl border border-[#ddd6eb] px-4 py-2 text-sm font-semibold text-[#8f63d9] transition hover:border-[#c4b5e0] hover:bg-[#f7f1fd]"
+              >
+                <Plus size={16} />
+                Añadir un domicilio nuevo
+              </button>
+            ) : null}
+          </div>
         ) : null}
 
         {formik.values.medioEntrega === "RETIRA_SUCURSAL" ? (

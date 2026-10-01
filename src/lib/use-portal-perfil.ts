@@ -16,7 +16,8 @@ export type UsePortalPerfilResult = {
   summary: ReturnType<typeof getPortalPerfilSummary>;
   isLoading: boolean;
   error: string | null;
-  refresh: () => Promise<void>;
+  /** Vuelve a cargar el perfil y devuelve el perfil actualizado (o `null`). */
+  refresh: () => Promise<PortalPerfilResponse | null>;
   replacePerfil: (nextPerfil: PortalPerfilResponse | null) => void;
 };
 
@@ -39,12 +40,12 @@ export const usePortalPerfil = ({ enabled = true }: UsePortalPerfilOptions = {})
   const [isLoading, setIsLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
-  const loadPerfil = useCallback(async (signal?: AbortSignal) => {
+  const loadPerfil = useCallback(async (signal?: AbortSignal): Promise<PortalPerfilResponse | null> => {
     if (!enabled) {
       setIsLoading(false);
       setError(null);
       setPerfil(null);
-      return;
+      return null;
     }
 
     try {
@@ -58,13 +59,13 @@ export const usePortalPerfil = ({ enabled = true }: UsePortalPerfilOptions = {})
 
       if (response.status === 401) {
         setPerfil(null);
-        return;
+        return null;
       }
 
       if (response.status === 403) {
         setPerfil(null);
         setError(MISSING_CLIENT_LINK_MESSAGE);
-        return;
+        return null;
       }
 
       if (!response.ok) {
@@ -73,9 +74,10 @@ export const usePortalPerfil = ({ enabled = true }: UsePortalPerfilOptions = {})
 
       const data = (await response.json()) as PortalPerfilResponse;
       setPerfil(data);
+      return data;
     } catch (requestError) {
       if (signal?.aborted) {
-        return;
+        return null;
       }
 
       setError(
@@ -83,6 +85,7 @@ export const usePortalPerfil = ({ enabled = true }: UsePortalPerfilOptions = {})
           ? requestError.message
           : "No se pudo cargar el perfil",
       );
+      return null;
     } finally {
       if (!signal?.aborted) {
         setIsLoading(false);
@@ -113,9 +116,7 @@ export const usePortalPerfil = ({ enabled = true }: UsePortalPerfilOptions = {})
     summary,
     isLoading,
     error,
-    refresh: async () => {
-      await loadPerfil();
-    },
+    refresh: () => loadPerfil(),
     replacePerfil: (nextPerfil) => {
       setPerfil(nextPerfil);
       setError(null);
