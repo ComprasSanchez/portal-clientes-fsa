@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, Minus, Plus } from "lucide-react";
 import PortalStepper from "../../stepper/stepper";
 import PedidoAccordion, {
   PedidoItem,
@@ -7,6 +7,7 @@ import PedidoAccordion, {
 import PortalInput from "../../portal-input/input";
 import PortalButton from "@/components/atoms/button/button";
 import type { Product } from "@/types/magic-link-type";
+import PriceTag from "@/components/atoms/price-tag/price-tag";
 
 type ProductosSubpaso = "revisar" | "agregar";
 
@@ -24,6 +25,8 @@ type PedidosStep1Props = {
   onToggleItem: (id: string, checked: boolean) => void;
   onToggleProduct: (product: Product) => void;
   isProductSelected: (product: Product) => boolean;
+  getProductQuantity: (id: string) => number;
+  onChangeProductQuantity: (id: string, delta: number) => void;
   onPrevPage: () => void;
   onNextPage: () => void;
   onContinue: () => void;
@@ -56,6 +59,8 @@ const PedidosStep1 = ({
   onToggleItem,
   onToggleProduct,
   isProductSelected,
+  getProductQuantity,
+  onChangeProductQuantity,
   onPrevPage,
   onNextPage,
   onContinue,
@@ -68,6 +73,25 @@ const PedidosStep1 = ({
   const selectedCount = items.filter((item) => item.checked).length;
   const showAccordion = !splitProductSteps || subpaso === "revisar";
   const showSearch = !splitProductSteps || subpaso === "agregar";
+
+  const searchSectionRef = React.useRef<HTMLDivElement | null>(null);
+
+  const scrollToSearchTop = () => {
+    searchSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  const handlePrevPage = () => {
+    scrollToSearchTop();
+    onPrevPage();
+  };
+
+  const handleNextPage = () => {
+    scrollToSearchTop();
+    onNextPage();
+  };
 
   return (
     <div>
@@ -107,7 +131,7 @@ const PedidosStep1 = ({
           </>
         )}
 
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5" ref={searchSectionRef}>
           {showSearch && splitProductSteps && (
             <p className="text-center text-[#8C6FAF] text-bold text-[18px]">
               ¿Querés agregar más productos a tu pedido? Buscalos acá:
@@ -161,17 +185,48 @@ const PedidosStep1 = ({
                             {product.presentacion}
                           </p>
                         )}
+                        <div className="mt-1">
+                          <PriceTag
+                            precio={product.precio}
+                            precioBase={product.precioBase}
+                            descuentoPct={product.descuentoPct}
+                          />
+                        </div>
                       </div>
 
-                      <Search size={18} className="text-[#8C6FAF]/60" />
+                      {/* <Search size={18} className="text-[#8C6FAF]/60" /> */}
                     </div>
 
-                    <PortalButton
-                      variant={selected ? "secondary" : "primary"}
-                      onClick={() => onToggleProduct(product)}
-                    >
-                      {selected ? "Quitar del pedido" : "Agregar al pedido"}
-                    </PortalButton>
+                    {selected ? (
+                      <div className="flex w-full items-center justify-between rounded-2xl border border-[#8C6FAF] px-4 py-2">
+                        <button
+                          type="button"
+                          onClick={() => onChangeProductQuantity(product.id, -1)}
+                          aria-label="Quitar una unidad"
+                          className="flex h-9 w-9 items-center justify-center rounded-full text-[#8C6FAF] transition hover:bg-[#8C6FAF]/10"
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span className="min-w-8 text-center text-base font-bold text-[#8C6FAF]">
+                          {getProductQuantity(product.id)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => onChangeProductQuantity(product.id, 1)}
+                          aria-label="Agregar una unidad"
+                          className="flex h-9 w-9 items-center justify-center rounded-full text-[#8C6FAF] transition hover:bg-[#8C6FAF]/10"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <PortalButton
+                        variant="primary"
+                        onClick={() => onToggleProduct(product)}
+                      >
+                        Agregar al pedido
+                      </PortalButton>
+                    )}
                   </div>
                 );
               })}
@@ -184,7 +239,7 @@ const PedidosStep1 = ({
                   <button
                     type="button"
                     className="rounded-full border border-[#8C6FAF] px-4 py-2 disabled:opacity-50"
-                    onClick={onPrevPage}
+                    onClick={handlePrevPage}
                     disabled={currentPage <= 1 || searchLoading}
                   >
                     Anterior
@@ -192,7 +247,7 @@ const PedidosStep1 = ({
                   <button
                     type="button"
                     className="rounded-full border border-[#8C6FAF] px-4 py-2 disabled:opacity-50"
-                    onClick={onNextPage}
+                    onClick={handleNextPage}
                     disabled={currentPage >= totalPages || searchLoading}
                   >
                     Siguiente

@@ -87,60 +87,205 @@
 }
 
 @font-face {
-  font-family: "Futura";
-  src: url("../assets/futura/FUTURA45LIGHT.TTF") format("truetype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Futura";
-  src: url("../assets/futura/FUTURA46LIGHTITALIC.TTF") format("truetype");
-  font-weight: 300;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Futura";
-  src: url("../assets/futura/FUTURA55REGULAR.TTF") format("truetype");
+  font-family: "Baloo 2";
+  src: url("../assets/Baloo_2/static/Baloo2-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "Futura";
-  src: url("../assets/futura/FUTURA56ITALIC.TTF") format("truetype");
+  font-family: "Baloo 2";
+  src: url("../assets/Baloo_2/static/Baloo2-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Baloo 2";
+  src: url("../assets/Baloo_2/static/Baloo2-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Baloo 2";
+  src: url("../assets/Baloo_2/static/Baloo2-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Baloo 2";
+  src: url("../assets/Baloo_2/static/Baloo2-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("../assets/Poppins/Poppins-Regular.ttf") format("truetype");
   font-weight: 400;
-  font-style: italic;
+  font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "Futura";
-  src: url("../assets/futura/FUTURA65MEDIUM.TTF") format("truetype");
+  font-family: "Poppins";
+  src: url("../assets/Poppins/Poppins-Medium.ttf") format("truetype");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "Futura";
-  src: url("../assets/futura/FUTURA66MEDIUMITALIC.TTF") format("truetype");
-  font-weight: 500;
-  font-style: italic;
+  font-family: "Poppins";
+  src: url("../assets/Poppins/Poppins-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "Futura";
-  src: url("../assets/futura/FUTURA75BOLD.TTF") format("truetype");
+  font-family: "Poppins";
+  src: url("../assets/Poppins/Poppins-Bold.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "Futura";
-  src: url("../assets/futura/FUTURA76BOLDITALIC.TTF") format("truetype");
-  font-weight: 700;
-  font-style: italic;
+  font-family: "Poppins";
+  src: url("../assets/Poppins/Poppins-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
   font-display: swap;
+}
+
+/* Font de CORA, scopeada via .cora-app (ver _CoraPageClient.tsx) para no
+   afectar el font global del resto de la app (Socios, Login, etc.). */
+.cora-app {
+  font-family: "Baloo 2", "BD Supper", "Filson Pro", Arial, Helvetica, sans-serif;
+  --fw-sidebar: 700;
+
+  /* ── Sistema tipográfico CORA ─────────────────────────────────────────
+     Baloo 2 para títulos, Inter para el resto. Tamaños fijos por rol
+     (no la escala --fs-* general, que es compartida con Socios).
+     -------------------------------------------------------------------- */
+  --font-cora-title: "Baloo 2", "BD Supper", "Filson Pro", Arial, Helvetica, sans-serif;
+  --font-cora-body: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
+
+  --fs-cora-title-page: 30px;
+  --fw-cora-title-page: 600;
+
+  --fs-cora-title-section: 22px;
+  --fw-cora-title-section: 600;
+
+  --fs-cora-card-subtitle: 17px;
+  --fw-cora-card-subtitle: 600;
+
+  --fs-cora-read: 15px;
+  --fw-cora-read: 400;
+
+  --fs-cora-data-label: 12.5px;
+  --fw-cora-data-label: 600;
+
+  --fs-cora-aux: 12px;
+  --fw-cora-aux: 400;
+}
+
+.cora-app .cora-title-page {
+  font-family: var(--font-cora-title);
+  font-size: var(--fs-cora-title-page);
+  font-weight: var(--fw-cora-title-page);
+}
+
+.cora-app .cora-title-section {
+  font-family: var(--font-cora-title);
+  font-size: var(--fs-cora-title-section);
+  font-weight: var(--fw-cora-title-section);
+}
+
+.cora-app .cora-card-subtitle {
+  font-family: var(--font-cora-body);
+  font-size: var(--fs-cora-card-subtitle);
+  font-weight: var(--fw-cora-card-subtitle);
+}
+
+.cora-app .cora-read {
+  font-family: var(--font-cora-body);
+  font-size: var(--fs-cora-read);
+  font-weight: var(--fw-cora-read);
+}
+
+.cora-app .cora-data-label {
+  font-family: var(--font-cora-body);
+  font-size: var(--fs-cora-data-label);
+  font-weight: var(--fw-cora-data-label);
+}
+
+.cora-app .cora-aux {
+  font-family: var(--font-cora-body);
+  font-size: var(--fs-cora-aux);
+  font-weight: var(--fw-cora-aux);
+}
+
+/* Mismo sistema tipográfico que CORA, mismo weight/size por rol, pero un
+   solo font (Poppins) para todo Socios en vez de Baloo 2 + Inter. */
+.socios-app {
+  font-family: "Poppins", "BD Supper", Arial, Helvetica, sans-serif;
+
+  --font-socios: "Poppins", "BD Supper", Arial, Helvetica, sans-serif;
+
+  --fs-socios-title-page: 30px;
+  --fw-socios-title-page: 600;
+
+  --fs-socios-title-section: 22px;
+  --fw-socios-title-section: 600;
+
+  --fs-socios-card-subtitle: 17px;
+  --fw-socios-card-subtitle: 600;
+
+  --fs-socios-read: 15px;
+  --fw-socios-read: 400;
+
+  --fs-socios-data-label: 12.5px;
+  --fw-socios-data-label: 600;
+
+  --fs-socios-aux: 12px;
+  --fw-socios-aux: 400;
+}
+
+.socios-app .socios-title-page {
+  font-family: var(--font-socios);
+  font-size: var(--fs-socios-title-page);
+  font-weight: var(--fw-socios-title-page);
+}
+
+.socios-app .socios-title-section {
+  font-family: var(--font-socios);
+  font-size: var(--fs-socios-title-section);
+  font-weight: var(--fw-socios-title-section);
+}
+
+.socios-app .socios-card-subtitle {
+  font-family: var(--font-socios);
+  font-size: var(--fs-socios-card-subtitle);
+  font-weight: var(--fw-socios-card-subtitle);
+}
+
+.socios-app .socios-read {
+  font-family: var(--font-socios);
+  font-size: var(--fs-socios-read);
+  font-weight: var(--fw-socios-read);
+}
+
+.socios-app .socios-data-label {
+  font-family: var(--font-socios);
+  font-size: var(--fs-socios-data-label);
+  font-weight: var(--fw-socios-data-label);
+}
+
+.socios-app .socios-aux {
+  font-family: var(--font-socios);
+  font-size: var(--fs-socios-aux);
+  font-weight: var(--fw-socios-aux);
 }
 
 body {

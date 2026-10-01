@@ -156,12 +156,22 @@ const clearCookie = (
   name: string,
   domain?: string,
 ) => {
+  if (domain) {
+    // response.cookies está indexado por nombre: un set() con Domain pisaría
+    // el borrado host-only de la misma cookie. Se agrega como header aparte
+    // para que salgan los dos Set-Cookie.
+    response.headers.append(
+      "Set-Cookie",
+      `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Domain=${domain}`,
+    );
+    return;
+  }
+
   response.cookies.set({
     name,
     value: "",
     expires: new Date(0),
     path: "/",
-    ...(domain ? { domain } : {}),
   });
 };
 
@@ -220,8 +230,14 @@ export async function POST(req: NextRequest) {
       redirect: "manual",
     });
 
+    // Si la sesión ya se había cerrado desde otra app (Cronicos/Compras), el
+    // bff responde error; igual hay que borrar las cookies locales, si no el
+    // usuario queda con una sid muerta y no puede salir.
     if (!upstream.ok) {
-      return await buildUpstreamErrorResponse(upstream);
+      const response = await buildUpstreamErrorResponse(upstream);
+      clearSessionExpiryMetadata(response);
+      clearLegacyCookies(response, req);
+      return response;
     }
 
     const response =
@@ -246,8 +262,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    clearLegacyCookies(response, req);
+    // Orden importa: cookies.set() reescribe todos los Set-Cookie, así que
+    // clearLegacyCookies (que agrega a mano las variantes con Domain) va último.
     clearSessionExpiryMetadata(response);
+    clearLegacyCookies(response, req);
 
     return response;
   } catch {

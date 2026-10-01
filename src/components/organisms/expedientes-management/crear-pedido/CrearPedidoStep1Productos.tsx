@@ -110,8 +110,26 @@ export function CrearPedidoStep1Productos({
         nombre: producto.nombre,
         laboratorio: "",
         periodoDias: CADENCIA_DEFAULT,
+        cantidadEnvasesPorCiclo: 1,
       },
     ]);
+  };
+
+  const handleChangeQuantity = (productId: string, delta: number) => {
+    formik.setFieldValue(
+      "items",
+      formik.values.items.map((item) =>
+        item.id === productId
+          ? {
+              ...item,
+              cantidadEnvasesPorCiclo: Math.max(
+                1,
+                (item.cantidadEnvasesPorCiclo ?? 1) + delta,
+              ),
+            }
+          : item,
+      ),
+    );
   };
 
   if (subpaso === "frecuencia") {
@@ -241,10 +259,10 @@ export function CrearPedidoStep1Productos({
       {habituales.length > 0 ? (
         <div className="sm:rounded-2xl sm:border sm:border-[#e2daf3] sm:bg-[#faf7ff] sm:p-4">
           <div className="mb-3">
-            <p className="inline-flex items-center gap-1.5 text-xl font-semibold uppercase tracking-[0.14em] text-[#8f63d9]">
+            <p className="cora-title-section inline-flex items-center gap-1.5 text-[#8f63d9]">
               ¡Hola{perfil?.nombre ? ` ${perfil.nombre}` : ""}!
             </p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f63d9]">
+            <p className="cora-card-subtitle mt-1 text-[#8f63d9]">
               Estos son los productos que usás habitualmente:
             </p>
           </div>
@@ -281,7 +299,11 @@ export function CrearPedidoStep1Productos({
           }
           formik.setFieldValue("items", [
             ...formik.values.items,
-            { ...product, periodoDias: CADENCIA_DEFAULT },
+            {
+              ...product,
+              periodoDias: CADENCIA_DEFAULT,
+              cantidadEnvasesPorCiclo: 1,
+            },
           ]);
         }}
         onRemove={(productId) => {
@@ -290,6 +312,7 @@ export function CrearPedidoStep1Productos({
             formik.values.items.filter((item) => item.id !== productId),
           );
         }}
+        onChangeQuantity={handleChangeQuantity}
       />
 
       <div className="flex justify-between">

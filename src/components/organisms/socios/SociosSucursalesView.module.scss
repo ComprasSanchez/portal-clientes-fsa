@@ -5,7 +5,7 @@
   padding: 1.25rem 1rem 0;
   max-width: 100%;
   overflow: hidden;
-  font-family: "Futura", "BD Supper", Arial, Helvetica, sans-serif;
+  font-family: var(--font-socios, "Poppins", "BD Supper", Arial, Helvetica, sans-serif);
 
   @media (min-width: 1024px) {
     height: 100vh;
@@ -19,15 +19,16 @@
 }
 
 .title {
-  font-size: var(--fs-page-title);
-  font-weight: 700;
+  font-size: var(--fs-socios-title-page, var(--fs-page-title));
+  font-weight: var(--fw-socios-title-page, 700);
   color: #163640;
   line-height: 1.2;
 }
 
 .subtitle {
   margin-top: 0.2rem;
-  font-size: 1.3rem;
+  font-size: var(--fs-socios-read, 1.3rem);
+  font-weight: var(--fw-socios-read, 400);
   color: #617881;
 }
 
@@ -179,7 +180,8 @@
 }
 
 .mapPlaceholderText {
-  font-size: 0.875rem;
+  font-size: var(--fs-socios-read, 0.875rem);
+  font-weight: var(--fw-socios-read, 400);
   color: #617881;
 }
 
@@ -257,8 +259,8 @@
 }
 
 .branchName {
-  font-size: 0.9375rem;
-  font-weight: 700;
+  font-size: var(--fs-socios-card-subtitle, 0.9375rem);
+  font-weight: var(--fw-socios-card-subtitle, 700);
   color: #163640;
   line-height: 1.3;
 }
@@ -275,13 +277,15 @@
 }
 
 .branchAddress {
-  font-size: 1rem;
+  font-size: var(--fs-socios-read, 1rem);
+  font-weight: var(--fw-socios-read, 400);
   color: #3d5f6a;
   margin-top: 0.125rem;
 }
 
 .branchBarrio {
-  font-size: 0.75rem;
+  font-size: var(--fs-socios-aux, 0.75rem);
+  font-weight: var(--fw-socios-aux, 400);
   color: #7a9aa3;
   margin-top: 0.1rem;
 }
@@ -298,7 +302,8 @@
 }
 
 .branchHorarios {
-  font-size: 1rem;
+  font-size: var(--fs-socios-read, 1rem);
+  font-weight: var(--fw-socios-read, 400);
   color: #617881;
 }
 
@@ -412,7 +417,8 @@
 }
 
 .emptyText {
-  font-size: 0.9375rem;
+  font-size: var(--fs-socios-read, 0.9375rem);
+  font-weight: var(--fw-socios-read, 400);
   color: #617881;
   margin-bottom: 1rem;
 }

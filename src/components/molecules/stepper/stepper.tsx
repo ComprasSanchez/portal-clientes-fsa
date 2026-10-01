@@ -1,4 +1,4 @@
-import { Check, House, ShoppingBag } from "lucide-react";
+import { Check, House, PackageCheck, ShoppingBag } from "lucide-react";
 import styles from "./stepper.module.scss";
 
 type PortalStepperProps = {
@@ -9,7 +9,7 @@ export default function PortalStepper({ currentStep = 1 }: PortalStepperProps) {
   const steps = [
     { id: 1, label: "Productos", icon: ShoppingBag },
     { id: 2, label: "Entrega", icon: House },
-    { id: 3, label: "Confirmación", icon: Check },
+    { id: 3, label: "Confirmación", icon: PackageCheck },
   ] as const;
 
   return (
@@ -30,7 +30,11 @@ export default function PortalStepper({ currentStep = 1 }: PortalStepperProps) {
                 isUpcoming ? styles.upcoming : "",
               ].join(" ")}
             >
-              <Icon size={20} strokeWidth={2.2} />
+              {isCompleted ? (
+                <Check size={20} strokeWidth={2.4} />
+              ) : (
+                <Icon size={20} strokeWidth={2.2} />
+              )}
             </div>
 
             {index < steps.length - 1 && (

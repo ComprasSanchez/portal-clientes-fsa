@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import bannerCoraMobile2 from "@/assets/cora/banners/banners mobile-02.jpg";
 import bannerCoraMobile3 from "@/assets/cora/banners/banners mobile-03.jpg";
 import bannerCoraMobile4 from "@/assets/cora/banners/banners mobile-04.jpg";
@@ -28,6 +28,8 @@ const SLIDES = [
 ];
 
 const AUTOPLAY_MS = 5000;
+const SWIPE_OFFSET_THRESHOLD = 50;
+const SWIPE_VELOCITY_THRESHOLD = 300;
 
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? "100%" : "-100%", opacity: 0 }),
@@ -44,6 +46,28 @@ export function BannerCoraMobileCarousel() {
     setDirection(dir);
     setCurrent(index);
   }, []);
+
+  const handleDragEnd = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      setIsPaused(false);
+      if (SLIDES.length <= 1) return;
+
+      if (
+        info.offset.x < -SWIPE_OFFSET_THRESHOLD ||
+        info.velocity.x < -SWIPE_VELOCITY_THRESHOLD
+      ) {
+        setDirection(1);
+        setCurrent((c) => (c + 1) % SLIDES.length);
+      } else if (
+        info.offset.x > SWIPE_OFFSET_THRESHOLD ||
+        info.velocity.x > SWIPE_VELOCITY_THRESHOLD
+      ) {
+        setDirection(-1);
+        setCurrent((c) => (c - 1 + SLIDES.length) % SLIDES.length);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (isPaused || SLIDES.length <= 1) return;
@@ -82,6 +106,11 @@ export function BannerCoraMobileCarousel() {
             exit="exit"
             transition={{ duration: 0.4, ease: "easeInOut" }}
             className={styles.slide}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.6}
+            onDragStart={() => setIsPaused(true)}
+            onDragEnd={handleDragEnd}
           >
             {SLIDES[current].href ? (
               <Link href={SLIDES[current].href} className={styles.slideLink}>

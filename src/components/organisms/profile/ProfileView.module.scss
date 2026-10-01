@@ -55,9 +55,9 @@
 }
 
 .title {
-  font-size: 36px;
-  font-weight: 600;
-  text-transform: uppercase;
+  font-family: var(--font-cora-title, var(--font-socios, inherit));
+  font-size: var(--fs-cora-title-page, var(--fs-socios-title-page, 36px));
+  font-weight: var(--fw-cora-title-page, var(--fw-socios-title-page, 600));
   color: #8f63d9;
 }
 

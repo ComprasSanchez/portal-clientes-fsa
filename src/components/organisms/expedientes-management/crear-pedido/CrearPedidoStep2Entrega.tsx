@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormikProps } from "formik";
-import { Calendar, CalendarDays, Clock, Info } from "lucide-react";
+import { Calendar, Clock, Info } from "lucide-react";
 import {
   PopoverContent,
   PopoverDialog,
@@ -10,15 +10,12 @@ import {
 } from "@heroui/react";
 import { PortalDatePicker } from "@/components/molecules/expedientes/PortalDatePicker";
 import { SucursalPickerField } from "@/components/molecules/expedientes/SucursalPickerField";
-import { formatPortalProfileDate } from "@/lib/portal-profile";
 import type { PortalPerfilDomicilio } from "@/types/portal-profile";
 import type { PortalSucursalOption } from "@/types/portal-sucursales";
 import {
-  DEFAULT_ANTICIPACION_DIAS,
   DELIVERY_OPTIONS,
   getDomicilioLabel,
   getDomicilioValue,
-  subtractDaysFromIsoDate,
 } from "../../../../helpers/expedientes-management.helpers";
 import type { CreateFormValues } from "./CrearPedidoView";
 
@@ -40,7 +37,7 @@ const InfoTooltip = ({ label }: InfoTooltipProps) => (
 );
 
 const STEP2_FIELDS = [
-  "fechaObjetivoEntrega",
+  "fechaContactoDeseada",
   "medioEntrega",
   "domicilioEntregaId",
   "sucursalEntregaId",
@@ -51,8 +48,10 @@ interface CrearPedidoStep2EntregaProps {
   domicilios: PortalPerfilDomicilio[];
   selectedSucursal: PortalSucursalOption | null;
   onSelectSucursal: (sucursal: PortalSucursalOption | null) => void;
-  onBack: () => void;
-  onContinue: () => void;
+  onBack?: () => void;
+  onContinue?: () => void;
+  /** Oculta el campo "Inicio del ciclo" — se usa cuando ese valor queda fijo en el día de hoy. */
+  hideInicioCiclo?: boolean;
 }
 
 export function CrearPedidoStep2Entrega({
@@ -62,14 +61,8 @@ export function CrearPedidoStep2Entrega({
   onSelectSucursal,
   onBack,
   onContinue,
+  hideInicioCiclo = false,
 }: CrearPedidoStep2EntregaProps) {
-  const fechaContactoEstimada = formik.values.fechaObjetivoEntrega
-    ? subtractDaysFromIsoDate(
-        formik.values.fechaObjetivoEntrega,
-        DEFAULT_ANTICIPACION_DIAS,
-      )
-    : null;
-
   const handleMedioEntregaChange = (value: string) => {
     formik.setValues({
       ...formik.values,
@@ -87,7 +80,7 @@ export function CrearPedidoStep2Entrega({
       (field) => Boolean((errors as Record<string, unknown>)[field]),
     );
     if (!hasStepError) {
-      onContinue();
+      onContinue?.();
     }
   };
 
@@ -103,45 +96,32 @@ export function CrearPedidoStep2Entrega({
       </p>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <div className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2f3042]">
-            Inicio del ciclo
-            <InfoTooltip label="Es la fecha en la que arranca el seguimiento de este pedido. A partir de acá calculamos cuándo te vamos a contactar y cuándo debería llegarte la próxima entrega." />
+        {!hideInicioCiclo && (
+          <div className="flex flex-col gap-2">
+            <div className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2f3042]">
+              Inicio del ciclo
+              <InfoTooltip label="Es la fecha en la que arranca el seguimiento de este pedido. A partir de acá calculamos cuándo te vamos a contactar y cuándo debería llegarte la próxima entrega." />
+            </div>
+            <PortalDatePicker
+              value={formik.values.fechaInicioCicloBase}
+              onChange={(value) => formik.setFieldValue("fechaInicioCicloBase", value)}
+            />
           </div>
-          <PortalDatePicker
-            value={formik.values.fechaInicioCicloBase}
-            onChange={(value) => formik.setFieldValue("fechaInicioCicloBase", value)}
-          />
-        </div>
+        )}
 
         <div className="flex flex-col gap-2">
           <div className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2f3042]">
-            Fecha objetivo de entrega
-            <InfoTooltip label="Es el día en que te gustaría recibir este pedido. La usamos para coordinar el despacho y para calcular cuándo te vamos a contactar antes de la entrega." />
+            ¿Qué día querés que te contactemos?
+            <InfoTooltip label="Te vamos a llamar este día para confirmar tus datos y coordinar cuándo y cómo te llega el pedido." />
           </div>
           <PortalDatePicker
-            value={formik.values.fechaObjetivoEntrega}
-            onChange={(value) => formik.setFieldValue("fechaObjetivoEntrega", value)}
-            onBlur={() => formik.setFieldTouched("fechaObjetivoEntrega", true)}
+            value={formik.values.fechaContactoDeseada}
+            onChange={(value) => formik.setFieldValue("fechaContactoDeseada", value)}
+            onBlur={() => formik.setFieldTouched("fechaContactoDeseada", true)}
             disableBeforeToday
           />
-          {showError("fechaObjetivoEntrega")}
+          {showError("fechaContactoDeseada")}
         </div>
-
-        {fechaContactoEstimada ? (
-          <div className="md:col-span-2 rounded-2xl border border-[#e2daf3] bg-[#faf7ff] px-4 py-3">
-            <div className="inline-flex items-center gap-1.5 text-xs font-medium text-[#8f7fa0]">
-              <CalendarDays size={14} />
-              Fecha estimada del contacto
-              <InfoTooltip
-                label={`Te contactamos ${DEFAULT_ANTICIPACION_DIAS} días antes de la fecha objetivo de entrega, para tener tiempo de confirmar los datos y coordinar el despacho.`}
-              />
-            </div>
-            <p className="mt-1 text-base font-semibold text-[#8f63d9]">
-              {formatPortalProfileDate(fechaContactoEstimada)}
-            </p>
-          </div>
-        ) : null}
 
         <div className="md:col-span-2">
           <span className="text-sm font-medium text-[#2f3042]">
@@ -203,22 +183,30 @@ export function CrearPedidoStep2Entrega({
         ) : null}
       </div>
 
-      <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center justify-center rounded-2xl border border-[#ddd6eb] px-5 py-3 text-sm font-semibold text-[#2f3042] transition hover:border-[#c4b5e0]"
-        >
-          Atrás
-        </button>
-        <button
-          type="button"
-          onClick={() => void handleContinue()}
-          className="inline-flex items-center justify-center rounded-2xl bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#7f56c7]"
-        >
-          Continuar
-        </button>
-      </div>
+      {(onBack || onContinue) && (
+        <div className="flex justify-between">
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex items-center justify-center rounded-2xl border border-[#ddd6eb] px-5 py-3 text-sm font-semibold text-[#2f3042] transition hover:border-[#c4b5e0]"
+            >
+              Atrás
+            </button>
+          ) : (
+            <span />
+          )}
+          {onContinue && (
+            <button
+              type="button"
+              onClick={() => void handleContinue()}
+              className="inline-flex items-center justify-center rounded-2xl bg-[#8f63d9] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#7f56c7]"
+            >
+              Continuar
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

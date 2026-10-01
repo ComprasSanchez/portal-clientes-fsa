@@ -1,7 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Calendar, CheckCircle2, Clock, Package, Truck } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Package,
+  Truck,
+  XCircle,
+} from "lucide-react";
 import PortalStepper from "../../stepper/stepper";
 import PortalButton from "@/components/atoms/button/button";
+import { RecetaUploader } from "@/components/molecules/receta-uploader/receta-uploader";
+import { MERCADOPAGO_PAGO_ENABLED, RECETA_UPLOAD_ENABLED } from "@/lib/feature-flags";
 import ConfirmProductsAccordion, {
   ConfirmProductItem,
 } from "../../confirm-accordion/confirm-accordion";
@@ -17,17 +27,25 @@ import {
   TrackingOrderStatus,
 } from "@/lib/order-tracking";
 
+type PaymentStatus = "idle" | "redirecting" | "processing" | "rejected" | "pending";
+
+type ConfirmOrderChoice = "pagar_ahora" | "contactenme" | "confirmar";
+
 type PedidosStep3Props = {
   productos: ConfirmProductItem[];
   entrega: ConfirmDeliveryData | null;
   isSubmitting: boolean;
   orderConfirmed: boolean;
   orderNumber: string | null;
+  paymentStatus?: PaymentStatus;
   token?: string;
   cicloId?: string;
-  onConfirm: () => void;
+  onConfirm: (choice: ConfirmOrderChoice) => void;
+  onRetryPayment?: () => void;
   onContactAdvisor: () => void;
   onBack?: () => void;
+  onRemoveProduct?: (id: string) => void;
+  onChangeProductQuantity?: (id: string, delta: number) => void;
 };
 
 const PedidosStep3 = ({
@@ -36,16 +54,21 @@ const PedidosStep3 = ({
   isSubmitting,
   orderConfirmed,
   orderNumber,
+  paymentStatus = "idle",
   token,
   cicloId,
   onConfirm,
+  onRetryPayment,
   onContactAdvisor,
   onBack,
+  onRemoveProduct,
+  onChangeProductQuantity,
 }: PedidosStep3Props) => {
   const [parentOrders, setParentOrders] = useState<ParentOrder[]>([]);
   const [trackingStatus, setTrackingStatus] =
     useState<TrackingOrderStatus>("pendiente");
   const [isTrackingLoading, setIsTrackingLoading] = useState(false);
+  const [showPaymentChoice, setShowPaymentChoice] = useState(false);
 
   useEffect(() => {
     if (!orderConfirmed || !token || !cicloId) {
@@ -92,6 +115,24 @@ const PedidosStep3 = ({
     [orderNumber, parentOrders],
   );
 
+  const handleUploadReceta = async (file: File) => {
+    if (!token) {
+      throw new Error("No se encontró el token del portal");
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`/api/magic/portal-clientes/${token}/recetas`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("No pudimos subir la receta");
+    }
+  };
+
   // "Listo para entrega o retiro" es ambiguo — una vez que sabemos qué
   // eligió el cliente, mostramos el texto específico que le corresponde.
   const logisticaLabel =
@@ -100,6 +141,62 @@ const PedidosStep3 = ({
         ? "Listo para retirar"
         : "Listo para envío"
       : TRACKING_LABELS[trackingStatus];
+
+  if (!orderConfirmed && paymentStatus === "rejected") {
+    return (
+      <div className="w-full p-5">
+        <div className="mx-auto flex flex-col gap-5 rounded-3xl bg-white p-6 text-center shadow-sm">
+          <div className="flex justify-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 text-red-500">
+              <XCircle size={42} />
+            </div>
+          </div>
+
+          <h4 className="pt-1 text-[24px] font-bold text-[#8C6FAF]">
+            No pudimos procesar el pago
+          </h4>
+          <p className="text-[18px] text-[#8C6FAF]">
+            El pago no se pudo completar. Podés intentarlo de nuevo cuando quieras.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <PortalButton variant="primary" onClick={onRetryPayment}>
+              Reintentar pago
+            </PortalButton>
+
+            <PortalButton variant="secondary" withChatIcon onClick={onContactAdvisor}>
+              Hablar con CORA
+            </PortalButton>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!orderConfirmed && paymentStatus === "pending") {
+    return (
+      <div className="w-full p-5">
+        <div className="mx-auto flex flex-col gap-5 rounded-3xl bg-white p-6 text-center shadow-sm">
+          <div className="flex justify-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-50 text-amber-500">
+              <Clock size={42} />
+            </div>
+          </div>
+
+          <h4 className="pt-1 text-[24px] font-bold text-[#8C6FAF]">
+            Tu pago está pendiente de confirmación
+          </h4>
+          <p className="text-[18px] text-[#8C6FAF]">
+            En cuanto se confirme te vamos a avisar. Podés cerrar esta pantalla tranquilo.
+          </p>
+
+          <PortalButton variant="secondary" withChatIcon onClick={onContactAdvisor}>
+            Hablar con CORA
+          </PortalButton>
+        </div>
+      </div>
+    );
+  }
 
   if (orderConfirmed) {
     return (
@@ -242,17 +339,66 @@ const PedidosStep3 = ({
           </p>
         </div>
         <div className="flex flex-col gap-5">
-          <ConfirmProductsAccordion items={productos} />
+          <ConfirmProductsAccordion
+            items={productos}
+            onRemove={onRemoveProduct}
+            onChangeQuantity={onChangeProductQuantity}
+          />
           {entrega && <ConfirmDeliveryAccordion data={entrega} />}
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <PortalButton variant="primary" onClick={onConfirm} disabled={isSubmitting || !entrega}>
-              {isSubmitting ? "Confirmando pedido..." : "Confirmar selección"}
-            </PortalButton>
+          {RECETA_UPLOAD_ENABLED && token && (
+            <RecetaUploader onUpload={handleUploadReceta} />
+          )}
 
-            <PortalButton variant="secondary" withChatIcon onClick={onContactAdvisor}>
-              Hablar con CORA
-            </PortalButton>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {!MERCADOPAGO_PAGO_ENABLED ? (
+              <>
+                <PortalButton
+                  variant="primary"
+                  onClick={() => onConfirm("confirmar")}
+                  disabled={isSubmitting || !entrega}
+                >
+                  {isSubmitting ? "Confirmando pedido..." : "Confirmar selección"}
+                </PortalButton>
+
+                <PortalButton variant="secondary" withChatIcon onClick={onContactAdvisor}>
+                  Hablar con CORA
+                </PortalButton>
+              </>
+            ) : showPaymentChoice ? (
+              <>
+                <PortalButton
+                  variant="mercadopago"
+                  onClick={() => onConfirm("pagar_ahora")}
+                  disabled={isSubmitting || !entrega}
+                >
+                  {isSubmitting ? "Confirmando pedido..." : "Pagar con Mercado Pago"}
+                </PortalButton>
+
+                <PortalButton
+                  variant="secondary"
+                  withChatIcon
+                  onClick={() => onConfirm("contactenme")}
+                  disabled={isSubmitting || !entrega}
+                >
+                  {isSubmitting ? "Confirmando pedido..." : "Hablar con CORA"}
+                </PortalButton>
+              </>
+            ) : (
+              <>
+                <PortalButton
+                  variant="primary"
+                  onClick={() => setShowPaymentChoice(true)}
+                  disabled={isSubmitting || !entrega}
+                >
+                  Continuar
+                </PortalButton>
+
+                <PortalButton variant="secondary" withChatIcon onClick={onContactAdvisor}>
+                  Hablar con CORA
+                </PortalButton>
+              </>
+            )}
           </div>
         </div>
       </div>

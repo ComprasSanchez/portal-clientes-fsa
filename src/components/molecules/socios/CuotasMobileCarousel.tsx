@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import mobile1 from "@/assets/sociosa-img/mobile-1.jpg";
 import mobile2 from "@/assets/sociosa-img/mobile-2.jpg";
 import styles from "./BannerCarousel.module.scss";
@@ -13,6 +13,8 @@ const SLIDES = [
 ];
 
 const AUTOPLAY_MS = 4000;
+const SWIPE_OFFSET_THRESHOLD = 50;
+const SWIPE_VELOCITY_THRESHOLD = 300;
 
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? "100%" : "-100%", opacity: 0 }),
@@ -29,6 +31,28 @@ export function CuotasMobileCarousel() {
     setDirection(dir);
     setCurrent(index);
   }, []);
+
+  const handleDragEnd = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      setIsPaused(false);
+      if (SLIDES.length <= 1) return;
+
+      if (
+        info.offset.x < -SWIPE_OFFSET_THRESHOLD ||
+        info.velocity.x < -SWIPE_VELOCITY_THRESHOLD
+      ) {
+        setDirection(1);
+        setCurrent((c) => (c + 1) % SLIDES.length);
+      } else if (
+        info.offset.x > SWIPE_OFFSET_THRESHOLD ||
+        info.velocity.x > SWIPE_VELOCITY_THRESHOLD
+      ) {
+        setDirection(-1);
+        setCurrent((c) => (c - 1 + SLIDES.length) % SLIDES.length);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (isPaused) return;
@@ -67,6 +91,11 @@ export function CuotasMobileCarousel() {
             exit="exit"
             transition={{ duration: 0.4, ease: "easeInOut" }}
             className={styles.slide}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.6}
+            onDragStart={() => setIsPaused(true)}
+            onDragEnd={handleDragEnd}
           >
             <Image
               src={SLIDES[current].src}

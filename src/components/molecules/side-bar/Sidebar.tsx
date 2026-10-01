@@ -213,12 +213,12 @@ export function Sidebar({
                     >
                       <Icon size={18} className="shrink-0" />
                       {!isCollapsed && (
-                        <span className="text-[15px] font-semibold">
+                        <span className="text-[15px] font-(--fw-sidebar,600)">
                           {item.label}
                         </span>
                       )}
                       {isCollapsed && (
-                        <span className="text-[15px] font-semibold lg:hidden">
+                        <span className="text-[15px] font-(--fw-sidebar,600) lg:hidden">
                           {item.label}
                         </span>
                       )}
@@ -234,7 +234,7 @@ export function Sidebar({
                 className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[#dd3f62] transition-colors hover:bg-[#fdecef]"
               >
                 <LogOut size={18} className="shrink-0" />
-                <span className="text-[15px] font-semibold">
+                <span className="text-[15px] font-(--fw-sidebar,600)">
                   Cerrar sesion
                 </span>
               </button>
@@ -249,10 +249,10 @@ export function Sidebar({
             >
               <LogOut size={20} className="shrink-0" />
               {!isCollapsed && (
-                <span className="text-sm font-semibold">Cerrar sesion</span>
+                <span className="text-sm font-(--fw-sidebar,600)">Cerrar sesion</span>
               )}
               {isCollapsed && (
-                <span className="text-sm font-semibold lg:hidden">
+                <span className="text-sm font-(--fw-sidebar,600) lg:hidden">
                   Cerrar sesion
                 </span>
               )}

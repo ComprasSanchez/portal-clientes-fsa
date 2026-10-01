@@ -1,0 +1,45 @@
+$violeta-tinta: #4a2e73;
+$green: #1e7a52;
+$muted: rgba(47, 42, 67, 0.45);
+$badge-bg: rgba(30, 122, 82, 0.14);
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.alignEnd {
+  align-items: flex-end;
+}
+
+.finalRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.base {
+  color: $muted;
+  font-size: 0.82rem;
+  text-decoration: line-through;
+  white-space: nowrap;
+}
+
+.final {
+  color: $violeta-tinta;
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.badge {
+  color: $green;
+  background: $badge-bg;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+}

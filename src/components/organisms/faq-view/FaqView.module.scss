@@ -5,14 +5,17 @@
 }
 
 .title {
-  font-size: var(--fs-page-title);
-  font-weight: 700;
+  font-family: var(--font-cora-title, inherit);
+  font-size: var(--fs-cora-title-page, var(--fs-page-title));
+  font-weight: var(--fw-cora-title-page, 700);
   color: #8f63d9;
 }
 
 .subtitle {
   margin-top: 0.35rem;
-  font-size: var(--fs-sm);
+  font-family: var(--font-cora-body, inherit);
+  font-size: var(--fs-cora-read, var(--fs-sm));
+  font-weight: var(--fw-cora-read, 400);
   color: #6f7088;
 }
 
@@ -26,8 +29,9 @@
 
 .faqHeading {
   margin-bottom: 1rem;
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-family: var(--font-cora-title, inherit);
+  font-size: var(--fs-cora-title-section, 1.05rem);
+  font-weight: var(--fw-cora-title-section, 700);
   color: #2b2d3f;
 }
 
@@ -50,7 +54,9 @@
   padding: 1.1rem 1rem;
   margin: 0 -1rem;
   border-radius: 0.75rem;
-  font-weight: 700;
+  font-family: var(--font-cora-body, inherit);
+  font-size: var(--fs-cora-card-subtitle, inherit);
+  font-weight: var(--fw-cora-card-subtitle, 700);
   color: #8f63d9;
   transition: background-color 0.15s ease;
 
@@ -64,6 +70,9 @@
   height: auto !important;
   padding-top: 0;
   padding-bottom: 1.1rem;
+  font-family: var(--font-cora-body, inherit);
+  font-size: var(--fs-cora-read, inherit);
+  font-weight: var(--fw-cora-read, 400);
   color: #2f3042;
   line-height: 1.55;
 }

@@ -31,11 +31,11 @@ export function OrderTrackingPanel({
         </div>
       </div>
 
-      <h2 className="pt-1 text-[24px] font-bold text-[#8C6FAF]">Pedido registrado</h2>
-      <p className="text-[18px] text-[#8C6FAF]">Tu solicitud ya está en seguimiento logístico.</p>
+      <h2 className="pt-1 cora-title-section text-[#8C6FAF]">Pedido registrado</h2>
+      <p className="cora-read text-[#8C6FAF]">Tu solicitud ya está en seguimiento logístico.</p>
 
       <div className="rounded-3xl border border-[#8C6FAF]/15 bg-[#8C6FAF]/6 p-5">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#8C6FAF]/65">
+        <p className="cora-data-label uppercase tracking-[0.22em] text-[#8C6FAF]/65">
           Número de orden
         </p>
         <p className="mt-2 text-[32px] font-bold tracking-[0.08em] text-[#8C6FAF]">
@@ -47,17 +47,17 @@ export function OrderTrackingPanel({
         <div className="rounded-2xl bg-[#F7F3FB] p-4">
           <div className="mb-2 flex items-center gap-2 text-[#8C6FAF]">
             <Truck size={18} />
-            <span className="text-xs font-semibold uppercase tracking-[0.12em]">Logística</span>
+            <span className="cora-data-label uppercase tracking-[0.12em]">Logística</span>
           </div>
-          <p className="text-sm font-semibold text-[#8C6FAF]">{TRACKING_LABELS[trackingStatus]}</p>
+          <p className="cora-card-subtitle text-[#8C6FAF]">{TRACKING_LABELS[trackingStatus]}</p>
         </div>
 
         <div className="rounded-2xl bg-[#F7F3FB] p-4">
           <div className="mb-2 flex items-center gap-2 text-[#8C6FAF]">
             <Clock size={18} />
-            <span className="text-xs font-semibold uppercase tracking-[0.12em]">Estado</span>
+            <span className="cora-data-label uppercase tracking-[0.12em]">Estado</span>
           </div>
-          <p className="text-sm font-semibold text-[#8C6FAF]">
+          <p className="cora-card-subtitle text-[#8C6FAF]">
             {latestParentOrder.status
               ? (PARENT_ORDER_STATUS_LABELS[latestParentOrder.status] ?? latestParentOrder.status)
               : "Registrado"}
@@ -67,9 +67,9 @@ export function OrderTrackingPanel({
         <div className="rounded-2xl bg-[#F7F3FB] p-4">
           <div className="mb-2 flex items-center gap-2 text-[#8C6FAF]">
             <Calendar size={18} />
-            <span className="text-xs font-semibold uppercase tracking-[0.12em]">Fecha</span>
+            <span className="cora-data-label uppercase tracking-[0.12em]">Fecha</span>
           </div>
-          <p className="text-sm font-semibold text-[#8C6FAF]">
+          <p className="cora-card-subtitle text-[#8C6FAF]">
             {new Date().toLocaleDateString("es-AR", {
               day: "2-digit",
               month: "long",
@@ -82,7 +82,7 @@ export function OrderTrackingPanel({
       <div className="rounded-3xl border border-[#8C6FAF]/10 bg-white p-5 text-left">
         <div className="mb-3 flex items-center gap-2 text-[#8C6FAF]">
           <Package size={18} />
-          <p className="text-sm font-bold uppercase tracking-[0.12em]">Seguimiento</p>
+          <p className="cora-data-label uppercase tracking-[0.12em]">Seguimiento</p>
         </div>
 
         <div className="space-y-3">
@@ -103,7 +103,7 @@ export function OrderTrackingPanel({
                   <CheckCircle2 size={14} />
                 </div>
                 <p
-                  className={`text-sm ${
+                  className={`cora-read ${
                     active ? "font-semibold text-[#8C6FAF]" : "text-[#8C6FAF]/55"
                   }`}
                 >
