@@ -1,0 +1,77 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+  height: 100%;
+  padding: 1.25rem;
+  border: 1px solid #d5e4e8;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(0, 68, 84, 0.06);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+
+  &:not(.disabled):hover {
+    border-color: #9ccfdb;
+    box-shadow: 0 14px 30px rgba(0, 68, 84, 0.1);
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #007c98;
+    outline-offset: 2px;
+  }
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.9rem;
+  background: #e6f7fb;
+  color: #007c98;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.nombre {
+  font-size: var(--fs-socios-card-subtitle, var(--fs-panel-title));
+  font-weight: var(--fw-socios-card-subtitle, 600);
+  color: #17343d;
+}
+
+.descripcion {
+  font-size: var(--fs-socios-read, var(--fs-sm));
+  font-weight: var(--fw-socios-read, 400);
+  color: #627880;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--fs-sm, 0.875rem);
+  font-weight: 600;
+  color: #007c98;
+}
+
+.disabled {
+  cursor: default;
+  opacity: 0.6;
+
+  .action {
+    color: #698088;
+  }
+}

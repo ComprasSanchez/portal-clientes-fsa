@@ -36,7 +36,7 @@ export function LeafletMiniMap({ branches }: LeafletMiniMapProps) {
       attributionControl={false}
     >
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${process.env.NEXT_PUBLIC_CARTO_API_KEY}`}
         maxZoom={19}
       />
       {branches.filter((b) => b.activa).map((branch) => (

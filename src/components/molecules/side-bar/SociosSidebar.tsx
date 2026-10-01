@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CreditCard,
@@ -19,6 +20,7 @@ import {
   X,
   BoxIcon,
   PackageCheck,
+  BadgeCheck,
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
 import sociosaLogo from "@/assets/sociosa-color.png";
@@ -31,13 +33,37 @@ interface SociosSidebarProps {
   onNavigate: (view: SociosView) => void;
   userName: string;
   onLogout: () => void;
+  esColaborador?: boolean;
 }
 
-const menuItems: Array<{
+type MenuLeaf = {
   id: SociosView | "cora";
   label: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
-}> = [
+};
+
+type MenuGroup = {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  children: Array<{ id: SociosView; label: string }>;
+};
+
+type MenuItem = MenuLeaf | MenuGroup;
+
+const isMenuGroup = (item: MenuItem): item is MenuGroup => "children" in item;
+
+const colaboradoresMenuItem: MenuGroup = {
+  id: "colaboradores",
+  label: "Colaboradores",
+  icon: BadgeCheck,
+  children: [
+    { id: "colaboradores-ventas", label: "Ventas" },
+    { id: "colaboradores-aplicaciones", label: "Aplicaciones FSA" },
+  ],
+};
+
+const menuItems: MenuItem[] = [
   { id: "dashboard", label: "Inicio", icon: LayoutGrid },
   { id: "mi-cuenta", label: "Mi perfil", icon: User },
   { id: "pedidos", label: "Mis pedidos", icon: PackageCheck },
@@ -55,10 +81,26 @@ export function SociosSidebar({
   onNavigate,
   userName,
   onLogout,
+  esColaborador = false,
 }: SociosSidebarProps) {
   const router = useRouter();
+  const visibleMenuItems = esColaborador
+    ? [
+        ...menuItems.filter((item) => item.id !== "cora"),
+        colaboradoresMenuItem,
+        ...menuItems.filter((item) => item.id === "cora"),
+      ]
+    : menuItems;
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  // Grupos desplegados. El grupo de la vista actual se muestra abierto
+  // aunque el usuario no lo haya abierto a mano.
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const isGroupOpen = (group: MenuGroup) =>
+    openGroups[group.id] ??
+    group.children.some((child) => child.id === currentView);
+  const toggleGroup = (group: MenuGroup) =>
+    setOpenGroups((prev) => ({ ...prev, [group.id]: !isGroupOpen(group) }));
 
   const { perfil } = usePortalPerfilContext();
 
@@ -172,8 +214,76 @@ export function SociosSidebar({
 
           <nav className="flex flex-1 flex-col overflow-y-auto py-4">
             <ul className="space-y-1 px-3">
-              {menuItems.map((item) => {
+              {visibleMenuItems.map((item) => {
                 const Icon = item.icon;
+
+                if (isMenuGroup(item)) {
+                  const isOpen = isGroupOpen(item);
+                  const hasActiveChild = item.children.some(
+                    (child) => child.id === currentView,
+                  );
+                  const submenuId = `socios-submenu-${item.id}`;
+
+                  return (
+                    <li key={item.id}>
+                      <button
+                        onClick={() => {
+                          // Con el menú colapsado en escritorio (solo íconos)
+                          // no hay lugar para el submenú: va directo al
+                          // primer ítem. En mobile el colapsado no aplica.
+                          const isCollapsedDesktop =
+                            isCollapsed &&
+                            window.matchMedia("(min-width: 1024px)").matches;
+                          if (isCollapsedDesktop) {
+                            handleNavigate(item.children[0].id);
+                          } else {
+                            toggleGroup(item);
+                          }
+                        }}
+                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-[#e2ecef] ${hasActiveChild ? "text-[#007c98]" : "text-[#17343d]"}`}
+                        title={isCollapsed ? item.label : undefined}
+                        aria-expanded={isCollapsed ? undefined : isOpen}
+                        aria-controls={isCollapsed ? undefined : submenuId}
+                        type="button"
+                      >
+                        <Icon size={18} className="shrink-0" />
+                        <span
+                          className={`flex-1 text-left text-[15px] font-semibold ${isCollapsed ? "lg:hidden" : ""}`}
+                        >
+                          {item.label}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`shrink-0 transition-transform duration-200 ${isOpen ? "rotate-0" : "-rotate-90"} ${isCollapsed ? "lg:hidden" : ""}`}
+                        />
+                      </button>
+
+                      {isOpen && (
+                        <ul
+                          id={submenuId}
+                          className={`ml-[1.35rem] mt-1 space-y-1 border-l border-[#d3dee2] pl-3 ${isCollapsed ? "lg:hidden" : ""}`}
+                        >
+                          {item.children.map((child) => {
+                            const isChildActive = currentView === child.id;
+                            return (
+                              <li key={child.id}>
+                                <button
+                                  onClick={() => handleNavigate(child.id)}
+                                  className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-[14px] transition-colors ${isChildActive ? "bg-[#dcebef] font-semibold text-[#007c98]" : "font-medium text-[#32505a] hover:bg-[#e2ecef]"}`}
+                                  aria-current={isChildActive ? "page" : undefined}
+                                  type="button"
+                                >
+                                  {child.label}
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                }
+
                 const isActive = item.id !== "cora" && currentView === item.id;
                 const isCoraShortcut = item.id === "cora";
 

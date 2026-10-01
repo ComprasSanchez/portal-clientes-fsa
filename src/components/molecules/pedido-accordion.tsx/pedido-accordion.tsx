@@ -9,6 +9,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Switch } from "@/components/ui/switch";
+import { formatPortalCurrency } from "@/lib/portal-compras";
+import PriceTag from "@/components/atoms/price-tag/price-tag";
 import styles from "./pedidoAccordion.module.scss";
 
 export type PedidoItem = {
@@ -17,6 +19,9 @@ export type PedidoItem = {
   laboratorio: string;
   cantidad: number;
   checked: boolean;
+  precio: number | null;
+  precioBase: number | null;
+  descuentoPct: number;
 };
 
 type PedidoAccordionProps = {
@@ -46,6 +51,13 @@ export default function PedidoAccordion({
     onToggle?.(id, checked);
   };
 
+  const total = localItems
+    .filter((item) => item.checked)
+    .reduce((sum, item) => sum + (item.precio ?? 0) * item.cantidad, 0);
+  const hayAlgunPrecio = localItems.some(
+    (item) => item.checked && typeof item.precio === "number",
+  );
+
   return (
     <Accordion
       type="single"
@@ -61,7 +73,7 @@ export default function PedidoAccordion({
           </div>
         </AccordionTrigger>
 
-        <AccordionContent className={styles.content}>
+        <AccordionContent className={`h-auto ${styles.content}`}>
           <div className={styles.list}>
             {localItems.map((item, index) => (
               <React.Fragment key={item.id}>
@@ -69,7 +81,12 @@ export default function PedidoAccordion({
                   <div className={styles.info}>
                     <p className={styles.name}>{item.nombre}</p>
                     <p className={styles.brand}>{item.laboratorio}</p>
-                    <p className={styles.qty}>Cantidad: {item.cantidad}</p>
+                    <PriceTag
+                      precio={item.precio}
+                      precioBase={item.precioBase}
+                      descuentoPct={item.descuentoPct}
+                      cantidad={item.cantidad}
+                    />
                   </div>
 
                   <div className={styles.switchWrap}>
@@ -88,6 +105,15 @@ export default function PedidoAccordion({
               </React.Fragment>
             ))}
           </div>
+
+          {hayAlgunPrecio && (
+            <div className={styles.footer}>
+              <span className={styles.footerLabel}>Total</span>
+              <span className={styles.footerTotal}>
+                {formatPortalCurrency(total)}
+              </span>
+            </div>
+          )}
         </AccordionContent>
       </AccordionItem>
     </Accordion>

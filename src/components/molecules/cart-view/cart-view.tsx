@@ -3,12 +3,17 @@
 import { ShoppingCart, Trash2, X } from "lucide-react";
 import styles from "./cartView.module.scss";
 import PortalButton from "@/components/atoms/button/button";
+import PriceTag from "@/components/atoms/price-tag/price-tag";
+import { formatPortalCurrency } from "@/lib/portal-compras";
 
 export type CartViewItem = {
   id: string;
   nombre: string;
   laboratorio: string;
   cantidad?: number;
+  precio?: number | null;
+  precioBase?: number | null;
+  descuentoPct?: number;
 };
 
 type CartViewProps = {
@@ -28,7 +33,12 @@ export default function CartView({
   onRemove,
   onChat,
 }: CartViewProps) {
-    
+  const total = items.reduce(
+    (sum, item) => sum + (item.precio ?? 0) * (item.cantidad ?? 1),
+    0,
+  );
+  const hayAlgunPrecio = items.some((item) => typeof item.precio === "number");
+
   return (
     <div className={open ? `${styles.overlay} ${styles.open}` : styles.overlay}>
       <div className={styles.container}>
@@ -68,6 +78,13 @@ export default function CartView({
                       {typeof item.cantidad === "number" && (
                         <p className={styles.itemQty}>Cantidad: {item.cantidad}</p>
                       )}
+
+                      <PriceTag
+                        precio={item.precio}
+                        precioBase={item.precioBase}
+                        descuentoPct={item.descuentoPct}
+                        cantidad={item.cantidad ?? 1}
+                      />
                     </div>
 
                     <button
@@ -83,6 +100,15 @@ export default function CartView({
                   {index < items.length - 1 && <div className={styles.divider} />}
                 </div>
               ))
+            )}
+
+            {hayAlgunPrecio && (
+              <div className={styles.totalRow}>
+                <span className={styles.totalLabel}>Total</span>
+                <span className={styles.totalValue}>
+                  {formatPortalCurrency(total)}
+                </span>
+              </div>
             )}
           </div>
 

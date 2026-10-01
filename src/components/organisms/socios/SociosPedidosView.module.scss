@@ -8,15 +8,16 @@
 }
 
 .pageTitle {
-  font-size: var(--fs-page-title);
-  font-weight: 700;
+  font-size: var(--fs-socios-title-page, var(--fs-page-title));
+  font-weight: var(--fw-socios-title-page, 700);
   color: #17343d;
-  font-family: "Futura", "BD Supper", Arial, Helvetica, sans-serif;
+  font-family: var(--font-socios, "Poppins", "BD Supper", Arial, Helvetica, sans-serif);
 }
 
 .pageSubtitle {
   margin-top: 0.25rem;
-  font-size: var(--fs-description);
+  font-size: var(--fs-socios-read, var(--fs-description));
+  font-weight: var(--fw-socios-read, 400);
   color: #5f7c85;
 }
 
@@ -124,14 +125,15 @@
 }
 
 .orderCardId {
-  font-size: var(--fs-body);
-  font-weight: 700;
+  font-size: var(--fs-socios-card-subtitle, var(--fs-body));
+  font-weight: var(--fw-socios-card-subtitle, 700);
   color: #17343d;
 }
 
 .orderCardDate {
   margin-top: 0.3rem;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-socios-aux, var(--fs-sm));
+  font-weight: var(--fw-socios-aux, 400);
   color: #698088;
 }
 
@@ -147,7 +149,8 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-socios-aux, var(--fs-sm));
+  font-weight: var(--fw-socios-aux, 400);
   color: #5f7c85;
 }
 
@@ -203,8 +206,8 @@
 }
 
 .detailOrderLabel {
-  font-size: var(--fs-badge);
-  font-weight: 700;
+  font-size: var(--fs-socios-data-label, var(--fs-badge));
+  font-weight: var(--fw-socios-data-label, 700);
   text-transform: uppercase;
   letter-spacing: 0.22em;
   color: #5f7c85;
@@ -212,10 +215,10 @@
 
 .detailOrderNumber {
   margin-top: 0.4rem;
-  font-size: var(--fs-order-number);
-  font-weight: 700;
+  font-size: var(--fs-socios-title-section, var(--fs-order-number));
+  font-weight: var(--fw-socios-title-section, 700);
   color: #17343d;
-  font-family: "Futura", "BD Supper", Arial, Helvetica, sans-serif;
+  font-family: var(--font-socios, "Poppins", "BD Supper", Arial, Helvetica, sans-serif);
 }
 
 .detailMetaRow {
@@ -234,8 +237,8 @@
 /* ── Seguimiento (stepper) ───────────────────────────────────────────────── */
 
 .sectionLabel {
-  font-size: var(--fs-badge);
-  font-weight: 700;
+  font-size: var(--fs-socios-data-label, var(--fs-badge));
+  font-weight: var(--fw-socios-data-label, 700);
   text-transform: uppercase;
   letter-spacing: 0.22em;
   color: #5f7c85;
@@ -292,7 +295,8 @@
 
 .stepLabel {
   padding-top: 0.5rem;
-  font-size: var(--fs-body);
+  font-size: var(--fs-socios-read, var(--fs-body));
+  font-weight: var(--fw-socios-read, 400);
   color: #9bb3ba;
   line-height: 1;
 }
@@ -339,8 +343,8 @@
 }
 
 .detailBoxLabel {
-  font-size: var(--fs-meta);
-  font-weight: 700;
+  font-size: var(--fs-socios-data-label, var(--fs-meta));
+  font-weight: var(--fw-socios-data-label, 700);
   color: #5f7c85;
 }
 
@@ -392,14 +396,15 @@
 
 .emptyPanelTitle {
   margin-top: 1rem;
-  font-size: var(--fs-subtitle-sm);
-  font-weight: 700;
+  font-size: var(--fs-socios-card-subtitle, var(--fs-subtitle-sm));
+  font-weight: var(--fw-socios-card-subtitle, 700);
   color: #17343d;
 }
 
 .emptyPanelText {
   margin-top: 0.35rem;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-socios-read, var(--fs-sm));
+  font-weight: var(--fw-socios-read, 400);
   color: #698088;
 }
 
@@ -446,8 +451,8 @@
 }
 
 .mobileDrawerTitle {
-  font-size: var(--fs-body);
-  font-weight: 700;
+  font-size: var(--fs-socios-title-section, var(--fs-body));
+  font-weight: var(--fw-socios-title-section, 700);
   color: #17343d;
 }
 

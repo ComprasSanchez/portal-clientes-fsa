@@ -28,13 +28,6 @@ export function ExpedientesList({
 
   return (
     <article>
-      <div className="mb-5">
-        <h3 className="text-lg font-semibold text-[#2f3042]">Tus pedidos</h3>
-        <p className="text-sm text-[#5f6074]">
-          Resumen de tus ultimos pedidos.
-        </p>
-      </div>
-
       {isLoading && visibleExpedientes.length === 0 ? (
         <PedidosCoraSkeleton />
       ) : error && visibleExpedientes.length === 0 ? (
@@ -66,7 +59,7 @@ export function ExpedientesList({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-[#2f3042]">
+                    <p className="cora-card-subtitle text-[#2f3042]">
                       {expedienteItem.titulo ?? formatExpedienteLabel(expedienteItem.expedienteId)}
                     </p>
                     {/* <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[#8f63d9]">
@@ -79,11 +72,6 @@ export function ExpedientesList({
                         Activo
                       </span>
                     ) : null}
-                    {isSelectedForEdit ? (
-                      <span className="rounded-full bg-[#1f5ea8] px-2.5 py-1 text-xs font-semibold text-white">
-                        Editando
-                      </span>
-                    ) : null}
                   </div>
                 </div>
 
@@ -92,12 +80,6 @@ export function ExpedientesList({
                     <dt>Inicio</dt>
                     <dd className="text-right text-[#2f3042]">
                       {formatPortalProfileDate(expedienteItem.openedAt ?? null)}
-                    </dd>
-                  </div>
-                  <div className="flex items-center justify-between gap-3">
-                    <dt>Objetivo actual</dt>
-                    <dd className="text-right text-[#2f3042]">
-                      {formatPortalProfileDate(expedienteItem.cicloActual?.fechaEntregaObjetivo ?? null)}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between gap-3">

@@ -30,6 +30,7 @@ import type {
   PortalPerfilDomicilio,
   PortalPerfilResponse,
 } from "@/types/portal-profile";
+import { DomicilioFormModal } from "./DomicilioFormModal";
 import styles from "./ProfileView.module.scss";
 
 type ProfileData = {
@@ -122,17 +123,6 @@ type ContactFormData = {
   verificado: boolean;
 };
 
-type DomicilioFormData = {
-  street: string;
-  number: string;
-  floor: string;
-  apartment: string;
-  city: string;
-  province: string;
-  postalCode: string;
-  country: string;
-};
-
 const PHONE_PREFIX = "+549";
 
 const initialAffiliationForm: AffiliationFormData = {
@@ -148,18 +138,6 @@ const initialAffiliationForm: AffiliationFormData = {
   isPrimary: false,
 };
 
-const buildDomicilioFormData = (
-  domicilio: PortalPerfilDomicilio | null,
-): DomicilioFormData => ({
-  street: domicilio?.calle ?? "",
-  number: domicilio?.numero ?? "",
-  floor: domicilio?.piso ?? "",
-  apartment: domicilio?.depto ?? "",
-  city: domicilio?.ciudad ?? "",
-  province: domicilio?.provincia ?? "",
-  postalCode: domicilio?.codPostal ?? "",
-  country: domicilio?.pais ?? "Argentina",
-});
 
 const buildContactFormData = (
   tipo: ContactType,
@@ -439,7 +417,6 @@ const savePortalDomicilio = async (
       "Para guardar el domicilio completa calle, ciudad y provincia.",
     );
   }
-
   const response = await fetch(
     domicilio?.id
       ? `/api/portal/me/domicilios/${domicilio.id}`
@@ -569,9 +546,6 @@ export function ProfileView({
   const [contactForm, setContactForm] = useState<ContactFormData>(
     buildContactFormData("TELEFONO", null),
   );
-  const [domicilioForm, setDomicilioForm] = useState<DomicilioFormData>(
-    buildDomicilioFormData(null),
-  );
   const [localAffiliationPreview, setLocalAffiliationPreview] =
     useState<LocalAffiliationPreview | null>(null);
   const [editableProfile, setEditableProfile] = useState<ProfileData | null>(
@@ -579,7 +553,6 @@ export function ProfileView({
   );
   const [isSavingContacto, setIsSavingContacto] = useState(false);
   const [isSwitchingDomicilio, setIsSwitchingDomicilio] = useState(false);
-  const [isSavingDomicilio, setIsSavingDomicilio] = useState(false);
   const [isEditingPersonalData, setIsEditingPersonalData] = useState(false);
   const [isSavingPersonalData, setIsSavingPersonalData] = useState(false);
   const [profileFeedback, setProfileFeedback] =
@@ -628,10 +601,6 @@ export function ProfileView({
   useEffect(() => {
     setEditableProfile(profile);
   }, [profile]);
-
-  useEffect(() => {
-    setDomicilioForm(buildDomicilioFormData(preferredDomicilio));
-  }, [preferredDomicilio]);
 
   useEffect(() => {
     if (otpStep !== "waiting_whatsapp" || !verificandoContacto?.id) return;
@@ -770,18 +739,21 @@ export function ProfileView({
   };
 
   const handleOpenDomicilioModal = () => {
-    setDomicilioForm(buildDomicilioFormData(null));
     setProfileFeedback(null);
     setIsDomicilioModalOpen(true);
   };
 
   const handleCloseDomicilioModal = () => {
-    if (isSavingDomicilio) {
-      return;
-    }
-
     setIsDomicilioModalOpen(false);
-    setDomicilioForm(buildDomicilioFormData(preferredDomicilio));
+  };
+
+  const handleDomicilioCreated = async () => {
+    setIsDomicilioModalOpen(false);
+    setProfileFeedback({
+      type: "success",
+      message: "Tu domicilio se guardo correctamente.",
+    });
+    await refresh();
   };
 
   const handleOpenDomicilioPickerModal = () => {
@@ -1054,16 +1026,6 @@ export function ProfileView({
     }
   };
 
-  const handleDomicilioFieldChange = <T extends keyof DomicilioFormData>(
-    field: T,
-    value: DomicilioFormData[T],
-  ) => {
-    setDomicilioForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  };
-
   const handleContactFieldChange = <T extends keyof ContactFormData>(
     field: T,
     value: ContactFormData[T],
@@ -1169,51 +1131,6 @@ export function ProfileView({
     }
   };
 
-  const handleSaveDomicilio = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
-    event.preventDefault();
-
-    if (isSavingDomicilio || !editableProfile) {
-      return;
-    }
-
-    const nextProfile = syncProfileDerivedFields({
-      ...editableProfile,
-      addressStreet: domicilioForm.street,
-      addressNumber: domicilioForm.number,
-      addressFloor: domicilioForm.floor,
-      addressApartment: domicilioForm.apartment,
-      addressCity: domicilioForm.city,
-      addressProvince: domicilioForm.province,
-      addressPostalCode: domicilioForm.postalCode,
-      addressCountry: domicilioForm.country.trim() || "Argentina",
-    });
-
-    try {
-      setIsSavingDomicilio(true);
-      setProfileFeedback(null);
-      await savePortalDomicilio(null, nextProfile);
-      setEditableProfile(nextProfile);
-      setIsDomicilioModalOpen(false);
-      setProfileFeedback({
-        type: "success",
-        message: "Tu domicilio se guardo correctamente.",
-      });
-      await refresh();
-    } catch (error) {
-      setProfileFeedback({
-        type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "No se pudo guardar el domicilio.",
-      });
-    } finally {
-      setIsSavingDomicilio(false);
-    }
-  };
-
   const handlePersonalDataFieldChange = (
     field: "firstName" | "lastName" | "birthDateValue",
     value: string,
@@ -1311,8 +1228,8 @@ export function ProfileView({
         <div className={styles.headerText}>
           <h1 className={styles.title}>Mi perfil</h1>
           <p className={styles.localEditHint}>
-            Podes agregar, modificar o corregir tus datos personales, de
-            contacto desde esta seccion.
+            Podés agregar, modificar o corregir tus datos personales, de
+            contacto desde esta sección.
           </p>
         </div>
       </header>
@@ -1585,211 +1502,11 @@ export function ProfileView({
       </article>
 
       {isDomicilioModalOpen ? (
-        <div
-          className={styles.modalOverlay}
-          onClick={handleCloseDomicilioModal}
-        >
-          <div
-            className={styles.modalDialog}
-            onClick={(event) => event.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="domicilio-modal-title"
-          >
-            <header className={styles.modalHeader}>
-              <div>
-                <h2 id="domicilio-modal-title" className={styles.modalTitle}>
-                  Anadir nuevo domicilio
-                </h2>
-                <p className={styles.modalSubtitle}>
-                  Carga un domicilio nuevo para guardarlo como principal en el
-                  portal.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className={styles.modalCloseButton}
-                onClick={handleCloseDomicilioModal}
-                aria-label="Cerrar formulario de domicilio"
-              >
-                <X size={22} />
-              </button>
-            </header>
-
-            <form className={styles.modalForm} onSubmit={handleSaveDomicilio}>
-              <div className={styles.addressGrid}>
-                <div className={styles.fieldBlock}>
-                  <label
-                    className={styles.fieldLabel}
-                    htmlFor="profile-address-street"
-                  >
-                    Calle *
-                  </label>
-                  <input
-                    id="profile-address-street"
-                    type="text"
-                    className={styles.fieldInput}
-                    value={domicilioForm.street}
-                    onChange={(event) =>
-                      handleDomicilioFieldChange("street", event.target.value)
-                    }
-                  />
-                </div>
-
-                <div className={styles.fieldBlock}>
-                  <label
-                    className={styles.fieldLabel}
-                    htmlFor="profile-address-number"
-                  >
-                    Numero
-                  </label>
-                  <input
-                    id="profile-address-number"
-                    type="text"
-                    className={styles.fieldInput}
-                    value={domicilioForm.number}
-                    onChange={(event) =>
-                      handleDomicilioFieldChange("number", event.target.value)
-                    }
-                  />
-                </div>
-
-                <div className={styles.fieldBlock}>
-                  <label
-                    className={styles.fieldLabel}
-                    htmlFor="profile-address-floor"
-                  >
-                    Piso
-                  </label>
-                  <input
-                    id="profile-address-floor"
-                    type="text"
-                    className={styles.fieldInput}
-                    value={domicilioForm.floor}
-                    onChange={(event) =>
-                      handleDomicilioFieldChange("floor", event.target.value)
-                    }
-                  />
-                </div>
-
-                <div className={styles.fieldBlock}>
-                  <label
-                    className={styles.fieldLabel}
-                    htmlFor="profile-address-apartment"
-                  >
-                    Depto
-                  </label>
-                  <input
-                    id="profile-address-apartment"
-                    type="text"
-                    className={styles.fieldInput}
-                    value={domicilioForm.apartment}
-                    onChange={(event) =>
-                      handleDomicilioFieldChange(
-                        "apartment",
-                        event.target.value,
-                      )
-                    }
-                  />
-                </div>
-
-                <div className={styles.fieldBlock}>
-                  <label
-                    className={styles.fieldLabel}
-                    htmlFor="profile-address-city"
-                  >
-                    Ciudad *
-                  </label>
-                  <input
-                    id="profile-address-city"
-                    type="text"
-                    className={styles.fieldInput}
-                    value={domicilioForm.city}
-                    onChange={(event) =>
-                      handleDomicilioFieldChange("city", event.target.value)
-                    }
-                  />
-                </div>
-
-                <div className={styles.fieldBlock}>
-                  <label
-                    className={styles.fieldLabel}
-                    htmlFor="profile-address-province"
-                  >
-                    Provincia *
-                  </label>
-                  <input
-                    id="profile-address-province"
-                    type="text"
-                    className={styles.fieldInput}
-                    value={domicilioForm.province}
-                    onChange={(event) =>
-                      handleDomicilioFieldChange("province", event.target.value)
-                    }
-                  />
-                </div>
-
-                <div className={styles.fieldBlock}>
-                  <label
-                    className={styles.fieldLabel}
-                    htmlFor="profile-address-postal-code"
-                  >
-                    Codigo postal
-                  </label>
-                  <input
-                    id="profile-address-postal-code"
-                    type="text"
-                    className={styles.fieldInput}
-                    value={domicilioForm.postalCode}
-                    onChange={(event) =>
-                      handleDomicilioFieldChange(
-                        "postalCode",
-                        event.target.value,
-                      )
-                    }
-                  />
-                </div>
-
-                <div className={styles.fieldBlock}>
-                  <label
-                    className={styles.fieldLabel}
-                    htmlFor="profile-address-country"
-                  >
-                    Pais
-                  </label>
-                  <input
-                    id="profile-address-country"
-                    type="text"
-                    className={styles.fieldInput}
-                    value={domicilioForm.country}
-                    onChange={(event) =>
-                      handleDomicilioFieldChange("country", event.target.value)
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className={styles.modalFooter}>
-                <button
-                  type="button"
-                  className={styles.secondaryAction}
-                  onClick={handleCloseDomicilioModal}
-                  disabled={isSavingDomicilio}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className={styles.primaryAction}
-                  disabled={isSavingDomicilio}
-                >
-                  {isSavingDomicilio ? "Guardando..." : "Guardar domicilio"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <DomicilioFormModal
+          variant={variant}
+          onClose={handleCloseDomicilioModal}
+          onCreated={handleDomicilioCreated}
+        />
       ) : null}
 
       {isDomicilioPickerModalOpen ? (

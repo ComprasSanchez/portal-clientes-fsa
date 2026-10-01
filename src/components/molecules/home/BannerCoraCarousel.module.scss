@@ -26,6 +26,7 @@
 .slide {
   position: absolute;
   inset: 0;
+  touch-action: pan-y;
 }
 
 .slideLink {
