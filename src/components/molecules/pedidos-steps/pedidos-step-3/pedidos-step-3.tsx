@@ -11,7 +11,7 @@ import {
 import PortalStepper from "../../stepper/stepper";
 import PortalButton from "@/components/atoms/button/button";
 import { RecetaUploader } from "@/components/molecules/receta-uploader/receta-uploader";
-import { RECETA_UPLOAD_ENABLED } from "@/lib/feature-flags";
+import { MERCADOPAGO_PAGO_ENABLED, RECETA_UPLOAD_ENABLED } from "@/lib/feature-flags";
 import ConfirmProductsAccordion, {
   ConfirmProductItem,
 } from "../../confirm-accordion/confirm-accordion";
@@ -351,7 +351,21 @@ const PedidosStep3 = ({
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {showPaymentChoice ? (
+            {!MERCADOPAGO_PAGO_ENABLED ? (
+              <>
+                <PortalButton
+                  variant="primary"
+                  onClick={() => onConfirm("contactenme")}
+                  disabled={isSubmitting || !entrega}
+                >
+                  {isSubmitting ? "Confirmando pedido..." : "Confirmar selección"}
+                </PortalButton>
+
+                <PortalButton variant="secondary" withChatIcon onClick={onContactAdvisor}>
+                  Hablar con CORA
+                </PortalButton>
+              </>
+            ) : showPaymentChoice ? (
               <>
                 <PortalButton
                   variant="mercadopago"

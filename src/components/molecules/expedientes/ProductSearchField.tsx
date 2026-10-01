@@ -20,6 +20,7 @@ import type {
 import { Label } from "@heroui/react";
 import PriceTag from "@/components/atoms/price-tag/price-tag";
 import { formatPortalCurrency } from "@/lib/portal-compras";
+import { MERCADOPAGO_PAGO_ENABLED } from "@/lib/feature-flags";
 
 const PAGE_SIZE = 5;
 const SEARCH_AUTOCOMPLETE_MIN_CHARS = 3;
@@ -33,10 +34,18 @@ const normalizeProductResult = (
   laboratorio: String(value.lab ?? value.marcaNombre ?? "Laboratorio sin dato"),
   presentacion:
     typeof value.presentacion === "string" ? value.presentacion : undefined,
-  precio: typeof value.precio === "number" ? value.precio : null,
-  precioBase: typeof value.precioBase === "number" ? value.precioBase : null,
+  precio:
+    MERCADOPAGO_PAGO_ENABLED && typeof value.precio === "number"
+      ? value.precio
+      : null,
+  precioBase:
+    MERCADOPAGO_PAGO_ENABLED && typeof value.precioBase === "number"
+      ? value.precioBase
+      : null,
   descuentoPct:
-    typeof value.descuentoPct === "number" ? value.descuentoPct : undefined,
+    MERCADOPAGO_PAGO_ENABLED && typeof value.descuentoPct === "number"
+      ? value.descuentoPct
+      : undefined,
 });
 
 interface ProductSearchFieldProps {

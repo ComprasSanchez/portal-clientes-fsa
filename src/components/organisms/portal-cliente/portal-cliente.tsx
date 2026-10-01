@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader } from "@/components/atoms/loader/loader";
+import { MERCADOPAGO_PAGO_ENABLED } from "@/lib/feature-flags";
 import Header from "@/components/molecules/header/header";
 import CartView, { CartViewItem } from "@/components/molecules/cart-view/cart-view";
 import OrderProcessingLoader from "@/components/molecules/order-processing-loader/order-processing-loader";
@@ -110,9 +111,18 @@ const toProduct = (value: Record<string, unknown>): Product => ({
   lab: String(value.lab ?? value.marcaNombre ?? "Laboratorio sin dato"),
   presentacion:
     typeof value.presentacion === "string" ? value.presentacion : undefined,
-  precio: typeof value.precio === "number" ? value.precio : null,
-  precioBase: typeof value.precioBase === "number" ? value.precioBase : null,
-  descuentoPct: typeof value.descuentoPct === "number" ? value.descuentoPct : 0,
+  precio:
+    MERCADOPAGO_PAGO_ENABLED && typeof value.precio === "number"
+      ? value.precio
+      : null,
+  precioBase:
+    MERCADOPAGO_PAGO_ENABLED && typeof value.precioBase === "number"
+      ? value.precioBase
+      : null,
+  descuentoPct:
+    MERCADOPAGO_PAGO_ENABLED && typeof value.descuentoPct === "number"
+      ? value.descuentoPct
+      : 0,
 });
 
 const toJson = async <T,>(response: Response): Promise<T> => {
@@ -137,9 +147,18 @@ const mapRecurringItems = (expediente: ItemRecurrente): PortalProductItem[] =>
           : 1,
       checked: String(item.status || "").toUpperCase() !== "SKIPPED",
       recurring: true,
-      precio: typeof item.precio === "number" ? item.precio : null,
-      precioBase: typeof item.precioBase === "number" ? item.precioBase : null,
-      descuentoPct: typeof item.descuentoPct === "number" ? item.descuentoPct : 0,
+      precio:
+        MERCADOPAGO_PAGO_ENABLED && typeof item.precio === "number"
+          ? item.precio
+          : null,
+      precioBase:
+        MERCADOPAGO_PAGO_ENABLED && typeof item.precioBase === "number"
+          ? item.precioBase
+          : null,
+      descuentoPct:
+        MERCADOPAGO_PAGO_ENABLED && typeof item.descuentoPct === "number"
+          ? item.descuentoPct
+          : 0,
     }));
 
 const extractErrorDetails = (rawError: string): string[] => {
