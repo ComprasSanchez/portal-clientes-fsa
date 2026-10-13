@@ -414,14 +414,20 @@ export function EditExpedienteForm({
           ) : null}
 
           {formik.values.medioEntrega === "RETIRA_SUCURSAL" ? (
-            <label className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-[#2f3042]">Sucursal de retiro</span>
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="editar-expediente-sucursal"
+                className="text-sm font-medium text-[#2f3042]"
+              >
+                Sucursal de retiro
+              </label>
               <SucursalPickerField
+                inputId="editar-expediente-sucursal"
                 value={formik.values.sucursalEntregaId}
                 initialSucursal={seedSucursal}
                 onChange={(sucursalId) => formik.setFieldValue("sucursalEntregaId", sucursalId)}
               />
-            </label>
+            </div>
           ) : null}
 
           <label className="flex flex-col gap-2">

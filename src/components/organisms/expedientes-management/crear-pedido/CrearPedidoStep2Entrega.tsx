@@ -193,9 +193,15 @@ export function CrearPedidoStep2Entrega({
         ) : null}
 
         {formik.values.medioEntrega === "RETIRA_SUCURSAL" ? (
-          <label className="flex flex-col gap-2 md:col-span-2">
-            <span className="text-sm font-medium text-[#2f3042]">Sucursal de retiro</span>
+          <div className="flex flex-col gap-2 md:col-span-2">
+            <label
+              htmlFor="crear-pedido-sucursal"
+              className="text-sm font-medium text-[#2f3042]"
+            >
+              Sucursal de retiro
+            </label>
             <SucursalPickerField
+              inputId="crear-pedido-sucursal"
               value={formik.values.sucursalEntregaId}
               initialSucursal={selectedSucursal}
               onChange={(sucursalId, sucursal) => {
@@ -204,7 +210,7 @@ export function CrearPedidoStep2Entrega({
               }}
             />
             {showError("sucursalEntregaId")}
-          </label>
+          </div>
         ) : null}
       </div>
 

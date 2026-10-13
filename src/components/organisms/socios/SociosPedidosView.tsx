@@ -13,7 +13,9 @@ import {
   XCircle,
 } from "lucide-react";
 import {
+  PEDIDO_CANAL_LABELS,
   PLEX_ESTADO_LABELS,
+  type PedidoCanal,
   type PedidoNormalizado,
 } from "@/types/portal-pedidos";
 import { usePortalPedidos } from "@/lib/use-portal-pedidos";
@@ -94,6 +96,31 @@ function EstadoBadgeSm({ idEstado }: { idEstado: number }) {
   );
 }
 
+const CANAL_BADGE_CLASS: Record<PedidoCanal, string> = {
+  FARMA: styles.canalBadgeFarma,
+  BREVE: styles.canalBadgeBreve,
+  CORA: styles.canalBadgeCora,
+};
+
+function CanalBadge({ canal }: { canal: PedidoCanal }) {
+  return (
+    <span
+      className={`${styles.badge} ${styles.badgeSm} ${CANAL_BADGE_CLASS[canal]}`}
+    >
+      {PEDIDO_CANAL_LABELS[canal]}
+    </span>
+  );
+}
+
+type CanalTabKey = PedidoCanal | "TODOS";
+
+const CANAL_TABS: { key: CanalTabKey; label: string }[] = [
+  { key: "TODOS", label: "Todos" },
+  { key: "FARMA", label: PEDIDO_CANAL_LABELS.FARMA },
+  { key: "BREVE", label: PEDIDO_CANAL_LABELS.BREVE },
+  { key: "CORA", label: PEDIDO_CANAL_LABELS.CORA },
+];
+
 type FilterKey = "todos" | "activos" | "entregados" | "rechazados";
 
 const FILTERS: { key: FilterKey; label: string }[] = [
@@ -128,7 +155,10 @@ function PedidoListCard({
       className={`${styles.orderCard} ${isSelected ? styles.orderCardActive : ""}`}
     >
       <div className={styles.orderCardTopRow}>
-        <p className={styles.orderCardId}>#{pedido.id_pedido}</p>
+        <div className={styles.orderCardIdGroup}>
+          <p className={styles.orderCardId}>#{pedido.id_pedido}</p>
+          <CanalBadge canal={pedido.canal} />
+        </div>
         <EstadoBadgeSm idEstado={pedido.id_estado} />
       </div>
       <p className={styles.orderCardDate}>{formatFecha(pedido.fecha)}</p>
@@ -162,6 +192,7 @@ function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
         <p className={styles.detailOrderNumber}>#{pedido.id_pedido}</p>
         <div className={styles.detailMetaRow}>
           <EstadoBadge idEstado={pedido.id_estado} />
+          <CanalBadge canal={pedido.canal} />
           <span className={styles.detailDate}>{formatFecha(pedido.fecha)}</span>
         </div>
       </div>
@@ -351,9 +382,11 @@ function PedidosSkeleton() {
 }
 
 export function SociosPedidosView() {
+  const [activeCanal, setActiveCanal] = useState<CanalTabKey>("TODOS");
   const { data, isLoading, error } = usePortalPedidos({
     enabled: true,
     limit: 20,
+    canal: activeCanal === "TODOS" ? undefined : activeCanal,
   });
   const allPedidos = data?.pedidos ?? [];
   const total = data?.total ?? allPedidos.length;
@@ -407,6 +440,31 @@ export function SociosPedidosView() {
           </p>
         </div>
       </div>
+
+      {/* Pestañas por canal */}
+      <div className={styles.canalTabs} role="tablist" aria-label="Canal del pedido">
+        {CANAL_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={activeCanal === tab.key}
+            onClick={() => {
+              setActiveCanal(tab.key);
+              setActiveFilter("todos");
+              setPage(0);
+              setSelectedId(null);
+              setMobileDetailOpen(false);
+            }}
+            className={`${styles.canalTab} ${
+              activeCanal === tab.key ? styles.canalTabActive : ""
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {isLoading ? (
         <PedidosSkeleton />
       ) : error ? (
@@ -419,9 +477,15 @@ export function SociosPedidosView() {
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e6f7fb]">
               <ShoppingBag size={28} className="text-[#007c98]/50" />
             </div>
-            <p className={styles.emptyPanelTitle}>No hay pedidos registrados</p>
+            <p className={styles.emptyPanelTitle}>
+              {activeCanal === "TODOS"
+                ? "No hay pedidos registrados"
+                : `No tenés pedidos de ${PEDIDO_CANAL_LABELS[activeCanal]}`}
+            </p>
             <p className={styles.emptyPanelText}>
-              Tus pedidos aparecerán aquí cuando realices una compra.
+              {activeCanal === "TODOS"
+                ? "Tus pedidos aparecerán aquí cuando realices una compra."
+                : "Mostramos los pedidos de los últimos 6 meses."}
             </p>
           </div>
         </div>

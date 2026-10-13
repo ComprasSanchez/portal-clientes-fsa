@@ -93,6 +93,64 @@
   }
 }
 
+/* ── Pestañas por canal (Farma / Breve / CORA) ───────────────────────────── */
+
+.canalTabs {
+  display: flex;
+  gap: 0.25rem;
+  width: 100%;
+  max-width: 32rem;
+  padding: 0.25rem;
+  border: 1px solid #d5e4e8;
+  border-radius: 0.9rem;
+  background: #f3f8f9;
+}
+
+.canalTab {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  border-radius: 0.7rem;
+  background: transparent;
+  padding: 0.55rem 0.5rem;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: #5f7c85;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    color: #17343d;
+  }
+}
+
+.canalTabActive {
+  background: #ffffff;
+  color: #007c98;
+  box-shadow: 0 1px 4px rgba(23, 52, 61, 0.12);
+
+  &:hover {
+    color: #007c98;
+  }
+}
+
+.canalBadgeFarma {
+  background: #e6f7fb;
+  color: #007c98;
+}
+
+/* Colores de marca Breve (sacados de banner-breve.jpeg) */
+.canalBadgeBreve {
+  background: #282828;
+  color: #f4bc05;
+}
+
+.canalBadgeCora {
+  background: #f1eafd;
+  color: #6c48b4;
+}
+
 /* ── Card de la lista ────────────────────────────────────────────────────── */
 
 .orderCard {
@@ -122,6 +180,14 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
+}
+
+.orderCardIdGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
 }
 
 .orderCardId {

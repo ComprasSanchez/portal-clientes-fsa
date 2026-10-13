@@ -5,6 +5,15 @@ export type PedidoProducto = {
   presentacion: string | null;
 };
 
+/** Canal por el que entró el pedido. Lo resuelve el BFF a partir de `external_sw` de Plex. */
+export type PedidoCanal = "FARMA" | "BREVE" | "CORA";
+
+export const PEDIDO_CANAL_LABELS: Record<PedidoCanal, string> = {
+  FARMA: "Farma",
+  BREVE: "Breve",
+  CORA: "CORA",
+};
+
 export type PedidoNormalizado = {
   id_pedido: string;
   fecha: string;
@@ -24,6 +33,9 @@ export type PedidoNormalizado = {
   nombre_sucursal: string | null;
   referencia_pago: string;
   importe: number;
+  /** Valor crudo de Plex (MAGENTO, CORA, GPSFARMA, WUALA, null...). Para la UI usar `canal`. */
+  external_sw: string | null;
+  canal: PedidoCanal;
   productos: PedidoProducto[];
 };
 

@@ -450,11 +450,11 @@ export function SociosSorteosView({
                 <ShoppingCart size={20} className={styles.purchaseHighlightIcon} />
                 <div>
                   <p className={styles.purchaseHighlightTitle}>
-                    Participás automáticamente
+                    Participás automáticamente por ser socioSA
                   </p>
                   <p className={styles.purchaseHighlightBody}>
-                    Cada compra en {purchaseCampaign.storeName}{" "}
-                    {purchaseCampaign.periodLabel} te suma al sorteo.
+                    Todas tus compras en {purchaseCampaign.storeName}{" "}
+                    {purchaseCampaign.periodLabel} suman chances.
                   </p>
                 </div>
               </div>
