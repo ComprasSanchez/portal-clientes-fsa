@@ -5,17 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import bannerCora2 from "@/assets/cora/banners/banner-cora-2.png";
+import bannerCora2 from "@/assets/cora/banners/banner-cora-2.jpeg";
 import bannerCora3 from "@/assets/cora/banners/banner-cora-3.jpg";
 import bannerCora4 from "@/assets/cora/banners/banner-cora-4.jpg";
 import styles from "./BannerCoraCarousel.module.scss";
 
 const SLIDES = [
-  {
-    src: bannerCora2,
-    alt: "Si tomás medicacion todos los meses, CORA es para vos",
-    href: null,
-  },
   {
     src: bannerCora3,
     alt: "CORA es para vos",

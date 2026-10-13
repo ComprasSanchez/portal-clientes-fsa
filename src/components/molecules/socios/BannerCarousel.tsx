@@ -7,10 +7,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import remeraPromo from "@/assets/sociosa-img/remera-promo.jpg";
 import bannerPrinciapl from "@/assets/sociosa-img/banner-principal.jpeg";
+import breveMarket from "@/assets/sociosa-img/banner-breve.jpeg";
 import sorteoBanner from "@/assets/sociosa-img/sorte-banner.jpg";
 import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [
+  {
+    src: breveMarket,
+    alt: "Breve Market — Farmacias & Market",
+    href: null,
+  },
   {
     src: remeraPromo,
     alt: "Sorteo Socio SA — Gana una remera exclusiva de Socio SA",
