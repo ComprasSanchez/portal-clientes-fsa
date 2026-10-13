@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import {
   CalendarDays,
   CalendarOff,
@@ -8,10 +9,13 @@ import {
   CircleCheckBig,
   LoaderCircle,
   RefreshCw,
+  ShoppingCart,
   Ticket,
   X,
 } from "lucide-react";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
+import { getActiveSorteoCampaign } from "@/lib/sorteo-campaign";
+import { InstagramIcon } from "@/components/atoms/instagram-icon/instagram-icon";
 import styles from "./SociosSorteosView.module.scss";
 
 type PhoneContact = {
@@ -325,6 +329,8 @@ export function SociosSorteosView({
 
   const participationMessage =
     participation?.message ?? participation?.error ?? null;
+  const campaign = getActiveSorteoCampaign();
+  const purchaseCampaign = campaign?.purchaseParticipation ?? null;
   const canParticipate = Boolean(
     documentNumber && activeDraw && !isParticipating && phoneVerified,
   );
@@ -359,7 +365,15 @@ export function SociosSorteosView({
             </span>
           </div>
 
-          {isLoading ? (
+          {campaign ? (
+            <Image
+              src={campaign.section.image}
+              alt={campaign.section.imageAlt}
+              className={styles.campaignImage}
+              sizes="(max-width: 767px) 100vw, 50vw"
+              priority
+            />
+          ) : isLoading ? (
             <div className={styles.loadingBox}>
               <LoaderCircle className={styles.spinningIcon} size={18} />
               Cargando informacion del sorteo...
@@ -430,6 +444,41 @@ export function SociosSorteosView({
             </span>
           </div>
 
+          {purchaseCampaign ? (
+            <div className={styles.purchaseInfo}>
+              <div className={styles.purchaseHighlight}>
+                <ShoppingCart size={20} className={styles.purchaseHighlightIcon} />
+                <div>
+                  <p className={styles.purchaseHighlightTitle}>
+                    Participás automáticamente
+                  </p>
+                  <p className={styles.purchaseHighlightBody}>
+                    Cada compra en {purchaseCampaign.storeName}{" "}
+                    {purchaseCampaign.periodLabel} te suma al sorteo.
+                  </p>
+                </div>
+              </div>
+
+              <div className={styles.purchaseFooter}>
+                <p>{purchaseCampaign.frequencyLabel}</p>
+                {campaign?.instagram ? (
+                  <>
+                    <p>Los ganadores se comunican en nuestro Instagram:</p>
+                    <a
+                      href={campaign.instagram.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.instagramButton}
+                    >
+                      <InstagramIcon />
+                      {campaign.instagram.handle}
+                    </a>
+                  </>
+                ) : null}
+              </div>
+            </div>
+          ) : (
+          <>
           {!phoneVerified ? (
             <div className={styles.warningBox}>
               <CircleAlert size={18} className={styles.warningIcon} />
@@ -502,6 +551,8 @@ export function SociosSorteosView({
               </>
             )}
           </button>
+          </>
+          )}
         </article>
       </section>
 
