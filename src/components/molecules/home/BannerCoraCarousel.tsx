@@ -12,11 +12,6 @@ import styles from "./BannerCoraCarousel.module.scss";
 
 const SLIDES = [
   {
-    src: bannerCora2,
-    alt: "Si tomás medicacion todos los meses, CORA es para vos",
-    href: null,
-  },
-  {
     src: bannerCora3,
     alt: "CORA es para vos",
     href: null,
