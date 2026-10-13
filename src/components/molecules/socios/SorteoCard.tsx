@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { CalendarDays } from "lucide-react";
-// import sorteoImg from "@/assets/imagen-sola.png";
-// import sorteoImg from "@/assets/sociosa-img/sorteo-mobile.jpg";
 import sorteoImg from "@/assets/seccion-sorteo-banner.jpg";
+import { InstagramIcon } from "@/components/atoms/instagram-icon/instagram-icon";
+import { getActiveSorteoCampaign } from "@/lib/sorteo-campaign";
 import { type SociosView } from "@/types/socios";
 import styles from "./SorteoCard.module.scss";
 
@@ -30,10 +30,12 @@ const formatShortDate = (value?: string | null) => {
 };
 
 export function SorteoCard({ onNavigate }: SorteoCardProps) {
+  const campaign = getActiveSorteoCampaign();
   const [sorteo, setSorteo] = useState<SorteoActivo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (campaign) return;
     fetch("/api/legacy/sorteos/activo")
       .then((r) => r.json())
       .then((data) => {
@@ -41,7 +43,50 @@ export function SorteoCard({ onNavigate }: SorteoCardProps) {
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [campaign]);
+
+  if (campaign) {
+    const { card, instagram } = campaign;
+    return (
+      <article className={styles.card}>
+        <div
+          className={`${styles.imageWrap} ${styles.imageWrapCampaign}`}
+          style={{ "--sorteo-img-ratio": card.image.width / card.image.height } as React.CSSProperties}
+        >
+          <Image
+            src={card.image}
+            alt={card.imageAlt}
+            width={card.image.width}
+            height={card.image.height}
+            className={styles.image}
+            sizes="(max-width: 639px) 100vw, 20rem"
+          />
+        </div>
+
+        <div className={styles.content}>
+          <h3 className={styles.title}>{card.title}</h3>
+
+          <div className={styles.description}>
+            {card.description.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+
+          {instagram ? (
+            <a
+              href={instagram.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.instagramButton}
+            >
+              <InstagramIcon size={22} />
+              {instagram.handle}
+            </a>
+          ) : null}
+        </div>
+      </article>
+    );
+  }
 
   const drawDate = sorteo ? formatShortDate(sorteo.fechaFin) : null;
 
@@ -59,7 +104,7 @@ export function SorteoCard({ onNavigate }: SorteoCardProps) {
           width={sorteoImg.width}
           height={sorteoImg.height}
           className={styles.image}
-          sizes="(max-width: 639px) 100vw, 14rem"
+          sizes="(max-width: 639px) 100vw, 20rem"
         />
         {drawDate && (
           <span className={styles.dateBadge}>
@@ -78,7 +123,7 @@ export function SorteoCard({ onNavigate }: SorteoCardProps) {
 
         <button
           type="button"
-          className={styles.button}
+          className={styles.participateButton}
           onClick={() => onNavigate("sorteos")}
         >
           Participar

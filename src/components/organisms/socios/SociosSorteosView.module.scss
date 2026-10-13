@@ -168,6 +168,111 @@
   margin-top: 1rem;
 }
 
+.purchaseInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.purchaseHighlight {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-radius: 1rem;
+  background: #fff8dc;
+  border: 1px solid #f4d675;
+  padding: 0.9rem 1rem;
+}
+
+.purchaseHighlightIcon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: #a37b00;
+}
+
+.purchaseHighlightTitle {
+  font-weight: 700;
+  color: #17343d;
+}
+
+.purchaseHighlightBody {
+  font-size: 0.875rem;
+  color: #3e5a62;
+  line-height: 1.4;
+}
+
+.purchaseSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  font-size: 0.9rem;
+  color: #17343d;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+  }
+}
+
+.purchaseStepNumber {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: #007c98;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.purchaseStepHint {
+  display: block;
+  font-size: 0.8rem;
+  color: #5b7a82;
+}
+
+.purchaseFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-top: 1px solid #e3eef1;
+  padding-top: 0.9rem;
+  font-size: 0.85rem;
+  color: #3e5a62;
+}
+
+.instagramButton {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+  border-radius: 0.6rem;
+  background: #f4bc05;
+  padding: 0.45rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f1f1f;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #e0ad00;
+  }
+}
+
+.campaignImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 1rem;
+  border-radius: 0.75rem;
+}
+
 .drawHero {
   border-radius: 1rem;
   background: linear-gradient(135deg, #edf7f9 0%, #f8fcfd 100%);
