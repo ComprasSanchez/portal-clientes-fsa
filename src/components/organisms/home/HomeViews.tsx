@@ -53,7 +53,7 @@ import { ExpedientesManagementView } from "@/components/organisms/expedientes-ma
 import { CrearPedidoView } from "@/components/organisms/expedientes-management/crear-pedido/CrearPedidoView";
 import PortalCliente from "@/components/organisms/portal-cliente/portal-cliente";
 import { FaqView } from "../faq-view/FaqView";
-import { NotificacionesView } from "./NotificacionesView";
+import { NotificacionesView } from "@/components/organisms/notificaciones/NotificacionesView";
 import { BannerCoraCarousel } from "@/components/molecules/home/BannerCoraCarousel";
 import { BannerCoraMobileCarousel } from "@/components/molecules/home/BannerCoraMobileCarousel";
 import boxCoraIcon from "@/assets/cora/card/box-cora.svg";
@@ -451,7 +451,10 @@ export function HomeViews({
   if (currentView === "notificaciones") {
     return (
       <main className={styles.container}>
-        <NotificacionesView onNavigate={onNavigate} previousView={previousView} />
+        <NotificacionesView
+          tone="cora"
+          onBack={() => onNavigate(previousView ?? "dashboard")}
+        />
       </main>
     );
   }
