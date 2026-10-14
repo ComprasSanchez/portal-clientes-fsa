@@ -2,7 +2,14 @@
 
 import dynamic from "next/dynamic";
 import { useState, useCallback, useEffect, useRef } from "react";
-import { MapPin, Navigation, Phone, MessageCircle, ExternalLink, Search, X } from "lucide-react";
+import { CircleAlert, MapPin, Navigation, Phone, MessageCircle, ExternalLink } from "lucide-react";
+import Alert from "@/components/atoms/alert/alert";
+import Badge from "@/components/atoms/badge/badge";
+import EmptyState from "@/components/molecules/empty-state/empty-state";
+import SearchInput from "@/components/molecules/search-input/search-input";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const SKELETON_BLOCK = "rounded-md bg-[#e8f0f3]";
 import { usePortalSucursales } from "@/lib/use-portal-sucursales";
 import { haversineDistance, formatDistance } from "@/utils/distance";
 import type { Sucursal, SucursalWithDistance } from "@/types/sucursal";
@@ -141,26 +148,12 @@ export function SociosSucursalesView() {
 
         <div className={styles.listColumn}>
           <div className={styles.searchRow}>
-            <div className={styles.searchInputWrap}>
-              <Search size={16} className={styles.searchIcon} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar por nombre o dirección…"
-                className={styles.searchInput}
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className={styles.searchClear}
-                  aria-label="Limpiar búsqueda"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onClear={() => setSearchQuery("")}
+              placeholder="Buscar por nombre o dirección…"
+            />
           </div>
         <div className={styles.listWrapper}>
           {isSucursalesLoading ? (
@@ -168,37 +161,37 @@ export function SociosSucursalesView() {
               {[52, 68, 44].map((nameW) => (
                 <li key={nameW} className={styles.skeletonCard}>
                   <div className={styles.skeletonCardTop}>
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                      <div className={styles.skeletonLine} style={{ height: "0.875rem", width: `${nameW}%` }} />
-                      <div className={styles.skeletonLine} style={{ height: "0.75rem", width: "70%" }} />
-                      <div className={styles.skeletonLine} style={{ height: "0.7rem", width: "40%" }} />
+                    <div className="flex flex-1 flex-col gap-1.5">
+                      <Skeleton className={SKELETON_BLOCK} style={{ height: "0.875rem", width: `${nameW}%` }} />
+                      <Skeleton className={SKELETON_BLOCK} style={{ height: "0.75rem", width: "70%" }} />
+                      <Skeleton className={SKELETON_BLOCK} style={{ height: "0.7rem", width: "40%" }} />
                     </div>
                   </div>
-                  <div className={styles.skeletonLine} style={{ height: "0.7rem", width: "55%" }} />
+                  <Skeleton className={SKELETON_BLOCK} style={{ height: "0.7rem", width: "55%" }} />
                   <div className={styles.skeletonBadges}>
-                    <div className={`${styles.skeletonLine} ${styles.skeletonBadge}`} style={{ width: "5.5rem" }} />
-                    <div className={`${styles.skeletonLine} ${styles.skeletonBadge}`} style={{ width: "4rem" }} />
+                    <Skeleton className={`${SKELETON_BLOCK} h-5 w-22 rounded-full`} />
+                    <Skeleton className={`${SKELETON_BLOCK} h-5 w-16 rounded-full`} />
                   </div>
                 </li>
               ))}
             </ul>
           ) : sucursalesError ? (
-            <div className={styles.emptyState}>
-              <MapPin size={28} className={styles.emptyIcon} />
-              <p className={styles.emptyText}>{sucursalesError}</p>
-            </div>
+            <Alert icon={<CircleAlert size={18} />}>{sucursalesError}</Alert>
           ) : filtered.length === 0 ? (
-            <div className={styles.emptyState}>
-              <MapPin size={28} className={styles.emptyIcon} />
-              <p className={styles.emptyText}>No encontramos sucursales con ese criterio.</p>
-              <button
-                type="button"
-                className={styles.emptyReset}
-                onClick={() => setSearchQuery("")}
-              >
-                Limpiar búsqueda
-              </button>
-            </div>
+            <EmptyState
+              variant="plain"
+              icon={MapPin}
+              text="No encontramos sucursales con ese criterio."
+              action={
+                <button
+                  type="button"
+                  className={styles.emptyReset}
+                  onClick={() => setSearchQuery("")}
+                >
+                  Limpiar búsqueda
+                </button>
+              }
+            />
           ) : (
             <ul className={styles.branchList}>
               {filtered.map((branch, index) => {
@@ -222,7 +215,7 @@ export function SociosSucursalesView() {
                           <div className={styles.branchNameRow}>
                             <p className={styles.branchName}>{branch.nombre}</p>
                             {isNearest && (
-                              <span className={styles.nearestBadge}>Más cercana</span>
+                              <Badge color="solid">Más cercana</Badge>
                             )}
                           </div>
                           <p className={styles.branchAddress}>{branch.direccion}</p>
@@ -246,7 +239,7 @@ export function SociosSucursalesView() {
                       {branch.servicios && branch.servicios.length > 0 && (
                         <div className={styles.branchBadges}>
                           {branch.servicios.map((s) => (
-                            <span key={s} className={styles.branchBadge}>{s}</span>
+                            <Badge key={s}>{s}</Badge>
                           ))}
                         </div>
                       )}

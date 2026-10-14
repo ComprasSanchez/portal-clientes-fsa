@@ -1,0 +1,11 @@
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.title {
+  font-size: var(--fs-socios-title-section, var(--fs-body));
+  font-weight: var(--fw-socios-title-section, 700);
+  color: var(--tone-text);
+}

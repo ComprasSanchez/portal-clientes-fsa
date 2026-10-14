@@ -1,11 +1,14 @@
 import React from "react";
-import { ArrowLeft, Minus, Plus } from "lucide-react";
+import { Minus, PackageOpen, Plus, SearchX } from "lucide-react";
+import BackButton from "@/components/atoms/back-button/back-button";
+import EmptyState from "@/components/molecules/empty-state/empty-state";
 import PortalStepper from "../../stepper/stepper";
 import PedidoAccordion, {
   PedidoItem,
 } from "../../pedido-accordion.tsx/pedido-accordion";
-import PortalInput from "../../portal-input/input";
+import SearchInput from "@/components/molecules/search-input/search-input";
 import PortalButton from "@/components/atoms/button/button";
+import Pagination from "@/components/molecules/pagination/pagination";
 import type { Product } from "@/types/magic-link-type";
 import PriceTag from "@/components/atoms/price-tag/price-tag";
 
@@ -27,8 +30,8 @@ type PedidosStep1Props = {
   isProductSelected: (product: Product) => boolean;
   getProductQuantity: (id: string) => number;
   onChangeProductQuantity: (id: string, delta: number) => void;
-  onPrevPage: () => void;
-  onNextPage: () => void;
+  /** Pide la página `page` de la búsqueda (empieza en 1). */
+  onPageChange: (page: number) => void;
   onContinue: () => void;
   onContactAdvisor: () => void;
   /**
@@ -61,8 +64,7 @@ const PedidosStep1 = ({
   isProductSelected,
   getProductQuantity,
   onChangeProductQuantity,
-  onPrevPage,
-  onNextPage,
+  onPageChange,
   onContinue,
   onContactAdvisor,
   splitProductSteps = false,
@@ -83,14 +85,9 @@ const PedidosStep1 = ({
     });
   };
 
-  const handlePrevPage = () => {
+  const handlePageChange = (page: number) => {
     scrollToSearchTop();
-    onPrevPage();
-  };
-
-  const handleNextPage = () => {
-    scrollToSearchTop();
-    onNextPage();
+    onPageChange(page);
   };
 
   return (
@@ -98,14 +95,7 @@ const PedidosStep1 = ({
       <div className="w-full p-5">
         <h4 className="flex items-center justify-center gap-2 pt-6 text-[#8C6FAF] text-bold text-[22px]">
           {splitProductSteps && subpaso === "agregar" && (
-            <button
-              type="button"
-              onClick={() => onSubpasoChange("revisar")}
-              aria-label="Volver"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#ddd6eb] bg-white text-[#8C6FAF] transition hover:border-[#c4b5e0] hover:bg-[#f7f2ff]"
-            >
-              <ArrowLeft size={20} />
-            </button>
+            <BackButton variant="boxed" tone="cora-portal" ariaLabel="Volver" onClick={() => onSubpasoChange("revisar")} />
           )}
           Preparación de tu pedido
         </h4>
@@ -123,9 +113,11 @@ const PedidosStep1 = ({
               {items.length > 0 ? (
                 <PedidoAccordion items={items} onToggle={onToggleItem} />
               ) : (
-                <div className="rounded-3xl bg-white p-6 text-center text-[#8C6FAF] shadow-sm">
-                  No hay productos seleccionados en este momento.
-                </div>
+                <EmptyState
+                  tone="cora-portal"
+                  icon={PackageOpen}
+                  text="No hay productos seleccionados en este momento."
+                />
               )}
             </div>
           </>
@@ -139,17 +131,17 @@ const PedidosStep1 = ({
           )}
 
           {showSearch && (
-            <PortalInput
-              label="Buscá y agregá nuevos productos a tu carrito"
-              variant="add-product"
+            <SearchInput
+              tone="cora-portal"
+              size="lg"
+              leading="plus"
+              ariaLabel="Buscá y agregá nuevos productos a tu carrito"
+              placeholder="Buscar o agregar otro producto"
               value={searchQuery}
               onChange={onSearchChange}
-              onSearchClick={onSearch}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  onSearch();
-                }
-              }}
+              onSubmit={onSearch}
+              showSubmitButton
+              loading={searchLoading}
             />
           )}
           {showSearch && searchLoading && (
@@ -159,9 +151,11 @@ const PedidosStep1 = ({
           )}
 
           {showSearch && hasSearched && !searchLoading && searchResults.length === 0 && (
-            <div className="rounded-3xl bg-white p-5 text-center text-[#8C6FAF] shadow-sm">
-              No encontramos productos para esa búsqueda.
-            </div>
+            <EmptyState
+              tone="cora-portal"
+              icon={SearchX}
+              text="No encontramos productos para esa búsqueda."
+            />
           )}
 
           {showSearch && searchResults.length > 0 && (
@@ -231,29 +225,16 @@ const PedidosStep1 = ({
                 );
               })}
 
-              <div className="sm:col-span-2 flex items-center justify-between rounded-3xl bg-white p-4 text-sm text-[#8C6FAF] shadow-sm">
-                <p>
-                  Página {currentPage} de {totalPages} ({totalResults} resultados)
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    className="rounded-full border border-[#8C6FAF] px-4 py-2 disabled:opacity-50"
-                    onClick={handlePrevPage}
-                    disabled={currentPage <= 1 || searchLoading}
-                  >
-                    Anterior
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-full border border-[#8C6FAF] px-4 py-2 disabled:opacity-50"
-                    onClick={handleNextPage}
-                    disabled={currentPage >= totalPages || searchLoading}
-                  >
-                    Siguiente
-                  </button>
-                </div>
-              </div>
+              {/* La búsqueda pagina desde 1; Pagination desde 0. */}
+              <Pagination
+                className="sm:col-span-2"
+                tone="cora-portal"
+                page={currentPage - 1}
+                totalPages={totalPages}
+                onChange={(next) => handlePageChange(next + 1)}
+                disabled={searchLoading}
+                summary={`${totalResults} resultados`}
+              />
             </div>
           )}
 

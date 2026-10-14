@@ -1,0 +1,46 @@
+/* Lista de productos del pedido, con filas separadas por línea. */
+
+.list {
+  overflow: hidden;
+  border-radius: 0.9rem;
+  border: 1px solid #d5e4e8;
+}
+
+.row {
+  background: #ffffff;
+  padding: 0.9rem 1.25rem;
+
+  & + & {
+    border-top: 1px solid #d5e4e8;
+  }
+}
+
+.rowInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.label {
+  font-size: var(--fs-socios-data-label, var(--fs-meta));
+  font-weight: var(--fw-socios-data-label, 700);
+  color: #5f7c85;
+}
+
+.value {
+  margin-top: 0.25rem;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: #17343d;
+}
+
+.qty {
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: #e6f7fb;
+  padding: 0.15rem 0.55rem;
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  color: #007c98;
+}

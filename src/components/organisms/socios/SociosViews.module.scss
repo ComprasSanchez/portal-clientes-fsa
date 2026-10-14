@@ -58,14 +58,6 @@
   width: 100%;
 }
 
-.panelCard {
-  border: 1px solid #d5e4e8;
-  border-radius: 1rem;
-  background: #ffffff;
-  padding: 1.25rem;
-  box-shadow: 0 10px 24px rgba(0, 68, 84, 0.06);
-}
-
 .pointsHeader {
   display: flex;
   align-items: flex-start;
@@ -156,24 +148,6 @@
   color: #17343d;
 }
 
-.pointsWarning {
-  margin-top: 1rem;
-  border-radius: 0.75rem;
-  background: #fff5d6;
-  padding: 0.85rem 1rem;
-  font-size: var(--fs-sm);
-  color: #8a6700;
-}
-
-.pointsErrorBox {
-  margin-top: 1rem;
-  border-radius: 0.75rem;
-  background: #fff0ef;
-  padding: 0.95rem 1rem;
-  font-size: var(--fs-sm);
-  color: #b3362d;
-}
-
 .activePointsWrapper {
   margin-top: 1.5rem;
 }
@@ -225,60 +199,11 @@
   color: #17343d;
 }
 
-.facturasLoadingState,
-.facturasEmptyState {
-  margin-top: 1rem;
-  border-radius: 0.9rem;
-  border: 1px solid #d5e4e8;
-  background: #fbfdfd;
-  padding: 1rem 1.1rem;
-  font-size: var(--fs-socios-read, inherit);
-  font-weight: var(--fw-socios-read, 400);
-  color: #627880;
-}
-
 .facturasList {
   margin-top: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-.facturasPagination {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.75rem;
-}
-
-.facturasPaginationButton {
-  border-radius: 0.75rem;
-  border: 1px solid #cfe0e4;
-  background: #ffffff;
-  padding: 0.75rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #17343d;
-  transition:
-    background 0.2s ease,
-    opacity 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background: #f3f8f9;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.45;
-  }
-}
-
-.facturasPaginationText {
-  text-align: center;
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  color: #698088;
 }
 
 .facturaCard {
@@ -485,36 +410,10 @@
   font-size: var(--fs-sm);
 }
 
-.statusBadge {
-  border-radius: 9999px;
-  background: #ffefbf;
-  padding: 0.25rem 0.75rem;
-  font-size: var(--fs-badge);
-  font-weight: 600;
-  color: #996f00;
-}
-
-.statusBadgeAnulada {
-  border-radius: 9999px;
-  background: #fde8e8;
-  padding: 0.25rem 0.75rem;
-  font-size: var(--fs-badge);
-  font-weight: 600;
-  color: #c0392b;
-}
-
 .totalAmount {
   font-size: var(--fs-value-lg);
   font-weight: 700;
   color: #007c98;
-}
-
-.activeViewCard {
-  border: 1px solid #d5e4e8;
-  border-radius: 1.5rem;
-  background: #ffffff;
-  padding: 2rem;
-  box-shadow: 0 12px 32px rgba(0, 68, 84, 0.06);
 }
 
 .activeViewLabel {
@@ -631,54 +530,6 @@
   color: #698088;
 }
 
-.historialEmpty {
-  margin-top: 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid #d5e4e8;
-  background: #fbfdfd;
-  padding: 1.25rem 1rem;
-  font-size: var(--fs-socios-read, var(--fs-sm));
-  font-weight: var(--fw-socios-read, 400);
-  color: #698088;
-  text-align: center;
-}
-
-.historialLoading {
-  margin-top: 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid #d5e4e8;
-  background: #fbfdfd;
-  padding: 1.25rem 1rem;
-  font-size: var(--fs-socios-read, var(--fs-sm));
-  font-weight: var(--fw-socios-read, 400);
-  color: #698088;
-}
-
-.historialErrorBox {
-  margin-top: 1rem;
-  border-radius: 0.75rem;
-  background: #fff0ef;
-  padding: 0.95rem 1rem;
-  font-size: var(--fs-socios-read, var(--fs-sm));
-  font-weight: var(--fw-socios-read, 400);
-  color: #b3362d;
-}
-
-.historialPagination {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.75rem;
-}
-
-.historialPaginationText {
-  text-align: center;
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  color: #698088;
-}
-
 @media (max-width: 639px) {
   .container {
     padding: 1.25rem 0.75rem;
@@ -697,11 +548,6 @@
     max-width: 30rem;
     font-size: var(--fs-subtitle);
     line-height: 1.45;
-  }
-
-  .panelCard {
-    padding: 0.95rem;
-    border-radius: 1.15rem;
   }
 
   .facturasHeaderRow {
@@ -789,11 +635,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .facturasPagination {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
 }
 
 @media (min-width: 960px) {

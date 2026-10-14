@@ -1,0 +1,58 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.75rem 1rem;
+  text-align: center;
+}
+
+.dashed {
+  border: 1.5px dashed var(--tone-border-hover);
+  border-radius: 1rem;
+  background: var(--tone-soft-hover);
+}
+
+/* Sin tarjeta propia (variant plain / dashed): más chico, dentro de otro panel. */
+.compact {
+  padding: 1.75rem 1rem;
+
+  .icon {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .title {
+    margin-top: 0.75rem;
+  }
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background: var(--tone-soft);
+  color: var(--tone-primary);
+  opacity: 0.85;
+}
+
+.title {
+  margin-top: 1rem;
+  font-size: var(--fs-socios-card-subtitle, var(--fs-subtitle-sm));
+  font-weight: var(--fw-socios-card-subtitle, 700);
+  color: var(--tone-text);
+}
+
+.text {
+  margin-top: 0.35rem;
+  font-size: var(--fs-socios-read, var(--fs-sm));
+  font-weight: var(--fw-socios-read, 400);
+  color: var(--tone-muted);
+}
+
+.action {
+  margin-top: 1.25rem;
+}

@@ -1,0 +1,116 @@
+/* ── variant="connected": círculos grandes unidos por una línea ──────────── */
+
+.connected {
+  display: flex;
+  flex-direction: column;
+}
+
+.connected .step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.iconCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.connected .circle {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-width: 2px;
+}
+
+.connector {
+  width: 2px;
+  height: 2rem;
+  background: var(--tone-border);
+}
+
+.connectorDone {
+  background: color-mix(in srgb, var(--tone-primary) 30%, transparent);
+}
+
+.connected .labelRow {
+  padding-top: 0.5rem;
+}
+
+.connected .label {
+  font-size: var(--fs-socios-read, var(--fs-body));
+  line-height: 1;
+}
+
+/* ── variant="compact": lista de círculos chicos, sin línea ──────────────── */
+
+.compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.compact .step {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.compact .circle {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-width: 1px;
+}
+
+.compact .label {
+  font-size: var(--fs-sm);
+}
+
+/* ── Comunes ─────────────────────────────────────────────────────────────── */
+
+.circle {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-style: solid;
+  border-radius: 50%;
+  border-color: color-mix(in srgb, var(--tone-primary) 20%, transparent);
+  background: #ffffff;
+  color: color-mix(in srgb, var(--tone-primary) 35%, transparent);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.circleDone {
+  border-color: var(--tone-primary);
+  background: var(--tone-primary);
+  color: #ffffff;
+}
+
+.circleError {
+  border-color: #fca5a5;
+  background: #fee2e2;
+  color: #f87171;
+}
+
+.labelRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.label {
+  font-weight: 400;
+  color: color-mix(in srgb, var(--tone-primary) 55%, #9bb3ba);
+}
+
+.labelDone {
+  font-weight: 600;
+  color: var(--tone-text);
+}
+
+.labelError {
+  font-weight: 600;
+  color: #ef4444;
+}

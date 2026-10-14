@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
+import Badge from "@/components/atoms/badge/badge";
 import { prefetchSucursales } from "@/components/molecules/expedientes/SucursalPickerField";
 import { RecetaDropzone } from "@/components/molecules/receta-dropzone/receta-dropzone";
 import { useGlobalToast } from "@/components/ui/global-toast";
@@ -354,10 +355,15 @@ export function CrearPedidoView({
           <div className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/5" />
           <div className="pointer-events-none absolute -bottom-14 right-10 h-24 w-24 rounded-full bg-white/5" />
 
-          <span className="cora-data-label relative inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 uppercase tracking-[0.16em] text-white">
-            <Zap size={12} />
+          <Badge
+            color="overlay"
+            size="md"
+            uppercase
+            icon={<Zap size={12} />}
+            className="relative"
+          >
             Alta confirmada
-          </span>
+          </Badge>
 
           <div className="relative mt-4 flex items-start gap-4">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#4a2e73]">
@@ -514,10 +520,10 @@ export function CrearPedidoView({
                 >
                   Adjuntar receta
                 </button>
-                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                <Badge color="warning" wrap>
                   Pendiente — te la pedimos por WhatsApp antes de coordinar la
                   entrega
-                </span>
+                </Badge>
               </div>
             )}
           </div>
@@ -550,10 +556,9 @@ export function CrearPedidoView({
         description="Mantené tu teléfono o mail actualizados para que podamos avisarte."
       >
         {hasVerifiedContact ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-            <CheckCircle2 size={14} />
+          <Badge color="success" icon={<CheckCircle2 size={14} />}>
             Verificado
-          </span>
+          </Badge>
         ) : (
           <div className="space-y-2">
             <p className="text-sm text-[#6f7085]">

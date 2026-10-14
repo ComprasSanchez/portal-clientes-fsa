@@ -5,12 +5,20 @@ import {
   CreditCard,
   Star,
   Heart,
+  History,
   MapPin,
+  Receipt,
   Ticket,
   ShoppingBag,
   User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Alert from "@/components/atoms/alert/alert";
+import Badge from "@/components/atoms/badge/badge";
+import Card from "@/components/atoms/card/card";
+import EmptyState from "@/components/molecules/empty-state/empty-state";
+import Pagination from "@/components/molecules/pagination/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
 import {
@@ -159,13 +167,10 @@ export function SociosViews({
     facturasStart,
     facturasStart + FACTURAS_PAGE_SIZE,
   );
-  const currentFacturasPage = facturasPage + 1;
-  const hasPreviousFacturasPage = facturasPage > 0;
-  const hasNextFacturasPage =
-    facturasStart + FACTURAS_PAGE_SIZE < allComprobantes.length;
+  const facturasTotalPages = Math.ceil(allComprobantes.length / FACTURAS_PAGE_SIZE);
 
   const pointsCard = (
-    <article className={`${styles.panelCard} ${styles.pointsPanelCard}`}>
+    <Card className={styles.pointsPanelCard}>
       <div className={styles.pointsHeader}>
         <div>
           <h2 className={styles.panelTitle}>Tu saldo y actividad reciente</h2>
@@ -173,16 +178,14 @@ export function SociosViews({
             Saldo acumulado y movimientos pendientes
           </p>
         </div>
-        {puntosSummary.partial ? (
-          <span className={styles.statusBadge}>Parcial</span>
-        ) : null}
+        {puntosSummary.partial ? <Badge color="warning">Parcial</Badge> : null}
       </div>
 
       {pointsError ? (
-        <div className={styles.pointsErrorBox}>
+        <Alert className="mt-4">
           No pudimos cargar tus puntos ahora mismo. Intenta nuevamente en unos
           minutos.
-        </div>
+        </Alert>
       ) : (
         <div className={styles.pointsContentRow}>
           <div className={styles.pointsHighlight}>
@@ -215,15 +218,15 @@ export function SociosViews({
             </div>
 
             {puntosSummary.warnings.length > 0 ? (
-              <p className={styles.pointsWarning}>
+              <Alert color="warning" className="mt-4">
                 Algunas fuentes de puntos no estuvieron disponibles, por eso los
                 datos pueden ser parciales.
-              </p>
+              </Alert>
             ) : null}
           </div>
         </div>
       )}
-    </article>
+    </Card>
   );
 
   useEffect(() => {
@@ -329,9 +332,13 @@ export function SociosViews({
     if (currentView === "puntos") {
       const historialItems = puntosHistorial?.data?.items ?? [];
       const historialPageInfo = puntosHistorial?.data?.page;
-      const hasPrevHistorial = historialPage > 1;
-      const hasNextHistorial = historialPageInfo?.hasNext ?? false;
-      const historialTotal = historialPageInfo?.total ?? 0;
+      // Si el total no viene confiable, al menos permitir avanzar mientras haya `hasNext`.
+      const historialTotalPages = historialPageInfo
+        ? Math.max(
+            Math.ceil(historialPageInfo.total / Math.max(1, historialPageInfo.limit)),
+            historialPage + (historialPageInfo.hasNext ? 1 : 0),
+          )
+        : 0;
 
       const tipoLabel: Record<string, string> = {
         compra: "Compra",
@@ -342,7 +349,7 @@ export function SociosViews({
       };
 
       const historialCard = (
-        <article className={`${styles.panelCard} ${styles.historialCard}`}>
+        <Card className={styles.historialCard}>
           <div className={styles.historialHeader}>
             <div>
               <h2 className={styles.panelTitle}>ACTIVIDAD</h2>
@@ -353,17 +360,22 @@ export function SociosViews({
           </div>
 
           {historialError ? (
-            <div className={styles.historialErrorBox}>
+            <Alert className="mt-4">
               No pudimos cargar el historial ahora mismo. Intenta nuevamente en
               unos minutos.
-            </div>
+            </Alert>
           ) : isHistorialLoading ? (
-            <div className={styles.historialLoading}>Cargando historial…</div>
-          ) : historialItems.length === 0 ? (
-            <div className={styles.historialEmpty}>
-              Todavía no tenés movimientos. Sumá puntos con tu próxima compra en
-              cualquier sucursal o en nuestro ecommerce.
+            <div className="mt-4 flex flex-col gap-2" aria-label="Cargando historial">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-10 rounded-lg bg-[#e6f7fb]/70" />
+              ))}
             </div>
+          ) : historialItems.length === 0 ? (
+            <EmptyState
+              variant="plain"
+              icon={History}
+              text="Todavía no tenés movimientos. Sumá puntos con tu próxima compra en cualquier sucursal o en nuestro ecommerce."
+            />
           ) : (
             <>
               <div className={styles.historialTableWrap}>
@@ -419,30 +431,16 @@ export function SociosViews({
                 </table>
               </div>
 
-              {(hasPrevHistorial || hasNextHistorial) && (
-                <div className={styles.historialPagination}>
-                  <button
-                    className={styles.facturasPaginationButton}
-                    onClick={() => setHistorialPage(historialPage - 1)}
-                    disabled={!hasPrevHistorial}
-                  >
-                    ← Anterior
-                  </button>
-                  <span className={styles.historialPaginationText}>
-                    Página {historialPage}
-                  </span>
-                  <button
-                    className={styles.facturasPaginationButton}
-                    onClick={() => setHistorialPage(historialPage + 1)}
-                    disabled={!hasNextHistorial}
-                  >
-                    Siguiente →
-                  </button>
-                </div>
-              )}
+              {/* El hook pagina desde 1; Pagination desde 0. */}
+              <Pagination
+                className="mt-4"
+                page={historialPage - 1}
+                totalPages={historialTotalPages}
+                onChange={(next) => setHistorialPage(next + 1)}
+              />
             </>
           )}
-        </article>
+        </Card>
       );
 
       return (
@@ -481,7 +479,7 @@ export function SociosViews({
             </div>
 
             <div className={styles.facturasLayout}>
-              <article className={styles.panelCard}>
+              <Card>
                 <div className={styles.facturasHeaderRow}>
                   <div>
                     <h2 className={styles.panelTitle}>Mis compras</h2>
@@ -493,18 +491,21 @@ export function SociosViews({
                 </div>
 
                 {comprasError ? (
-                  <div className={styles.pointsErrorBox}>
+                  <Alert className="mt-4">
                     No pudimos cargar el listado de facturas para este cliente.
-                  </div>
+                  </Alert>
                 ) : isComprasLoading ? (
-                  <div className={styles.facturasLoadingState}>
-                    Cargando facturacion...
+                  <div className="mt-4 flex flex-col gap-2" aria-label="Cargando facturas">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-16 rounded-xl bg-[#e6f7fb]/70" />
+                    ))}
                   </div>
                 ) : allComprobantes.length === 0 ? (
-                  <div className={styles.facturasEmptyState}>
-                    No encontramos comprobantes para este cliente por el
-                    momento.
-                  </div>
+                  <EmptyState
+                    variant="plain"
+                    icon={Receipt}
+                    text="No encontramos comprobantes para este cliente por el momento."
+                  />
                 ) : (
                   <div className={styles.facturasList}>
                     {comprobantesPage.map((comprobante) => (
@@ -526,9 +527,7 @@ export function SociosViews({
                                   {comprobante.nombreFantasia ?? ""}
                                 </h3>
                                 {comprobante.anulado && (
-                                  <span className={styles.statusBadgeAnulada}>
-                                    Anulada
-                                  </span>
+                                  <Badge color="danger">Anulada</Badge>
                                 )}
                               </div>
                               <p className={styles.facturaMeta}>
@@ -608,38 +607,21 @@ export function SociosViews({
                 )}
 
                 {comprasSummary.warnings.length > 0 ? (
-                  <p className={styles.pointsWarning}>
+                  <Alert color="warning" className="mt-4">
                     Algunas dependencias no respondieron correctamente, por eso
-                    la facturacion puede estar incompleta.
-                  </p>
+                    la facturación puede estar incompleta.
+                  </Alert>
                 ) : null}
 
-                {!comprasError &&
-                !isComprasLoading &&
-                allComprobantes.length > FACTURAS_PAGE_SIZE ? (
-                  <div className={styles.facturasPagination}>
-                    <button
-                      type="button"
-                      className={styles.facturasPaginationButton}
-                      onClick={() => setFacturasPage((p) => Math.max(0, p - 1))}
-                      disabled={!hasPreviousFacturasPage}
-                    >
-                      Anterior
-                    </button>
-                    <span className={styles.facturasPaginationText}>
-                      Pagina {currentFacturasPage}
-                    </span>
-                    <button
-                      type="button"
-                      className={styles.facturasPaginationButton}
-                      onClick={() => setFacturasPage((p) => p + 1)}
-                      disabled={!hasNextFacturasPage}
-                    >
-                      Siguiente
-                    </button>
-                  </div>
+                {!comprasError && !isComprasLoading ? (
+                  <Pagination
+                    className="mt-4"
+                    page={facturasPage}
+                    totalPages={facturasTotalPages}
+                    onChange={setFacturasPage}
+                  />
                 ) : null}
-              </article>
+              </Card>
             </div>
           </section>
         </main>
@@ -648,7 +630,7 @@ export function SociosViews({
 
     return (
       <main className={styles.container}>
-        <section className={styles.activeViewCard}>
+        <Card padding="lg">
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -659,7 +641,7 @@ export function SociosViews({
           >
             Volver a Inicio
           </button>
-        </section>
+        </Card>
       </main>
     );
   }
@@ -757,7 +739,7 @@ export function SociosViews({
 
           {pointsCard}
 
-          <article className={styles.panelCard}>
+          <Card>
             <h2 className={styles.panelTitle}>Mi perfil</h2>
             <p className={styles.panelSubtitle}>
               Datos personales y de contacto
@@ -783,7 +765,7 @@ export function SociosViews({
               tone="socios"
               onClick={() => onNavigate("mi-cuenta")}
             />
-          </article>
+          </Card>
         </div>
 
         <SorteoCard onNavigate={onNavigate} />

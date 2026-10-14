@@ -1,0 +1,31 @@
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  font-size: var(--fs-socios-read, var(--fs-sm));
+  color: #5f7c85;
+}
+
+.total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px solid #e3ecef;
+  padding-top: 0.85rem;
+}
+
+.totalLabel {
+  font-size: var(--fs-subtitle-sm);
+  font-weight: 700;
+  color: #17343d;
+}
+
+.totalAmount {
+  font-size: var(--fs-value-lg);
+  font-weight: 700;
+  color: #007c98;
+  white-space: nowrap;
+}

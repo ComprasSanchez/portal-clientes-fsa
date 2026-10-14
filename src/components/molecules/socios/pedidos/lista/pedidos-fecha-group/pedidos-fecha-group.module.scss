@@ -1,0 +1,14 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #e3ecef;
+  padding: 0.9rem 1.75rem;
+}
+
+.date {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: #17343d;
+}

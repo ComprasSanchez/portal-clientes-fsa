@@ -288,6 +288,53 @@
   font-weight: var(--fw-socios-aux);
 }
 
+/* ── Tonos de los componentes genéricos (atoms/molecules) ──────────────────
+   Cada componente reutilizable acepta `tone="socios" | "cora"` y aplica la
+   clase `tone-socios` / `tone-cora`; su SCSS usa estas variables en vez de
+   colores fijos. Para un tema nuevo, agregar otra clase acá. */
+.tone-socios {
+  --tone-primary: #007c98;
+  --tone-primary-hover: #006b84;
+  --tone-soft: #e6f7fb;
+  --tone-soft-hover: #f3f8f9;
+  --tone-border: #d5e4e8;
+  --tone-border-hover: #9bc8d2;
+  --tone-text: #17343d;
+  --tone-muted: #5f7c85;
+  --tone-placeholder: #9bb3ba;
+  --tone-focus-ring: rgba(0, 124, 152, 0.12);
+  --tone-shadow: rgba(0, 68, 84, 0.06);
+}
+
+.tone-cora {
+  --tone-primary: #8f63d9;
+  --tone-primary-hover: #7f56c7;
+  --tone-soft: #f1eafd;
+  --tone-soft-hover: #f7f2ff;
+  --tone-border: #e5dbf4;
+  --tone-border-hover: #c4b5e0;
+  --tone-text: #2f3042;
+  --tone-muted: #6f7085;
+  --tone-placeholder: #a99cc0;
+  --tone-focus-ring: rgba(143, 99, 217, 0.14);
+  --tone-shadow: rgba(48, 26, 95, 0.05);
+}
+
+/* Formulario público de CORA (pedido mensual): violeta más suave. */
+.tone-cora-portal {
+  --tone-primary: #8c6faf;
+  --tone-primary-hover: #7a5d9e;
+  --tone-soft: #f3eef9;
+  --tone-soft-hover: #f7f2ff;
+  --tone-border: #ddd6eb;
+  --tone-border-hover: #c4b5e0;
+  --tone-text: #8c6faf;
+  --tone-muted: #a08cba;
+  --tone-placeholder: #b6a8c9;
+  --tone-focus-ring: rgba(140, 111, 175, 0.14);
+  --tone-shadow: rgba(48, 26, 95, 0.05);
+}
+
 body {
   font-family: "BD Supper", "Filson Pro", Arial, Helvetica, sans-serif;
   /* line-height: calc(1em + 2pt); */

@@ -1,0 +1,38 @@
+.button {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+/* variant="ghost": solo el ícono, fondo al pasar el mouse. */
+.ghost {
+  border-radius: 0.5rem;
+  padding: 0.3rem;
+  color: var(--tone-text);
+
+  &:hover {
+    background: var(--tone-soft);
+  }
+}
+
+/* variant="boxed": recuadro con borde (pasos del pedido de CORA). */
+.boxed {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--tone-border);
+  background: #ffffff;
+  color: var(--tone-primary);
+
+  &:hover {
+    border-color: var(--tone-border-hover);
+    background: var(--tone-soft-hover);
+  }
+
+  &.sm {
+    width: 2rem;
+    height: 2rem;
+  }
+}

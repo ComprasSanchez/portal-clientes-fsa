@@ -80,7 +80,8 @@
   position: absolute;
   top: -1.4rem;
   right: 1.75rem;
-  transform: rotate(6deg);
+  /* Espejado para que la punta del pin apunte a la derecha (el SVG apunta a la izquierda). */
+  transform: scaleX(-1) rotate(6deg);
   pointer-events: none;
   z-index: 500;
 

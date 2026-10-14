@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PortalSucursalOption } from "@/types/portal-sucursales";
 
 interface SucursalPickerFieldProps {
+  /** id del input, para asociarlo a un `<label htmlFor>` externo. */
+  inputId?: string;
   value: string;
   initialSucursal?: PortalSucursalOption | null;
   onChange: (sucursalId: string, sucursal: PortalSucursalOption | null) => void;
@@ -71,11 +73,31 @@ export function prefetchSucursales(): void {
   void fetchAllSucursales();
 }
 
-export function SucursalPickerField({ value, initialSucursal, onChange }: SucursalPickerFieldProps) {
+export function SucursalPickerField({
+  inputId,
+  value,
+  initialSucursal,
+  onChange,
+}: SucursalPickerFieldProps) {
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [allSucursales, setAllSucursales] = useState<PortalSucursalOption[]>(allSucursalesCache ?? []);
   const [isLoading, setIsLoading] = useState(!allSucursalesCache);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Cierra el dropdown al tocar fuera. No se usa onBlur del input: en iOS Safari el blur
+  // llega antes que el click de la opción (y el teclado al cerrarse mueve el layout),
+  // así que el dropdown se desmontaba y el tap nunca seleccionaba la sucursal.
+  useEffect(() => {
+    if (!showDropdown) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [showDropdown]);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,20 +150,32 @@ export function SucursalPickerField({ value, initialSucursal, onChange }: Sucurs
   }
 
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
+      {/* text-base en mobile: con menos de 16px iOS hace zoom al enfocar y desacomoda la pantalla. */}
       <input
-        className="w-full rounded-2xl border border-[#ddd6eb] px-4 py-3 text-sm outline-none transition focus:border-[#8f63d9]"
+        id={inputId}
+        className="w-full rounded-2xl border border-[#ddd6eb] px-4 py-3 text-base outline-none transition focus:border-[#8f63d9] sm:text-sm"
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setShowDropdown(true);
+        }}
         onFocus={() => setShowDropdown(true)}
-        onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+        onClick={() => setShowDropdown(true)}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") setShowDropdown(false);
+        }}
         placeholder={isLoading ? "Cargando sucursales..." : "Escribí para filtrar sucursales..."}
         autoComplete="off"
         disabled={isLoading}
       />
       {showDropdown && filteredSucursales.length > 0 ? (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-2xl border border-[#ddd6eb] bg-white shadow-lg">
-          <div className="max-h-56 overflow-y-auto">
+        <div
+          className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-2xl border border-[#ddd6eb] bg-white shadow-lg"
+          // Evita que el input pierda el foco al tocar una opción (no bloquea el scroll táctil).
+          onMouseDown={(event) => event.preventDefault()}
+        >
+          <div className="max-h-56 overflow-y-auto overscroll-contain">
             {filteredSucursales.map((sucursal) => (
               <button
                 key={sucursal.id}

@@ -1,0 +1,47 @@
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  border-radius: 0.75rem;
+  padding: 0.9rem 1rem;
+  font-size: var(--fs-socios-read, var(--fs-sm));
+  font-weight: var(--fw-socios-read, 400);
+  line-height: 1.4;
+}
+
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.content {
+  min-width: 0;
+}
+
+.error {
+  background: #fff0ef;
+  color: #b3362d;
+}
+
+.warning {
+  background: #fff5d6;
+  color: #8a6700;
+}
+
+.success {
+  background: #edf9f0;
+  color: #1f7a37;
+}
+
+.info {
+  background: #eef7fa;
+  color: #33606c;
+}
+
+/* Gris con borde: estados de carga o mensajes sin urgencia. */
+.neutral {
+  border: 1px solid #d5e4e8;
+  background: #fbfdfd;
+  color: #627880;
+}
