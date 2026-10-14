@@ -4,11 +4,17 @@ import { useEffect, useState } from "react";
 import type { FormikProps } from "formik";
 import { History } from "lucide-react";
 import { ProductSearchField } from "@/components/molecules/expedientes/ProductSearchField";
+import SegmentedControl from "@/components/molecules/segmented-control/segmented-control";
 import type { PortalProductoRecurrente } from "@/types/portal-productos";
 import type { CreateFormValues } from "./CrearPedidoView";
 
 const CADENCIA_DEFAULT = "30";
 const CADENCIA_OPTIONS = [15, 30, 45, 60, 90];
+
+const CADENCIA_PILL_OPTIONS = CADENCIA_OPTIONS.map((days) => ({
+  value: String(days),
+  label: `${days} días`,
+}));
 
 interface CrearPedidoStep1ProductosProps {
   formik: FormikProps<CreateFormValues>;
@@ -178,23 +184,16 @@ export function CrearPedidoStep1Productos({
                     ))}
                   </select>
 
-                  <div className="mt-1 hidden flex-wrap items-center gap-2 sm:flex">
-                    {CADENCIA_OPTIONS.map((days) => (
-                      <button
-                        key={days}
-                        type="button"
-                        onClick={() =>
-                          handlePeriodChange(item.id, String(days))
-                        }
-                        className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                          item.periodoDias === String(days)
-                            ? "border-[#8f63d9] bg-[#8f63d9] text-white"
-                            : "border-[#ddd6eb] bg-white text-[#2f3042] hover:border-[#c4b5e0]"
-                        }`}
-                      >
-                        {days} días
-                      </button>
-                    ))}
+                  {/* En celular se usa el <select> de arriba. */}
+                  <div className="mt-1 hidden sm:block">
+                    <SegmentedControl
+                      variant="pills"
+                      tone="cora"
+                      ariaLabel="Frecuencia del pedido"
+                      options={CADENCIA_PILL_OPTIONS}
+                      value={item.periodoDias}
+                      onChange={(value) => handlePeriodChange(item.id, value)}
+                    />
                   </div>
                 </div>
 

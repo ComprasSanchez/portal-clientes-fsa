@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  ArrowLeft,
   Calendar,
   CheckCircle2,
   Clock,
@@ -8,6 +7,7 @@ import {
   Truck,
   XCircle,
 } from "lucide-react";
+import BackButton from "@/components/atoms/back-button/back-button";
 import PortalStepper from "../../stepper/stepper";
 import PortalButton from "@/components/atoms/button/button";
 import { RecetaUploader } from "@/components/molecules/receta-uploader/receta-uploader";
@@ -20,12 +20,14 @@ import ConfirmDeliveryAccordion, {
 } from "../../confirm-delivery/confirm-delivery";
 import {
   getTrackingStatus,
+  getTrackingTimelineSteps,
   PARENT_ORDER_STATUS_LABELS,
   ParentOrder,
   TRACKING_LABELS,
-  TRACKING_STATUS_SEQUENCE,
   TrackingOrderStatus,
 } from "@/lib/order-tracking";
+import StatTile from "@/components/molecules/stat-tile/stat-tile";
+import Timeline from "@/components/molecules/timeline/timeline";
 
 type PaymentStatus = "idle" | "redirecting" | "processing" | "rejected" | "pending";
 
@@ -225,47 +227,38 @@ const PedidosStep3 = ({
           </div>
 
           <div className="grid gap-3 text-left sm:grid-cols-3">
-            <div className="rounded-2xl bg-[#F7F3FB] p-4">
-              <div className="mb-2 flex items-center gap-2 text-[#8C6FAF]">
-                <Truck size={18} />
-                <span className="text-xs font-semibold uppercase tracking-[0.12em]">
-                  Logística
-                </span>
-              </div>
-              <p className="text-sm font-semibold text-[#8C6FAF]">
-                {isTrackingLoading ? "Consultando estado..." : logisticaLabel}
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-[#F7F3FB] p-4">
-              <div className="mb-2 flex items-center gap-2 text-[#8C6FAF]">
-                <Clock size={18} />
-                <span className="text-xs font-semibold uppercase tracking-[0.12em]">
-                  Estado
-                </span>
-              </div>
-              <p className="text-sm font-semibold text-[#8C6FAF]">
-                {parentOrders[0]?.status
+            <StatTile
+              variant="soft"
+              size="sm"
+              tone="cora-portal"
+              icon={<Truck size={18} />}
+              label="Logística"
+              value={isTrackingLoading ? "Consultando estado..." : logisticaLabel}
+            />
+            <StatTile
+              variant="soft"
+              size="sm"
+              tone="cora-portal"
+              icon={<Clock size={18} />}
+              label="Estado"
+              value={
+                parentOrders[0]?.status
                   ? (PARENT_ORDER_STATUS_LABELS[parentOrders[0].status] ?? parentOrders[0].status)
-                  : "Registrado"}
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-[#F7F3FB] p-4">
-              <div className="mb-2 flex items-center gap-2 text-[#8C6FAF]">
-                <Calendar size={18} />
-                <span className="text-xs font-semibold uppercase tracking-[0.12em]">
-                  Fecha
-                </span>
-              </div>
-              <p className="text-sm font-semibold text-[#8C6FAF]">
-                {new Date().toLocaleDateString("es-AR", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
+                  : "Registrado"
+              }
+            />
+            <StatTile
+              variant="soft"
+              size="sm"
+              tone="cora-portal"
+              icon={<Calendar size={18} />}
+              label="Fecha"
+              value={new Date().toLocaleDateString("es-AR", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })}
+            />
           </div>
 
           {parentOrders.length > 0 && (
@@ -276,35 +269,11 @@ const PedidosStep3 = ({
                   Seguimiento
                 </p>
               </div>
-
-              <div className="space-y-3">
-                {TRACKING_STATUS_SEQUENCE.slice(1).map((status) => {
-                  const active =
-                    TRACKING_STATUS_SEQUENCE.indexOf(trackingStatus) >=
-                    TRACKING_STATUS_SEQUENCE.indexOf(status);
-
-                  return (
-                    <div key={status} className="flex items-center gap-3">
-                      <div
-                        className={`flex h-7 w-7 items-center justify-center rounded-full border ${
-                          active
-                            ? "border-[#8C6FAF] bg-[#8C6FAF] text-white"
-                            : "border-[#8C6FAF]/20 bg-white text-[#8C6FAF]/35"
-                        }`}
-                      >
-                        <CheckCircle2 size={14} />
-                      </div>
-                      <p
-                        className={`text-sm ${
-                          active ? "font-semibold text-[#8C6FAF]" : "text-[#8C6FAF]/55"
-                        }`}
-                      >
-                        {TRACKING_LABELS[status]}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
+              <Timeline
+                variant="compact"
+                tone="cora-portal"
+                steps={getTrackingTimelineSteps(trackingStatus)}
+              />
             </div>
           )}
 
@@ -321,14 +290,7 @@ const PedidosStep3 = ({
       <div className="w-full p-5">
         <h4 className="flex items-center justify-center gap-2 pt-6 text-[#8C6FAF] text-bold text-[22px]">
           {onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              aria-label="Volver"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#ddd6eb] bg-white text-[#8C6FAF] transition hover:border-[#c4b5e0] hover:bg-[#f7f2ff]"
-            >
-              <ArrowLeft size={20} />
-            </button>
+            <BackButton variant="boxed" tone="cora-portal" ariaLabel="Volver" onClick={onBack} />
           )}
           Ya casi terminamos
         </h4>

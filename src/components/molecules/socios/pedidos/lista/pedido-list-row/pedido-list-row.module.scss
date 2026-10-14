@@ -1,0 +1,99 @@
+/* Fila de pedido para escritorio (estilo listado de compras de Mercado Libre). */
+
+.row {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) auto 10.5rem;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.35rem 1.75rem;
+  transition: background 0.15s ease;
+
+  & + & {
+    border-top: 1px solid #e3ecef;
+  }
+
+  &:hover {
+    background: #f9fcfd;
+  }
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.9rem;
+}
+
+.iconFarma {
+  background: #e6f7fb;
+  color: #007c98;
+}
+
+.iconBreve {
+  background: #282828;
+  color: #f4bc05;
+}
+
+.iconCora {
+  background: #f1eafd;
+  color: #6c48b4;
+}
+
+.info {
+  min-width: 0;
+}
+
+.estadoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--fs-sm);
+}
+
+.title {
+  margin-top: 0.3rem;
+  font-size: var(--fs-socios-card-subtitle, var(--fs-body));
+  font-weight: 600;
+  color: #17343d;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.products {
+  margin-top: 0.2rem;
+  font-size: var(--fs-socios-aux, var(--fs-sm));
+  color: #5f7c85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.amount {
+  font-size: var(--fs-subtitle-sm);
+  font-weight: 700;
+  color: #17343d;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border-radius: 0.65rem;
+  background: #007c98;
+  padding: 0.65rem 1rem;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: #ffffff;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #006b84;
+  }
+}

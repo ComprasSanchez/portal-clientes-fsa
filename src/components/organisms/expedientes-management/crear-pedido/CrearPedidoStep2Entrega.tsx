@@ -10,6 +10,7 @@ import {
 } from "@heroui/react";
 import { PortalDatePicker } from "@/components/molecules/expedientes/PortalDatePicker";
 import { SucursalPickerField } from "@/components/molecules/expedientes/SucursalPickerField";
+import SegmentedControl from "@/components/molecules/segmented-control/segmented-control";
 import type { PortalPerfilDomicilio } from "@/types/portal-profile";
 import type { PortalSucursalOption } from "@/types/portal-sucursales";
 import {
@@ -34,6 +35,11 @@ const InfoTooltip = ({ label }: InfoTooltipProps) => (
       </PopoverDialog>
     </PopoverContent>
   </PopoverRoot>
+);
+
+// Sin la opción vacía "Seleccioná una forma de entrega" (acá se elige tocando).
+const MEDIO_ENTREGA_OPTIONS = DELIVERY_OPTIONS.filter((option) => option.value).map(
+  (option) => ({ value: option.value as string, label: option.label as string }),
 );
 
 const STEP2_FIELDS = [
@@ -130,21 +136,14 @@ export function CrearPedidoStep2Entrega({
           <span className="text-sm font-medium text-[#2f3042]">
             ¿Cómo querés recibir tu pedido?
           </span>
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-            {DELIVERY_OPTIONS.filter((option) => option.value).map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleMedioEntregaChange(option.value)}
-                className={`flex-1 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                  formik.values.medioEntrega === option.value
-                    ? "border-[#8f63d9] bg-[#8f63d9] text-white"
-                    : "border-[#ddd6eb] bg-white text-[#2f3042] hover:border-[#c4b5e0]"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
+          <div className="mt-2">
+            <SegmentedControl
+              tone="cora"
+              ariaLabel="Forma de entrega"
+              options={MEDIO_ENTREGA_OPTIONS}
+              value={formik.values.medioEntrega}
+              onChange={handleMedioEntregaChange}
+            />
           </div>
           {showError("medioEntrega")}
         </div>

@@ -2,8 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { BarChart3, CircleAlert } from "lucide-react";
+import Card from "@/components/atoms/card/card";
+import Alert from "@/components/atoms/alert/alert";
+import EmptyState from "@/components/molecules/empty-state/empty-state";
 import { DateRangeFilter } from "@/components/molecules/socios/DateRangeFilter";
-import { StatTile } from "@/components/molecules/socios/StatTile";
+import StatTile from "@/components/molecules/stat-tile/stat-tile";
 import { VentasDiariasChart } from "@/components/molecules/socios/VentasDiariasChart";
 import { ColaboradorVentasSkeleton } from "@/components/organisms/loading/ViewSkeletons";
 import { formatPortalCurrency } from "@/lib/portal-compras";
@@ -68,10 +71,7 @@ export function SociosColaboradorVentasView() {
       {isLoading && !ventas ? (
         <ColaboradorVentasSkeleton />
       ) : error ? (
-        <div className={styles.errorBox} role="alert">
-          <CircleAlert size={18} />
-          <span>{error}</span>
-        </div>
+        <Alert icon={<CircleAlert size={18} />}>{error}</Alert>
       ) : resumen && ventas ? (
         <div
           className={`${styles.content} ${isLoading ? styles.refreshing : ""}`}
@@ -81,7 +81,7 @@ export function SociosColaboradorVentasView() {
             aria-label="Resumen del período"
           >
             <StatTile
-              tone="primary"
+              variant="highlight"
               label="Total del período"
               value={formatPortalCurrency(resumen.total)}
               hint={`${formatPortalPoints(resumen.dias_con_ventas)} días con ventas`}
@@ -126,19 +126,18 @@ export function SociosColaboradorVentasView() {
             />
           </section>
 
-          <article className={styles.panelCard}>
+          <Card className="flex flex-col gap-4">
             <h2 className={styles.panelTitle}>Ventas por día</h2>
             {ventas.dias.length > 0 ? (
               <VentasDiariasChart dias={ventas.dias} />
             ) : (
-              <div className={styles.emptyBox}>
-                <span className={styles.emptyIcon}>
-                  <BarChart3 size={22} />
-                </span>
-                <p>Todavía no hay ventas registradas para estas fechas.</p>
-              </div>
+              <EmptyState
+                variant="plain"
+                icon={BarChart3}
+                text="Todavía no hay ventas registradas para estas fechas."
+              />
             )}
-          </article>
+          </Card>
         </div>
       ) : null}
     </div>

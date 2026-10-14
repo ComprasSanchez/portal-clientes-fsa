@@ -1,0 +1,29 @@
+/* Lista de datos sueltos del pedido, con filas separadas por línea. */
+
+.list {
+  overflow: hidden;
+  border-radius: 0.9rem;
+  border: 1px solid #d5e4e8;
+}
+
+.row {
+  background: #ffffff;
+  padding: 0.9rem 1.25rem;
+
+  & + & {
+    border-top: 1px solid #d5e4e8;
+  }
+}
+
+.label {
+  font-size: var(--fs-socios-data-label, var(--fs-meta));
+  font-weight: var(--fw-socios-data-label, 700);
+  color: #5f7c85;
+}
+
+.value {
+  margin-top: 0.25rem;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: #17343d;
+}

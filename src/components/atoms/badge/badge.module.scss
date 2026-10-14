@@ -1,0 +1,77 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Tamaños */
+
+.sm {
+  padding: 0.2rem 0.6rem;
+  font-size: var(--fs-badge);
+}
+
+.md {
+  padding: 0.25rem 0.75rem;
+  font-size: var(--fs-meta);
+}
+
+/* Textos largos: permitir que salte de línea (y esquinas menos redondas). */
+.wrap {
+  white-space: normal;
+  border-radius: 0.75rem;
+}
+
+.uppercase {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Colores */
+
+/* Color principal del tema (socios = turquesa, cora = violeta). */
+.primary {
+  background: var(--tone-soft);
+  color: var(--tone-primary);
+}
+
+/* Relleno con el color del tema y texto blanco (ej. "Más cercana", "Activo"). */
+.solid {
+  background: var(--tone-primary);
+  color: #ffffff;
+}
+
+/* Blanco translúcido, para ir sobre fondos oscuros o de color. */
+.overlay {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.neutral {
+  background: #eef2f4;
+  color: #4b5f66;
+}
+
+/* Colores de marca Breve (sacados de banner-breve.jpeg) */
+.breve {
+  background: #282828;
+  color: #f4bc05;
+}

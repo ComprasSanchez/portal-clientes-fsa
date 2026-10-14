@@ -3,13 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Check,
-  ChevronLeft,
-  ChevronRight,
   Loader2,
   Minus,
   Plus,
-  Search,
-  X,
 } from "lucide-react";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import type {
@@ -19,6 +15,8 @@ import type {
 } from "@/types/portal-productos";
 import { Label } from "@heroui/react";
 import PriceTag from "@/components/atoms/price-tag/price-tag";
+import Pagination from "@/components/molecules/pagination/pagination";
+import SearchInput from "@/components/molecules/search-input/search-input";
 import { formatPortalCurrency } from "@/lib/portal-compras";
 import { MERCADOPAGO_PAGO_ENABLED } from "@/lib/feature-flags";
 
@@ -223,11 +221,9 @@ export function ProductSearchField({
     setTotalCount(null);
   };
 
-  const canGoPrev = page > 1 && !isSearching;
-  const canGoNext =
-    (totalPages != null
-      ? page < totalPages
-      : productResults.length === PAGE_SIZE) && !isSearching;
+  // Sin total conocido: si la página vino llena, se asume que hay una más.
+  const knownTotalPages =
+    totalPages ?? page + (productResults.length === PAGE_SIZE ? 1 : 0);
 
   const addableResults = productResults.filter(
     (product) => !selectedProducts.some((item) => item.id === product.id),
@@ -237,44 +233,17 @@ export function ProductSearchField({
     <div className="text-sm text-[#5f6074] sm:rounded-2xl sm:border sm:border-dashed sm:border-[#ddd6eb] sm:bg-[#faf8fd] sm:p-4 md:col-span-2">
       <div className="flex flex-col gap-4">
         <p>Buscador de productos</p>
-        <div className="flex items-center gap-2">
-          <div className="relative min-w-0 flex-1">
-            <input
-              className="w-full rounded-2xl border border-[#ddd6eb] px-4 py-3 pr-10 text-sm outline-none transition focus:border-[#8f63d9]"
-              value={productQuery}
-              onChange={(event) => setProductQuery(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  handleSearchClick();
-                }
-              }}
-              placeholder="Buscá productos para sumar al pedido"
-            />
-            {productQuery.length > 0 || hasSearched ? (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                aria-label="Limpiar búsqueda"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8f7fa0] transition hover:text-[#8f63d9]"
-              >
-                <X size={16} />
-              </button>
-            ) : null}
-          </div>
-          <button
-            type="button"
-            disabled={isSearching}
-            onClick={handleSearchClick}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#8f63d9] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#7f56c7] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSearching ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Search size={16} />
-            )}
-          </button>
-        </div>
+        <SearchInput
+          tone="cora"
+          leading="none"
+          value={productQuery}
+          onChange={setProductQuery}
+          onClear={handleClearSearch}
+          onSubmit={handleSearchClick}
+          showSubmitButton
+          loading={isSearching}
+          placeholder="Buscá productos para sumar al pedido"
+        />
 
         {selectedProducts.length > 0 ? (
           <div className="grid gap-3">
@@ -417,32 +386,16 @@ export function ProductSearchField({
                   </div>
                 )}
 
-                <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#eee6fb] pt-3">
-                  <button
-                    type="button"
-                    disabled={!canGoPrev}
-                    onClick={() => void runSearch(committedQuery, page - 1)}
-                    className="inline-flex items-center gap-1 rounded-xl border border-[#ddd6eb] px-3 py-2 text-xs font-semibold text-[#6c48b4] transition hover:bg-[#f7f2ff] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <ChevronLeft size={14} />
-                    Anterior
-                  </button>
-                  <span className="text-xs text-[#8f7fa0]">
-                    {totalPages != null
-                      ? `Página ${page} de ${totalPages}`
-                      : `Página ${page}`}
-                    {totalCount != null ? ` · ${totalCount} resultados` : ""}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={!canGoNext}
-                    onClick={() => void runSearch(committedQuery, page + 1)}
-                    className="inline-flex items-center gap-1 rounded-xl border border-[#ddd6eb] px-3 py-2 text-xs font-semibold text-[#6c48b4] transition hover:bg-[#f7f2ff] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    Siguiente
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
+                {/* La búsqueda pagina desde 1; Pagination desde 0. */}
+                <Pagination
+                  className="mt-3 border-t border-[#eee6fb] pt-3"
+                  tone="cora"
+                  page={page - 1}
+                  totalPages={knownTotalPages}
+                  onChange={(next) => void runSearch(committedQuery, next + 1)}
+                  disabled={isSearching}
+                  summary={totalCount != null ? `${totalCount} resultados` : undefined}
+                />
               </>
             )}
           </div>

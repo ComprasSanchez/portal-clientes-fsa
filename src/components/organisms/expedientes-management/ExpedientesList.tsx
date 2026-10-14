@@ -1,5 +1,9 @@
 "use client";
 
+import { CircleAlert, ClipboardList } from "lucide-react";
+import Alert from "@/components/atoms/alert/alert";
+import Badge from "@/components/atoms/badge/badge";
+import EmptyState from "@/components/molecules/empty-state/empty-state";
 import { formatPortalProfileDate } from "@/lib/portal-profile";
 import type { PortalExpedienteItem } from "@/types/portal-expedientes";
 import { formatExpedienteLabel } from "../../../helpers/expedientes-management.helpers";
@@ -31,13 +35,16 @@ export function ExpedientesList({
       {isLoading && visibleExpedientes.length === 0 ? (
         <PedidosCoraSkeleton />
       ) : error && visibleExpedientes.length === 0 ? (
-        <div className="rounded-2xl border border-[#f0dde2] bg-[#fff7f8] px-4 py-3 text-sm text-[#7f1d2d]">
+        <Alert icon={<CircleAlert size={18} />}>
           No pudimos cargar tus pedidos. {error}
-        </div>
+        </Alert>
       ) : visibleExpedientes.length === 0 ? (
-        <p className="text-sm text-[#5f6074]">
-          Todavía no hay pedidos para mostrar.
-        </p>
+        <EmptyState
+          variant="plain"
+          tone="cora"
+          icon={ClipboardList}
+          text="Todavía no hay pedidos para mostrar."
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visibleExpedientes.map((expedienteItem) => {
@@ -68,9 +75,9 @@ export function ExpedientesList({
                   </div>
                   <div className="flex shrink-0 gap-1.5">
                     {isActive ? (
-                      <span className="rounded-full bg-[#8f63d9] px-2.5 py-1 text-xs font-semibold text-white">
+                      <Badge color="solid" tone="cora">
                         Activo
-                      </span>
+                      </Badge>
                     ) : null}
                   </div>
                 </div>

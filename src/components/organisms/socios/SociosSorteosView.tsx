@@ -15,7 +15,10 @@ import {
 } from "lucide-react";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { getActiveSorteoCampaign } from "@/lib/sorteo-campaign";
+import Card from "@/components/atoms/card/card";
 import { InstagramIcon } from "@/components/atoms/instagram-icon/instagram-icon";
+import Alert from "@/components/atoms/alert/alert";
+import EmptyState from "@/components/molecules/empty-state/empty-state";
 import styles from "./SociosSorteosView.module.scss";
 
 type PhoneContact = {
@@ -355,7 +358,7 @@ export function SociosSorteosView({
       ) : null}
 
       <section className={styles.grid}>
-        <article className={styles.panelCard}>
+        <Card>
           <div className={styles.panelHeader}>
             <div>
               <h2 className={styles.panelTitle}>Sorteo actual</h2>
@@ -374,30 +377,25 @@ export function SociosSorteosView({
               priority
             />
           ) : isLoading ? (
-            <div className={styles.loadingBox}>
-              <LoaderCircle className={styles.spinningIcon} size={18} />
-              Cargando informacion del sorteo...
-            </div>
+            <Alert
+              color="neutral"
+              className="mt-4"
+              icon={<LoaderCircle className="animate-spin" size={18} />}
+            >
+              Cargando información del sorteo...
+            </Alert>
           ) : loadError ? (
-            <div className={styles.errorBox}>
-              <CircleAlert size={18} />
-              <span>{loadError}</span>
-            </div>
+            <Alert className="mt-4" icon={<CircleAlert size={18} />}>
+              {loadError}
+            </Alert>
           ) : noSorteo ? (
-            <div className={styles.emptyBox}>
-              <div className={styles.emptyIconWrap}>
-                <CalendarOff size={26} />
-              </div>
-              <div>
-                <p className={styles.emptyTitle}>
-                  Sin sorteo activo por el momento
-                </p>
-                <p className={styles.emptyBody}>
-                  Cuando haya un sorteo en curso, vas a poder verlo y participar
-                  desde acá. Volvé pronto.
-                </p>
-              </div>
-            </div>
+            <EmptyState
+              variant="dashed"
+              className="mt-5"
+              icon={CalendarOff}
+              title="Sin sorteo activo por el momento"
+              text="Cuando haya un sorteo en curso, vas a poder verlo y participar desde acá. Volvé pronto."
+            />
           ) : activeDraw ? (
             <div className={styles.drawContent}>
               <div className={styles.drawHero}>
@@ -424,9 +422,9 @@ export function SociosSorteosView({
               </div>
             </div>
           ) : null}
-        </article>
+        </Card>
 
-        <article className={styles.panelCard}>
+        <Card>
           <div className={styles.panelHeader}>
             <div>
               <h2 className={styles.panelTitle}>Participar</h2>
@@ -480,8 +478,7 @@ export function SociosSorteosView({
           ) : (
           <>
           {!phoneVerified ? (
-            <div className={styles.warningBox}>
-              <CircleAlert size={18} className={styles.warningIcon} />
+            <Alert color="warning" className="mt-4" icon={<CircleAlert size={18} />}>
               <div className={styles.warningContent}>
                 <span>
                   Necesitas verificar tu celular para poder participar del
@@ -501,21 +498,21 @@ export function SociosSorteosView({
                   </span>
                 )}
               </div>
-            </div>
+            </Alert>
           ) : null}
 
           {participationMessage ? (
-            <div
-              className={
-                participation?.ok ? styles.successBox : styles.errorBox
+            <Alert
+              color={participation?.ok ? "success" : "error"}
+              className="mt-4"
+              icon={
+                participation?.ok ? (
+                  <CircleCheckBig size={18} />
+                ) : (
+                  <CircleAlert size={18} />
+                )
               }
-              role="status"
             >
-              {participation?.ok ? (
-                <CircleCheckBig size={18} />
-              ) : (
-                <CircleAlert size={18} />
-              )}
               <div>
                 <p>{participationMessage}</p>
                 {participation?.requiresValidation ? (
@@ -530,7 +527,7 @@ export function SociosSorteosView({
                   </small>
                 ) : null}
               </div>
-            </div>
+            </Alert>
           ) : null}
 
           <button
@@ -553,7 +550,7 @@ export function SociosSorteosView({
           </button>
           </>
           )}
-        </article>
+        </Card>
       </section>
 
       {isVerificacionModalOpen && principalPhone ? (

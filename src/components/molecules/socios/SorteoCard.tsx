@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CalendarDays } from "lucide-react";
 import sorteoImg from "@/assets/seccion-sorteo-banner.jpg";
 import { InstagramIcon } from "@/components/atoms/instagram-icon/instagram-icon";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getActiveSorteoCampaign } from "@/lib/sorteo-campaign";
 import { type SociosView } from "@/types/socios";
 import styles from "./SorteoCard.module.scss";
@@ -116,7 +117,7 @@ export function SorteoCard({ onNavigate }: SorteoCardProps) {
 
       <div className={styles.content}>
         {isLoading ? (
-          <div className={styles.skeleton} />
+          <Skeleton className="h-6 w-3/4 rounded-md bg-[#e6f7fb]/70" />
         ) : (
           <h3 className={styles.title}>{sorteo!.nombre}</h3>
         )}

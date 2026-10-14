@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { BellOff, ChevronRight } from "lucide-react";
+import BackButton from "@/components/atoms/back-button/back-button";
+import EmptyState from "@/components/molecules/empty-state/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { usePortalNotificacionesContext } from "@/lib/portal-notificaciones-context";
 import {
   NOTIFICATION_CATEGORIES,
@@ -48,14 +51,7 @@ export function NotificacionesView({
     return (
       <div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setSelectedCategory(null)}
-            className="-ml-1 rounded-lg p-1 text-[#6f7085] transition-colors hover:bg-[#f2f0f7]"
-            aria-label="Volver a categorías"
-          >
-            <ChevronLeft size={22} />
-          </button>
+          <BackButton tone="cora" ariaLabel="Volver a categorías" onClick={() => setSelectedCategory(null)} />
           <h1 className={styles.activeViewTitle}>
             {selectedCategoryConfig.label}
           </h1>
@@ -63,14 +59,19 @@ export function NotificacionesView({
 
         <div className="mt-3 overflow-hidden rounded-2xl border border-[#e6e1ef]">
           {isLoading && items.length === 0 && (
-            <p className="px-4 py-6 text-center text-sm text-[#7d7e96]">
-              Cargando...
-            </p>
+            <div className="flex flex-col gap-2 p-4" aria-label="Cargando notificaciones">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-12 rounded-lg bg-[#f2eefa]" />
+              ))}
+            </div>
           )}
           {!isLoading && items.length === 0 && (
-            <p className="px-4 py-6 text-center text-sm text-[#7d7e96]">
-              Sin novedades por ahora.
-            </p>
+            <EmptyState
+              variant="plain"
+              tone="cora"
+              icon={BellOff}
+              text="Sin novedades por ahora."
+            />
           )}
           {items.map((item) => (
             <NotificationListItem
@@ -87,14 +88,7 @@ export function NotificacionesView({
   return (
     <div>
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => onNavigate(previousView ?? "dashboard")}
-          className="-ml-1 rounded-lg p-1 text-[#6f7085] transition-colors hover:bg-[#f2f0f7]"
-          aria-label="Volver"
-        >
-          <ChevronLeft size={22} />
-        </button>
+        <BackButton tone="cora" ariaLabel="Volver" onClick={() => onNavigate(previousView ?? "dashboard")} />
         <h1 className={styles.activeViewTitle}>Notificaciones</h1>
       </div>
       <p className={styles.activeViewDescription}>

@@ -1,665 +1,227 @@
-﻿"use client";
+"use client";
 
-import { useState, useMemo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Search,
-  ShoppingBag,
-  Truck,
-  XCircle,
-} from "lucide-react";
-import {
-  PEDIDO_CANAL_LABELS,
-  PLEX_ESTADO_LABELS,
-  type PedidoCanal,
-  type PedidoNormalizado,
-} from "@/types/portal-pedidos";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ShoppingBag } from "lucide-react";
+import Alert from "@/components/atoms/alert/alert";
+import EmptyState from "@/components/molecules/empty-state/empty-state";
+import PageTitlebar from "@/components/molecules/page-titlebar/page-titlebar";
+import Pagination from "@/components/molecules/pagination/pagination";
+import SearchInput from "@/components/molecules/search-input/search-input";
+import SegmentedControl from "@/components/molecules/segmented-control/segmented-control";
+import { PedidoListCard } from "@/components/molecules/socios/pedidos/lista/pedido-list-card/pedido-list-card";
+import { PedidoListRow } from "@/components/molecules/socios/pedidos/lista/pedido-list-row/pedido-list-row";
+import { PedidosFechaGroup } from "@/components/molecules/socios/pedidos/lista/pedidos-fecha-group/pedidos-fecha-group";
+import { PedidosSkeleton } from "@/components/molecules/socios/pedidos/lista/pedidos-skeleton/pedidos-skeleton";
+import { PedidoDetalleDrawer } from "@/components/molecules/socios/pedidos/detalle/pedido-detalle-drawer/pedido-detalle-drawer";
+import { PedidoDetalleSkeleton } from "@/components/molecules/socios/pedidos/detalle/pedido-detalle-skeleton/pedido-detalle-skeleton";
+import { usePortalPedido } from "@/lib/use-portal-pedido";
 import { usePortalPedidos } from "@/lib/use-portal-pedidos";
-import { formatPortalCurrency } from "@/lib/portal-compras";
+import {
+  groupPedidosPorFecha,
+  matchesPedidoEstadoFilter,
+  matchesPedidoSearch,
+  PEDIDO_CANAL_TAB_OPTIONS,
+  PEDIDO_ESTADO_FILTERS,
+  PEDIDOS_LIST_HREF,
+  type PedidoCanalTab,
+  type PedidoEstadoFilter,
+} from "@/lib/portal-pedidos";
+import { PEDIDO_CANAL_LABELS } from "@/types/portal-pedidos";
+import { SociosPedidoDetalle } from "./SociosPedidoDetalle";
 import styles from "./SociosPedidosView.module.scss";
 
-function formatFecha(fechaStr: string): string {
-  const d = new Date(fechaStr);
-  if (isNaN(d.getTime())) return fechaStr;
-  return d.toLocaleDateString("es-AR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function getTrackingSteps(tipoEntrega: string) {
-  if (tipoEntrega.trim() === "R") {
-    return [
-      { label: "Pedido recibido", threshold: 1 },
-      { label: "En preparación", threshold: 3 },
-      { label: "Listo para retiro", threshold: 5 },
-      { label: "Entregado", threshold: 7 },
-    ];
-  }
-  return [
-    { label: "Pedido recibido", threshold: 1 },
-    { label: "En preparación", threshold: 3 },
-    { label: "Listo para envío", threshold: 4 },
-    { label: "En camino", threshold: 6 },
-    { label: "Entregado", threshold: 7 },
-  ];
-}
-
-function isStepActive(threshold: number, idEstado: number): boolean {
-  if (idEstado === 2) return false;
-  if (idEstado >= 8) return true;
-  return idEstado >= threshold;
-}
-
-function EstadoBadge({ idEstado }: { idEstado: number }) {
-  const label = PLEX_ESTADO_LABELS[idEstado] ?? `Estado ${idEstado}`;
-  const isRechazado = idEstado === 2;
-  const isEntregado = idEstado === 7 || idEstado >= 8;
-
-  return (
-    <span
-      className={`${styles.badge} ${styles.badgeMd} ${
-        isRechazado
-          ? styles.badgeError
-          : isEntregado
-            ? styles.badgeSuccess
-            : styles.badgeActive
-      }`}
-    >
-      {label}
-    </span>
-  );
-}
-
-function EstadoBadgeSm({ idEstado }: { idEstado: number }) {
-  const label = PLEX_ESTADO_LABELS[idEstado] ?? `Estado ${idEstado}`;
-  const isRechazado = idEstado === 2;
-  const isEntregado = idEstado === 7 || idEstado >= 8;
-
-  return (
-    <span
-      className={`${styles.badge} ${styles.badgeSm} ${
-        isRechazado
-          ? styles.badgeError
-          : isEntregado
-            ? styles.badgeSuccess
-            : styles.badgeActive
-      }`}
-    >
-      {label}
-    </span>
-  );
-}
-
-const CANAL_BADGE_CLASS: Record<PedidoCanal, string> = {
-  FARMA: styles.canalBadgeFarma,
-  BREVE: styles.canalBadgeBreve,
-  CORA: styles.canalBadgeCora,
-};
-
-function CanalBadge({ canal }: { canal: PedidoCanal }) {
-  return (
-    <span
-      className={`${styles.badge} ${styles.badgeSm} ${CANAL_BADGE_CLASS[canal]}`}
-    >
-      {PEDIDO_CANAL_LABELS[canal]}
-    </span>
-  );
-}
-
-type CanalTabKey = PedidoCanal | "TODOS";
-
-const CANAL_TABS: { key: CanalTabKey; label: string }[] = [
-  { key: "TODOS", label: "Todos" },
-  { key: "FARMA", label: PEDIDO_CANAL_LABELS.FARMA },
-  { key: "BREVE", label: PEDIDO_CANAL_LABELS.BREVE },
-  { key: "CORA", label: PEDIDO_CANAL_LABELS.CORA },
-];
-
-type FilterKey = "todos" | "activos" | "entregados" | "rechazados";
-
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: "todos", label: "Todos" },
-  { key: "activos", label: "Activos" },
-  { key: "entregados", label: "Entregados" },
-  { key: "rechazados", label: "Rechazados" },
-];
-
-function matchesFilter(p: PedidoNormalizado, f: FilterKey): boolean {
-  if (f === "todos") return true;
-  if (f === "entregados") return p.id_estado === 7 || p.id_estado >= 8;
-  if (f === "rechazados") return p.id_estado === 2;
-  return p.id_estado !== 2 && p.id_estado < 7;
-}
-
-function PedidoListCard({
-  pedido,
-  isSelected,
-  onClick,
-}: {
-  pedido: PedidoNormalizado;
-  isSelected: boolean;
-  onClick: () => void;
-}) {
-  const isRetiro = pedido.tipo_entrega.trim() === "R";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`${styles.orderCard} ${isSelected ? styles.orderCardActive : ""}`}
-    >
-      <div className={styles.orderCardTopRow}>
-        <div className={styles.orderCardIdGroup}>
-          <p className={styles.orderCardId}>#{pedido.id_pedido}</p>
-          <CanalBadge canal={pedido.canal} />
-        </div>
-        <EstadoBadgeSm idEstado={pedido.id_estado} />
-      </div>
-      <p className={styles.orderCardDate}>{formatFecha(pedido.fecha)}</p>
-      <div className={styles.orderCardBottomRow}>
-        <div className={styles.orderCardMeta}>
-          {isRetiro ? <MapPin size={13} /> : <Truck size={13} />}
-          <span>
-            {isRetiro
-              ? (pedido.nombre_sucursal ?? "Retiro en sucursal")
-              : "Envío a domicilio"}
-          </span>
-        </div>
-        <span className={styles.orderCardAmount}>
-          {formatPortalCurrency(pedido.importe)}
-        </span>
-      </div>
-    </button>
-  );
-}
-
-function PedidoDetail({ pedido }: { pedido: PedidoNormalizado }) {
-  const isRechazado = pedido.id_estado === 2;
-  const isRetiro = pedido.tipo_entrega.trim() === "R";
-  const trackingSteps = getTrackingSteps(pedido.tipo_entrega);
-
-  return (
-    <div className="flex flex-col gap-7 lg:gap-8">
-      {/* Número + estado + fecha */}
-      <div>
-        <p className={styles.detailOrderLabel}>Número de orden</p>
-        <p className={styles.detailOrderNumber}>#{pedido.id_pedido}</p>
-        <div className={styles.detailMetaRow}>
-          <EstadoBadge idEstado={pedido.id_estado} />
-          <CanalBadge canal={pedido.canal} />
-          <span className={styles.detailDate}>{formatFecha(pedido.fecha)}</span>
-        </div>
-      </div>
-
-      {/* Seguimiento */}
-      <div>
-        <p className={styles.sectionLabel}>Seguimiento</p>
-        <div className="flex flex-col">
-          {trackingSteps.map((step, idx) => {
-            const active = isStepActive(step.threshold, pedido.id_estado);
-            const isFirst = step.threshold === 1;
-            const isLast = idx === trackingSteps.length - 1;
-
-            return (
-              <div key={step.threshold} className={styles.trackingStep}>
-                <div className={styles.stepIconCol}>
-                  <div
-                    className={`${styles.stepCircle} ${
-                      active
-                        ? styles.stepCircleActive
-                        : isRechazado && isFirst
-                          ? styles.stepCircleRejected
-                          : ""
-                    }`}
-                  >
-                    {isRechazado && isFirst ? (
-                      <XCircle size={16} />
-                    ) : (
-                      <CheckCircle2 size={16} />
-                    )}
-                  </div>
-                  {!isLast && (
-                    <div
-                      className={`${styles.stepConnector} ${active ? styles.stepConnectorActive : ""}`}
-                      style={{ height: "32px" }}
-                    />
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2.5">
-                  <p
-                    className={`${styles.stepLabel} ${
-                      active
-                        ? styles.stepLabelActive
-                        : isRechazado && isFirst
-                          ? styles.stepLabelRejected
-                          : ""
-                    }`}
-                  >
-                    {step.label}
-                  </p>
-                  {isRechazado && isFirst && (
-                    <span className={styles.stepRechazadoChip}>Rechazado</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Productos */}
-      {pedido.productos.length > 0 && (
-        <div>
-          <p className={styles.sectionLabel}>Productos</p>
-          <div className={styles.detailBox}>
-            {pedido.productos.map((prod) => (
-              <div key={prod.product_id} className={styles.detailBoxRow}>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className={styles.detailBoxValue}>
-                      {prod.producto ?? "Producto"}
-                    </p>
-                    {prod.presentacion && (
-                      <p className={styles.detailBoxLabel}>
-                        {prod.presentacion}
-                      </p>
-                    )}
-                  </div>
-                  <span className="shrink-0 text-xs font-semibold text-[#007c98]">
-                    x{prod.qty}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Detalle adicional */}
-      {((!isRetiro && pedido.domicilio) ||
-        (isRetiro && pedido.nombre_sucursal) ||
-        pedido.referencia_pago ||
-        pedido.observacion) && (
-        <div>
-          <p className={styles.sectionLabel}>Detalle</p>
-          <div className={styles.detailBox}>
-            {isRetiro && pedido.nombre_sucursal && (
-              <div className={styles.detailBoxRow}>
-                <div className="flex items-start gap-3">
-                  <MapPin
-                    size={15}
-                    className="mt-0.5 shrink-0 text-[#007c98]"
-                  />
-                  <div>
-                    <p className={styles.detailBoxLabel}>Sucursal de retiro</p>
-                    <p className={styles.detailBoxValue}>
-                      {pedido.nombre_sucursal}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-            {!isRetiro && pedido.domicilio && (
-              <div className={styles.detailBoxRow}>
-                <div className="flex items-start gap-3">
-                  <MapPin
-                    size={15}
-                    className="mt-0.5 shrink-0 text-[#007c98]"
-                  />
-                  <div>
-                    <p className={styles.detailBoxLabel}>
-                      Dirección de entrega
-                    </p>
-                    <p className={styles.detailBoxValue}>{pedido.domicilio}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-            {pedido.referencia_pago && (
-              <div className={styles.detailBoxRow}>
-                <p className={styles.detailBoxLabel}>Referencia de pago</p>
-                <p className={styles.detailBoxValue}>
-                  {pedido.referencia_pago}
-                </p>
-              </div>
-            )}
-            {pedido.observacion && (
-              <div className={styles.detailBoxRow}>
-                <p className={styles.detailBoxLabel}>Observación</p>
-                <p className={styles.detailBoxValue}>{pedido.observacion}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Resumen */}
-      <div>
-        <p className={styles.sectionLabel}>Resumen del pedido</p>
-        <div className={styles.summaryBox}>
-          <div className={styles.summaryRow}>
-            <span className={styles.summaryLabel}>Total</span>
-            <span className={styles.summaryAmount}>
-              {formatPortalCurrency(pedido.importe)}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PedidosSkeleton() {
-  return (
-    <div className="grid gap-4 lg:grid-cols-[400px_1fr] xl:grid-cols-[440px_1fr]">
-      <div className="flex flex-col gap-2.5">
-        <div className="h-11 animate-pulse rounded-xl bg-[#e6f7fb]/70" />
-        <div className="flex gap-2">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-9 w-24 animate-pulse rounded-full bg-[#e6f7fb]/70"
-            />
-          ))}
-        </div>
-        {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="h-22 animate-pulse rounded-xl bg-[#e6f7fb]/70"
-          />
-        ))}
-      </div>
-      <div className="h-130 animate-pulse rounded-2xl bg-[#e6f7fb]/70" />
-    </div>
-  );
-}
+const PAGE_SIZE = 8;
 
 export function SociosPedidosView() {
-  const [activeCanal, setActiveCanal] = useState<CanalTabKey>("TODOS");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pedidoId = searchParams.get("pedido");
+
+  const [activeCanal, setActiveCanal] = useState<PedidoCanalTab>("TODOS");
+  const [search, setSearch] = useState("");
+  const [activeFilter, setActiveFilter] = useState<PedidoEstadoFilter>("todos");
+  const [page, setPage] = useState(0);
+
   const { data, isLoading, error } = usePortalPedidos({
     enabled: true,
     limit: 20,
     canal: activeCanal === "TODOS" ? undefined : activeCanal,
   });
-  const allPedidos = data?.pedidos ?? [];
-  const total = data?.total ?? allPedidos.length;
+  const detalle = usePortalPedido(pedidoId);
 
+  // En escritorio el detalle reemplaza a la lista: llevar al inicio de la página.
+  useEffect(() => {
+    if (pedidoId && window.matchMedia("(min-width: 1024px)").matches) {
+      window.scrollTo(0, 0);
+    }
+  }, [pedidoId]);
 
-  const PAGE_SIZE = 7;
+  const allPedidos = useMemo(() => data?.pedidos ?? [], [data]);
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] = useState<FilterKey>("todos");
-  const [page, setPage] = useState(0);
-
-  const filteredPedidos = useMemo(() => {
-    return allPedidos.filter((p) => {
-      const q = search.toLowerCase();
-      const matchSearch =
-        !search ||
-        p.id_pedido.toLowerCase().includes(q) ||
-        (p.nombre_sucursal?.toLowerCase().includes(q) ?? false);
-      return matchSearch && matchesFilter(p, activeFilter);
-    });
-  }, [allPedidos, search, activeFilter]);
-
-  const totalPages = Math.ceil(filteredPedidos.length / PAGE_SIZE);
-  const pagedPedidos = filteredPedidos.slice(
-    page * PAGE_SIZE,
-    (page + 1) * PAGE_SIZE,
+  const filteredPedidos = useMemo(
+    () =>
+      allPedidos.filter(
+        (p) => matchesPedidoSearch(p, search) && matchesPedidoEstadoFilter(p, activeFilter),
+      ),
+    [allPedidos, search, activeFilter],
   );
 
-  const effectiveId =
-    selectedId && pagedPedidos.some((p) => p.id_pedido === selectedId)
-      ? selectedId
-      : (pagedPedidos[0]?.id_pedido ?? null);
+  // Solo los filtros de estado que tienen algún pedido ("Todos" siempre).
+  const estadoFilters = PEDIDO_ESTADO_FILTERS.filter(
+    (f) => f.value === "todos" || allPedidos.some((p) => matchesPedidoEstadoFilter(p, f.value)),
+  );
 
-  const selectedPedido =
-    pagedPedidos.find((p) => p.id_pedido === effectiveId) ?? null;
+  const totalPages = Math.ceil(filteredPedidos.length / PAGE_SIZE);
+  const pagedPedidos = filteredPedidos.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const groups = groupPedidosPorFecha(pagedPedidos);
 
-  const visibleFilters = FILTERS.filter(
-    (f) => f.key === "todos" || allPedidos.some((p) => matchesFilter(p, f.key)),
+  const closeDetalle = () => router.push(PEDIDOS_LIST_HREF, { scroll: false });
+
+  const titlebar = (
+    <PageTitlebar
+      title="Detalle del pedido"
+      backLabel="Volver a mis pedidos"
+      onBack={closeDetalle}
+    />
+  );
+
+  const detalleBody = detalle.isLoading ? (
+    <PedidoDetalleSkeleton />
+  ) : detalle.pedido ? (
+    <SociosPedidoDetalle pedido={detalle.pedido} />
+  ) : detalle.notFound ? (
+    <EmptyState
+      icon={ShoppingBag}
+      title="No encontramos este pedido"
+      text="Revisá que el link sea correcto o volvé a tus pedidos."
+    />
+  ) : (
+    <EmptyState
+      icon={ShoppingBag}
+      title="No pudimos cargar el pedido"
+      text="Intentá nuevamente en unos minutos."
+    />
   );
 
   return (
     <div className="flex flex-col gap-5 lg:gap-6">
-      {/* Header */}
-      <div className={styles.pageHeader}>
+      {/* Escritorio: vista completa del pedido (reemplaza a la lista) */}
+      {pedidoId && (
+        <div className="hidden flex-col gap-5 lg:flex">
+          {titlebar}
+          {detalleBody}
+        </div>
+      )}
+
+      {/* Lista: en escritorio se oculta mientras se ve un pedido (conserva filtros y pestaña) */}
+      <div className={`flex flex-col gap-5 lg:gap-6 ${pedidoId ? "lg:hidden" : ""}`}>
         <div>
           <h1 className={styles.pageTitle}>Mis pedidos</h1>
           <p className={styles.pageSubtitle}>
             Seguimiento del estado, preparación y entrega de tu pedido
           </p>
         </div>
-      </div>
 
-      {/* Pestañas por canal */}
-      <div className={styles.canalTabs} role="tablist" aria-label="Canal del pedido">
-        {CANAL_TABS.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            role="tab"
-            aria-selected={activeCanal === tab.key}
-            onClick={() => {
-              setActiveCanal(tab.key);
-              setActiveFilter("todos");
-              setPage(0);
-              setSelectedId(null);
-              setMobileDetailOpen(false);
-            }}
-            className={`${styles.canalTab} ${
-              activeCanal === tab.key ? styles.canalTabActive : ""
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+        <SegmentedControl
+          ariaLabel="Canal del pedido"
+          options={PEDIDO_CANAL_TAB_OPTIONS}
+          value={activeCanal}
+          onChange={(canal) => {
+            setActiveCanal(canal);
+            setActiveFilter("todos");
+            setPage(0);
+          }}
+        />
 
-      {isLoading ? (
-        <PedidosSkeleton />
-      ) : error ? (
-        <div className="rounded-xl border border-red-100 bg-red-50 p-5 text-sm text-red-700">
-          No pudimos cargar tus pedidos. Intenta nuevamente en unos minutos.
-        </div>
-      ) : allPedidos.length === 0 ? (
-        <div className="rounded-2xl border border-[#d5e4e8] bg-white">
-          <div className={styles.emptyPanel}>
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e6f7fb]">
-              <ShoppingBag size={28} className="text-[#007c98]/50" />
-            </div>
-            <p className={styles.emptyPanelTitle}>
-              {activeCanal === "TODOS"
+        {isLoading ? (
+          <PedidosSkeleton />
+        ) : error ? (
+          <Alert>No pudimos cargar tus pedidos. Intenta nuevamente en unos minutos.</Alert>
+        ) : allPedidos.length === 0 ? (
+          <EmptyState
+            icon={ShoppingBag}
+            title={
+              activeCanal === "TODOS"
                 ? "No hay pedidos registrados"
-                : `No tenés pedidos de ${PEDIDO_CANAL_LABELS[activeCanal]}`}
-            </p>
-            <p className={styles.emptyPanelText}>
-              {activeCanal === "TODOS"
+                : `No tenés pedidos de ${PEDIDO_CANAL_LABELS[activeCanal]}`
+            }
+            text={
+              activeCanal === "TODOS"
                 ? "Tus pedidos aparecerán aquí cuando realices una compra."
-                : "Mostramos los pedidos de los últimos 6 meses."}
-            </p>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="grid gap-4 lg:grid-cols-[400px_1fr] lg:items-start xl:grid-cols-[440px_1fr]">
-            {/* Panel izquierdo: lista */}
-            <div className="flex flex-col gap-3">
-              {/* Buscador */}
-              <div className="relative">
-                <Search
-                  size={16}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9bb3ba]"
-                />
-                <input
-                  type="search"
-                  placeholder="Buscar por número o sucursal..."
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
+                : "Mostramos los pedidos de los últimos 6 meses."
+            }
+          />
+        ) : (
+          <div className="flex flex-col gap-3 lg:gap-4">
+            {/* Buscador + filtros de estado */}
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+              <SearchInput
+                className="lg:w-96"
+                placeholder="Buscar por sucursal o producto..."
+                value={search}
+                onChange={(value) => {
+                  setSearch(value);
+                  setPage(0);
+                }}
+              />
+              {estadoFilters.length > 1 && (
+                <SegmentedControl
+                  variant="pills"
+                  className="lg:shrink-0"
+                  ariaLabel="Estado del pedido"
+                  options={estadoFilters}
+                  value={activeFilter}
+                  onChange={(filter) => {
+                    setActiveFilter(filter);
                     setPage(0);
-                    setSelectedId(null);
-                    setMobileDetailOpen(false);
                   }}
-                  className={styles.searchInput}
                 />
-              </div>
+              )}
+            </div>
 
-              {/* Filtros */}
-              {visibleFilters.length > 1 && (
-                <div className={styles.filterBar}>
-                  {visibleFilters.map((f) => (
-                    <button
-                      key={f.key}
-                      type="button"
-                      onClick={() => {
-                        setActiveFilter(f.key);
-                        setPage(0);
-                        setSelectedId(null);
-                        setMobileDetailOpen(false);
-                      }}
-                      className={`${styles.filterButton} ${
-                        activeFilter === f.key ? styles.filterButtonActive : ""
-                      }`}
-                    >
-                      {f.label}
-                    </button>
+            {pagedPedidos.length === 0 ? (
+              <p className="rounded-xl border border-[#d5e4e8] bg-white p-4 text-sm text-[#698088]">
+                No se encontraron pedidos con ese criterio.
+              </p>
+            ) : (
+              <>
+                {/* Celular: tarjetas */}
+                <div className="flex flex-col gap-2 lg:hidden">
+                  {pagedPedidos.map((p) => (
+                    <PedidoListCard key={p.id_pedido} pedido={p} />
                   ))}
                 </div>
-              )}
 
-              {/* Lista de pedidos */}
-              <div className="flex flex-col gap-2">
-                {pagedPedidos.length === 0 ? (
-                  <p className="rounded-xl border border-[#d5e4e8] bg-white p-4 text-sm text-[#698088]">
-                    No se encontraron pedidos con ese criterio.
-                  </p>
-                ) : (
-                  pagedPedidos.map((p) => (
-                    <PedidoListCard
-                      key={p.id_pedido}
-                      pedido={p}
-                      isSelected={p.id_pedido === effectiveId}
-                      onClick={() => {
-                        setSelectedId(p.id_pedido);
-                        setMobileDetailOpen(true);
-                      }}
-                    />
-                  ))
-                )}
-              </div>
-
-              {/* PaginaciÃ³n */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPage((p) => p - 1);
-                      setSelectedId(null);
-                    }}
-                    disabled={page === 0}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#d5e4e8] bg-white text-[#32505a] transition-colors hover:bg-[#e6f7fb] disabled:opacity-30"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => {
-                          setPage(i);
-                          setSelectedId(null);
-                        }}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
-                          i === page
-                            ? "bg-[#007c98] text-white"
-                            : "border border-[#d5e4e8] bg-white text-[#32505a] hover:bg-[#e6f7fb]"
-                        }`}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPage((p) => p + 1);
-                      setSelectedId(null);
-                    }}
-                    disabled={page === totalPages - 1}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#d5e4e8] bg-white text-[#32505a] transition-colors hover:bg-[#e6f7fb] disabled:opacity-30"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
+                {/* Escritorio: agrupado por día, estilo Mercado Libre */}
+                <div className="hidden flex-col gap-4 lg:flex">
+                  {groups.map((group) => (
+                    <PedidosFechaGroup key={group.fecha} fecha={group.fecha}>
+                      {group.pedidos.map((p) => (
+                        <PedidoListRow key={p.id_pedido} pedido={p} />
+                      ))}
+                    </PedidosFechaGroup>
+                  ))}
                 </div>
-              )}
-            </div>
-
-            {/* Panel derecho: detalle â€” solo visible en desktop */}
-            <div className={styles.desktopDetailOnly}>
-              <div className={styles.detailPanel}>
-                {selectedPedido ? (
-                  <PedidoDetail pedido={selectedPedido} />
-                ) : (
-                  <div className={styles.emptyPanel}>
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e6f7fb]">
-                      <ShoppingBag size={26} className="text-[#007c98]/45" />
-                    </div>
-                    <p className={styles.emptyPanelTitle}>
-                      Seleccioná un pedido para ver el detalle
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Drawer mobile: slide desde la derecha */}
-          <AnimatePresence>
-            {mobileDetailOpen && selectedPedido && (
-              <motion.div
-                className={styles.mobileDrawer}
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{
-                  type: "tween",
-                  ease: [0.32, 0.72, 0, 1],
-                  duration: 0.3,
-                }}
-              >
-                <div className={styles.mobileDrawerHeader}>
-                  <button
-                    type="button"
-                    onClick={() => setMobileDetailOpen(false)}
-                    className={styles.mobileDrawerBackBtn}
-                    aria-label="Volver a la lista"
-                  >
-                    <ChevronLeft size={22} />
-                  </button>
-                  <span className={styles.mobileDrawerTitle}>
-                    Detalle del pedido
-                  </span>
-                </div>
-                <div className={styles.mobileDrawerContent}>
-                  <PedidoDetail pedido={selectedPedido} />
-                </div>
-              </motion.div>
+              </>
             )}
-          </AnimatePresence>
-        </>
-      )}
+
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onChange={(next) => {
+                setPage(next);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Celular: el detalle se abre en un cajón sobre la lista */}
+      <PedidoDetalleDrawer open={Boolean(pedidoId)} header={titlebar}>
+        {detalleBody}
+      </PedidoDetalleDrawer>
     </div>
   );
 }

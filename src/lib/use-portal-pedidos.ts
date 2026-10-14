@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { PedidoCanal, PedidosResponse } from "@/types/portal-pedidos";
+import type {
+  PedidoCanal,
+  PedidoNormalizado,
+  PedidosResponse,
+} from "@/types/portal-pedidos";
 
 type UsePedidosOptions = {
   enabled?: boolean;
@@ -20,6 +24,15 @@ const pedidosCache = new Map<string, PedidosCacheEntry>();
 
 const getCacheKey = (limit: number, offset: number, canal?: PedidoCanal) =>
   `${limit}:${offset}:${canal ?? "TODOS"}`;
+
+/** Busca un pedido en cualquier listado ya cargado (para abrir el detalle sin esperar). */
+export const findPedidoEnCache = (idPedido: string): PedidoNormalizado | null => {
+  for (const entry of pedidosCache.values()) {
+    const found = entry.payload?.pedidos.find((p) => p.id_pedido === idPedido);
+    if (found) return found;
+  }
+  return null;
+};
 
 const getPedidosCacheEntry = (cacheKey: string): PedidosCacheEntry => {
   const existingEntry = pedidosCache.get(cacheKey);

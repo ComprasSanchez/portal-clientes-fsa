@@ -44,6 +44,10 @@ export type PedidosResponse = {
   total: number;
 };
 
+export type PedidoDetalleResponse = {
+  pedido: PedidoNormalizado;
+};
+
 export const PLEX_ESTADO_LABELS: Record<number, string> = {
   1: "Pendiente",
   2: "Rechazado",

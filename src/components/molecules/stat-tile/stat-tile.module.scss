@@ -1,0 +1,78 @@
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  border-radius: 1rem;
+  padding: 1.1rem 1.25rem;
+}
+
+/* ── Variantes ───────────────────────────────────────────────────────────── */
+
+/* Tarjeta blanca con borde. */
+.card {
+  border: 1px solid var(--tone-border);
+  background: #ffffff;
+  box-shadow: 0 10px 24px var(--tone-shadow);
+}
+
+/* Fondo suave del tema, sin borde (ej. Logística / Estado / Fecha en CORA). */
+.soft {
+  background: var(--tone-soft-hover);
+  padding: 1rem;
+}
+
+/* Destacada: degradé con el color del tema y texto blanco (ej. total del período). */
+.highlight {
+  background: linear-gradient(135deg, var(--tone-primary) 0%, var(--tone-primary-hover) 100%);
+
+  .label,
+  .hint {
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .value {
+    color: #ffffff;
+  }
+}
+
+/* ── Contenido ───────────────────────────────────────────────────────────── */
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--fs-socios-data-label, var(--fs-badge));
+  font-weight: var(--fw-socios-data-label, 600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tone-muted);
+}
+
+.soft .label {
+  letter-spacing: 0.12em;
+  color: var(--tone-primary);
+}
+
+.value {
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--tone-text);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.lg {
+  font-size: var(--fs-value-lg, 1.75rem);
+}
+
+.sm {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.hint {
+  font-size: var(--fs-socios-aux, var(--fs-badge));
+  font-weight: var(--fw-socios-aux, 400);
+  color: var(--tone-muted);
+}

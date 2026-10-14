@@ -4,6 +4,7 @@ import { ShoppingCart, Trash2, X } from "lucide-react";
 import styles from "./cartView.module.scss";
 import PortalButton from "@/components/atoms/button/button";
 import PriceTag from "@/components/atoms/price-tag/price-tag";
+import EmptyState from "@/components/molecules/empty-state/empty-state";
 import { formatPortalCurrency } from "@/lib/portal-compras";
 
 export type CartViewItem = {
@@ -61,12 +62,13 @@ export default function CartView({
         <section className={styles.body}>
           <div className={styles.card}>
             {items.length === 0 ? (
-              <div className={styles.emptyState}>
-                <p className={styles.emptyTitle}>No agregaste productos todavía</p>
-                <p className={styles.emptyText}>
-                  Cuando selecciones productos, los vas a ver acá.
-                </p>
-              </div>
+              <EmptyState
+                variant="plain"
+                tone="cora-portal"
+                icon={ShoppingCart}
+                title="No agregaste productos todavía"
+                text="Cuando selecciones productos, los vas a ver acá."
+              />
             ) : (
               items.map((item, index) => (
                 <div key={item.id} className={styles.itemWrapper}>
