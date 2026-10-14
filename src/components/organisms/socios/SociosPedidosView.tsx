@@ -86,7 +86,7 @@ export function SociosPedidosView() {
     />
   );
 
-  const detalleBody = detalle.isLoading ? (
+  const detalleBody = detalle.isLoading || (!detalle.pedido && isLoading) ? (
     <PedidoDetalleSkeleton />
   ) : detalle.pedido ? (
     <SociosPedidoDetalle pedido={detalle.pedido} />
