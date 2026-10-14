@@ -1,0 +1,17 @@
+.title {
+  font-size: var(--fs-socios-title-section, var(--fs-order-number));
+  font-family: var(--font-socios, "Poppins", "BD Supper", Arial, Helvetica, sans-serif);
+}
+
+.meta {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.date {
+  font-size: var(--fs-sm);
+  color: #698088;
+}

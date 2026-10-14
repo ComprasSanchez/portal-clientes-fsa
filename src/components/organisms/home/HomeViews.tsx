@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
+import Card from "@/components/atoms/card/card";
+import Badge from "@/components/atoms/badge/badge";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
 import {
@@ -375,7 +377,7 @@ export function HomeViews({
     if (!portalToken) {
       return (
         <main className={styles.container}>
-          <section className={styles.activeViewCard}>
+          <Card tone="cora" padding="lg">
             <h1 className={styles.activeViewTitle}>{active.title}</h1>
             <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -385,7 +387,7 @@ export function HomeViews({
             >
               Volver a Inicio
             </button>
-          </section>
+          </Card>
         </main>
       );
     }
@@ -457,9 +459,7 @@ export function HomeViews({
   if (currentView === "pedidos") {
     return (
       <main className={styles.container}>
-        <section
-          className={`${styles.activeViewCard} ${styles.trackingViewCard}`}
-        >
+        <section>
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -560,9 +560,7 @@ export function HomeViews({
   if (currentView === "pedido-actual") {
     return (
       <main className={styles.container}>
-        <section
-          className={`${styles.activeViewCard} ${styles.expedienteActualViewCard}`}
-        >
+        <section>
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -822,7 +820,7 @@ export function HomeViews({
   if (currentView !== "dashboard") {
     return (
       <main className={styles.container}>
-        <section className={styles.activeViewCard}>
+        <Card tone="cora" padding="lg">
           <h1 className={styles.activeViewTitle}>{active.title}</h1>
           <p className={styles.activeViewDescription}>{active.description}</p>
 
@@ -832,7 +830,7 @@ export function HomeViews({
           >
             Volver a Inicio
           </button>
-        </section>
+        </Card>
       </main>
     );
   }
@@ -905,7 +903,7 @@ export function HomeViews({
             />
           </article> */}
 
-          <article className={styles.panelCard}>
+          <Card tone="cora">
             <h2 className={styles.panelTitle}>Último pedido</h2>
             <p className={styles.panelSubtitle}>{latestOrderSubtitle}</p>
             <dl className={styles.orderList}>
@@ -927,7 +925,7 @@ export function HomeViews({
               <OrderRow
                 label="Estado"
                 value={
-                  <span className={styles.statusBadge}>
+                  <Badge color="warning">
                     {requiresAccountValidation
                       ? "Validar usuario"
                       : !hasCicloId
@@ -939,7 +937,7 @@ export function HomeViews({
                                 latestParentOrder.status
                               ] ?? latestParentOrder.status)
                             : TRACKING_LABELS[trackingStatus]}
-                  </span>
+                  </Badge>
                 }
               />
               <OrderRow
@@ -957,9 +955,9 @@ export function HomeViews({
               />
             </dl>
             <DetailButton onClick={() => onNavigate("pedidos")} />
-          </article>
+          </Card>
 
-          <article className={styles.panelCard}>
+          <Card tone="cora">
             <h2 className={styles.panelTitle}>Mi perfil</h2>
             <p className={styles.panelSubtitle}>
               Datos personales y de contacto
@@ -982,10 +980,10 @@ export function HomeViews({
               />
             </dl>
             <DetailButton onClick={() => onNavigate("mi-cuenta")} />
-          </article>
+          </Card>
 
           {activeExpediente?.nextActionAt ? (
-            <article className={`${styles.panelCard} ${styles.panelCardBell}`}>
+            <Card tone="cora" className={styles.panelCardBell}>
               <div className={styles.panelBellLayout}>
                 <Image
                   src={bellCoraIcon}
@@ -1018,7 +1016,7 @@ export function HomeViews({
                   ) : null}
                 </div>
               </div>
-            </article>
+            </Card>
           ) : null}
         </div>
       </section>

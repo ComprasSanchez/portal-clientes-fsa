@@ -1,0 +1,92 @@
+/* ── variant="segmented": pestañas dentro de una caja ─────────────────────── */
+
+.segmented {
+  display: flex;
+  gap: 0.25rem;
+  width: 100%;
+  max-width: 32rem;
+  padding: 0.25rem;
+  border: 1px solid var(--tone-border);
+  border-radius: 0.9rem;
+  background: var(--tone-soft-hover);
+}
+
+.segmented .option {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  border-radius: 0.7rem;
+  background: transparent;
+  padding: 0.55rem 0.5rem;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--tone-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    color: var(--tone-text);
+  }
+}
+
+.segmented .active {
+  background: #ffffff;
+  color: var(--tone-primary);
+  box-shadow: 0 1px 4px rgba(23, 52, 61, 0.12);
+
+  &:hover {
+    color: var(--tone-primary);
+  }
+}
+
+/* ── variant="pills": fila de pastillas con scroll horizontal ─────────────── */
+
+.pills {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.pills .option {
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid var(--tone-border);
+  background: #ffffff;
+  padding: 0.4rem 1rem;
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  color: var(--tone-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: var(--tone-soft-hover);
+    border-color: var(--tone-border-hover);
+  }
+
+  @media (min-width: 1024px) {
+    font-size: var(--fs-meta);
+    padding: 0.45rem 1.1rem;
+  }
+}
+
+.pills .active {
+  background: var(--tone-primary);
+  border-color: var(--tone-primary);
+  color: #ffffff;
+
+  &:hover {
+    background: var(--tone-primary-hover);
+    border-color: var(--tone-primary-hover);
+  }
+}

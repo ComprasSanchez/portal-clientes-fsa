@@ -200,25 +200,6 @@ $violeta-tinta: #4a2e73;
   }
 }
 
-.emptyState {
-  padding: 28px 20px;
-  text-align: center;
-}
-
-.emptyTitle {
-  margin: 0 0 8px;
-  color: $purple;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.emptyText {
-  margin: 0;
-  color: $text-soft;
-  font-size: 0.94rem;
-  line-height: 1.4;
-}
-
 @media (min-width: 481px) {
   .container {
     padding: 28px 20px 40px;

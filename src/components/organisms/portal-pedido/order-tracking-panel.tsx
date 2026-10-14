@@ -1,11 +1,13 @@
 "use client";
 
 import PortalButton from "@/components/atoms/button/button";
+import StatTile from "@/components/molecules/stat-tile/stat-tile";
+import Timeline from "@/components/molecules/timeline/timeline";
 import {
+  getTrackingTimelineSteps,
   PARENT_ORDER_STATUS_LABELS,
   ParentOrder,
   TRACKING_LABELS,
-  TRACKING_STATUS_SEQUENCE,
   TrackingOrderStatus,
 } from "@/lib/order-tracking";
 import { Calendar, CheckCircle2, Clock, Package, Truck } from "lucide-react";
@@ -44,39 +46,38 @@ export function OrderTrackingPanel({
       </div>
 
       <div className="grid gap-3 text-left sm:grid-cols-3">
-        <div className="rounded-2xl bg-[#F7F3FB] p-4">
-          <div className="mb-2 flex items-center gap-2 text-[#8C6FAF]">
-            <Truck size={18} />
-            <span className="cora-data-label uppercase tracking-[0.12em]">Logística</span>
-          </div>
-          <p className="cora-card-subtitle text-[#8C6FAF]">{TRACKING_LABELS[trackingStatus]}</p>
-        </div>
-
-        <div className="rounded-2xl bg-[#F7F3FB] p-4">
-          <div className="mb-2 flex items-center gap-2 text-[#8C6FAF]">
-            <Clock size={18} />
-            <span className="cora-data-label uppercase tracking-[0.12em]">Estado</span>
-          </div>
-          <p className="cora-card-subtitle text-[#8C6FAF]">
-            {latestParentOrder.status
+        <StatTile
+          variant="soft"
+          size="sm"
+          tone="cora-portal"
+          icon={<Truck size={18} />}
+          label="Logística"
+          value={TRACKING_LABELS[trackingStatus]}
+        />
+        <StatTile
+          variant="soft"
+          size="sm"
+          tone="cora-portal"
+          icon={<Clock size={18} />}
+          label="Estado"
+          value={
+            latestParentOrder.status
               ? (PARENT_ORDER_STATUS_LABELS[latestParentOrder.status] ?? latestParentOrder.status)
-              : "Registrado"}
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-[#F7F3FB] p-4">
-          <div className="mb-2 flex items-center gap-2 text-[#8C6FAF]">
-            <Calendar size={18} />
-            <span className="cora-data-label uppercase tracking-[0.12em]">Fecha</span>
-          </div>
-          <p className="cora-card-subtitle text-[#8C6FAF]">
-            {new Date().toLocaleDateString("es-AR", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
-        </div>
+              : "Registrado"
+          }
+        />
+        <StatTile
+          variant="soft"
+          size="sm"
+          tone="cora-portal"
+          icon={<Calendar size={18} />}
+          label="Fecha"
+          value={new Date().toLocaleDateString("es-AR", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}
+        />
       </div>
 
       <div className="rounded-3xl border border-[#8C6FAF]/10 bg-white p-5 text-left">
@@ -84,35 +85,11 @@ export function OrderTrackingPanel({
           <Package size={18} />
           <p className="cora-data-label uppercase tracking-[0.12em]">Seguimiento</p>
         </div>
-
-        <div className="space-y-3">
-          {TRACKING_STATUS_SEQUENCE.slice(1).map((status) => {
-            const active =
-              TRACKING_STATUS_SEQUENCE.indexOf(trackingStatus) >=
-              TRACKING_STATUS_SEQUENCE.indexOf(status);
-
-            return (
-              <div key={status} className="flex items-center gap-3">
-                <div
-                  className={`flex h-7 w-7 items-center justify-center rounded-full border ${
-                    active
-                      ? "border-[#8C6FAF] bg-[#8C6FAF] text-white"
-                      : "border-[#8C6FAF]/20 bg-white text-[#8C6FAF]/35"
-                  }`}
-                >
-                  <CheckCircle2 size={14} />
-                </div>
-                <p
-                  className={`cora-read ${
-                    active ? "font-semibold text-[#8C6FAF]" : "text-[#8C6FAF]/55"
-                  }`}
-                >
-                  {TRACKING_LABELS[status]}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+        <Timeline
+          variant="compact"
+          tone="cora-portal"
+          steps={getTrackingTimelineSteps(trackingStatus)}
+        />
       </div>
 
       {onRefresh ? (

@@ -769,16 +769,10 @@ export default function PortalCliente({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      void handleSearch(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
+  const handlePageChange = (page: number) => {
     const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
-    if (currentPage < totalPages) {
-      void handleSearch(currentPage + 1);
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+      void handleSearch(page);
     }
   };
 
@@ -1244,8 +1238,7 @@ export default function PortalCliente({
             isProductSelected={isProductSelected}
             getProductQuantity={getProductQuantity}
             onChangeProductQuantity={handleChangeProductQuantity}
-            onPrevPage={handlePrevPage}
-            onNextPage={handleNextPage}
+            onPageChange={handlePageChange}
             onContinue={handleContinueToDelivery}
             onContactAdvisor={() => {
               void handleContactAdvisor();

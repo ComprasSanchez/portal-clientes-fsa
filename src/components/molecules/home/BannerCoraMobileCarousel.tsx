@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import bannerCoraMobile2 from "@/assets/cora/banners/banners mobile-02.jpg";
@@ -9,7 +9,14 @@ import bannerCoraMobile3 from "@/assets/cora/banners/banners mobile-03.jpg";
 import bannerCoraMobile4 from "@/assets/cora/banners/banners mobile-04.jpg";
 import styles from "./BannerCoraCarousel.module.scss";
 
-const SLIDES = [
+type Slide = {
+  src: StaticImageData;
+  alt: string;
+  /** Si viene, el banner es clickeable. */
+  href: string | null;
+};
+
+const SLIDES: Slide[] = [
   {
     src: bannerCoraMobile3,
     alt: "CORA es para vos",
@@ -73,6 +80,8 @@ export function BannerCoraMobileCarousel() {
     return () => clearInterval(id);
   }, [isPaused]);
 
+  const slide = SLIDES[current];
+
   return (
     <div
       className={styles.carousel}
@@ -107,11 +116,11 @@ export function BannerCoraMobileCarousel() {
             onDragStart={() => setIsPaused(true)}
             onDragEnd={handleDragEnd}
           >
-            {SLIDES[current].href ? (
-              <Link href={SLIDES[current].href} className={styles.slideLink}>
+            {slide.href ? (
+              <Link href={slide.href} className={styles.slideLink}>
                 <Image
-                  src={SLIDES[current].src}
-                  alt={SLIDES[current].alt}
+                  src={slide.src}
+                  alt={slide.alt}
                   fill
                   draggable={false}
                   sizes="100vw"
@@ -120,9 +129,9 @@ export function BannerCoraMobileCarousel() {
                 />
               </Link>
             ) : (
-              <Image  
-                src={SLIDES[current].src}
-                alt={SLIDES[current].alt}
+              <Image
+                src={slide.src}
+                alt={slide.alt}
                 fill
                 draggable={false}
                 sizes="100vw"
@@ -136,9 +145,9 @@ export function BannerCoraMobileCarousel() {
 
       {SLIDES.length > 1 ? (
         <div className={styles.dots} role="tablist">
-          {SLIDES.map((slide, i) => (
+          {SLIDES.map((item, i) => (
             <button
-              key={slide.alt}
+              key={item.alt}
               type="button"
               role="tab"
               aria-selected={i === current}

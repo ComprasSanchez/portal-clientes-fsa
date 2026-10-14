@@ -1,3 +1,5 @@
+import type { TimelineStep } from "@/components/molecules/timeline/timeline";
+
 export type ParentOrder = {
   id: string;
   code?: string | null;
@@ -105,3 +107,13 @@ export const PARENT_ORDER_STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Cancelado",
   REJECTED: "Rechazado",
 };
+
+/** Pasos del seguimiento logístico listos para `<Timeline />` (sin "pendiente"). */
+export function getTrackingTimelineSteps(trackingStatus: TrackingOrderStatus): TimelineStep[] {
+  const current = TRACKING_STATUS_SEQUENCE.indexOf(trackingStatus);
+  return TRACKING_STATUS_SEQUENCE.slice(1).map((status) => ({
+    key: status,
+    label: TRACKING_LABELS[status],
+    state: current >= TRACKING_STATUS_SEQUENCE.indexOf(status) ? "done" : "pending",
+  }));
+}

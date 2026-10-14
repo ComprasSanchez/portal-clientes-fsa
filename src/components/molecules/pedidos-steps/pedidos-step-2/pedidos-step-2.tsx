@@ -1,13 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { ArrowLeft, Plus } from "lucide-react";
+import { MapPin, Plus } from "lucide-react";
+import BackButton from "@/components/atoms/back-button/back-button";
+import EmptyState from "@/components/molecules/empty-state/empty-state";
 import PortalStepper from "../../stepper/stepper";
 import PortalButton from "@/components/atoms/button/button";
+import Pagination from "@/components/molecules/pagination/pagination";
 import AddressSelector, {
   AddressItem,
 } from "../../address-selector/address-selector";
-import PortalInput from "../../portal-input/input";
+import SearchInput from "@/components/molecules/search-input/search-input";
 import type {
   Domicilio,
   OccasionalAddress,
@@ -254,14 +257,7 @@ const PedidosStep2 = ({
       <div className="w-full p-5">
         <h4 className="flex items-center justify-center gap-2 pt-6 text-[#8C6FAF] text-bold text-[22px]">
           {onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              aria-label="Volver"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#ddd6eb] bg-white text-[#8C6FAF] transition hover:border-[#c4b5e0] hover:bg-[#f7f2ff]"
-            >
-              <ArrowLeft size={20} />
-            </button>
+            <BackButton variant="boxed" tone="cora-portal" ariaLabel="Volver" onClick={onBack} />
           )}
           Coordinamos tu entrega
         </h4>
@@ -293,14 +289,7 @@ const PedidosStep2 = ({
           <div className="flex flex-col">
             <p className="flex items-center justify-center gap-2 text-center text-[#8C6FAF] text-bold text-[18px]">
               {deliveryMethod === "domicilio" && addressMode === "ocasional" && (
-                <button
-                  type="button"
-                  onClick={() => setAddressMode("guardado")}
-                  aria-label="Volver a domicilios guardados"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-[#ddd6eb] bg-white text-[#8C6FAF] transition hover:border-[#c4b5e0] hover:bg-[#f7f2ff]"
-                >
-                  <ArrowLeft size={18} />
-                </button>
+                <BackButton variant="boxed" tone="cora-portal" size="sm" ariaLabel="Volver a domicilios guardados" onClick={() => setAddressMode("guardado")} />
               )}
               {deliveryMethod === "domicilio"
                 ? "¿Dónde lo querés recibir?"
@@ -433,12 +422,14 @@ const PedidosStep2 = ({
             </>
           ) : (
             <>
-              <PortalInput
-                label="Buscar sucursal"
-                variant="search"
+              <SearchInput
+                tone="cora-portal"
+                size="lg"
+                ariaLabel="Buscar sucursal"
                 value={sucursalSearchQuery}
                 placeholder="Buscá por nombre, dirección o número"
                 onChange={setSucursalSearchQuery}
+                onClear={() => setSucursalSearchQuery("")}
               />
 
               {filteredSucursalItems.length > 0 ? (
@@ -449,36 +440,21 @@ const PedidosStep2 = ({
                     onSelect={(id) => setCurrentSucursalId(id)}
                   />
 
-                  <div className="flex items-center justify-between rounded-3xl bg-white p-4 text-sm text-[#8C6FAF] shadow-sm">
-                    <p>
-                      Página {sucursalPage} de {totalSucursalPages} ({filteredSucursalItems.length} sucursales)
-                    </p>
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        className="rounded-full border border-[#8C6FAF] px-4 py-2 disabled:opacity-50"
-                        onClick={() => setSucursalPage((current) => Math.max(1, current - 1))}
-                        disabled={sucursalPage <= 1}
-                      >
-                        Anterior
-                      </button>
-                      <button
-                        type="button"
-                        className="rounded-full border border-[#8C6FAF] px-4 py-2 disabled:opacity-50"
-                        onClick={() =>
-                          setSucursalPage((current) => Math.min(totalSucursalPages, current + 1))
-                        }
-                        disabled={sucursalPage >= totalSucursalPages}
-                      >
-                        Siguiente
-                      </button>
-                    </div>
-                  </div>
+                  {/* sucursalPage empieza en 1; Pagination en 0. */}
+                  <Pagination
+                    tone="cora-portal"
+                    page={sucursalPage - 1}
+                    totalPages={totalSucursalPages}
+                    onChange={(next) => setSucursalPage(next + 1)}
+                    summary={`${filteredSucursalItems.length} sucursales`}
+                  />
                 </>
               ) : (
-                <div className="rounded-3xl bg-white p-5 text-center text-[#8C6FAF] shadow-sm">
-                  No encontramos sucursales para esa búsqueda.
-                </div>
+                <EmptyState
+                  tone="cora-portal"
+                  icon={MapPin}
+                  text="No encontramos sucursales para esa búsqueda."
+                />
               )}
             </>
           )}

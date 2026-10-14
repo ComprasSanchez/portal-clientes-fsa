@@ -1,0 +1,67 @@
+/* Tarjeta de pedido para celular. */
+
+.card {
+  display: block;
+  width: 100%;
+  border-radius: 0.9rem;
+  border: 1px solid #d5e4e8;
+  background: #ffffff;
+  padding: 1rem 1.1rem;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover,
+  &:active {
+    border-color: #9bc8d2;
+    background: #f9fcfd;
+  }
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.estado {
+  font-size: var(--fs-socios-card-subtitle, var(--fs-body));
+}
+
+.date {
+  margin-top: 0.3rem;
+  font-size: var(--fs-socios-aux, var(--fs-sm));
+  font-weight: var(--fw-socios-aux, 400);
+  color: #698088;
+}
+
+.bottomRow {
+  margin-top: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.meta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--fs-socios-aux, var(--fs-sm));
+  font-weight: var(--fw-socios-aux, 400);
+  color: #5f7c85;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.amount {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: #17343d;
+  white-space: nowrap;
+}

@@ -1,0 +1,28 @@
+/* Cajón del celular que entra desde la derecha con el detalle del pedido. */
+
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #f3f8f9;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  will-change: transform;
+
+  @media (min-width: 1024px) {
+    display: none;
+  }
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f3f8f9;
+  border-bottom: 1px solid #d5e4e8;
+  padding: 0.875rem 1.25rem;
+}
+
+.content {
+  padding: 1.25rem 1rem 3rem;
+}
