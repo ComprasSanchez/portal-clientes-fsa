@@ -3,14 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Bell } from "lucide-react";
 import { usePortalNotificacionesContext } from "@/lib/portal-notificaciones-context";
+import { toneClass, type UiTone } from "@/types/ui-tone";
 import { NotificationListItem } from "./NotificationListItem";
 
 type NotificationBellProps = {
   /** Si viene, tocar la campana navega a la pantalla de notificaciones en vez de abrir el dropdown (uso mobile). */
   onOpenInbox?: () => void;
+  tone?: UiTone;
 };
 
-export function NotificationBell({ onOpenInbox }: NotificationBellProps) {
+export function NotificationBell({ onOpenInbox, tone = "cora" }: NotificationBellProps) {
   const { notificaciones, unreadCount, isLoading, markAsRead } =
     usePortalNotificacionesContext();
   const [open, setOpen] = useState(false);
@@ -33,7 +35,7 @@ export function NotificationBell({ onOpenInbox }: NotificationBellProps) {
   }, [open]);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className={`relative ${toneClass(tone)}`}>
       <button
         type="button"
         onClick={() => {
@@ -43,7 +45,7 @@ export function NotificationBell({ onOpenInbox }: NotificationBellProps) {
           }
           setOpen((prev) => !prev);
         }}
-        className="relative rounded-lg p-2 text-[#6f7085] transition-colors hover:bg-[#f2f0f7]"
+        className="relative rounded-lg p-2 text-(--tone-muted) transition-colors hover:bg-(--tone-soft)"
         aria-label="Notificaciones"
       >
         <Bell size={20} />
@@ -55,22 +57,22 @@ export function NotificationBell({ onOpenInbox }: NotificationBellProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[90vw] rounded-xl border border-[#e6e1ef] bg-white shadow-[0_16px_40px_rgba(47,48,66,0.18)]">
-          <div className="border-b border-[#e6e1ef] px-4 py-3">
-            <span className="text-sm font-semibold text-[#2f3042]">
+        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[90vw] rounded-xl border border-(--tone-border) bg-white shadow-[0_16px_40px_rgba(47,48,66,0.18)]">
+          <div className="border-b border-(--tone-border) px-4 py-3">
+            <span className="text-sm font-semibold text-(--tone-text)">
               Notificaciones
             </span>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
             {isLoading && notificaciones.length === 0 && (
-              <p className="px-4 py-6 text-center text-sm text-[#7d7e96]">
+              <p className="px-4 py-6 text-center text-sm text-(--tone-muted)">
                 Cargando...
               </p>
             )}
 
             {!isLoading && notificaciones.length === 0 && (
-              <p className="px-4 py-6 text-center text-sm text-[#7d7e96]">
+              <p className="px-4 py-6 text-center text-sm text-(--tone-muted)">
                 No tenés notificaciones todavía.
               </p>
             )}
@@ -79,6 +81,7 @@ export function NotificationBell({ onOpenInbox }: NotificationBellProps) {
               <NotificationListItem
                 key={item.id}
                 item={item}
+                tone={tone}
                 onMarkAsRead={markAsRead}
                 onNavigateAway={() => setOpen(false)}
               />

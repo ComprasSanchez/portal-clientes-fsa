@@ -33,6 +33,7 @@ import { ProfileView } from "@/components/organisms/profile/ProfileView";
 import { SociosSorteosView } from "./SociosSorteosView";
 import { SociosSucursalesView } from "./SociosSucursalesView";
 import { SociosPedidosView } from "./SociosPedidosView";
+import { NotificacionesView } from "@/components/organisms/notificaciones/NotificacionesView";
 import { SociosColaboradorVentasView } from "./SociosColaboradorVentasView";
 import { SociosColaboradorAplicacionesView } from "./SociosColaboradorAplicacionesView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
@@ -83,6 +84,10 @@ const viewContent: Record<
   pedidos: {
     title: "Mis pedidos",
     description: "Seguimiento del estado, preparacion y entrega de tu pedido.",
+  },
+  notificaciones: {
+    title: "Notificaciones",
+    description: "Todas tus novedades, organizadas por categoría.",
   },
   facturas: {
     title: "Historial de compra",
@@ -293,6 +298,14 @@ export function SociosViews({
     );
   }
 
+  if (currentView === "notificaciones") {
+    return (
+      <main className={styles.container}>
+        <NotificacionesView tone="socios" onBack={() => onNavigate("dashboard")} />
+      </main>
+    );
+  }
+
   if (currentView === "colaboradores-ventas") {
     return (
       <main className={styles.container}>
@@ -479,17 +492,7 @@ export function SociosViews({
             </div>
 
             <div className={styles.facturasLayout}>
-              <Card>
-                <div className={styles.facturasHeaderRow}>
-                  <div>
-                    <h2 className={styles.panelTitle}>Mis compras</h2>
-                    <p className={styles.panelSubtitle}>
-                      Facturas agrupadas por comprobante con sus lineas de
-                      detalle.
-                    </p>
-                  </div>
-                </div>
-
+              <div>
                 {comprasError ? (
                   <Alert className="mt-4">
                     No pudimos cargar el listado de facturas para este cliente.
@@ -502,7 +505,6 @@ export function SociosViews({
                   </div>
                 ) : allComprobantes.length === 0 ? (
                   <EmptyState
-                    variant="plain"
                     icon={Receipt}
                     text="No encontramos comprobantes para este cliente por el momento."
                   />
@@ -621,7 +623,7 @@ export function SociosViews({
                     onChange={setFacturasPage}
                   />
                 ) : null}
-              </Card>
+              </div>
             </div>
           </section>
         </main>

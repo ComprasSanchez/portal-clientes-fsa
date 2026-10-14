@@ -1,5 +1,6 @@
 import { Megaphone, Package, Percent, ShoppingBag, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { PortalNotificacionItem } from "@/types/portal-notificaciones";
 
 export type NotificationCategoryKey =
   | "CORA"
@@ -36,4 +37,24 @@ export const resolveNotificationCategory = (
 ): NotificationCategoryKey => {
   const match = NOTIFICATION_CATEGORIES.find((c) => c.key === category);
   return match ? match.key : DEFAULT_NOTIFICATION_CATEGORY;
+};
+
+/** Agrupa las notificaciones por categoría (todas las categorías presentes, aunque estén vacías). */
+export function groupNotificacionesPorCategoria(
+  notificaciones: PortalNotificacionItem[],
+): Map<NotificationCategoryKey, PortalNotificacionItem[]> {
+  const map = new Map<NotificationCategoryKey, PortalNotificacionItem[]>();
+  for (const category of NOTIFICATION_CATEGORIES) {
+    map.set(category.key, []);
+  }
+  for (const item of notificaciones) {
+    map.get(resolveNotificationCategory(item.category))?.push(item);
+  }
+  return map;
+}
+
+/** Texto de la última novedad de una categoría para mostrar de vista previa. */
+export const getNotificacionPreview = (items: PortalNotificacionItem[]): string => {
+  const latest = items[0];
+  return latest ? (latest.title ?? latest.body ?? "Nueva novedad") : "Sin novedades por ahora";
 };
