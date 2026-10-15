@@ -1,0 +1,61 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.title {
+  font-size: var(--fs-page-title);
+  font-weight: 700;
+  color: var(--tone-text);
+}
+
+/* Tipografía de cada app para el título y la descripción. */
+.socios {
+  .title {
+    font-family: var(--font-socios, inherit);
+    font-size: var(--fs-socios-title-page, var(--fs-page-title));
+    font-weight: var(--fw-socios-title-page, 700);
+  }
+
+  .description {
+    font-size: var(--fs-socios-read, var(--fs-description));
+    font-weight: var(--fw-socios-read, 400);
+  }
+}
+
+.cora {
+  .title {
+    font-family: var(--font-cora-title, inherit);
+    font-size: var(--fs-cora-title-page, var(--fs-page-title));
+    font-weight: var(--fw-cora-title-page, 700);
+    color: var(--tone-primary);
+  }
+
+  .description {
+    font-family: var(--font-cora-body, inherit);
+    font-size: var(--fs-cora-read, var(--fs-sm));
+    font-weight: var(--fw-cora-read, 400);
+  }
+}
+
+.description {
+  max-width: 42rem;
+  color: var(--tone-muted);
+}
+
+.categories {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Lista de notificaciones de una categoría. */
+.list {
+  margin-top: 0.75rem;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--tone-border);
+  background: #ffffff;
+}

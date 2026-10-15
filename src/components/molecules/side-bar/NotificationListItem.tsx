@@ -1,6 +1,9 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
+import Badge from "@/components/atoms/badge/badge";
+import { getNotificationCategoryConfig } from "@/lib/notification-categories";
+import { toneClass, type UiTone } from "@/types/ui-tone";
 import type { PortalNotificacionItem } from "@/types/portal-notificaciones";
 
 export const formatRelativeTime = (iso: string): string => {
@@ -23,14 +26,20 @@ type NotificationListItemProps = {
   onMarkAsRead: (id: string) => void;
   /** Se llama antes de navegar por `actionUrl` (ej. cerrar el dropdown de desktop). */
   onNavigateAway?: () => void;
+  tone?: UiTone;
+  /** Muestra la etiqueta de la categoría (Breve, CORA...) — para listados que mezclan categorías. */
+  showCategory?: boolean;
 };
 
 export function NotificationListItem({
   item,
   onMarkAsRead,
   onNavigateAway,
+  tone = "cora",
+  showCategory = false,
 }: NotificationListItemProps) {
   const isUnread = item.status !== "READ";
+  const category = showCategory ? getNotificationCategoryConfig(item.category) : null;
 
   return (
     <button
@@ -42,27 +51,30 @@ export function NotificationListItem({
           window.location.href = item.actionUrl;
         }
       }}
-      className={`flex w-full flex-col gap-1 border-b border-[#f2f0f7] px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-[#f8f7fc] ${
-        isUnread ? "bg-[#f5f0fc]" : ""
+      className={`${toneClass(tone)} flex w-full flex-col gap-1 border-b border-(--tone-soft) px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-(--tone-soft-hover) ${
+        isUnread ? "bg-(--tone-soft-hover)" : ""
       }`}
     >
       <div className="flex items-center gap-2">
-        {isUnread && (
-          <span className="h-2 w-2 shrink-0 rounded-full bg-[#8f63d9]" />
-        )}
-        <span className="flex-1 text-sm font-semibold text-[#2f3042]">
+        {isUnread && <span className="h-2 w-2 shrink-0 rounded-full bg-(--tone-primary)" />}
+        <span className="flex-1 text-sm font-semibold text-(--tone-text)">
           {item.title ?? "Notificación"}
         </span>
         {item.actionUrl && (
-          <ChevronRight size={16} className="shrink-0 text-[#8f63d9]" />
+          <ChevronRight size={16} className="shrink-0 text-(--tone-primary)" />
         )}
       </div>
-      {item.body && (
-        <span className="text-sm text-[#6f7085]">{item.body}</span>
-      )}
-      <span className="text-xs text-[#a3a4b8]">
-        {formatRelativeTime(item.createdAt)}
-      </span>
+      {item.body && <span className="text-sm text-(--tone-muted)">{item.body}</span>}
+      <div className="flex items-center gap-2">
+        {category && (
+          <Badge color={category.badge.color} tone={category.badge.tone}>
+            {category.label}
+          </Badge>
+        )}
+        <span className="text-xs text-(--tone-placeholder)">
+          {formatRelativeTime(item.createdAt)}
+        </span>
+      </div>
     </button>
   );
 }

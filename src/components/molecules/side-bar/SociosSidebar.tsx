@@ -146,7 +146,8 @@ export function SociosSidebar({
             />
           </button>
           <NotificationBell
-            onOpenInbox={() => router.push("/cora?view=notificaciones")}
+            tone="socios"
+            onOpenInbox={() => handleNavigate("notificaciones")}
           />
         </div>
       </div>

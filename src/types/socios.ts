@@ -6,6 +6,7 @@ export type SociosView =
   | "sorteos"
   | "sucursales"
   | "pedidos"
+  | "notificaciones"
   | "colaboradores-ventas"
   | "colaboradores-aplicaciones";
 

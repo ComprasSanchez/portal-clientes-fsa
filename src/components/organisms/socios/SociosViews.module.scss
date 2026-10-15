@@ -169,13 +169,6 @@
   gap: 1rem;
 }
 
-.facturasHeaderRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
 .facturasHeaderMetric {
   min-width: 10rem;
   border-radius: 0.9rem;
@@ -200,16 +193,17 @@
 }
 
 .facturasList {
-  margin-top: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
+/* Cada factura va directo sobre el fondo de la página (sin tarjeta contenedora). */
 .facturaCard {
   border-radius: 1rem;
   border: 1px solid #d5e4e8;
-  background: #fbfdfd;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 68, 84, 0.05);
 
   &[open] {
     border-color: #9bc8d2;
@@ -548,10 +542,6 @@
     max-width: 30rem;
     font-size: var(--fs-subtitle);
     line-height: 1.45;
-  }
-
-  .facturasHeaderRow {
-    gap: 0.85rem;
   }
 
   .facturasHeaderMetric {

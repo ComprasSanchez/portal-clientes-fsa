@@ -17,7 +17,7 @@ import {
 } from "@/types/socios";
 
 const DEFAULT_VIEW: SociosView = "dashboard";
-const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", ...COLABORADORES_VIEWS];
+const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", "notificaciones", ...COLABORADORES_VIEWS];
 // Links viejos (?view=colaboradores) de antes de separar Ventas / Aplicaciones FSA.
 const VIEW_ALIASES: Record<string, SociosView> = {
   colaboradores: "colaboradores-ventas",
@@ -178,7 +178,7 @@ export function SociosPageClient() {
       )}
 
       <div className="fixed right-6 top-6 z-40 hidden lg:flex">
-        <NotificationBell />
+        <NotificationBell tone="socios" />
       </div>
 
       <SociosSidebar
@@ -189,7 +189,7 @@ export function SociosPageClient() {
         esColaborador={esColaborador}
       />
 
-      <div className="flex min-h-[calc(100vh-4rem)] flex-col pt-16 transition-all duration-300 lg:ml-64 lg:min-h-screen lg:pt-0">
+      <div className="flex min-h-dvh flex-col pt-16 transition-all duration-300 lg:ml-64 lg:pt-0">
         <SociosViews
           currentView={
             isColaboradoresView(currentView) && !esColaborador ? DEFAULT_VIEW : currentView
