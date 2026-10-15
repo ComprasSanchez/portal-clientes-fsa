@@ -1,6 +1,8 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
+import Badge from "@/components/atoms/badge/badge";
+import { getNotificationCategoryConfig } from "@/lib/notification-categories";
 import { toneClass, type UiTone } from "@/types/ui-tone";
 import type { PortalNotificacionItem } from "@/types/portal-notificaciones";
 
@@ -25,6 +27,8 @@ type NotificationListItemProps = {
   /** Se llama antes de navegar por `actionUrl` (ej. cerrar el dropdown de desktop). */
   onNavigateAway?: () => void;
   tone?: UiTone;
+  /** Muestra la etiqueta de la categoría (Breve, CORA...) — para listados que mezclan categorías. */
+  showCategory?: boolean;
 };
 
 export function NotificationListItem({
@@ -32,8 +36,10 @@ export function NotificationListItem({
   onMarkAsRead,
   onNavigateAway,
   tone = "cora",
+  showCategory = false,
 }: NotificationListItemProps) {
   const isUnread = item.status !== "READ";
+  const category = showCategory ? getNotificationCategoryConfig(item.category) : null;
 
   return (
     <button
@@ -59,9 +65,16 @@ export function NotificationListItem({
         )}
       </div>
       {item.body && <span className="text-sm text-(--tone-muted)">{item.body}</span>}
-      <span className="text-xs text-(--tone-placeholder)">
-        {formatRelativeTime(item.createdAt)}
-      </span>
+      <div className="flex items-center gap-2">
+        {category && (
+          <Badge color={category.badge.color} tone={category.badge.tone}>
+            {category.label}
+          </Badge>
+        )}
+        <span className="text-xs text-(--tone-placeholder)">
+          {formatRelativeTime(item.createdAt)}
+        </span>
+      </div>
     </button>
   );
 }

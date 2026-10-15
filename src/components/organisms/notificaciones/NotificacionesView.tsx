@@ -100,6 +100,7 @@ export function NotificacionesView({ onBack, tone = "cora" }: NotificacionesView
               label={category.label}
               icon={category.icon}
               color={category.color}
+              iconBackground={category.iconBackground}
               unread={items.filter((item) => item.status !== "READ").length}
               preview={getNotificacionPreview(items)}
               onClick={() => setSelectedCategory(category.key)}
