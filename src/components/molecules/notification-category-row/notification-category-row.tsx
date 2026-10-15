@@ -7,6 +7,8 @@ type NotificationCategoryRowProps = {
   icon: LucideIcon;
   /** Color propio de la categoría (ícono y su círculo de fondo). */
   color: string;
+  /** Fondo del círculo del ícono. Sin valor: `color` translúcido. */
+  iconBackground?: string;
   unread: number;
   /** Texto de la última novedad de la categoría. */
   preview: string;
@@ -19,6 +21,7 @@ export function NotificationCategoryRow({
   label,
   icon: Icon,
   color,
+  iconBackground,
   unread,
   preview,
   onClick,
@@ -26,7 +29,10 @@ export function NotificationCategoryRow({
 }: NotificationCategoryRowProps) {
   return (
     <button type="button" onClick={onClick} className={`${styles.row} ${toneClass(tone)}`}>
-      <div className={styles.icon} style={{ backgroundColor: `${color}1a`, color }}>
+      <div
+        className={styles.icon}
+        style={{ backgroundColor: iconBackground ?? `${color}1a`, color }}
+      >
         <Icon size={20} />
       </div>
       <div className={styles.texts}>

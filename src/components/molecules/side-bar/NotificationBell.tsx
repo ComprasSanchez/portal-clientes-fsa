@@ -82,6 +82,7 @@ export function NotificationBell({ onOpenInbox, tone = "cora" }: NotificationBel
                 key={item.id}
                 item={item}
                 tone={tone}
+                showCategory
                 onMarkAsRead={markAsRead}
                 onNavigateAway={() => setOpen(false)}
               />
