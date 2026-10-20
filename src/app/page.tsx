@@ -15,6 +15,7 @@ type HomePageProps = {
     convenio?: string | string[];
     canal?: string | string[];
     redirectTo?: string | string[];
+    sessionExpired?: string | string[];
   }>;
 };
 
@@ -60,12 +61,19 @@ export default async function Home({ searchParams }: HomePageProps) {
     googleOnboarding === "pending" ||
     googleOnboarding === "1";
   const hasPendingIdentityLink = identityLink === "pending";
+  // Viene del SessionExpiryGuard: la sesión no sirve aunque quede la cookie.
+  // Si igual se redirigiera a /socios, el guard volvería acá: bucle de recargas.
+  const sessionExpiredParam = Array.isArray(query.sessionExpired)
+    ? query.sessionExpired[0]
+    : query.sessionExpired;
+  const sessionExpired = sessionExpiredParam === "1";
   const hasVerificationToken = Boolean(
     token?.trim() || verificationToken?.trim() || onboardingToken?.trim(),
   );
 
   if (
     cookieStore.get("sid")?.value &&
+    !sessionExpired &&
     !hasPendingIdentityLink &&
     !hasPendingGoogleOnboarding &&
     !hasVerificationToken

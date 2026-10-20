@@ -42,7 +42,12 @@ export function SessionExpiryGuard() {
 
       const currentQuery = searchParams.toString();
       const redirectTo = `${pathname}${currentQuery ? `?${currentQuery}` : ""}`;
-      router.replace(`/?redirectTo=${encodeURIComponent(redirectTo)}`);
+      // sessionExpired=1: el login no tiene que mandar de vuelta a /socios solo
+      // porque exista la cookie (puede ser una sesión que ya no sirve) — sin
+      // esto se armaba un bucle de recargas.
+      router.replace(
+        `/?sessionExpired=1&redirectTo=${encodeURIComponent(redirectTo)}`,
+      );
       router.refresh();
     };
 
