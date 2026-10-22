@@ -1,0 +1,115 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* En escritorio no se ofrece: el acceso directo tiene sentido en el celular. */
+.mobileOnly {
+  @media (min-width: 1024px) {
+    display: none;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.appIcon {
+  flex-shrink: 0;
+  border-radius: 0.85rem;
+  border: 1px solid var(--tone-border);
+  background: #ffffff;
+}
+
+.copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--fs-socios-card-subtitle, var(--fs-md));
+  font-weight: var(--fw-socios-card-subtitle, 600);
+  color: var(--tone-text);
+}
+
+.text {
+  margin-top: 0.2rem;
+  font-size: var(--fs-socios-read, var(--fs-sm));
+  font-weight: var(--fw-socios-read, 400);
+  line-height: 1.4;
+  color: var(--tone-muted);
+}
+
+.close {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin: -0.25rem -0.25rem 0 0;
+  border-radius: 9999px;
+  color: var(--tone-muted);
+  transition: background 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--tone-soft);
+  }
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 3rem;
+  border-radius: 0.85rem;
+  background: var(--tone-primary);
+  color: #ffffff;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+
+  &:hover {
+    background: var(--tone-primary-hover);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--tone-focus-ring);
+  }
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem 0.85rem 2rem;
+  border-radius: 0.85rem;
+  background: var(--tone-soft);
+  list-style: decimal;
+  font-size: var(--fs-socios-read, var(--fs-sm));
+  line-height: 1.45;
+  color: var(--tone-text);
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+.inlineIcon {
+  display: inline-block;
+  vertical-align: -0.2em;
+  color: var(--tone-primary);
+}
