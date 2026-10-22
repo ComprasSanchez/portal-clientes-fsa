@@ -16,6 +16,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import Card from "@/components/atoms/card/card";
 import Badge from "@/components/atoms/badge/badge";
+import InstallAppCard from "@/components/molecules/install-app-card/install-app-card";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
 import {
@@ -849,6 +850,8 @@ export function HomeViews({
   return (
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
+        <InstallAppCard tone="cora" />
+
         <div>
           <h1 className={styles.welcomeTitle}>¡Hola, {perfil?.nombre}! 👋</h1>
         </div>

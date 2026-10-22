@@ -9,6 +9,8 @@ import remeraPromo from "@/assets/sociosa-img/remera-promo.jpg";
 import bannerPrinciapl from "@/assets/sociosa-img/banner-principal.jpeg";
 import breveMarket from "@/assets/sociosa-img/banner-breve.jpeg";
 import sorteoBanner from "@/assets/sociosa-img/sorte-banner.jpg";
+import { useExternalHandoff } from "./ExternalSystemHandoffButton";
+import type { ExternalHandoffSystem } from "@/lib/external-systems";
 import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [
@@ -16,20 +18,61 @@ const SLIDES = [
     src: breveMarket,
     alt: "Breve Market — Farmacias & Market",
     href: null,
+    externalSystem: "BREVE" as const,
   },
   {
     src: remeraPromo,
     alt: "Sorteo Socio SA — Gana una remera exclusiva de Socio SA",
     href: null,
+    externalSystem: undefined,
   },
   {
     src: bannerPrinciapl,
     alt: "Sorteo Socio SA — Beauty Days",
     href: "https://calendly.com/farmaciasanchezantoniolli",
+    externalSystem: undefined,
   },
 ];
 
 const AUTOPLAY_MS = 5000;
+
+type HandoffSlideProps = {
+  src: (typeof SLIDES)[number]["src"];
+  alt: string;
+  externalSystem: ExternalHandoffSystem;
+  priority: boolean;
+};
+
+function HandoffSlide({ src, alt, externalSystem, priority }: HandoffSlideProps) {
+  const { loading, handleClick } = useExternalHandoff(externalSystem);
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-busy={loading}
+      aria-label={alt}
+      className={styles.slideLink}
+      onClick={handleClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleClick();
+        }
+      }}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        draggable={false}
+        sizes="(max-width: 768px) 100vw, (max-width: 1280px) calc(100vw - 16rem), 80rem"
+        className={styles.image}
+        priority={priority}
+      />
+    </div>
+  );
+}
 
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? "100%" : "-100%", opacity: 0 }),
@@ -106,6 +149,13 @@ export function BannerCarousel() {
                   priority={current === 0}
                 />
               </Link>
+            ) : SLIDES[current].externalSystem ? (
+              <HandoffSlide
+                src={SLIDES[current].src}
+                alt={SLIDES[current].alt}
+                externalSystem={SLIDES[current].externalSystem}
+                priority={current === 0}
+              />
             ) : (
               <Image
                 src={SLIDES[current].src}
