@@ -17,6 +17,7 @@ import Alert from "@/components/atoms/alert/alert";
 import Badge from "@/components/atoms/badge/badge";
 import Card from "@/components/atoms/card/card";
 import EmptyState from "@/components/molecules/empty-state/empty-state";
+import InstallAppCard from "@/components/molecules/install-app-card/install-app-card";
 import Pagination from "@/components/molecules/pagination/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
@@ -659,6 +660,8 @@ export function SociosViews({
   return (
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
+        <InstallAppCard tone="socios" />
+
         <div>
           <h1 className={styles.welcomeTitle}>¡Hola, {perfil?.nombre}! 👋</h1>
           <p className={styles.welcomeSubtitle}>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import Script from "next/script";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { BotmakerChat } from "../components/BotmakerChat";
 import { GlobalToastProvider } from "../components/ui/global-toast";
@@ -27,6 +28,13 @@ export const metadata: Metadata = {
   icons: {
     icon: "/socio.ico",
     shortcut: "/socio.ico",
+    apple: "/icons/apple-touch-icon.png",
+  },
+  // iPhone: nombre y modo pantalla completa del acceso directo en la pantalla de inicio.
+  appleWebApp: {
+    capable: true,
+    title: "SocioSA",
+    statusBarStyle: "default",
   },
 };
 
@@ -46,6 +54,11 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <BotmakerChat />
         </Suspense>
+        {/* Chrome avisa una sola vez que la app se puede instalar, a veces antes de que
+            cargue el JS de la página: se guarda acá para `useInstallApp`. */}
+        <Script id="capture-install-prompt" strategy="beforeInteractive">
+          {`window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__fsaInstallPrompt=e;});`}
+        </Script>
       </body>
     </html>
   );
