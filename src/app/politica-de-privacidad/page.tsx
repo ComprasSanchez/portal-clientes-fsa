@@ -256,10 +256,10 @@ export default function PoliticaDePrivacidadPage() {
               <p className="mb-2">
                 Para solicitar exclusión:{" "}
                 <a
-                  href="mailto:sistemas@sanchezantoniolli.com.ar"
+                  href="mailto:sistemas@sanchezantoniolli.com"
                   className="font-medium text-[#007c98] hover:underline"
                 >
-                  sistemas@sanchezantoniolli.com.ar
+                  sistemas@sanchezantoniolli.com
                 </a>
               </p>
               <p className="text-sm text-[#48636b]">
@@ -362,10 +362,10 @@ export default function PoliticaDePrivacidadPage() {
               <p className="mb-2">
                 Vía email:{" "}
                 <a
-                  href="mailto:sistemas@sanchezantoniolli.com.ar"
+                  href="mailto:sistemas@sanchezantoniolli.com"
                   className="font-medium text-[#007c98] hover:underline"
                 >
-                  sistemas@sanchezantoniolli.com.ar
+                  sistemas@sanchezantoniolli.com
                 </a>
               </p>
               <p className="text-sm text-[#48636b]">
@@ -379,8 +379,15 @@ export default function PoliticaDePrivacidadPage() {
                 11. Eliminación de datos
               </h2>
               <p className="mb-3">El usuario puede solicitar la eliminación de su cuenta y la supresión de sus datos.</p>
+              <p className="mb-3">
+                En la app SocioSA, la cuenta se elimina desde <strong>Mi perfil → Borrar mi cuenta</strong>, confirmando con un código enviado al email de la cuenta. Se eliminan la cuenta de ingreso (email, contraseña y el ingreso con Google o Apple), las sesiones abiertas y el vínculo con el registro de cliente. Los pasos y la opción para quien ya no tiene la app están en{" "}
+                <Link href="/eliminar-cuenta" className="font-medium text-[#007c98] hover:underline">
+                  Eliminar tu cuenta
+                </Link>
+                .
+              </p>
               <div className="rounded-xl border border-[#fde8cc] bg-[#fffaf5] p-4 text-sm text-[#7a4e1a]">
-                <strong>Excepción:</strong> La Empresa podrá conservar datos cuando sea necesario para obligaciones legales, facturación, o cumplimiento fiscal o sanitario.
+                <strong>Excepción:</strong> La Empresa podrá conservar datos cuando sea necesario para obligaciones legales, facturación, o cumplimiento fiscal o sanitario. Al eliminar la cuenta de la app se conservan el historial de compras y facturas, y el registro de cliente con sus puntos, que se sigue usando en las farmacias.
               </div>
             </section>
 
@@ -405,10 +412,10 @@ export default function PoliticaDePrivacidadPage() {
               <p className="mb-1">
                 Contacto:{" "}
                 <a
-                  href="mailto:sistemas@sanchezantoniolli.com.ar"
+                  href="mailto:sistemas@sanchezantoniolli.com"
                   className="font-medium text-[#007c98] hover:underline"
                 >
-                  sistemas@sanchezantoniolli.com.ar
+                  sistemas@sanchezantoniolli.com
                 </a>
               </p>
               <p className="text-sm text-[#48636b]">No se otorgan recompensas económicas.</p>
