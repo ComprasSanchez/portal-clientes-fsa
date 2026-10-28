@@ -1,0 +1,17 @@
+.change {
+  margin-left: 4px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  color: var(--tone-primary);
+  cursor: pointer;
+}
+
+// Las dos opciones van pegadas, separadas por una línea (como en la app).
+.options {
+  display: flex;
+  flex-direction: column;
+  margin-top: -8px;
+}

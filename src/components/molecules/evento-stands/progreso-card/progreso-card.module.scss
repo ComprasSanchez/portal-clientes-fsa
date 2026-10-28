@@ -1,0 +1,68 @@
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tone-muted);
+}
+
+.count {
+  margin: 14px 0 16px;
+  color: var(--tone-text);
+}
+
+.number {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.total {
+  font-size: 1.1rem;
+  color: var(--tone-muted);
+}
+
+.bar {
+  display: flex;
+  gap: 4px;
+}
+
+.segment {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--tone-soft);
+  transition: background 0.25s ease;
+}
+
+.filled {
+  background: var(--tone-primary);
+}
+
+// Marca del mínimo para el premio: un puntito arriba del segmento.
+.goal::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--tone-primary);
+  transform: translateX(-50%);
+}
+
+.text {
+  margin: 14px 0 0;
+  font-size: 0.9rem;
+  color: var(--tone-muted);
+}

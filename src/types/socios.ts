@@ -7,6 +7,8 @@ export type SociosView =
   | "sucursales"
   | "pedidos"
   | "notificaciones"
+  /** Juego de stands con QR del evento de Breve (temporal). */
+  | "evento"
   | "colaboradores-ventas"
   | "colaboradores-aplicaciones";
 

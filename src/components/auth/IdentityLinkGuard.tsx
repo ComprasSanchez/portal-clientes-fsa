@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { isLoginNuevoActivo } from "@/lib/auth-nuevo";
 
 type IdentityLinkStatusResponse = {
   ok?: boolean;
@@ -36,8 +37,12 @@ export function IdentityLinkGuard() {
 
       redirectingRef.current = true;
       const redirectTo = `${pathname}${currentQuery ? `?${currentQuery}` : ""}`;
+      // Login nuevo: validar la identidad con un contacto del cliente (WhatsApp /
+      // email) o completar el alta. Si no, el formulario de vinculación de siempre.
       router.replace(
-        `/?identityLink=pending&redirectTo=${encodeURIComponent(redirectTo)}`,
+        isLoginNuevoActivo()
+          ? `/validar-identidad?redirectTo=${encodeURIComponent(redirectTo)}`
+          : `/?identityLink=pending&redirectTo=${encodeURIComponent(redirectTo)}`,
       );
     };
 

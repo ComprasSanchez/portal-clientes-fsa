@@ -18,6 +18,10 @@ import Badge from "@/components/atoms/badge/badge";
 import Card from "@/components/atoms/card/card";
 import EmptyState from "@/components/molecules/empty-state/empty-state";
 import InstallAppCard from "@/components/molecules/install-app-card/install-app-card";
+import EventoStandsCard from "@/components/molecules/evento-stands/evento-stands-card/evento-stands-card";
+import EventoStandsView from "@/components/organisms/evento-stands/evento-stands-view";
+import PerfilCompletoCard from "@/components/molecules/perfil-completo-card/perfil-completo-card";
+import { usePerfilCompleto } from "@/lib/use-perfil-completo";
 import Pagination from "@/components/molecules/pagination/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
@@ -109,6 +113,10 @@ const viewContent: Record<
     description:
       "Encontrá la sucursal más cercana, consultá horarios y accedé a indicaciones.",
   },
+  evento: {
+    title: "Juego de stands",
+    description: "Escaneá los stands del evento y retirá tu premio.",
+  },
   "colaboradores-ventas": {
     title: "Mis ventas",
     description: "Tu desempeño en el mostrador, día a día.",
@@ -155,6 +163,7 @@ export function SociosViews({
     page: historialPage,
     setPage: setHistorialPage,
   } = usePortalPuntosHistorial({ enabled: currentView === "puntos" });
+  const perfilCompleto = usePerfilCompleto(perfil);
   const {
     compras,
     summary: comprasSummary,
@@ -303,6 +312,17 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <NotificacionesView tone="socios" onBack={() => onNavigate("dashboard")} />
+      </main>
+    );
+  }
+
+  if (currentView === "evento") {
+    return (
+      <main className={styles.container}>
+        <EventoStandsView
+          urlVista="/socios?view=evento"
+          onBack={() => onNavigate("dashboard")}
+        />
       </main>
     );
   }
@@ -661,6 +681,17 @@ export function SociosViews({
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
         <InstallAppCard tone="socios" />
+
+        <EventoStandsCard tone="socios" onOpen={() => onNavigate("evento")} />
+
+        {perfilCompleto.visible && (
+          <PerfilCompletoCard
+            tone="socios"
+            pendientes={perfilCompleto.pendientes}
+            onSelect={() => onNavigate("mi-cuenta")}
+            onDismiss={perfilCompleto.ocultar}
+          />
+        )}
 
         <div>
           <h1 className={styles.welcomeTitle}>¡Hola, {perfil?.nombre}! 👋</h1>

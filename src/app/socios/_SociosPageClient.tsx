@@ -17,7 +17,7 @@ import {
 } from "@/types/socios";
 
 const DEFAULT_VIEW: SociosView = "dashboard";
-const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", "notificaciones", ...COLABORADORES_VIEWS];
+const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", "notificaciones", "evento", ...COLABORADORES_VIEWS];
 // Links viejos (?view=colaboradores) de antes de separar Ventas / Aplicaciones FSA.
 const VIEW_ALIASES: Record<string, SociosView> = {
   colaboradores: "colaboradores-ventas",

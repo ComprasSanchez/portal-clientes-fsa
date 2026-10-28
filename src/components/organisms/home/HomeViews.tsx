@@ -17,6 +17,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Card from "@/components/atoms/card/card";
 import Badge from "@/components/atoms/badge/badge";
 import InstallAppCard from "@/components/molecules/install-app-card/install-app-card";
+import PerfilCompletoCard from "@/components/molecules/perfil-completo-card/perfil-completo-card";
+import { usePerfilCompleto } from "@/lib/use-perfil-completo";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
 import {
@@ -256,6 +258,7 @@ export function HomeViews({
   const searchParams = useSearchParams();
   const { pushToast } = useGlobalToast();
   const hasShownValidationToastRef = useRef(false);
+  const perfilCompleto = usePerfilCompleto(perfil);
   const [isMedicamentosExpanded, setIsMedicamentosExpanded] = useState(false);
   const active = viewContent[currentView];
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
@@ -851,6 +854,15 @@ export function HomeViews({
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
         <InstallAppCard tone="cora" />
+
+        {perfilCompleto.visible && (
+          <PerfilCompletoCard
+            tone="cora"
+            pendientes={perfilCompleto.pendientes}
+            onSelect={() => onNavigate("mi-cuenta")}
+            onDismiss={perfilCompleto.ocultar}
+          />
+        )}
 
         <div>
           <h1 className={styles.welcomeTitle}>¡Hola, {perfil?.nombre}! 👋</h1>

@@ -21,8 +21,10 @@ import {
   BoxIcon,
   PackageCheck,
   BadgeCheck,
+  QrCode,
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
+import { isEventoStandsActivo } from "@/lib/evento-stands";
 import sociosaLogo from "@/assets/sociosa-color.png";
 import sociosaIcon from "@/assets/icono-estrella.png";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
@@ -70,6 +72,9 @@ const menuItems: MenuItem[] = [
   { id: "facturas", label: "Mis compras", icon: ShoppingBag },
   { id: "puntos", label: "Puntos", icon: Star },
   { id: "sorteos", label: "Sorteos", icon: Ticket },
+  ...(isEventoStandsActivo()
+    ? [{ id: "evento" as const, label: "Juego de stands", icon: QrCode }]
+    : []),
   { id: "sucursales", label: "Sucursales", icon: MapPin },
   ...(process.env.NEXT_PUBLIC_CORA_ACTIVE === "true"
     ? [{ id: "cora" as const, label: "CORA", icon: Heart }]

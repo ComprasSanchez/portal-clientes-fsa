@@ -1,0 +1,126 @@
+// Mismo lenguaje visual que el login del portal y la app: fondo suave, logo
+// de Farmacias arriba, títulos grandes.
+.root {
+  min-height: 100dvh;
+  display: grid;
+  background: linear-gradient(180deg, #eef7f9 0%, #fff 100%);
+}
+
+.hero {
+  position: relative;
+  display: none;
+  background: #fff;
+}
+
+.heroImage {
+  object-fit: contain;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 20px calc(20px + env(safe-area-inset-bottom));
+}
+
+.panel {
+  width: 100%;
+  max-width: 440px;
+  flex: 1;
+}
+
+.top {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 56px;
+  margin-bottom: 28px;
+}
+
+.back {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.logo {
+  width: min(232px, 60vw);
+  height: auto;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.15;
+  font-weight: 800;
+  color: var(--tone-text);
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--tone-muted);
+  overflow-wrap: anywhere;
+}
+
+.body {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--tone-muted);
+}
+
+.legal {
+  margin-top: 32px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--tone-primary);
+}
+
+// Tablet en adelante: el formulario va en una tarjeta.
+@media (min-width: 640px) {
+  .content {
+    justify-content: center;
+    padding: 40px;
+  }
+
+  .panel {
+    flex: 0 0 auto;
+    max-width: 30rem;
+    padding: 28px;
+    border: 1px solid var(--tone-border);
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 20px 60px var(--tone-shadow);
+  }
+
+  .title {
+    font-size: 2.1rem;
+  }
+}
+
+// Escritorio: imagen del portal a la izquierda, como el login de siempre.
+@media (min-width: 1024px) {
+  .root {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    height: 100dvh;
+  }
+
+  .hero {
+    display: block;
+  }
+
+  .content {
+    overflow-y: auto;
+  }
+}

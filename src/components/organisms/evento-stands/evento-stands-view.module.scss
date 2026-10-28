@@ -1,0 +1,141 @@
+// Va dentro del contenedor de /socios (menú, header y márgenes los pone el portal).
+.page {
+  width: 100%;
+  max-width: 1120px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: -8px;
+}
+
+.title {
+  margin: 12px 0 6px;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--tone-text);
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 640px;
+  color: var(--tone-muted);
+}
+
+// Solo en celular: en escritorio "Cómo funciona" está al pie de la pantalla.
+.ayudaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border: 1px solid var(--tone-border);
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--tone-primary);
+  cursor: pointer;
+}
+
+.aviso {
+  margin-bottom: 16px;
+}
+
+// Celular: una columna en el orden del DOM (progreso, escanear, premio, stands, cómo funciona).
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.premioDetalle {
+  margin-top: 16px;
+}
+
+.standsHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--tone-text);
+}
+
+.sectionText {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--tone-muted);
+}
+
+.standsCount {
+  margin: 0;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  color: var(--tone-muted);
+
+  strong {
+    color: var(--tone-text);
+  }
+}
+
+.comoFuncionaBody {
+  margin-top: 16px;
+}
+
+// En celular va en el modal (botón "¿Cómo funciona?"), no al pie.
+.comoFunciona {
+  display: none;
+}
+
+// Escritorio: izquierda progreso / escanear / premio, derecha los stands, abajo cómo funciona.
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 340px minmax(0, 1fr);
+    grid-template-areas:
+      "progreso stands"
+      "escanear stands"
+      "premio stands"
+      "como como";
+    grid-template-rows: auto auto 1fr auto;
+    align-items: start;
+  }
+
+  .progreso {
+    grid-area: progreso;
+  }
+
+  .escanear {
+    grid-area: escanear;
+  }
+
+  .premio {
+    grid-area: premio;
+  }
+
+  .stands {
+    grid-area: stands;
+  }
+
+  .comoFunciona {
+    display: block;
+    grid-area: como;
+  }
+
+  .ayudaButton {
+    display: none;
+  }
+}

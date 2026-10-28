@@ -1,0 +1,43 @@
+.wrap {
+  margin-bottom: 4px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bloqueado {
+  background: var(--tone-soft-hover);
+  color: var(--tone-muted);
+}
+
+.habilitado,
+.entregado {
+  background: var(--tone-primary);
+  color: #fff;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--tone-text);
+}
+
+.text {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+  color: var(--tone-muted);
+}
