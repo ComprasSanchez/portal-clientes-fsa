@@ -37,10 +37,21 @@ export default function LoginEmailStep() {
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<Aviso | null>(null);
   const [buscando, setBuscando] = useState(false);
+  const [yendoAGoogle, setYendoAGoogle] = useState(false);
 
   useEffect(() => {
     capturarParametrosDeEntrada(searchParams);
   }, [searchParams]);
+
+  // Si vuelve con "atrás" desde Google, el navegador restaura la página tal
+  // cual quedó: sin esto el botón seguiría cargando para siempre.
+  useEffect(() => {
+    const alVolver = (e: PageTransitionEvent) => {
+      if (e.persisted) setYendoAGoogle(false);
+    };
+    window.addEventListener("pageshow", alVolver);
+    return () => window.removeEventListener("pageshow", alVolver);
+  }, []);
 
   const continuar = async (e: FormEvent) => {
     e.preventDefault();
@@ -86,6 +97,7 @@ export default function LoginEmailStep() {
   };
 
   const ingresarConGoogle = () => {
+    setYendoAGoogle(true);
     const destino = destinoDespuesDelIngreso();
     window.location.assign(
       `/api/v2/auth/providers/google/start?redirectTo=${encodeURIComponent(destino)}`,
@@ -123,7 +135,7 @@ export default function LoginEmailStep() {
             {aviso.accion.label}
           </PortalButton>
         )}
-        <PortalButton type="submit" tone="socios" loading={buscando}>
+        <PortalButton type="submit" tone="socios" loading={buscando} disabled={yendoAGoogle}>
           {buscando ? "Continuando…" : "Continuar"}
         </PortalButton>
       </form>
@@ -136,8 +148,13 @@ export default function LoginEmailStep() {
         <span>o</span>
       </div>
 
-      <PortalButton variant="google" onClick={ingresarConGoogle} disabled={buscando}>
-        Continuar con Google
+      <PortalButton
+        variant="google"
+        onClick={ingresarConGoogle}
+        disabled={buscando}
+        loading={yendoAGoogle}
+      >
+        {yendoAGoogle ? "Conectando con Google…" : "Continuar con Google"}
       </PortalButton>
     </AuthCard>
   );
