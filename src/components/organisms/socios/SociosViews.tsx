@@ -313,7 +313,7 @@ export function SociosViews({
       <main className={styles.container}>
         <section className={styles.dashboardSection}>
           <InstallAppCard tone="socios" />
-          <EventoStandsCard tone="socios" onOpen={() => onNavigate("evento")} />
+          <EventoStandsCard tone="breve" onOpen={() => onNavigate("evento")} />
           <div>
             <h1 className={styles.welcomeTitle}>¡Hola! 👋</h1>
             <p className={styles.welcomeSubtitle}>
@@ -731,7 +731,7 @@ export function SociosViews({
       <section className={styles.dashboardSection}>
         <InstallAppCard tone="socios" />
 
-        <EventoStandsCard tone="socios" onOpen={() => onNavigate("evento")} />
+        <EventoStandsCard tone="breve" onOpen={() => onNavigate("evento")} />
 
         {perfilCompleto.visible && (
           <PerfilCompletoCard

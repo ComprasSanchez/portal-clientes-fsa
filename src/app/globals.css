@@ -335,6 +335,26 @@
   --tone-shadow: rgba(48, 26, 95, 0.05);
 }
 
+/* Marca Breve (juego de stands del evento): amarillo con texto negro.
+   Opcionales, con fallback en los componentes:
+   --tone-on-primary: texto sobre el color principal (default blanco).
+   --tone-primary-text: texto de acento sobre blanco (default el principal). */
+.tone-breve {
+  --tone-primary: #f3bc00;
+  --tone-primary-hover: #e2ae00;
+  --tone-on-primary: #282828;
+  --tone-primary-text: #282828;
+  --tone-soft: #fdf1c4;
+  --tone-soft-hover: #f4f4f2;
+  --tone-border: #e9e7e1;
+  --tone-border-hover: #e4c763;
+  --tone-text: #282828;
+  --tone-muted: #5e5e5e;
+  --tone-placeholder: #a3a3a3;
+  --tone-focus-ring: rgba(243, 188, 0, 0.3);
+  --tone-shadow: rgba(40, 40, 40, 0.06);
+}
+
 body {
   font-family: "BD Supper", "Filson Pro", Arial, Helvetica, sans-serif;
   /* line-height: calc(1em + 2pt); */

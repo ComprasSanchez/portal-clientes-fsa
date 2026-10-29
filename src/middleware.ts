@@ -9,6 +9,7 @@ const isPublicRoute = (pathname: string) => {
     pathname.startsWith("/portal-pedidos/") ||
     pathname === "/politica-de-privacidad" ||
     pathname === "/eliminar-cuenta" ||
+    pathname === "/evento/bases" ||
     // Login y registro nuevos (cada paso con su URL).
     pathname === "/ingresar" ||
     pathname.startsWith("/ingresar/") ||

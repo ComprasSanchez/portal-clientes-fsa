@@ -55,6 +55,7 @@ $shadow: rgba(0, 0, 0, 0.08);
 // Con `tone`: colores del tema en vez del violeta fijo.
 .toned.primary {
   background: var(--tone-primary);
+  color: var(--tone-on-primary, #fff);
   font-weight: 700;
 
   &:hover:not(:disabled) {
@@ -63,8 +64,8 @@ $shadow: rgba(0, 0, 0, 0.08);
 }
 
 .toned.secondary {
-  color: var(--tone-primary);
-  border: 2px solid var(--tone-primary);
+  color: var(--tone-primary-text, var(--tone-primary));
+  border: 2px solid var(--tone-primary-text, var(--tone-primary));
   box-shadow: none;
   font-weight: 700;
 }

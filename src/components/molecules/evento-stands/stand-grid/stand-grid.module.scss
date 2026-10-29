@@ -22,7 +22,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   border: 0;
   background: transparent;
   text-align: left;
@@ -52,59 +52,34 @@ button.row {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   background: var(--tone-soft-hover);
-  color: var(--tone-muted);
+  color: var(--tone-text);
 
   .done & {
     background: var(--tone-primary);
-    color: #fff;
+    color: var(--tone-on-primary, #fff);
   }
 }
 
-.copy {
+.name {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.name {
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 600;
   color: var(--tone-text);
   overflow-wrap: anywhere;
 }
 
-.status {
-  font-size: 0.8rem;
-  color: var(--tone-muted);
-
-  .done & {
-    color: var(--tone-primary);
-    font-weight: 600;
-  }
-}
-
 .mark {
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--tone-soft-hover);
-  color: var(--tone-muted);
-
-  .done & {
-    background: var(--tone-primary);
-    color: #fff;
-  }
+  color: var(--tone-text);
 }
 
 @media (min-width: 640px) {

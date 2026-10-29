@@ -29,13 +29,21 @@ export const nombresEscaneados = (avance: PortalAvanceEvento): string[] =>
 
 /** Debajo del contador: cuánto falta para el premio o si ya puede retirarlo. */
 export function textoProgresoPremio(avance: PortalAvanceEvento): string {
-  if (avance.premio_entregado) return "Premio entregado";
-  if (avance.puede_retirar) return "¡Ya podés retirar tu premio!";
+  if (avance.premio_entregado) return "Regalo entregado. ¡Gracias por participar!";
+  if (avance.puede_retirar) return "¡Ya podés retirar tu regalo!";
   const faltan = avance.minimo_premio - avance.escaneados;
   return faltan === 1
-    ? "Te falta 1 stand para retirar tu premio"
-    : `Te faltan ${faltan} stands para retirar tu premio`;
+    ? "Te falta 1 stand para tu regalo."
+    : `Te faltan ${faltan} stands para tu regalo.`;
 }
+
+/** Bajada del título del juego. */
+export const subtituloEvento = (minimo: number) =>
+  `Escaneá el QR de ${minimo} stands y llevate un regalo sorpresa.`;
+
+/** Bajada de la lista de stands. */
+export const textoStandsParaDescubrir = (minimo: number, total: number) =>
+  `Elegí ${minimo} de los ${total} stands para completar el desafío.`;
 
 const plural = (n: number, uno: string, varios: string) => (n === 1 ? uno : varios);
 
@@ -46,20 +54,19 @@ export function premioCopy(avance: PortalAvanceEvento): {
   text: string;
 } {
   if (avance.premio_entregado) {
-    return { estado: "entregado", title: "Premio entregado", text: "¡Gracias por participar!" };
+    return { estado: "entregado", title: "Regalo entregado", text: "¡Gracias por participar!" };
   }
   if (avance.puede_retirar) {
     return {
       estado: "habilitado",
-      title: avance.completo ? "¡Completaste todos los stands!" : "¡Ya podés retirar tu premio!",
+      title: avance.completo ? "¡Completaste todos los stands!" : "¡Tu regalo está listo!",
       text: "Acercate al stand de premios y mostrá esta pantalla.",
     };
   }
-  const faltan = avance.minimo_premio - avance.escaneados;
   return {
     estado: "bloqueado",
-    title: "Premio bloqueado",
-    text: `Escaneá ${faltan} ${plural(faltan, "stand más", "stands más")} para habilitarlo.`,
+    title: "Tu regalo te espera",
+    text: "Completá el recorrido para habilitarlo.",
   };
 }
 
@@ -68,34 +75,13 @@ export const pasosComoFunciona = (minimo: number) => [
   { titulo: "Buscá el QR", texto: "Cada stand tiene su código QR a la vista." },
   { titulo: "Escanealo", texto: "Abrí el escáner, apuntá la cámara y esperá el tilde." },
   {
-    titulo: "Retirá el premio",
+    titulo: "Retirá tu regalo",
     texto: `Con ${minimo} ${plural(minimo, "stand", "stands")} escaneados, canjealo en el stand de premios.`,
   },
 ];
 
-const AYUDA_VISTA_KEY = "fsa_evento_stands_ayuda_vista";
-
-/**
- * "Cómo funciona" se abre solo la primera vez en el celular. Se recuerda en este
- * dispositivo; si el navegador no deja guardar, se muestra igual y no pasa nada.
- */
-export function debeMostrarAyudaInicial(): boolean {
-  if (typeof window === "undefined") return false;
-  if (!window.matchMedia("(max-width: 1023px)").matches) return false;
-  try {
-    return window.localStorage.getItem(AYUDA_VISTA_KEY) !== "1";
-  } catch {
-    return true;
-  }
-}
-
-export function marcarAyudaVista(): void {
-  try {
-    window.localStorage.setItem(AYUDA_VISTA_KEY, "1");
-  } catch {
-    // Sin almacenamiento (incógnito, bloqueado): solo se vuelve a mostrar la próxima vez.
-  }
-}
+/** Página de bases y condiciones del juego (provisoria hasta tener las definitivas). */
+export const BASES_EVENTO_URL = "/evento/bases";
 
 /** Texto para el cliente según el código de error del backend (sin jerga técnica). */
 export function mensajeErrorEvento(code: string | null | undefined): string {
@@ -105,9 +91,11 @@ export function mensajeErrorEvento(code: string | null | undefined): string {
     case "EVENTO_STANDS_CODIGO_INVALIDO":
       return "No reconocimos este código. Probá escanear de nuevo el QR del stand.";
     case "EVENTO_STANDS_INCOMPLETO":
-      return "Todavía te faltan stands por escanear para retirar el premio.";
+      return "Todavía te faltan stands por escanear para retirar el regalo.";
     case "EVENTO_STANDS_PIN_INVALIDO":
       return "El PIN no es correcto.";
+    case "EVENTO_STANDS_TERMINOS_PENDIENTES":
+      return "Para jugar, primero aceptá las bases y condiciones.";
     case "EVENTO_STANDS_PIN_BLOQUEADO":
       return "Se ingresó mal el PIN varias veces. Esperá unos minutos y volvé a intentar.";
     default:

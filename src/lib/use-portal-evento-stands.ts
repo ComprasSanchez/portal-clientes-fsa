@@ -18,6 +18,7 @@ export type UsePortalEventoStandsResult = {
   refresh: () => Promise<void>;
   escanear: (codigo: string) => Promise<EventoAccionResult>;
   entregar: (pin: string) => Promise<EventoAccionResult>;
+  aceptarTerminos: () => Promise<EventoAccionResult>;
 };
 
 const post = async <T>(url: string, body: unknown) => {
@@ -92,5 +93,16 @@ export const usePortalEventoStands = (): UsePortalEventoStandsResult => {
     }
   }, []);
 
-  return { avance, loading, error, refresh, escanear, entregar };
+  const aceptarTerminos = useCallback(async (): Promise<EventoAccionResult> => {
+    try {
+      const r = await post<PortalAvanceEvento>("/api/portal/me/evento-stands/terminos", {});
+      if (!r.ok) return r;
+      setAvance(r.data);
+      return { ok: true };
+    } catch {
+      return { ok: false, message: mensajeErrorEvento(null) };
+    }
+  }, []);
+
+  return { avance, loading, error, refresh, escanear, entregar, aceptarTerminos };
 };

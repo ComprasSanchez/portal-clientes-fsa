@@ -19,15 +19,17 @@ import ProgresoCard from "@/components/molecules/evento-stands/progreso-card/pro
 import QrScanner from "@/components/molecules/evento-stands/qr-scanner/qr-scanner";
 import StandGrid from "@/components/molecules/evento-stands/stand-grid/stand-grid";
 import StandsEscaneados from "@/components/molecules/evento-stands/stands-escaneados/stands-escaneados";
+import Checkbox from "@/components/atoms/checkbox/checkbox";
 import {
-  debeMostrarAyudaInicial,
+  BASES_EVENTO_URL,
   extraerCodigoDeQr,
   isEventoStandsActivo,
-  marcarAyudaVista,
   nombresEscaneados,
   pasosComoFunciona,
   premioCopy,
+  subtituloEvento,
   textoProgresoPremio,
+  textoStandsParaDescubrir,
 } from "@/lib/evento-stands";
 import { usePortalEventoStands } from "@/lib/use-portal-evento-stands";
 import { toneClass } from "@/types/ui-tone";
@@ -41,26 +43,45 @@ type EventoStandsViewProps = {
 
 type Aviso = { color: "success" | "warning"; texto: string } | null;
 
-const TONE = "socios" as const;
+const TONE = "breve" as const;
+/** Mientras carga, se muestra la regla por defecto del evento. */
+const MINIMO_POR_DEFECTO = 5;
 const PAGE_CLASS = `${styles.page} ${toneClass(TONE)}`;
 
 export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewProps) {
   const router = useRouter();
   // Los QR abren /evento/<codigo>, que redirige acá con ?stand=<codigo>.
   const codigo = useSearchParams().get("stand") ?? undefined;
-  const { avance, loading, error, escanear, entregar } = usePortalEventoStands();
+  const { avance, loading, error, escanear, entregar, aceptarTerminos } =
+    usePortalEventoStands();
   const [aviso, setAviso] = useState<Aviso>(null);
   const [destacado, setDestacado] = useState<number | null>(null);
   const [scannerAbierto, setScannerAbierto] = useState(false);
   const [procesando, setProcesando] = useState(false);
-  // En celular "Cómo funciona" va en un modal que se abre solo la primera vez.
-  const [ayudaAbierta, setAyudaAbierta] = useState(debeMostrarAyudaInicial);
+  const [ayudaAbierta, setAyudaAbierta] = useState(false);
+  // Hasta aceptar las bases, "Cómo funciona" se abre solo (celular y escritorio).
+  const [terminosCerrado, setTerminosCerrado] = useState(false);
+  const [aceptaBases, setAceptaBases] = useState(false);
+  const [aceptando, setAceptando] = useState(false);
+  const [errorTerminos, setErrorTerminos] = useState<string | null>(null);
   const codigoInicialProcesado = useRef(false);
   const activo = isEventoStandsActivo();
+  const terminosAceptados = !!avance?.terminos_aceptados;
+  const pideTerminos = !!avance && !terminosAceptados;
+  const sheetAbierto = ayudaAbierta || (pideTerminos && !terminosCerrado);
 
   const cerrarAyuda = () => {
     setAyudaAbierta(false);
-    marcarAyudaVista();
+    setTerminosCerrado(true);
+  };
+
+  const handleAceptarTerminos = async () => {
+    setAceptando(true);
+    setErrorTerminos(null);
+    const r = await aceptarTerminos();
+    setAceptando(false);
+    if (r.ok) setAyudaAbierta(false);
+    else setErrorTerminos(r.message);
   };
 
   const registrar = async (cod: string) => {
@@ -81,15 +102,20 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
 
   // El código del QR se registra una sola vez y se limpia la URL
   // (así recargar o compartir la página no vuelve a mandar el código).
+  // Si todavía no aceptó las bases, queda pendiente y se registra al aceptar.
   useEffect(() => {
-    if (!activo || !codigo || codigoInicialProcesado.current) return;
+    if (!activo || !codigo || !terminosAceptados || codigoInicialProcesado.current) return;
     codigoInicialProcesado.current = true;
     void registrar(codigo).finally(() => router.replace(urlVista, { scroll: false }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activo, codigo]);
+  }, [activo, codigo, terminosAceptados]);
 
   const abrirScanner = () => {
     setAviso(null);
+    if (!terminosAceptados) {
+      setAyudaAbierta(true);
+      return;
+    }
     setScannerAbierto(true);
   };
 
@@ -124,6 +150,7 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
   }
 
   const premio = avance ? premioCopy(avance) : null;
+  const minimo = avance?.minimo_premio ?? MINIMO_POR_DEFECTO;
   const puedeEscanear = !!avance && !avance.completo && !avance.premio_entregado;
 
   return (
@@ -131,15 +158,17 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
       <header className={styles.header}>
         <div className={styles.topBar}>
           <BackButton ariaLabel="Volver al inicio" onClick={onBack} tone={TONE} />
-          <Badge tone={TONE} color="primary" size="sm" uppercase icon={<Sparkles size={14} />}>
-            Evento Breve
+          <Badge
+            tone={TONE}
+            color="primary"
+            uppercase
+            icon={<Sparkles size={16} className={styles.badgeIcon} />}
+          >
+            Aniversario Breve
           </Badge>
         </div>
-        <h1 className={styles.title}>Juego de stands</h1>
-        <p className={styles.subtitle}>
-          Visitá los stands, escaneá el QR de cada uno desde tu celular y retirá tu premio en el
-          stand de premios.
-        </p>
+        <h1 className={styles.title}>Recorré, probá y ganá</h1>
+        <p className={styles.subtitle}>{subtituloEvento(minimo)}</p>
         <button type="button" className={styles.ayudaButton} onClick={() => setAyudaAbierta(true)}>
           <CircleHelp size={18} aria-hidden />
           ¿Cómo funciona?
@@ -154,8 +183,8 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
 
       {loading && !avance && (
         <div className={styles.layout}>
-          <Skeleton className="h-56 w-full rounded-2xl bg-[#e6f7fb]" />
-          <Skeleton className="h-96 w-full rounded-2xl bg-[#e6f7fb]" />
+          <Skeleton className="h-56 w-full rounded-2xl bg-[#f4f4f2]" />
+          <Skeleton className="h-96 w-full rounded-2xl bg-[#f4f4f2]" />
         </div>
       )}
 
@@ -166,8 +195,7 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
           <div className={styles.progreso}>
             <ProgresoCard
               escaneados={avance.escaneados}
-              total={avance.total}
-              minimo={avance.minimo_premio}
+              meta={avance.minimo_premio}
               texto={textoProgresoPremio(avance)}
               tone={TONE}
             />
@@ -198,27 +226,21 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
             </Card>
           </div>
 
-          <div className={styles.stands}>
-            <Card tone={TONE}>
-              <div className={styles.standsHeader}>
-                <div>
-                  <h2 className={styles.sectionTitle}>Los {avance.total} stands</h2>
-                  {puedeEscanear && (
-                    <p className={styles.sectionText}>Tocá un stand para escanear su código.</p>
-                  )}
-                </div>
-                <p className={styles.standsCount}>
-                  <strong>{avance.escaneados}</strong> escaneados
-                </p>
-              </div>
-              <StandGrid
-                stands={avance.stands}
-                destacado={destacado}
-                onSelectPendiente={puedeEscanear ? abrirScanner : undefined}
-                tone={TONE}
-              />
-            </Card>
-          </div>
+          <section className={styles.stands}>
+            <div className={styles.standsHeader}>
+              <h2 className={styles.standsTitle}>Stands para descubrir</h2>
+              <p className={styles.standsCount}>{avance.total} en total</p>
+            </div>
+            <p className={styles.standsText}>
+              {textoStandsParaDescubrir(avance.minimo_premio, avance.total)}
+            </p>
+            <StandGrid
+              stands={avance.stands}
+              destacado={destacado}
+              onSelectPendiente={puedeEscanear ? abrirScanner : undefined}
+              tone={TONE}
+            />
+          </section>
 
           <div className={styles.comoFunciona}>
             <Card tone={TONE}>
@@ -232,18 +254,52 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
       )}
 
       <BottomSheet
-        open={ayudaAbierta}
+        open={sheetAbierto}
         onClose={cerrarAyuda}
         title="Cómo funciona"
         tone={TONE}
         footer={
-          <PortalButton tone={TONE} onClick={cerrarAyuda}>
-            ¡Entendido!
-          </PortalButton>
+          pideTerminos ? (
+            <div className={styles.terminos}>
+              <Checkbox
+                id="evento-acepta-bases"
+                checked={aceptaBases}
+                onChange={setAceptaBases}
+                tone={TONE}
+                label={
+                  <>
+                    Acepto las{" "}
+                    <a
+                      href={BASES_EVENTO_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.terminosLink}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      bases y condiciones
+                    </a>
+                  </>
+                }
+              />
+              {errorTerminos && <Alert color="warning">{errorTerminos}</Alert>}
+              <PortalButton
+                tone={TONE}
+                disabled={!aceptaBases}
+                loading={aceptando}
+                onClick={() => void handleAceptarTerminos()}
+              >
+                Empezar a jugar
+              </PortalButton>
+            </div>
+          ) : (
+            <PortalButton tone={TONE} onClick={cerrarAyuda}>
+              ¡Entendido!
+            </PortalButton>
+          )
         }
       >
         <ComoFunciona
-          pasos={pasosComoFunciona(avance?.minimo_premio ?? 5)}
+          pasos={pasosComoFunciona(minimo)}
           layout="stack"
           tone={TONE}
         />

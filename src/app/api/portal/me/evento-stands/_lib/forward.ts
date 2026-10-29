@@ -10,7 +10,7 @@ import {
 /** Proxy común de los endpoints del juego de stands (evento, temporal). */
 export async function forwardEventoStands(
   req: NextRequest,
-  path: "" | "/escaneos" | "/entrega",
+  path: "" | "/escaneos" | "/entrega" | "/terminos",
   method: "GET" | "POST",
 ) {
   try {

@@ -20,8 +20,8 @@
 }
 
 .number {
-  font-size: 3rem;
-  font-weight: 700;
+  font-size: 3.4rem;
+  font-weight: 800;
   line-height: 1;
 }
 
@@ -32,13 +32,13 @@
 
 .bar {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .segment {
   position: relative;
   flex: 1;
-  height: 8px;
+  height: 10px;
   border-radius: 999px;
   background: var(--tone-soft);
   transition: background 0.25s ease;
@@ -46,19 +46,6 @@
 
 .filled {
   background: var(--tone-primary);
-}
-
-// Marca del mínimo para el premio: un puntito arriba del segmento.
-.goal::after {
-  content: "";
-  position: absolute;
-  top: -7px;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--tone-primary);
-  transform: translateX(-50%);
 }
 
 .text {

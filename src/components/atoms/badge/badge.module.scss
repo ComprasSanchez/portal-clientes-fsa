@@ -35,13 +35,13 @@
 /* Color principal del tema (socios = turquesa, cora = violeta). */
 .primary {
   background: var(--tone-soft);
-  color: var(--tone-primary);
+  color: var(--tone-primary-text, var(--tone-primary));
 }
 
 /* Relleno con el color del tema y texto blanco (ej. "Más cercana", "Activo"). */
 .solid {
   background: var(--tone-primary);
-  color: #ffffff;
+  color: var(--tone-on-primary, #fff);
 }
 
 /* Blanco translúcido, para ir sobre fondos oscuros o de color. */

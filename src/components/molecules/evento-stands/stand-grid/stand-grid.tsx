@@ -1,4 +1,5 @@
 import { Check, QrCode } from "lucide-react";
+import Badge from "@/components/atoms/badge/badge";
 import { toneClass, type UiTone } from "@/types/ui-tone";
 import type { PortalEventoStand } from "@/types/portal-evento-stands";
 import styles from "./stand-grid.module.scss";
@@ -12,7 +13,7 @@ type StandGridProps = {
   tone?: UiTone;
 };
 
-/** Lista de los stands del evento en dos columnas: escaneados con tilde, pendientes con QR. */
+/** Lista de los stands del evento: número, nombre, estado y QR (o tilde si ya se escaneó). */
 export default function StandGrid({
   stands,
   destacado = null,
@@ -28,12 +29,12 @@ export default function StandGrid({
             <span className={styles.number} aria-hidden>
               {String(s.numero).padStart(2, "0")}
             </span>
-            <span className={styles.copy}>
-              <span className={styles.name}>{s.nombre}</span>
-              <span className={styles.status}>{s.escaneado ? "Escaneado" : "Pendiente"}</span>
-            </span>
+            <span className={styles.name}>{s.nombre}</span>
+            <Badge tone={tone} color={s.escaneado ? "solid" : "neutral"} size="sm">
+              {s.escaneado ? "Escaneado" : "Pendiente"}
+            </Badge>
             <span className={styles.mark} aria-hidden>
-              {s.escaneado ? <Check size={16} strokeWidth={3} /> : <QrCode size={16} />}
+              {s.escaneado ? <Check size={20} strokeWidth={3} /> : <QrCode size={22} />}
             </span>
           </>
         );

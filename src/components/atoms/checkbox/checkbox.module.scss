@@ -32,7 +32,7 @@
 .input:checked + .box {
   border-color: var(--tone-primary);
   background: var(--tone-primary);
-  color: #fff;
+  color: var(--tone-on-primary, #fff);
 }
 
 .input:focus-visible + .box {

@@ -7,7 +7,7 @@
   border: 0;
   border-radius: 16px;
   background: var(--tone-primary);
-  color: #fff;
+  color: var(--tone-on-primary, #fff);
   text-align: left;
   cursor: pointer;
   box-shadow: 0 8px 20px var(--tone-shadow);
@@ -38,6 +38,8 @@
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.16);
+  border: 1px solid currentColor;
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
 }
 
 .copy {
@@ -48,13 +50,13 @@
 }
 
 .title {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
 }
 
 .subtitle {
   font-size: 0.85rem;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .arrow {
