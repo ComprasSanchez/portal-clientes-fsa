@@ -51,6 +51,7 @@ export function IngresarCodigoClient() {
         destination: r.challenge.destination_masked,
         tipo: challenge.tipo,
       },
+      ...(challenge.tipo === "email" ? { codigoPedidoAt: Date.now() } : {}),
     });
     return r.challenge.destination_masked;
   };
@@ -59,6 +60,7 @@ export function IngresarCodigoClient() {
     <CodigoStep
       title={challenge.tipo === "mfa" ? "Confirmá que sos vos" : "Revisá tu email"}
       destino={challenge.destination}
+      pedidoAt={challenge.tipo === "email" ? flow.codigoPedidoAt : undefined}
       descripcion={(destino) =>
         challenge.tipo === "mfa"
           ? `Es la primera vez que entrás desde este navegador. Te enviamos un código de 6 dígitos a ${destino}.`

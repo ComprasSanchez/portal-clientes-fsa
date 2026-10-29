@@ -17,6 +17,8 @@ export type AuthFlow = {
   recordar?: boolean;
   /** Código de ingreso pedido (después de la contraseña o "código por email"). */
   challenge?: { id: string; destination: string; tipo: "mfa" | "email" };
+  /** Cuándo se pidió el último código por email (ms), para la espera entre pedidos. */
+  codigoPedidoAt?: number;
   registro?: { flowId: string; destination: string };
   redirectTo?: string;
   origen?: AuthOrigen;
@@ -111,10 +113,25 @@ export class AuthNuevoError extends Error {
   constructor(
     message: string,
     readonly code?: string,
+    /** Segundos que faltan para poder pedir otro código (si el error es por esperar). */
+    readonly retryAfterSec?: number,
   ) {
     super(message);
   }
 }
+
+/** El gateway deja pedir otro código por email cada 60 segundos. */
+export const ESPERA_ENTRE_CODIGOS_SEG = 60;
+
+/** Segundos que faltan para poder pedir otro código, según cuándo se pidió el último. */
+export function segundosParaOtroCodigo(pedidoAt: number | undefined, ahora: number): number {
+  if (!pedidoAt) return 0;
+  return Math.max(0, Math.ceil((pedidoAt + ESPERA_ENTRE_CODIGOS_SEG * 1000 - ahora) / 1000));
+}
+
+/** "0:42" */
+export const formatoEspera = (seg: number) =>
+  `${Math.floor(seg / 60)}:${String(seg % 60).padStart(2, "0")}`;
 
 type ApiErrorBody = {
   error?: { code?: string; details?: Record<string, unknown> } | string;
@@ -252,23 +269,15 @@ export const completarAlta = (datos: { nombre: string; apellido: string; nro_doc
   });
 
 /**
- * Después de iniciar sesión: si la cuenta ya está vinculada al cliente, al destino;
- * si no, a validar la identidad. Navegación completa para que el portal lea la cookie nueva.
+ * Después de iniciar sesión, al destino (ej. el stand escaneado). Si la cuenta
+ * no está vinculada, el portal entra en modo limitado y ahí ofrece validar la
+ * identidad. Navegación completa para que el portal lea la cookie nueva.
  */
-export async function irDespuesDelIngreso(): Promise<void> {
+export function irDespuesDelIngreso(): Promise<void> {
   const destino = destinoDespuesDelIngreso();
-  let status: IdentidadStatus = "LINKED";
-  try {
-    status = (await consultarIdentidad()).status;
-  } catch {
-    // Si no se puede consultar, el guard del portal lo resuelve al entrar.
-  }
-  if (status !== "LINKED") {
-    window.location.assign(`/validar-identidad?redirectTo=${encodeURIComponent(destino)}`);
-    return;
-  }
   limpiarFlow({ alSalir: true });
   window.location.assign(destino);
+  return Promise.resolve();
 }
 
 // ---------------------------------------------------------------------------
@@ -344,7 +353,7 @@ function toAuthError(status: number, body: ApiErrorBody): AuthNuevoError {
   if (status === 401 && !code) {
     return new AuthNuevoError("Pasó demasiado tiempo. Volvé a iniciar sesión.", "SESSION_EXPIRED");
   }
-  return new AuthNuevoError((code && mensajes[code]) || FALLBACK, code);
+  return new AuthNuevoError((code && mensajes[code]) || FALLBACK, code, seconds);
 }
 
 export const mensajeDeError = (error: unknown) =>

@@ -6,7 +6,13 @@ import Alert from "@/components/atoms/alert/alert";
 import PortalButton from "@/components/atoms/button/button";
 import AuthCard from "@/components/molecules/auth/auth-card/auth-card";
 import { OtpCodeInput } from "@/components/molecules/input-otp/input-otp";
-import { mensajeDeError } from "@/lib/auth-nuevo";
+import {
+  AuthNuevoError,
+  ESPERA_ENTRE_CODIGOS_SEG,
+  formatoEspera,
+  mensajeDeError,
+  segundosParaOtroCodigo,
+} from "@/lib/auth-nuevo";
 import styles from "./codigo-step.module.scss";
 
 type CodigoStepProps = {
@@ -22,9 +28,9 @@ type CodigoStepProps = {
   onBack: () => void;
   /** Contenido extra arriba del botón (ej. "no volver a pedir el código"). */
   extra?: ReactNode;
+  /** Cuándo se pidió el código (ms): la espera para reenviar cuenta desde ahí. Sin valor, un minuto entero. */
+  pedidoAt?: number;
 };
-
-const ESPERA_REENVIO_SEG = 60;
 
 /** Paso de "ingresá el código de 6 dígitos que te mandamos por email". */
 export default function CodigoStep({
@@ -35,13 +41,16 @@ export default function CodigoStep({
   onResend,
   onBack,
   extra,
+  pedidoAt,
 }: CodigoStepProps) {
   const [code, setCode] = useState("");
   const [destinoActual, setDestinoActual] = useState(destino);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
-  const [espera, setEspera] = useState(ESPERA_REENVIO_SEG);
+  const [espera, setEspera] = useState(() =>
+    pedidoAt ? segundosParaOtroCodigo(pedidoAt, Date.now()) : ESPERA_ENTRE_CODIGOS_SEG,
+  );
 
   useEffect(() => {
     if (espera <= 0) return;
@@ -71,9 +80,14 @@ export default function CodigoStep({
       const nuevo = await onResend();
       if (nuevo) setDestinoActual(nuevo);
       setAviso("Te mandamos un código nuevo.");
-      setEspera(ESPERA_REENVIO_SEG);
+      setEspera(ESPERA_ENTRE_CODIGOS_SEG);
     } catch (err) {
-      setError(mensajeDeError(err));
+      // Si todavía no se puede pedir otro, se muestra cuánto falta en vez de un error.
+      if (err instanceof AuthNuevoError && err.retryAfterSec) {
+        setEspera(err.retryAfterSec);
+      } else {
+        setError(mensajeDeError(err));
+      }
     }
   };
 
@@ -107,8 +121,7 @@ export default function CodigoStep({
       {onResend &&
         (espera > 0 ? (
           <p className={styles.countdown}>
-            Podés pedir otro código en {Math.floor(espera / 60)}:
-            {String(espera % 60).padStart(2, "0")}
+            Podés pedir otro código en {formatoEspera(espera)}
           </p>
         ) : (
           <button type="button" className={styles.resend} onClick={() => void reenviar()}>

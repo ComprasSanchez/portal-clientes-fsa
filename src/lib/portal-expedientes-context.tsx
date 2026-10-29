@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from "react";
 import { usePortalExpedientes } from "@/lib/use-portal-expedientes";
+import { useIdentidad } from "@/lib/portal-identidad-context";
 
 type PortalExpedientesContextValue = ReturnType<typeof usePortalExpedientes>;
 
@@ -15,7 +16,9 @@ type PortalExpedientesProviderProps = {
 export const PortalExpedientesProvider = ({
   children,
 }: PortalExpedientesProviderProps) => {
-  const value = usePortalExpedientes();
+  // Sin cuenta vinculada (modo limitado) no se pide: respondería 403.
+  const { vinculada } = useIdentidad();
+  const value = usePortalExpedientes({ enabled: vinculada });
 
   return (
     <PortalExpedientesContext.Provider value={value}>

@@ -24,6 +24,10 @@ export function IdentityLinkGuard() {
   const currentQuery = searchParams.toString();
 
   useEffect(() => {
+    // Login nuevo: la cuenta sin vincular entra en modo limitado (ver
+    // PortalIdentidadProvider) en lugar de ir al formulario de vinculación.
+    if (isLoginNuevoActivo()) return;
+
     const routeKey = `${pathname}?${currentQuery}`;
     if (lastCheckedKeyRef.current === routeKey) {
       return;
@@ -37,12 +41,8 @@ export function IdentityLinkGuard() {
 
       redirectingRef.current = true;
       const redirectTo = `${pathname}${currentQuery ? `?${currentQuery}` : ""}`;
-      // Login nuevo: validar la identidad con un contacto del cliente (WhatsApp /
-      // email) o completar el alta. Si no, el formulario de vinculación de siempre.
       router.replace(
-        isLoginNuevoActivo()
-          ? `/validar-identidad?redirectTo=${encodeURIComponent(redirectTo)}`
-          : `/?identityLink=pending&redirectTo=${encodeURIComponent(redirectTo)}`,
+        `/?identityLink=pending&redirectTo=${encodeURIComponent(redirectTo)}`,
       );
     };
 

@@ -19,6 +19,9 @@ import Badge from "@/components/atoms/badge/badge";
 import InstallAppCard from "@/components/molecules/install-app-card/install-app-card";
 import PerfilCompletoCard from "@/components/molecules/perfil-completo-card/perfil-completo-card";
 import { usePerfilCompleto } from "@/lib/use-perfil-completo";
+import IdentityGate from "@/components/molecules/identity-gate/identity-gate";
+import { useIdentidad } from "@/lib/portal-identidad-context";
+import { motivoCora } from "@/lib/identidad-motivos";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
 import { OrderRow } from "@/components/molecules/home/OrderRow";
 import {
@@ -259,6 +262,7 @@ export function HomeViews({
   const { pushToast } = useGlobalToast();
   const hasShownValidationToastRef = useRef(false);
   const perfilCompleto = usePerfilCompleto(perfil);
+  const identidad = useIdentidad();
   const [isMedicamentosExpanded, setIsMedicamentosExpanded] = useState(false);
   const active = viewContent[currentView];
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
@@ -325,7 +329,7 @@ export function HomeViews({
     isNotFound: expedienteActualNotFound,
     refresh: refreshExpedienteActual,
   } = usePortalExpedienteActual({
-    enabled: currentView === "pedido-actual",
+    enabled: identidad.vinculada && currentView === "pedido-actual",
   });
   const expedienteActualRequiresAccountValidation =
     expedienteActualError?.includes("Valida tu cuenta") ?? false;
@@ -376,6 +380,31 @@ export function HomeViews({
   )
     ? "Todavía estamos completando la información de tus pedidos, pero podés seguir viendo los datos disponibles."
     : null;
+
+  // Modo limitado (login nuevo): sin cuenta vinculada a su DNI, CORA solo
+  // muestra cómo validar la identidad.
+  if (identidad.cargando) {
+    return (
+      <main className={styles.container}>
+        <CoraDashboardSkeleton />
+      </main>
+    );
+  }
+
+  if (!identidad.vinculada) {
+    return (
+      <main className={styles.container}>
+        <section className={styles.dashboardSection}>
+          {currentView === "dashboard" && (
+            <div>
+              <h1 className={styles.welcomeTitle}>¡Hola! 👋</h1>
+            </div>
+          )}
+          <IdentityGate tone="cora" status={identidad.status} motivo={motivoCora(currentView)} />
+        </section>
+      </main>
+    );
+  }
 
   if (currentView === "revision-pendiente") {
     if (!portalToken) {
