@@ -4,10 +4,28 @@
   gap: 12px;
 }
 
+.title {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tone-muted);
+}
+
 .label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--tone-text);
+}
+
+.hint {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--tone-muted);
 }
 
 .input {
@@ -27,4 +45,9 @@
     border-color: var(--tone-primary);
     box-shadow: 0 0 0 4px var(--tone-focus-ring);
   }
+}
+
+// El DNI se lee mejor sin el espaciado del PIN.
+.dni {
+  letter-spacing: 0.08em;
 }

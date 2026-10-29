@@ -25,6 +25,7 @@ import {
   extraerCodigoDeQr,
   isEventoStandsActivo,
   nombresEscaneados,
+  PEDIR_DNI_EN_ENTREGA,
   pasosComoFunciona,
   premioCopy,
   subtituloEvento,
@@ -59,6 +60,8 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
   const [scannerAbierto, setScannerAbierto] = useState(false);
   const [procesando, setProcesando] = useState(false);
   const [ayudaAbierta, setAyudaAbierta] = useState(false);
+  /** Nombre del stand cuando escanea un QR que ya tenía (abre el aviso). */
+  const [repetido, setRepetido] = useState<string | null>(null);
   // Hasta aceptar las bases, "Cómo funciona" se abre solo (celular y escritorio).
   const [terminosCerrado, setTerminosCerrado] = useState(false);
   const [aceptaBases, setAceptaBases] = useState(false);
@@ -88,7 +91,11 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
     setProcesando(true);
     const r = await escanear(cod);
     setProcesando(false);
-    if (r.ok) {
+    if (r.ok && r.yaEscaneado) {
+      setDestacado(r.standNumero ?? null);
+      setAviso(null);
+      setRepetido(r.standNombre ?? `Stand ${r.standNumero}`);
+    } else if (r.ok) {
       setDestacado(r.standNumero ?? null);
       setAviso({
         color: "success",
@@ -131,8 +138,8 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
     setScannerAbierto(false);
   };
 
-  const handleEntregar = async (pin: string) => {
-    const r = await entregar(pin);
+  const handleEntregar = async (pin: string, dni?: string) => {
+    const r = await entregar(pin, dni);
     return r.ok ? null : r.message;
   };
 
@@ -219,7 +226,11 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
                 <div className={styles.premioDetalle}>
                   <StandsEscaneados nombres={nombresEscaneados(avance)} tone={TONE} />
                   {premio.estado === "habilitado" && (
-                    <PremioPinForm onSubmit={handleEntregar} tone={TONE} />
+                    <PremioPinForm
+                      onSubmit={handleEntregar}
+                      pedirDni={PEDIR_DNI_EN_ENTREGA}
+                      tone={TONE}
+                    />
                   )}
                 </div>
               )}
@@ -305,6 +316,39 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
         />
       </BottomSheet>
 
+      <BottomSheet
+        open={!!repetido}
+        onClose={() => setRepetido(null)}
+        title="Ya escaneaste este stand"
+        tone={TONE}
+        footer={
+          puedeEscanear ? (
+            <div className={styles.terminos}>
+              <PortalButton
+                tone={TONE}
+                onClick={() => {
+                  setRepetido(null);
+                  abrirScanner();
+                }}
+              >
+                Escanear otro stand
+              </PortalButton>
+              <PortalButton tone={TONE} variant="secondary" onClick={() => setRepetido(null)}>
+                Cerrar
+              </PortalButton>
+            </div>
+          ) : (
+            <PortalButton tone={TONE} onClick={() => setRepetido(null)}>
+              ¡Entendido!
+            </PortalButton>
+          )
+        }
+      >
+        <p className={styles.sheetText}>
+          <strong>{repetido}</strong> ya está en tu recorrido, no suma de nuevo. Buscá un
+          stand que todavía no hayas visitado.
+        </p>
+      </BottomSheet>
       {scannerAbierto && (
         <QrScanner
           tone={TONE}

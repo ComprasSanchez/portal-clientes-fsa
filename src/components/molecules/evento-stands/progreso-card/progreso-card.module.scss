@@ -53,3 +53,27 @@
   font-size: 0.9rem;
   color: var(--tone-muted);
 }
+
+// Meta alcanzada: la tarjeta pasa a verde. `section.` le gana al fondo base de Card.
+section.completo {
+  border-color: #6ee7b7;
+  background: #ecfdf5;
+
+  .label,
+  .total,
+  .text {
+    color: #065f46;
+  }
+
+  .number {
+    color: #047857;
+  }
+
+  .segment {
+    background: #a7f3d0;
+  }
+
+  .filled {
+    background: #10b981;
+  }
+}

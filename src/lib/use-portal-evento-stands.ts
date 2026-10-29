@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { leerCodigoError, mensajeErrorEvento } from "@/lib/evento-stands";
 import type {
   PortalAvanceEvento,
@@ -8,7 +8,7 @@ import type {
 } from "@/types/portal-evento-stands";
 
 export type EventoAccionResult =
-  | { ok: true; standNumero?: number; standNombre?: string }
+  | { ok: true; standNumero?: number; standNombre?: string; yaEscaneado?: boolean }
   | { ok: false; message: string };
 
 export type UsePortalEventoStandsResult = {
@@ -17,7 +17,7 @@ export type UsePortalEventoStandsResult = {
   error: string | null;
   refresh: () => Promise<void>;
   escanear: (codigo: string) => Promise<EventoAccionResult>;
-  entregar: (pin: string) => Promise<EventoAccionResult>;
+  entregar: (pin: string, dni?: string) => Promise<EventoAccionResult>;
   aceptarTerminos: () => Promise<EventoAccionResult>;
 };
 
@@ -38,6 +38,12 @@ export const usePortalEventoStands = (): UsePortalEventoStandsResult => {
   const [avance, setAvance] = useState<PortalAvanceEvento | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Avance previo al escaneo: el registro es idempotente, así que comparar
+  // contra lo que ya tenía es lo que dice si el QR estaba escaneado.
+  const avanceRef = useRef<PortalAvanceEvento | null>(null);
+  useEffect(() => {
+    avanceRef.current = avance;
+  }, [avance]);
 
   const refresh = useCallback(async () => {
     try {
@@ -67,24 +73,28 @@ export const usePortalEventoStands = (): UsePortalEventoStandsResult => {
         { codigo },
       );
       if (!r.ok) return r;
+      const numero = r.data.stand_numero;
+      const yaEscaneado = !!avanceRef.current?.stands.find((s) => s.numero === numero)
+        ?.escaneado;
       setAvance(r.data.avance);
       setError(null);
-      const numero = r.data.stand_numero;
       return {
         ok: true,
         standNumero: numero,
         standNombre: r.data.avance.stands.find((s) => s.numero === numero)?.nombre,
+        yaEscaneado,
       };
     } catch {
       return { ok: false, message: mensajeErrorEvento(null) };
     }
   }, []);
 
-  const entregar = useCallback(async (pin: string): Promise<EventoAccionResult> => {
+  const entregar = useCallback(async (pin: string, dni?: string): Promise<EventoAccionResult> => {
     try {
-      const r = await post<PortalAvanceEvento>("/api/portal/me/evento-stands/entrega", {
-        pin,
-      });
+      const r = await post<PortalAvanceEvento>(
+        "/api/portal/me/evento-stands/entrega",
+        dni ? { pin, dni } : { pin },
+      );
       if (!r.ok) return r;
       setAvance(r.data);
       return { ok: true };

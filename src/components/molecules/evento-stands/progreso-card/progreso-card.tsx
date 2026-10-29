@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import Badge from "@/components/atoms/badge/badge";
 import Card from "@/components/atoms/card/card";
 import { type UiTone } from "@/types/ui-tone";
@@ -15,14 +16,21 @@ type ProgresoCardProps = {
 export default function ProgresoCard({ escaneados, meta, texto, tone = "socios" }: ProgresoCardProps) {
   const hechos = Math.min(escaneados, meta);
   const porcentaje = meta > 0 ? Math.round((hechos / meta) * 100) : 0;
+  const completo = meta > 0 && hechos >= meta;
 
   return (
-    <Card tone={tone}>
+    <Card tone={tone} className={completo ? styles.completo : ""}>
       <div className={styles.top}>
         <p className={styles.label}>Tu camino al premio</p>
-        <Badge tone={tone} color="neutral" size="sm">
-          {porcentaje}%
-        </Badge>
+        {completo ? (
+          <Badge tone={tone} color="success" size="sm" icon={<Check size={14} />}>
+            ¡Completado!
+          </Badge>
+        ) : (
+          <Badge tone={tone} color="neutral" size="sm">
+            {porcentaje}%
+          </Badge>
+        )}
       </div>
 
       <p className={styles.count}>

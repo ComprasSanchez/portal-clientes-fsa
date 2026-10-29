@@ -27,15 +27,37 @@ export function extraerCodigoDeQr(texto: string): string | null {
 export const nombresEscaneados = (avance: PortalAvanceEvento): string[] =>
   avance.stands.filter((s) => s.escaneado).map((s) => s.nombre);
 
-/** Debajo del contador: cuánto falta para el premio o si ya puede retirarlo. */
+/**
+ * Debajo del contador: antes de arrancar, cuántos stands hacen falta; después,
+ * una frase de ánimo que cambia con cada escaneo.
+ */
 export function textoProgresoPremio(avance: PortalAvanceEvento): string {
   if (avance.premio_entregado) return "Regalo entregado. ¡Gracias por participar!";
-  if (avance.puede_retirar) return "¡Ya podés retirar tu regalo!";
-  const faltan = avance.minimo_premio - avance.escaneados;
-  return faltan === 1
-    ? "Te falta 1 stand para tu regalo."
-    : `Te faltan ${faltan} stands para tu regalo.`;
+  if (avance.escaneados === 0) {
+    return `Te faltan ${avance.minimo_premio} stands para tu regalo.`;
+  }
+  return fraseMotivacional(avance.escaneados, avance.minimo_premio);
 }
+
+/**
+ * Se elige por lo que falta para el premio (no por el número de escaneos),
+ * así sigue teniendo sentido si cambia la meta.
+ */
+function fraseMotivacional(escaneados: number, minimo: number): string {
+  const faltan = minimo - escaneados;
+  if (faltan < 0) return "¡Seguí descubriendo! Tu regalo ya está asegurado.";
+  if (faltan === 0) return "¡Lo lograste! Pasá por el stand de premios a retirar tu regalo.";
+  if (faltan === 1) return "¡Te falta uno solo! El regalo está muy cerca.";
+  if (escaneados === 1) return "¡Arrancaste! Tu recorrido ya empezó.";
+  if (escaneados * 2 >= minimo) return "¡Ya pasaste la mitad! Seguí así.";
+  return "¡Bien ahí! Vas por buen camino.";
+}
+
+/**
+ * Si el personal carga también el DNI al entregar (un premio por DNI). Apagado
+ * para no frenar la fila en el evento: se entrega solo con el PIN, un premio por cuenta.
+ */
+export const PEDIR_DNI_EN_ENTREGA = false;
 
 /** Bajada del título del juego. */
 export const subtituloEvento = (minimo: number) =>
@@ -80,6 +102,9 @@ export const pasosComoFunciona = (minimo: number) => [
   },
 ];
 
+/** DNI que carga el personal al entregar: entre 6 y 9 dígitos sin contar ceros adelante. */
+export const dniValido = (dni: string) => /^d{6,9}$/.test(dni.replace(/^0+/, ""));
+
 /** Página de bases y condiciones del juego (provisoria hasta tener las definitivas). */
 export const BASES_EVENTO_URL = "/evento/bases";
 
@@ -96,6 +121,10 @@ export function mensajeErrorEvento(code: string | null | undefined): string {
       return "El PIN no es correcto.";
     case "EVENTO_STANDS_TERMINOS_PENDIENTES":
       return "Para jugar, primero aceptá las bases y condiciones.";
+    case "EVENTO_STANDS_DNI_INVALIDO":
+      return "Revisá el DNI: tiene que tener solo números.";
+    case "EVENTO_STANDS_DNI_YA_RETIRO":
+      return "Ese DNI ya retiró su regalo.";
     case "EVENTO_STANDS_PIN_BLOQUEADO":
       return "Se ingresó mal el PIN varias veces. Esperá unos minutos y volvé a intentar.";
     default:

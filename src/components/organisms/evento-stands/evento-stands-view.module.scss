@@ -56,6 +56,18 @@
   margin-bottom: 16px;
 }
 
+// Texto del aviso de stand ya escaneado.
+.sheetText {
+  margin: 0;
+  color: var(--tone-muted);
+  font-size: 1rem;
+  line-height: 1.5;
+
+  strong {
+    color: var(--tone-text);
+  }
+}
+
 // Celular: una columna en el orden del DOM (progreso, escanear, premio, stands, cómo funciona).
 .layout {
   display: grid;
