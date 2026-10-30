@@ -36,10 +36,13 @@ export function BotmakerChat() {
       return;
     }
 
-    const isMiHistorial =
-      pathname === "/cora" && searchParams.get("view") === "mi-historial";
+    // Solo se muestra en el Inicio de Socios y de CORA (sin vista o "dashboard").
+    const view = searchParams.get("view");
+    const isInicio =
+      (pathname === "/socios" || pathname === "/cora") &&
+      (!view || view === "dashboard");
 
-    document.body.toggleAttribute(HIDE_BODY_ATTRIBUTE, isMiHistorial);
+    document.body.toggleAttribute(HIDE_BODY_ATTRIBUTE, !isInicio);
 
     return () => {
       document.body.removeAttribute(HIDE_BODY_ATTRIBUTE);
