@@ -27,36 +27,24 @@ export function extraerCodigoDeQr(texto: string): string | null {
 export const nombresEscaneados = (avance: PortalAvanceEvento): string[] =>
   avance.stands.filter((s) => s.escaneado).map((s) => s.nombre);
 
-/**
- * Debajo del contador: antes de arrancar, cuántos stands hacen falta; después,
- * una frase de ánimo que cambia con cada escaneo.
- */
 export function textoProgresoPremio(avance: PortalAvanceEvento): string {
   if (avance.premio_entregado) return "Regalo entregado. ¡Gracias por participar!";
   if (avance.escaneados === 0) {
-    return `Te faltan ${avance.minimo_premio} stands para tu regalo.`;
+    return `Te faltan ${avance.minimo_premio} stands para desbloquear tu regalo.`;
   }
   return fraseMotivacional(avance.escaneados, avance.minimo_premio);
 }
 
-/**
- * Se elige por lo que falta para el premio (no por el número de escaneos),
- * así sigue teniendo sentido si cambia la meta.
- */
 function fraseMotivacional(escaneados: number, minimo: number): string {
   const faltan = minimo - escaneados;
   if (faltan < 0) return "¡Seguí descubriendo! Tu regalo ya está asegurado.";
   if (faltan === 0) return "¡Lo lograste! Pasá por el stand de premios a retirar tu regalo.";
-  if (faltan === 1) return "¡Te falta uno solo! El regalo está muy cerca.";
+  if (faltan === 1) return "Estás a un stand de conseguir tu regalo.";
   if (escaneados === 1) return "¡Arrancaste! Tu recorrido ya empezó.";
   if (escaneados * 2 >= minimo) return "¡Ya pasaste la mitad! Seguí así.";
-  return "¡Bien ahí! Vas por buen camino.";
+  return "¡Bien! Vas por buen camino.";
 }
 
-/**
- * Si el personal carga también el DNI al entregar (un premio por DNI). Apagado
- * para no frenar la fila en el evento: se entrega solo con el PIN, un premio por cuenta.
- */
 export const PEDIR_DNI_EN_ENTREGA = false;
 
 /** Bajada del título del juego. */

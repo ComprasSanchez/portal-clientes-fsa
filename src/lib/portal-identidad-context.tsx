@@ -38,7 +38,8 @@ export const PortalIdentidadProvider = ({ children }: { children: React.ReactNod
     let cancelado = false;
     consultarIdentidad()
       .then((r) => {
-        if (!cancelado) setStatus(r.status);
+        // Con `self_contact` puede validar sola: no se la manda a la sucursal.
+        if (!cancelado) setStatus(r.status === "UNAVAILABLE" && r.self_contact ? "PENDING" : r.status);
       })
       .catch(() => {
         // Si no se puede consultar, el portal se comporta como siempre (los

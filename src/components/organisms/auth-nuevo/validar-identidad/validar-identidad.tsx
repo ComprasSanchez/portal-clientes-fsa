@@ -21,6 +21,7 @@ import {
   iniciarValidacion,
   limpiarFlow,
   mensajeDeError,
+  validarConContactoPropio,
   type IdentidadCanal,
 } from "@/lib/auth-nuevo";
 import styles from "./validar-identidad.module.scss";
@@ -31,6 +32,9 @@ type Vista =
   | { tipo: "whatsapp"; destino: string }
   | { tipo: "codigo"; destino: string }
   | { tipo: "alta" }
+  // Ficha sin email ni celular: valida con uno propio.
+  | { tipo: "propio" }
+  | { tipo: "propio-celular" }
   | { tipo: "sucursal" }
   /** No se pudo consultar el estado (corte, demora): se reintenta, no es para la sucursal. */
   | { tipo: "error" };
@@ -50,6 +54,8 @@ export default function ValidarIdentidad() {
   const [enviando, setEnviando] = useState(false);
   const [code, setCode] = useState("");
   const [alta, setAlta] = useState({ nombre: "", apellido: "", nro_documento: "" });
+  const [emailPropio, setEmailPropio] = useState<string | null>(null);
+  const [celular, setCelular] = useState("");
   const pollRef = useRef<number | null>(null);
 
   const terminar = useCallback(() => {
@@ -64,6 +70,10 @@ export default function ValidarIdentidad() {
       if (r.status === "LINKED") return terminar();
       if (r.status === "PENDING") return setVista({ tipo: "elegir", canales: r.channels ?? [] });
       if (r.status === "ONBOARDING_REQUIRED") return setVista({ tipo: "alta" });
+      if (r.self_contact) {
+        setEmailPropio(r.self_contact.account_email_masked);
+        return setVista({ tipo: "propio" });
+      }
       setVista({ tipo: "sucursal" });
     } catch (err) {
       setError(mensajeDeError(err));
@@ -112,6 +122,38 @@ export default function ValidarIdentidad() {
           ? { tipo: "whatsapp", destino: r.validation.destination_masked }
           : { tipo: "codigo", destino: r.validation.destination_masked },
       );
+    } catch (err) {
+      setError(mensajeDeError(err));
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const codigoAlEmailPropio = async () => {
+    setEnviando(true);
+    setError(null);
+    try {
+      const r = await validarConContactoPropio({ channel: "email" });
+      setVista({ tipo: "codigo", destino: r.validation.destination_masked });
+    } catch (err) {
+      setError(mensajeDeError(err));
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const enviarCelular = async (e: FormEvent) => {
+    e.preventDefault();
+    if (enviando) return;
+    if (celular.length < 10) {
+      setError("Escribí el código de área sin 0 y el número sin 15 (ej: 351 1234567).");
+      return;
+    }
+    setEnviando(true);
+    setError(null);
+    try {
+      const r = await validarConContactoPropio({ channel: "whatsapp", telefono: celular });
+      setVista({ tipo: "whatsapp", destino: r.validation.destination_masked });
     } catch (err) {
       setError(mensajeDeError(err));
     } finally {
@@ -212,6 +254,77 @@ export default function ValidarIdentidad() {
           {error && <Alert color="warning">{error}</Alert>}
           <PortalButton type="submit" tone="socios" disabled={enviando}>
             {enviando ? "Guardando…" : "Continuar"}
+          </PortalButton>
+        </form>
+      </AuthCard>
+    );
+  }
+
+  if (vista.tipo === "propio") {
+    return (
+      <AuthCard
+        title="Validá tu identidad"
+        subtitle="Ya sos cliente, pero no tenemos un email ni un celular tuyo para confirmar que sos vos. Elegí cómo validarlo."
+        footer={pie}
+      >
+        <MetodoOption
+          icon={<MessageCircle size={22} />}
+          title="Con tu celular por WhatsApp"
+          text="Te mandamos un mensaje para que lo confirmes"
+          onClick={() => {
+            setError(null);
+            setVista({ tipo: "propio-celular" });
+          }}
+          disabled={enviando}
+          tone="socios"
+        />
+        {emailPropio && (
+          <MetodoOption
+            icon={<Mail size={22} />}
+            title="Con un código por email"
+            text={`A ${emailPropio}`}
+            onClick={() => void codigoAlEmailPropio()}
+            disabled={enviando}
+            tone="socios"
+          />
+        )}
+        {error && <Alert color="warning">{error}</Alert>}
+        <p className={styles.tip}>
+          Lo que confirmes queda guardado en tus datos de cliente. También podés validarlo en
+          cualquier sucursal con tu DNI.
+        </p>
+      </AuthCard>
+    );
+  }
+
+  if (vista.tipo === "propio-celular") {
+    return (
+      <AuthCard
+        title="Tu celular"
+        subtitle="Te vamos a mandar un WhatsApp con un botón para confirmar que el número es tuyo."
+        onBack={() => {
+          setError(null);
+          setVista({ tipo: "propio" });
+        }}
+        footer={pie}
+      >
+        <form className={styles.form} onSubmit={enviarCelular} noValidate>
+          <TextField
+            id="validar-celular"
+            label="Celular"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            maxLength={13}
+            placeholder="351 1234567"
+            hint="Código de área sin 0 y número sin 15."
+            value={celular}
+            onChange={(e) => setCelular(e.target.value.replace(/\D/g, ""))}
+            autoFocus
+          />
+          {error && <Alert color="warning">{error}</Alert>}
+          <PortalButton type="submit" tone="socios" disabled={enviando}>
+            {enviando ? "Enviando…" : "Enviar WhatsApp"}
           </PortalButton>
         </form>
       </AuthCard>
