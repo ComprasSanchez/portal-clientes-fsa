@@ -1,0 +1,124 @@
+.button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--tone-primary);
+  color: var(--tone-on-primary, #fff);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 8px 20px var(--tone-shadow);
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+
+  &:hover {
+    background: var(--tone-primary-hover);
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid currentColor;
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
+}
+
+.copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.arrow {
+  flex-shrink: 0;
+}
+
+.fabLabel {
+  display: none;
+}
+
+// Celular: botón redondo fijo abajo al centro, con la etiqueta debajo.
+@media (max-width: 1023px) {
+  .flotante {
+    position: fixed;
+    left: 50%;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    z-index: 45;
+    width: auto;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--tone-text);
+    transform: translateX(-50%);
+
+    &:hover {
+      background: transparent;
+    }
+
+    &:active {
+      transform: translateX(-50%) scale(0.96);
+    }
+
+    .icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      background: var(--tone-primary);
+      color: var(--tone-on-primary, #fff);
+      box-shadow: 0 10px 24px var(--tone-shadow);
+
+      svg {
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    .copy,
+    .arrow {
+      display: none;
+    }
+
+    .fabLabel {
+      display: block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: #fff;
+      font-size: 0.8rem;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+  }
+}

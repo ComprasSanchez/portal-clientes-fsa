@@ -1,0 +1,55 @@
+.wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.box {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border: 2px solid var(--tone-border-hover);
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: transparent;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.input:checked + .box {
+  border-color: var(--tone-primary);
+  background: var(--tone-primary);
+  color: var(--tone-on-primary, #fff);
+}
+
+.input:focus-visible + .box {
+  box-shadow: 0 0 0 4px var(--tone-focus-ring);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 0.95rem;
+  color: var(--tone-text);
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--tone-muted);
+}

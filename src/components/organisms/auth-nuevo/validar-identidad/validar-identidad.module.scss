@@ -1,0 +1,21 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  color: var(--tone-primary);
+  cursor: pointer;
+}
+
+.tip {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--tone-muted);
+}

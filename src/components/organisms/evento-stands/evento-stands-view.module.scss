@@ -1,0 +1,195 @@
+// Va dentro del contenedor de /socios (menú, header y márgenes los pone el portal).
+.page {
+  width: 100%;
+  max-width: 1120px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: -8px;
+}
+
+.badgeIcon {
+  color: var(--tone-primary);
+}
+
+.title {
+  margin: 16px 0 8px;
+  max-width: 12ch;
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--tone-text);
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 440px;
+  font-size: 1.1rem;
+  color: var(--tone-muted);
+}
+
+// Solo en celular: en escritorio "Cómo funciona" está al pie de la pantalla.
+.ayudaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 18px;
+  border: 1.5px solid var(--tone-text);
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tone-text);
+  cursor: pointer;
+}
+
+.aviso {
+  margin-bottom: 16px;
+}
+
+// Texto del aviso de stand ya escaneado.
+.sheetText {
+  margin: 0;
+  color: var(--tone-muted);
+  font-size: 1rem;
+  line-height: 1.5;
+
+  strong {
+    color: var(--tone-text);
+  }
+}
+
+// Celular: una columna en el orden del DOM (progreso, escanear, premio, stands, cómo funciona).
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.premioDetalle {
+  margin-top: 16px;
+}
+
+// La lista va suelta (sin tarjeta), separada por una línea.
+.stands {
+  padding-top: 20px;
+  border-top: 1px solid var(--tone-border);
+}
+
+.standsHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.standsTitle {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--tone-text);
+}
+
+.standsText {
+  margin: 4px 0 14px;
+  font-size: 0.95rem;
+  color: var(--tone-muted);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--tone-text);
+}
+
+.standsCount {
+  margin: 0;
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  color: var(--tone-muted);
+}
+
+.comoFuncionaBody {
+  margin-top: 16px;
+}
+
+// En celular va en el modal (botón "¿Cómo funciona?"), no al pie.
+.comoFunciona {
+  display: none;
+}
+
+// Celular: el botón de escanear flota abajo al centro; se deja lugar para que
+// no tape el final de la lista, y su celda no suma un hueco en la grilla.
+@media (max-width: 1023px) {
+  .conBotonFlotante {
+    padding-bottom: 120px;
+  }
+
+  .escanear {
+    display: contents;
+  }
+}
+
+// Escritorio: izquierda progreso / escanear / premio, derecha los stands, abajo cómo funciona.
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 340px minmax(0, 1fr);
+    grid-template-areas:
+      "progreso stands"
+      "escanear stands"
+      "premio stands"
+      "como como";
+    grid-template-rows: auto auto 1fr auto;
+    align-items: start;
+  }
+
+  .progreso {
+    grid-area: progreso;
+  }
+
+  .escanear {
+    grid-area: escanear;
+  }
+
+  .premio {
+    grid-area: premio;
+  }
+
+  .stands {
+    grid-area: stands;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .comoFunciona {
+    display: block;
+    grid-area: como;
+  }
+
+  .ayudaButton {
+    display: none;
+  }
+}
+
+.terminos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.terminosLink {
+  font-weight: 600;
+  color: var(--tone-primary-text, var(--tone-primary));
+  text-decoration: underline;
+}

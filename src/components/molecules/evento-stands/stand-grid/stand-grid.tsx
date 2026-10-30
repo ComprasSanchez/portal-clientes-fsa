@@ -1,0 +1,71 @@
+import { Check, QrCode } from "lucide-react";
+import Badge from "@/components/atoms/badge/badge";
+import { toneClass, type UiTone } from "@/types/ui-tone";
+import type { PortalEventoStand } from "@/types/portal-evento-stands";
+import styles from "./stand-grid.module.scss";
+
+type StandGridProps = {
+  stands: PortalEventoStand[];
+  /** Stand recién escaneado, para resaltarlo. */
+  destacado?: number | null;
+  /** Al tocar un stand pendiente (abre el escáner). Sin valor, la lista no es clickeable. */
+  onSelectPendiente?: () => void;
+  tone?: UiTone;
+};
+
+/** Lista de los stands del evento: número, nombre, estado y QR (o tilde si ya se escaneó). */
+export default function StandGrid({
+  stands,
+  destacado = null,
+  onSelectPendiente,
+  tone = "socios",
+}: StandGridProps) {
+  return (
+    <ul className={`${styles.grid} ${toneClass(tone)}`}>
+      {stands.map((s) => {
+        const clickeable = !s.escaneado && !!onSelectPendiente;
+        const contenido = (
+          <>
+            <span className={styles.number} aria-hidden>
+              {String(s.numero).padStart(2, "0")}
+            </span>
+            <span className={styles.name}>{s.nombre}</span>
+            <Badge tone={tone} color={s.escaneado ? "solid" : "neutral"} size="sm">
+              {s.escaneado ? "Escaneado" : "Pendiente"}
+            </Badge>
+            <span className={styles.mark} aria-hidden>
+              {s.escaneado ? <Check size={20} strokeWidth={3} /> : <QrCode size={22} />}
+            </span>
+          </>
+        );
+
+        return (
+          <li
+            key={s.numero}
+            className={`${styles.item} ${s.escaneado ? styles.done : ""} ${
+              destacado === s.numero ? styles.highlight : ""
+            }`}
+          >
+            {clickeable ? (
+              <button
+                type="button"
+                className={styles.row}
+                onClick={onSelectPendiente}
+                aria-label={`Escanear ${s.nombre}`}
+              >
+                {contenido}
+              </button>
+            ) : (
+              <div
+                className={styles.row}
+                aria-label={`${s.nombre}: ${s.escaneado ? "escaneado" : "pendiente"}`}
+              >
+                {contenido}
+              </div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}

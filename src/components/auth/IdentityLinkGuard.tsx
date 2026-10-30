@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { isLoginNuevoActivo } from "@/lib/auth-nuevo";
 
 type IdentityLinkStatusResponse = {
   ok?: boolean;
@@ -23,6 +24,10 @@ export function IdentityLinkGuard() {
   const currentQuery = searchParams.toString();
 
   useEffect(() => {
+    // Login nuevo: la cuenta sin vincular entra en modo limitado (ver
+    // PortalIdentidadProvider) en lugar de ir al formulario de vinculación.
+    if (isLoginNuevoActivo()) return;
+
     const routeKey = `${pathname}?${currentQuery}`;
     if (lastCheckedKeyRef.current === routeKey) {
       return;

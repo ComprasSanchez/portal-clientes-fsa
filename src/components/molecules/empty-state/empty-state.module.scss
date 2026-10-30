@@ -35,7 +35,7 @@
   height: 3.5rem;
   border-radius: 9999px;
   background: var(--tone-soft);
-  color: var(--tone-primary);
+  color: var(--tone-primary-text, var(--tone-primary));
   opacity: 0.85;
 }
 

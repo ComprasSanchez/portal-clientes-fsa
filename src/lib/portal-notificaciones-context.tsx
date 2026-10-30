@@ -6,6 +6,7 @@ import {
   type UsePortalNotificacionesResult,
 } from "@/lib/use-portal-notificaciones";
 import { useGlobalToast } from "@/components/ui/global-toast";
+import { useIdentidad } from "@/lib/portal-identidad-context";
 
 const PortalNotificacionesContext =
   createContext<UsePortalNotificacionesResult | null>(null);
@@ -21,7 +22,9 @@ type PortalNotificacionesProviderProps = {
 export const PortalNotificacionesProvider = ({
   children,
 }: PortalNotificacionesProviderProps) => {
-  const value = usePortalNotificaciones();
+  // Sin cuenta vinculada (modo limitado) no se pide: respondería 403.
+  const { vinculada } = useIdentidad();
+  const value = usePortalNotificaciones(vinculada);
   const { pushToast } = useGlobalToast();
   const seenIdsRef = useRef<Set<string> | null>(null);
 
