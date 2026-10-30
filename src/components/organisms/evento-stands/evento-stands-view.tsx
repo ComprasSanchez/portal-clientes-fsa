@@ -160,7 +160,10 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
   const minimo = avance?.minimo_premio ?? MINIMO_POR_DEFECTO;
   // Al llegar a la meta ya no se ofrece escanear: el foco pasa a retirar el regalo.
   const puedeEscanear =
-    !!avance && avance.escaneados < avance.minimo_premio && !avance.premio_entregado;
+    !!avance &&
+    avance.escaneados < avance.minimo_premio &&
+    !avance.premio_entregado &&
+    !avance.premios_agotados;
 
   return (
     <div className={PAGE_CLASS}>
