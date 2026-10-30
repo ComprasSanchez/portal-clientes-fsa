@@ -105,7 +105,7 @@ export const pasosComoFunciona = (minimo: number) => [
 /** DNI que carga el personal al entregar: entre 6 y 9 dígitos sin contar ceros adelante. */
 export const dniValido = (dni: string) => /^d{6,9}$/.test(dni.replace(/^0+/, ""));
 
-/** Página de bases y condiciones del juego (provisoria hasta tener las definitivas). */
+/** Página de bases y condiciones del juego. */
 export const BASES_EVENTO_URL = "/evento/bases";
 
 /** Texto para el cliente según el código de error del backend (sin jerga técnica). */
