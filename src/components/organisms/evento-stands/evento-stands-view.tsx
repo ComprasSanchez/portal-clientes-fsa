@@ -156,16 +156,14 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
     );
   }
 
-  // TEMPORAL: vista previa de regalos agotados, sacar antes de subir.
-  const avancePreview = avance ? { ...avance, premios_agotados: true } : null;
-  const premio = avancePreview ? premioCopy(avancePreview) : null;
+  const premio = avance ? premioCopy(avance) : null;
   const minimo = avance?.minimo_premio ?? MINIMO_POR_DEFECTO;
   // Al llegar a la meta ya no se ofrece escanear: el foco pasa a retirar el regalo.
   const puedeEscanear =
-    !!avancePreview &&
-    avancePreview.escaneados < avancePreview.minimo_premio &&
-    !avancePreview.premio_entregado &&
-    !avancePreview.premios_agotados;
+    !!avance &&
+    avance.escaneados < avance.minimo_premio &&
+    !avance.premio_entregado &&
+    !avance.premios_agotados;
 
   return (
     <div className={PAGE_CLASS}>
@@ -210,7 +208,7 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
             <ProgresoCard
               escaneados={avance.escaneados}
               meta={avance.minimo_premio}
-              texto={textoProgresoPremio(avancePreview ?? avance)}
+              texto={textoProgresoPremio(avance)}
               tone={TONE}
             />
           </div>
