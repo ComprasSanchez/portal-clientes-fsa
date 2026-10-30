@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { MainLayout } from "../components/templates/MainLayout";
 import { Login } from "@/components/organisms/login/login";
 import { recoverConvenioFromCanal } from "@/lib/convenio-link-recovery";
+import { isLoginNuevoActivo } from "@/lib/auth-nuevo";
 
 type HomePageProps = {
   searchParams: Promise<{
@@ -16,8 +17,14 @@ type HomePageProps = {
     canal?: string | string[];
     redirectTo?: string | string[];
     sessionExpired?: string | string[];
+    sucursalCodigo?: string | string[];
+    sucursal?: string | string[];
+    /** `clasico`: el login de siempre aunque esté prendido el nuevo (ej. "Olvidé mi contraseña"). */
+    login?: string | string[];
   }>;
 };
+
+const first = (value?: string | string[]) => (Array.isArray(value) ? value[0] : value);
 
 export default async function Home({ searchParams }: HomePageProps) {
   const cookieStore = await cookies();
@@ -95,6 +102,25 @@ export default async function Home({ searchParams }: HomePageProps) {
     redirect(
       `/?convenio=${encodeURIComponent(convenioParam)}${canalQuery}&redirectTo=${encodeURIComponent(sociosTarget)}`,
     );
+  }
+
+  // Login nuevo (mismos pasos que la app). Los links del login de siempre
+  // (verificación de email, alta con Google, vinculación pendiente) siguen acá.
+  if (
+    isLoginNuevoActivo() &&
+    first(query.login) !== "clasico" &&
+    !hasPendingIdentityLink &&
+    !hasPendingGoogleOnboarding &&
+    !hasVerificationToken
+  ) {
+    const params = new URLSearchParams();
+    if (rawRedirectTo) params.set("redirectTo", rawRedirectTo);
+    if (canalParam) params.set("canal", canalParam);
+    if (convenioParam) params.set("convenio", convenioParam);
+    const sucursal = first(query.sucursalCodigo) ?? first(query.sucursal);
+    if (sucursal) params.set("sucursalCodigo", sucursal);
+    const qs = params.toString();
+    redirect(qs ? `/ingresar?${qs}` : "/ingresar");
   }
 
   return (

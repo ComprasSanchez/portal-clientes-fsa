@@ -1,0 +1,79 @@
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tone-muted);
+}
+
+.count {
+  margin: 14px 0 16px;
+  color: var(--tone-text);
+}
+
+.number {
+  font-size: 3.4rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.total {
+  font-size: 1.1rem;
+  color: var(--tone-muted);
+}
+
+.bar {
+  display: flex;
+  gap: 6px;
+}
+
+.segment {
+  position: relative;
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--tone-soft);
+  transition: background 0.25s ease;
+}
+
+.filled {
+  background: var(--tone-primary);
+}
+
+.text {
+  margin: 14px 0 0;
+  font-size: 0.9rem;
+  color: var(--tone-muted);
+}
+
+// Meta alcanzada: la tarjeta pasa a verde. `section.` le gana al fondo base de Card.
+section.completo {
+  border-color: #6ee7b7;
+  background: #ecfdf5;
+
+  .label,
+  .total,
+  .text {
+    color: #065f46;
+  }
+
+  .number {
+    color: #047857;
+  }
+
+  .segment {
+    background: #a7f3d0;
+  }
+
+  .filled {
+    background: #10b981;
+  }
+}

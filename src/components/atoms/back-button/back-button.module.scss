@@ -24,7 +24,7 @@
   border-radius: 0.75rem;
   border: 1px solid var(--tone-border);
   background: #ffffff;
-  color: var(--tone-primary);
+  color: var(--tone-primary-text, var(--tone-primary));
 
   &:hover {
     border-color: var(--tone-border-hover);

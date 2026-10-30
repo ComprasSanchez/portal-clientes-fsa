@@ -18,6 +18,13 @@ import Badge from "@/components/atoms/badge/badge";
 import Card from "@/components/atoms/card/card";
 import EmptyState from "@/components/molecules/empty-state/empty-state";
 import InstallAppCard from "@/components/molecules/install-app-card/install-app-card";
+import EventoStandsCard from "@/components/molecules/evento-stands/evento-stands-card/evento-stands-card";
+import EventoStandsView from "@/components/organisms/evento-stands/evento-stands-view";
+import PerfilCompletoCard from "@/components/molecules/perfil-completo-card/perfil-completo-card";
+import { usePerfilCompleto } from "@/lib/use-perfil-completo";
+import IdentityGate from "@/components/molecules/identity-gate/identity-gate";
+import { useIdentidad } from "@/lib/portal-identidad-context";
+import { MOTIVO_GENERAL, motivoSocios } from "@/lib/identidad-motivos";
 import Pagination from "@/components/molecules/pagination/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DetailButton } from "@/components/molecules/home/DetailButton";
@@ -109,6 +116,10 @@ const viewContent: Record<
     description:
       "Encontrá la sucursal más cercana, consultá horarios y accedé a indicaciones.",
   },
+  evento: {
+    title: "Juego de stands",
+    description: "Escaneá los stands del evento y retirá tu premio.",
+  },
   "colaboradores-ventas": {
     title: "Mis ventas",
     description: "Tu desempeño en el mostrador, día a día.",
@@ -143,25 +154,27 @@ export function SociosViews({
   const [facturasPage, setFacturasPage] = useState(0);
   const hasAffiliateNumber = Boolean(affiliateNumber?.trim());
   const { error: expedientesError } = usePortalExpedientesContext();
+  const identidad = useIdentidad();
   const {
     summary: puntosSummary,
     isLoading: isPointsLoading,
     error: pointsError,
-  } = usePortalPuntos();
+  } = usePortalPuntos({ enabled: identidad.vinculada });
   const {
     historial: puntosHistorial,
     isLoading: isHistorialLoading,
     error: historialError,
     page: historialPage,
     setPage: setHistorialPage,
-  } = usePortalPuntosHistorial({ enabled: currentView === "puntos" });
+  } = usePortalPuntosHistorial({ enabled: identidad.vinculada && currentView === "puntos" });
+  const perfilCompleto = usePerfilCompleto(perfil);
   const {
     compras,
     summary: comprasSummary,
     isLoading: isComprasLoading,
     error: comprasError,
   } = usePortalCompras({
-    enabled: currentView === "facturas",
+    enabled: identidad.vinculada && currentView === "facturas",
     limit: 100,
     offset: 0,
   });
@@ -275,6 +288,51 @@ export function SociosViews({
     // },
   ];
 
+  // Modo limitado (login nuevo): la cuenta todavía no está vinculada a su DNI.
+  // Solo el Inicio reducido y el juego de stands; el resto pide validar.
+  if (identidad.cargando) {
+    return (
+      <main className={styles.container}>
+        <SociosDashboardSkeleton />
+      </main>
+    );
+  }
+
+  if (!identidad.vinculada && currentView !== "evento") {
+    const gate = (
+      <IdentityGate
+        tone="socios"
+        status={identidad.status}
+        motivo={currentView === "dashboard" ? MOTIVO_GENERAL : motivoSocios(currentView)}
+      />
+    );
+    if (currentView !== "dashboard") {
+      return <main className={styles.container}>{gate}</main>;
+    }
+    return (
+      <main className={styles.container}>
+        <section className={styles.dashboardSection}>
+          <InstallAppCard tone="socios" />
+          <EventoStandsCard tone="breve" onOpen={() => onNavigate("evento")} />
+          <div>
+            <h1 className={styles.welcomeTitle}>¡Hola! 👋</h1>
+            <p className={styles.welcomeSubtitle}>
+              Tus beneficios, puntos y sorteos en un solo lugar
+            </p>
+          </div>
+          {gate}
+          <div className="hidden sm:block">
+            <BannerCarousel />
+          </div>
+          <div className="sm:hidden">
+            <BannerSocioMobileCarousel />
+          </div>
+          <BeneficiosCarousel />
+        </section>
+      </main>
+    );
+  }
+
   if (currentView === "mi-cuenta") {
     return (
       <main className={styles.container}>
@@ -303,6 +361,17 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <NotificacionesView tone="socios" onBack={() => onNavigate("dashboard")} />
+      </main>
+    );
+  }
+
+  if (currentView === "evento") {
+    return (
+      <main className={styles.container}>
+        <EventoStandsView
+          urlVista="/socios?view=evento"
+          onBack={() => onNavigate("dashboard")}
+        />
       </main>
     );
   }
@@ -661,6 +730,17 @@ export function SociosViews({
     <main className={styles.container}>
       <section className={styles.dashboardSection}>
         <InstallAppCard tone="socios" />
+
+        <EventoStandsCard tone="breve" onOpen={() => onNavigate("evento")} />
+
+        {perfilCompleto.visible && (
+          <PerfilCompletoCard
+            tone="socios"
+            pendientes={perfilCompleto.pendientes}
+            onSelect={() => onNavigate("mi-cuenta")}
+            onDismiss={perfilCompleto.ocultar}
+          />
+        )}
 
         <div>
           <h1 className={styles.welcomeTitle}>¡Hola, {perfil?.nombre}! 👋</h1>

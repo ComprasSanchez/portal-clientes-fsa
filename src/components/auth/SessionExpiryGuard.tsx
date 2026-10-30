@@ -9,6 +9,10 @@ type SessionResponse = {
   expiresAt?: number | null;
 };
 
+// setTimeout acepta como máximo ~24,8 días; con más (ej. sesión "recordada" de
+// 30 días) el navegador lo dispara al instante y cerraba la sesión enseguida.
+const MAX_TIMEOUT_MS = 2_147_483_647;
+
 export function SessionExpiryGuard() {
   const router = useRouter();
   const pathname = usePathname();
@@ -81,9 +85,14 @@ export function SessionExpiryGuard() {
           return;
         }
 
-        timeoutRef.current = window.setTimeout(() => {
-          void redirectToLogin();
-        }, remainingMs);
+        // Si vence antes del máximo, se cierra al vencer; si no, al cumplirse el
+        // máximo se vuelve a consultar (la sesión pudo renovarse mientras tanto).
+        timeoutRef.current = window.setTimeout(
+          () => {
+            void (remainingMs <= MAX_TIMEOUT_MS ? redirectToLogin() : syncSessionExpiry());
+          },
+          Math.min(remainingMs, MAX_TIMEOUT_MS),
+        );
       } catch {
         // Ignore transient session-sync failures.
       }

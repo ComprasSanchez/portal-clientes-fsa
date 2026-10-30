@@ -1,0 +1,128 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tone-soft);
+  color: var(--tone-primary);
+}
+
+.copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--tone-text);
+}
+
+.text {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  color: var(--tone-muted);
+}
+
+.close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--tone-muted);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--tone-soft-hover);
+  }
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--tone-soft);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--tone-primary);
+  transition: width 0.3s ease;
+}
+
+.count {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--tone-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li + li {
+    border-top: 1px solid var(--tone-border);
+  }
+}
+
+.item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 2px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.itemLabel {
+  font-size: 0.95rem;
+  color: var(--tone-text);
+}
+
+.itemAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--tone-primary);
+}
