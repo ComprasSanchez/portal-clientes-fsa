@@ -361,11 +361,11 @@ body {
 }
 
 /* Oculta el widget de chat de Botmaker en las pantallas donde no queremos
-   que aparezca (ver BotmakerChat.tsx). El widget renderiza su boton como
-   #wc-button (y el resto de su UI con clases wc-*). */
-body[data-hide-botmaker] #wc-button,
-body[data-hide-botmaker] [id^="wc-"],
-body[data-hide-botmaker] [class*="wc-"] {
+   que aparezca (ver BotmakerChat.tsx). El boton y el chat viven dentro de un
+   iframe (los wc-* no se alcanzan desde aca); en la pagina solo queda un div
+   sin id que envuelve a <iframe name="Botmaker">, asi que se ocultan esos. */
+body[data-hide-botmaker] iframe[name="Botmaker"],
+body[data-hide-botmaker] div:has(> iframe[name="Botmaker"]) {
   display: none !important;
 }
 
