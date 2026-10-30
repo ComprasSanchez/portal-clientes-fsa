@@ -31,7 +31,9 @@ type Vista =
   | { tipo: "whatsapp"; destino: string }
   | { tipo: "codigo"; destino: string }
   | { tipo: "alta" }
-  | { tipo: "sucursal" };
+  | { tipo: "sucursal" }
+  /** No se pudo consultar el estado (corte, demora): se reintenta, no es para la sucursal. */
+  | { tipo: "error" };
 
 const POLL_MS = 4000;
 
@@ -65,9 +67,17 @@ export default function ValidarIdentidad() {
       setVista({ tipo: "sucursal" });
     } catch (err) {
       setError(mensajeDeError(err));
-      setVista({ tipo: "sucursal" });
+      setVista({ tipo: "error" });
     }
   }, [terminar]);
+
+  const reintentar = () => {
+    setVista({ tipo: "cargando" });
+    void cargar();
+  };
+
+  // Sin validar igual puede usar el portal (modo limitado).
+  const irAlPortal = () => window.location.assign(destinoFinal);
 
   useEffect(() => {
     void cargar();
@@ -208,17 +218,33 @@ export default function ValidarIdentidad() {
     );
   }
 
+  if (vista.tipo === "error") {
+    return (
+      <AuthCard title="Validá tu identidad" footer={pie}>
+        <Alert color="warning">{error ?? "No pudimos cargar tus datos."}</Alert>
+        <PortalButton tone="socios" onClick={reintentar}>
+          Probar de nuevo
+        </PortalButton>
+        <PortalButton tone="socios" variant="secondary" onClick={irAlPortal}>
+          Ir al portal
+        </PortalButton>
+      </AuthCard>
+    );
+  }
+
   if (vista.tipo === "sucursal") {
     return (
       <AuthCard title="Validá tu identidad" footer={pie}>
-        {error && <Alert color="warning">{error}</Alert>}
         <EmptyState
           icon={Store}
           tone="socios"
           variant="plain"
-          title="Acercate a una sucursal"
-          text="No pudimos validar tu identidad desde acá. Acercate a cualquier sucursal con tu DNI y te ayudamos."
+          title="Terminá la validación en una sucursal"
+          text="No pudimos confirmar desde acá que sos vos. Mientras tanto podés seguir usando el portal, y cuando pases por cualquier sucursal con tu DNI terminamos de validar tu identidad."
         />
+        <PortalButton tone="socios" onClick={irAlPortal}>
+          Ir al portal
+        </PortalButton>
       </AuthCard>
     );
   }

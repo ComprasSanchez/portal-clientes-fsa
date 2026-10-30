@@ -200,7 +200,7 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
       {error && !avance && <Alert color="warning">{error}</Alert>}
 
       {avance && premio && (
-        <div className={styles.layout}>
+        <div className={`${styles.layout} ${puedeEscanear ? styles.conBotonFlotante : ""}`}>
           <div className={styles.progreso}>
             <ProgresoCard
               escaneados={avance.escaneados}
@@ -212,7 +212,12 @@ export default function EventoStandsView({ urlVista, onBack }: EventoStandsViewP
 
           {puedeEscanear && (
             <div className={styles.escanear}>
-              <EscanearCta onClick={abrirScanner} disabled={procesando} tone={TONE} />
+              <EscanearCta
+                onClick={abrirScanner}
+                disabled={procesando}
+                flotanteEnCelular
+                tone={TONE}
+              />
             </div>
           )}
 
