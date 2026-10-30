@@ -15,6 +15,8 @@ export type PortalAvanceEvento = {
   puede_retirar: boolean;
   premio_entregado: boolean;
   premio_entregado_at: string | null;
+  /** Ya se entregaron todos los regalos disponibles. */
+  premios_agotados?: boolean;
   /** Aceptó las bases y condiciones; sin esto no puede escanear. */
   terminos_aceptados: boolean;
   stands: PortalEventoStand[];

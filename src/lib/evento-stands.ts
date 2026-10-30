@@ -33,8 +33,10 @@ export const nombresEscaneados = (avance: PortalAvanceEvento): string[] =>
  */
 export function textoProgresoPremio(avance: PortalAvanceEvento): string {
   if (avance.premio_entregado) return "Regalo entregado. ¡Gracias por participar!";
+  if (avance.premios_agotados) return "Se entregaron todos los regalos. ¡Gracias por participar!";
   if (avance.escaneados === 0) {
-    return `Te faltan ${avance.minimo_premio} stands para tu regalo.`;
+    return `Te faltan ${avance.minimo_premio} stands 
+     tu regalo.`;
   }
   return fraseMotivacional(avance.escaneados, avance.minimo_premio);
 }
@@ -77,6 +79,13 @@ export function premioCopy(avance: PortalAvanceEvento): {
 } {
   if (avance.premio_entregado) {
     return { estado: "entregado", title: "Regalo entregado", text: "¡Gracias por participar!" };
+  }
+  if (avance.premios_agotados) {
+    return {
+      estado: "bloqueado",
+      title: "Se agotaron los regalos",
+      text: "Ya se entregaron todos los regalos del evento. ¡Gracias por participar!",
+    };
   }
   if (avance.puede_retirar) {
     return {
@@ -125,6 +134,8 @@ export function mensajeErrorEvento(code: string | null | undefined): string {
       return "Revisá el DNI: tiene que tener solo números.";
     case "EVENTO_STANDS_DNI_YA_RETIRO":
       return "Ese DNI ya retiró su regalo.";
+    case "EVENTO_STANDS_SIN_PREMIOS":
+      return "Ya se entregaron todos los regalos del evento.";
     case "EVENTO_STANDS_PIN_BLOQUEADO":
       return "Se ingresó mal el PIN varias veces. Esperá unos minutos y volvé a intentar.";
     default:
