@@ -330,7 +330,7 @@ function toAuthError(status: number, body: ApiErrorBody): AuthNuevoError {
     AUTH_EMAIL_LOGIN_CHALLENGE_INVALID: "El código ya no es válido. Pedí uno nuevo.",
     AUTH_REGISTER_EMAIL_IN_USE: "Ya existe una cuenta con ese email. Iniciá sesión con tu email.",
     AUTH_REGISTER_DOCUMENTO_ALREADY_LINKED: maskedEmail
-      ? `Ya existe una cuenta con ese DNI (${maskedEmail}). Iniciá sesión con ese email.`
+      ? `Ese DNI ya está asociado a la cuenta ${maskedEmail}. Cerrá sesión y entrá con esa cuenta.`
       : "Ya existe una cuenta con ese DNI. Iniciá sesión con tu email.",
     AUTH_REGISTER_EMAIL_SEND_FAILED: "No pudimos enviarte el código. Revisá el email y probá de nuevo.",
     AUTH_REGISTER_CODE_INVALID: codigoIncorrecto(attempts),

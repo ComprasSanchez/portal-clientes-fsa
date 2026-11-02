@@ -38,7 +38,14 @@ export const PortalIdentidadProvider = ({ children }: { children: React.ReactNod
     let cancelado = false;
     consultarIdentidad()
       .then((r) => {
-        if (!cancelado) setStatus(r.status);
+        if (cancelado) return;
+        // Como la app: sin nombre y DNI no entra al portal.
+        if (r.status === "ONBOARDING_REQUIRED") {
+          const volverA = `${window.location.pathname}${window.location.search}`;
+          window.location.assign(`/validar-identidad?redirectTo=${encodeURIComponent(volverA)}`);
+          return;
+        }
+        setStatus(r.status);
       })
       .catch(() => {
         // Si no se puede consultar, el portal se comporta como siempre (los
