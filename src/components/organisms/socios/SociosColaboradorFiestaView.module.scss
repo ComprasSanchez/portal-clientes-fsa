@@ -136,16 +136,48 @@
   color: #5f7c85;
 }
 
-.grupoPremios + .grupoPremios {
-  margin-top: 1rem;
+.acordeon {
+  margin-top: 0.25rem;
 }
 
-.grupoTitulo {
-  font-size: 0.8rem;
+.nivelTrigger {
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  font-size: 1rem;
+  color: #17343d;
+
+  &:hover {
+    text-decoration: none;
+  }
+
+  // La info del nivel va pegada a la flecha, contra el borde derecho.
+  [data-slot="accordion-trigger-icon"] {
+    margin-left: 0;
+  }
+}
+
+.nivelTitulo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+}
+
+.nivelPuntos {
+  font-weight: 400;
+  font-size: 0.85rem;
   color: #5f7c85;
+}
+
+.nivelInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: #5f7c85;
+  white-space: nowrap;
 }
 
 .horaMov {

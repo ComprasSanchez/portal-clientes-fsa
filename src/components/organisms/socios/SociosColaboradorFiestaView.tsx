@@ -7,6 +7,12 @@ import Alert from "@/components/atoms/alert/alert";
 import Badge from "@/components/atoms/badge/badge";
 import PortalButton from "@/components/atoms/button/button";
 import Card from "@/components/atoms/card/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import EmptyState from "@/components/molecules/empty-state/empty-state";
 import QrScanner from "@/components/molecules/evento-stands/qr-scanner/qr-scanner";
 import StatTile from "@/components/molecules/stat-tile/stat-tile";
@@ -14,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   extraerCodigoIngreso,
   formatPuntosFiesta,
+  NIVEL_UNO_POR_PERSONA,
   NIVELES_PREMIO,
   textoCredencial,
   textoMovimiento,
@@ -224,29 +231,49 @@ export function SociosColaboradorFiestaView() {
             text="Estamos cargando los premios."
           />
         ) : (
-          agruparPorNivel(fiesta.premios).map((grupo) => (
-            <div key={grupo.nivel} className={styles.grupoPremios}>
-              <p className={styles.grupoTitulo}>{NIVELES_PREMIO[grupo.nivel] ?? grupo.nivel}</p>
-              <ul className={styles.lista}>
-                {grupo.items.map((p) => (
-                  <li
-                    key={p.id}
-                    className={`${styles.fila} ${p.disponibles <= 0 ? styles.agotado : ""}`}
-                  >
-                    <span>{p.nombre}</span>
-                    <span className={styles.puntos}>
-                      {formatPuntosFiesta(p.puntos)} pts
-                      {p.disponibles <= 0 ? (
-                        <Badge color="neutral" size="sm">Agotado</Badge>
-                      ) : asistencia && fiesta.saldo >= p.puntos ? (
-                        <Badge color="success" size="sm">Te alcanza</Badge>
-                      ) : null}
+          <Accordion type="multiple" className={styles.acordeon}>
+            {agruparPorNivel(fiesta.premios).map((grupo) => {
+              const puntos = Math.min(...grupo.items.map((p) => p.puntos));
+              const disponibles = grupo.items.filter((p) => p.disponibles > 0).length;
+              const alcanza = !!asistencia && fiesta.saldo >= puntos && disponibles > 0;
+              return (
+                <AccordionItem key={grupo.nivel} value={grupo.nivel}>
+                  <AccordionTrigger className={styles.nivelTrigger}>
+                    <span className={styles.nivelTitulo}>
+                      {NIVELES_PREMIO[grupo.nivel] ?? grupo.nivel}
+                      <span className={styles.nivelPuntos}>
+                        {formatPuntosFiesta(puntos)} pts
+                        {grupo.nivel === NIVEL_UNO_POR_PERSONA && " · Máximo uno por persona"}
+                      </span>
                     </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))
+                    <span className={styles.nivelInfo}>
+                      {disponibles > 0
+                        ? `${disponibles} ${disponibles === 1 ? "premio" : "premios"}`
+                        : "Agotados"}
+                      {alcanza && (
+                        <Badge color="success" size="sm">Te alcanza</Badge>
+                      )}
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ul className={styles.lista}>
+                      {grupo.items.map((p) => (
+                        <li
+                          key={p.id}
+                          className={`${styles.fila} ${p.disponibles <= 0 ? styles.agotado : ""}`}
+                        >
+                          <span>{p.nombre}</span>
+                          {p.disponibles <= 0 && (
+                            <Badge color="neutral" size="sm">Agotado</Badge>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
         )}
       </Card>
 
