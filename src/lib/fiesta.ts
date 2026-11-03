@@ -72,11 +72,14 @@ export function textoCredencial(impresion: string | null): {
   };
 }
 
+/** Nivel con tope de un premio por persona. */
+export const NIVEL_UNO_POR_PERSONA = "D";
+
 export const NIVELES_PREMIO: Record<string, string> = {
-  A: "Chicos",
-  B: "Medianos",
-  C: "Buenos",
-  D: "Top (uno por persona)",
+  A: "Categoría 1",
+  B: "Categoría 2",
+  C: "Categoría 3",
+  D: "Categoría 4",
 };
 
 /** Texto para el colaborador según el código de error del backend. */
