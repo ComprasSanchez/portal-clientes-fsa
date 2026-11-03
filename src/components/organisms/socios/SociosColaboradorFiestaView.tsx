@@ -171,7 +171,7 @@ export function SociosColaboradorFiestaView() {
               label="Llegaste"
               value={hora(asistencia.ingreso_at)}
               size="sm"
-              hint={asistencia.puntual ? "¡A tiempo! Sumaste puntualidad" : `Turno ${asistencia.turno}`}
+              hint={`Turno ${asistencia.turno}`}
             />
           </section>
 
