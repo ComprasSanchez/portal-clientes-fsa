@@ -44,6 +44,7 @@ import { SociosPedidosView } from "./SociosPedidosView";
 import { NotificacionesView } from "@/components/organisms/notificaciones/NotificacionesView";
 import { SociosColaboradorVentasView } from "./SociosColaboradorVentasView";
 import { SociosColaboradorAplicacionesView } from "./SociosColaboradorAplicacionesView";
+import { SociosColaboradorFiestaView } from "./SociosColaboradorFiestaView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
@@ -127,6 +128,10 @@ const viewContent: Record<
   "colaboradores-aplicaciones": {
     title: "Aplicaciones FSA",
     description: "Accedé a las herramientas que usás en tu día a día.",
+  },
+  "colaboradores-fiesta": {
+    title: "Fiesta fin de año",
+    description: "Jugá, sumá puntos y canjealos por premios.",
   },
 };
 
@@ -388,6 +393,14 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <SociosColaboradorAplicacionesView />
+      </main>
+    );
+  }
+
+  if (currentView === "colaboradores-fiesta") {
+    return (
+      <main className={styles.container}>
+        <SociosColaboradorFiestaView />
       </main>
     );
   }
