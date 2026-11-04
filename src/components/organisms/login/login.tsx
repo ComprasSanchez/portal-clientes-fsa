@@ -41,6 +41,7 @@ import {
   ResetPasswordFormValues,
 } from "@/types/login";
 import { getErrorMessage } from "@/helpers/error-message";
+import { trackEvent } from "@/lib/analytics";
 import { getSafeRedirectPath } from "@/lib/auth";
 import { mapAuthError } from "@/lib/authErrors";
 import Link from "next/link";
@@ -612,6 +613,7 @@ export function Login({ onLogin }: LoginProps) {
           destinationMasked: data.challenge?.destination_masked,
           channel: data.challenge?.channel,
         });
+        trackEvent("sign_up_start");
         openVerifyOnboardingCard(
           data.challenge?.destination_masked
             ? `Te enviamos un link de validación a ${data.challenge.destination_masked}.`
@@ -818,6 +820,7 @@ export function Login({ onLogin }: LoginProps) {
       const identityStatus = await getIdentityLinkStatus();
 
       if (identityStatus.link?.linked) {
+        trackEvent("login", { method: "password" });
         onLogin?.(username, password);
         clearStoredRedirectTo();
         router.push(redirectTo);
@@ -867,6 +870,7 @@ export function Login({ onLogin }: LoginProps) {
         setOnboardingFlow(null);
         helpers.resetForm();
         setCardView("login");
+        trackEvent("sign_up", { method: "email" });
         setInfoMessage(
           "Tu registro fue completado correctamente. Ahora podés iniciar sesión.",
         );
@@ -925,6 +929,7 @@ export function Login({ onLogin }: LoginProps) {
         helpers.resetForm();
         setIdentityLinkFlow(null);
         setCardView("login");
+        trackEvent("identidad_validada");
         onLogin?.(formik.values.username, formik.values.password);
         clearStoredRedirectTo();
         router.push(redirectTo);
@@ -1406,6 +1411,7 @@ export function Login({ onLogin }: LoginProps) {
       done = true;
       stopAll();
       setIsGooglePopupLoading(false);
+      trackEvent("login", { method: "google" });
       clearStoredRedirectTo();
       window.location.assign(redirectTo);
     };
@@ -1646,6 +1652,7 @@ export function Login({ onLogin }: LoginProps) {
             },
           },
         );
+        trackEvent("sign_up", { method: "email" });
 
         if (data.redirect_to) {
           window.location.assign(data.redirect_to);
@@ -2047,7 +2054,10 @@ export function Login({ onLogin }: LoginProps) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => void startGoogleLogin()}
+                  onClick={() => {
+                    trackEvent("login_google_click");
+                    void startGoogleLogin();
+                  }}
                   className={styles.googleButton}
                   disabled={formik.isSubmitting || isGooglePopupLoading}
                 >

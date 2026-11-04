@@ -1,0 +1,221 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  font-family: var(--font-socios, "Poppins", "BD Supper", Arial, Helvetica, sans-serif);
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pageTitle {
+  font-size: var(--fs-socios-title-page, var(--fs-page-title));
+  font-weight: var(--fw-socios-title-page, 700);
+  color: #17343d;
+}
+
+.pageSubtitle {
+  font-size: var(--fs-socios-read, var(--fs-description));
+  font-weight: var(--fw-socios-read, 400);
+  color: #5f7c85;
+}
+
+.skeletonHero {
+  height: 180px;
+  border-radius: 16px;
+}
+
+.skeletonBlock {
+  height: 260px;
+  border-radius: 16px;
+}
+
+.bienvenida {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.iconoHero {
+  color: var(--color-socios-primary, #0f8a9d);
+}
+
+.heroTitle {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #17343d;
+}
+
+.heroText {
+  color: #5f7c85;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 639px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.credencial {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #17343d;
+
+  > div {
+    flex: 1;
+  }
+}
+
+.credencialTitulo {
+  font-weight: 600;
+}
+
+.credencialTexto {
+  color: #5f7c85;
+  font-size: 0.9rem;
+}
+
+.qrCredencial {
+  margin: 1rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid #d5e4e8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+
+  svg {
+    width: min(64vw, 220px);
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid #d5e4e8;
+  }
+
+  figcaption {
+    color: #5f7c85;
+    font-size: 0.85rem;
+    text-align: center;
+    max-width: 260px;
+  }
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #e6eef0;
+  color: #17343d;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.agotado {
+  opacity: 0.5;
+}
+
+.puntos {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bonus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: #5f7c85;
+}
+
+.nota {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #5f7c85;
+}
+
+.acordeon {
+  margin-top: 0.25rem;
+}
+
+.nivelTrigger {
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  font-size: 1rem;
+  color: #17343d;
+
+  &:hover {
+    text-decoration: none;
+  }
+
+  // La info del nivel va pegada a la flecha, contra el borde derecho.
+  [data-slot="accordion-trigger-icon"] {
+    margin-left: 0;
+  }
+}
+
+.nivelTitulo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-weight: 600;
+}
+
+.nivelPuntos {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: #5f7c85;
+}
+
+.nivelInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: #5f7c85;
+  white-space: nowrap;
+}
+
+.horaMov {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: #8aa1a8;
+}
+
+.positivo {
+  font-weight: 600;
+  color: #1d8a4e;
+}
+
+.negativo {
+  font-weight: 600;
+  color: #b4441f;
+}

@@ -11,6 +11,7 @@ import BackButton from "@/components/atoms/back-button/back-button";
 import PortalStepper from "../../stepper/stepper";
 import PortalButton from "@/components/atoms/button/button";
 import { RecetaUploader } from "@/components/molecules/receta-uploader/receta-uploader";
+import { trackEvent } from "@/lib/analytics";
 import { MERCADOPAGO_PAGO_ENABLED, RECETA_UPLOAD_ENABLED } from "@/lib/feature-flags";
 import ConfirmProductsAccordion, {
   ConfirmProductItem,
@@ -133,6 +134,7 @@ const PedidosStep3 = ({
     if (!response.ok) {
       throw new Error("No pudimos subir la receta");
     }
+    trackEvent("receta_subida", { canal: "magic_link" });
   };
 
   // "Listo para entrega o retiro" es ambiguo — una vez que sabemos qué

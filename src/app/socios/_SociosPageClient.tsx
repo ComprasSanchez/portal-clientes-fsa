@@ -9,6 +9,7 @@ import { SociosViews } from "@/components/organisms/socios/SociosViews";
 import { ConvenioVerificacionModal } from "@/components/organisms/convenio/ConvenioVerificacionModal";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { usePortalColaborador } from "@/lib/use-portal-colaborador";
+import { isFiestaActiva } from "@/lib/fiesta";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import {
   COLABORADORES_VIEWS,
@@ -26,6 +27,8 @@ const VIEW_ALIASES: Record<string, SociosView> = {
 const parseView = (value: string | null): SociosView | null => {
   if (!value) return null;
   const view = VIEW_ALIASES[value] ?? value;
+  // Con la fiesta apagada, el link directo o el QR llevan a Inicio.
+  if (view === "colaboradores-fiesta" && !isFiestaActiva()) return null;
   return VALID_VIEWS.includes(view as SociosView) ? (view as SociosView) : null;
 };
 

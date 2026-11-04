@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader } from "@/components/atoms/loader/loader";
+import { trackEvent } from "@/lib/analytics";
 import { MERCADOPAGO_PAGO_ENABLED } from "@/lib/feature-flags";
 import Header from "@/components/molecules/header/header";
 import CartView, { CartViewItem } from "@/components/molecules/cart-view/cart-view";
@@ -1086,6 +1087,7 @@ export default function PortalCliente({
 
         setOrderConfirmed(true);
         setOrderNumber(draft.code ?? null);
+        trackEvent("pedido_confirmado", { canal: "magic_link", eleccion: choice });
         if (typeof window !== "undefined") {
           window.localStorage.setItem(orderConfirmedStorageKey, "true");
           if (draft.code) {
@@ -1114,6 +1116,7 @@ export default function PortalCliente({
       }
 
       setPaymentStatus("redirecting");
+      trackEvent("pago_iniciado", { canal: "magic_link", reintento: false });
       window.location.assign(pago.initPoint);
     } catch (requestError) {
       setError(
@@ -1142,6 +1145,7 @@ export default function PortalCliente({
         throw new Error("No se pudo generar el link de pago");
       }
 
+      trackEvent("pago_iniciado", { canal: "magic_link", reintento: true });
       window.location.assign(pago.initPoint);
     } catch (requestError) {
       setPaymentStatus("rejected");

@@ -8,6 +8,7 @@ import Alert from "@/components/atoms/alert/alert";
 import PortalButton from "@/components/atoms/button/button";
 import TextField from "@/components/atoms/text-field/text-field";
 import AuthCard from "@/components/molecules/auth/auth-card/auth-card";
+import { trackEvent } from "@/lib/analytics";
 import {
   AuthNuevoError,
   guardarFlow,
@@ -54,6 +55,7 @@ export default function LoginPasswordStep() {
         router.push("/ingresar/codigo");
         return;
       }
+      trackEvent("login", { method: "password" });
       await irDespuesDelIngreso();
     } catch (err) {
       setError({
