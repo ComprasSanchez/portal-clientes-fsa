@@ -70,7 +70,7 @@ export function SociosColaboradorFiestaView() {
     setMarcando(false);
     if (r.ok) {
       setCodigo(null);
-      setAviso({ color: "success", texto: "¡Listo! Ya estás en la fiesta." });
+      setAviso({ color: "success", texto: "¡Listo! Ya estás en el evento." });
     } else {
       setCodigo(null);
       setAviso({ color: "warning", texto: r.message });
@@ -82,7 +82,7 @@ export function SociosColaboradorFiestaView() {
     setScannerAbierto(false);
     const cod = extraerCodigoIngreso(texto);
     if (!cod) {
-      setAviso({ color: "warning", texto: "Ese QR no es el de la entrada de la fiesta." });
+      setAviso({ color: "warning", texto: "Ese QR no es el de la entrada del evento." });
       return;
     }
     await marcar(cod);
@@ -90,7 +90,7 @@ export function SociosColaboradorFiestaView() {
 
   const header = (
     <header className={styles.pageHeader}>
-      <h1 className={styles.pageTitle}>Fiesta fin de año</h1>
+      <h1 className={styles.pageTitle}>Evento de Fin de Año</h1>
       <p className={styles.pageSubtitle}>
         Jugá, sumá puntos y canjealos por premios
       </p>
@@ -131,7 +131,7 @@ export function SociosColaboradorFiestaView() {
         <Card padding="lg">
           <div className={styles.bienvenida}>
             <PartyPopper size={40} className={styles.iconoHero} aria-hidden />
-            <h2 className={styles.heroTitle}>¡Bienvenido a la fiesta!</h2>
+            <h2 className={styles.heroTitle}>¡Bienvenido al evento!</h2>
             {codigo ? (
               <>
                 <p className={styles.heroText}>

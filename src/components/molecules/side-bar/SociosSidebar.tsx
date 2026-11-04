@@ -64,7 +64,7 @@ const colaboradoresMenuItem: MenuGroup = {
     { id: "colaboradores-ventas", label: "Ventas" },
     { id: "colaboradores-aplicaciones", label: "Aplicaciones FSA" },
     ...(isFiestaActiva()
-      ? [{ id: "colaboradores-fiesta" as const, label: "Fiesta fin de año" }]
+      ? [{ id: "colaboradores-fiesta" as const, label: "Evento de Fin de Año" }]
       : []),
   ],
 };
