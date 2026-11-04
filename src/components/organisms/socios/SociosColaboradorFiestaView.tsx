@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/accordion";
 import EmptyState from "@/components/molecules/empty-state/empty-state";
 import QrScanner from "@/components/molecules/evento-stands/qr-scanner/qr-scanner";
+import FiestaCredencialQr from "./FiestaCredencialQr";
 import StatTile from "@/components/molecules/stat-tile/stat-tile";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -195,6 +196,7 @@ export function SociosColaboradorFiestaView() {
                 </Badge>
               )}
             </div>
+            <FiestaCredencialQr token={asistencia.credencial_token} />
           </Card>
         </>
       )}
