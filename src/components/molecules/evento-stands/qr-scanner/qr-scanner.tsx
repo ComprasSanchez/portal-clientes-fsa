@@ -12,6 +12,8 @@ type QrScannerProps = {
   onClose: () => void;
   paused?: boolean;
   tone?: UiTone;
+  /** Texto sobre la cámara; por defecto el del juego de stands. */
+  hint?: string;
 };
 
 type Estado = "iniciando" | "escaneando" | "sin-permiso" | "sin-camara";
@@ -19,7 +21,7 @@ type Estado = "iniciando" | "escaneando" | "sin-permiso" | "sin-camara";
 const MS_ENTRE_LECTURAS = 200;
 
 /** Cámara trasera a pantalla completa que lee QR (funciona también en iPhone). */
-export default function QrScanner({ onDetect, onClose, paused = false, tone = "socios" }: QrScannerProps) {
+export default function QrScanner({ onDetect, onClose, paused = false, tone = "socios", hint = "Apuntá al QR del stand" }: QrScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pausedRef = useRef(paused);
@@ -106,7 +108,7 @@ export default function QrScanner({ onDetect, onClose, paused = false, tone = "s
       {estado === "escaneando" && (
         <>
           <div className={styles.frame} aria-hidden />
-          <p className={styles.hint}>Apuntá al QR del stand</p>
+          <p className={styles.hint}>{hint}</p>
         </>
       )}
       {estado === "iniciando" && <p className={styles.hint}>Abriendo la cámara…</p>}

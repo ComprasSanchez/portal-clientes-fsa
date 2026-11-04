@@ -1,5 +1,6 @@
 import { ChevronRight, UserRoundCheck, X } from "lucide-react";
 import Card from "@/components/atoms/card/card";
+import { trackEvent } from "@/lib/analytics";
 import {
   PERFIL_ITEMS_TOTAL,
   PERFIL_PENDIENTE_TEXTO,
@@ -67,7 +68,14 @@ export default function PerfilCompletoCard({
       <ul className={styles.list}>
         {pendientes.map((p) => (
           <li key={p}>
-            <button type="button" className={styles.item} onClick={() => onSelect(p)}>
+            <button
+              type="button"
+              className={styles.item}
+              onClick={() => {
+                trackEvent("perfil_completo_click", { dato: p });
+                onSelect(p);
+              }}
+            >
               <span className={styles.itemLabel}>{PERFIL_PENDIENTE_TEXTO[p].label}</span>
               <span className={styles.itemAction}>
                 {PERFIL_PENDIENTE_TEXTO[p].accion}

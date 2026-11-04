@@ -36,6 +36,7 @@ import {
 import { CrearPedidoStep1Productos } from "./CrearPedidoStep1Productos";
 import { CrearPedidoStep2Entrega } from "./CrearPedidoStep2Entrega";
 import { RECETA_UPLOAD_ENABLED } from "@/lib/feature-flags";
+import { trackEvent } from "@/lib/analytics";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { DomicilioFormModal } from "@/components/organisms/profile/DomicilioFormModal";
 
@@ -279,6 +280,11 @@ export function CrearPedidoView({
           }
         } else if (recetaFile) {
           recetaUploadFailed = true;
+        }
+
+        trackEvent("pedido_confirmado", { canal: "portal" });
+        if (recetaFile && !recetaUploadFailed) {
+          trackEvent("receta_subida", { canal: "portal" });
         }
 
         pushToast({

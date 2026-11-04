@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import CodigoStep from "@/components/organisms/auth-nuevo/codigo-step/codigo-step";
+import { trackEvent } from "@/lib/analytics";
 import {
   confirmarRegistro,
   guardarFlow,
@@ -25,6 +26,7 @@ export function RegistroVerificarClient() {
 
   const confirmar = async (code: string) => {
     const r = await confirmarRegistro(registro.flowId, code, flow.recordar === true);
+    trackEvent("sign_up", { method: "email" });
     if (r.session_started) {
       await irDespuesDelIngreso();
       return;

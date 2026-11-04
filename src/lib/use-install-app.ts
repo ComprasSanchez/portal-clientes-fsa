@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useSyncExternalStore } from "react";
+import { trackEvent } from "@/lib/analytics";
 
 /** Evento de Chrome/Android (no está en los tipos del DOM de TypeScript). */
 type BeforeInstallPromptEvent = Event & {
@@ -87,6 +88,7 @@ export function useInstallApp() {
     // El evento sirve una sola vez.
     deferredPrompt = null;
     delete (window as WindowWithInstallPrompt).__fsaInstallPrompt;
+    trackEvent("app_instalar", { resultado: outcome });
     if (outcome === "accepted") installed = true;
     notify();
   }, []);

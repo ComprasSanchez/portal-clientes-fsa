@@ -10,12 +10,15 @@ export type SociosView =
   /** Juego de stands con QR del evento de Breve (temporal). */
   | "evento"
   | "colaboradores-ventas"
-  | "colaboradores-aplicaciones";
+  | "colaboradores-aplicaciones"
+  /** Fiesta de fin de año de colaboradores (temporal). */
+  | "colaboradores-fiesta";
 
 /** Vistas de la sección Colaboradores: solo para colaboradores activos. */
 export const COLABORADORES_VIEWS = [
   "colaboradores-ventas",
   "colaboradores-aplicaciones",
+  "colaboradores-fiesta",
 ] as const satisfies readonly SociosView[];
 
 export const isColaboradoresView = (view: SociosView): boolean =>

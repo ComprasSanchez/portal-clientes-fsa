@@ -7,6 +7,7 @@ import Alert from "@/components/atoms/alert/alert";
 import PortalButton from "@/components/atoms/button/button";
 import TextField from "@/components/atoms/text-field/text-field";
 import AuthCard from "@/components/molecules/auth/auth-card/auth-card";
+import { trackEvent } from "@/lib/analytics";
 import {
   buscarEmail,
   capturarParametrosDeEntrada,
@@ -64,6 +65,7 @@ export default function LoginEmailStep() {
     setBuscando(true);
     try {
       const { status } = await buscarEmail(email);
+      trackEvent("login_email", { estado: status });
       guardarFlow({ email: email.trim().toLowerCase(), challenge: undefined });
       if (status === "ACCOUNT") {
         router.push("/ingresar/metodo");
@@ -98,6 +100,7 @@ export default function LoginEmailStep() {
 
   const ingresarConGoogle = () => {
     setYendoAGoogle(true);
+    trackEvent("login_google_click");
     const destino = destinoDespuesDelIngreso();
     window.location.assign(
       `/api/v2/auth/providers/google/start?redirectTo=${encodeURIComponent(destino)}`,

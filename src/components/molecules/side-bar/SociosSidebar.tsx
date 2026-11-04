@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
 import { isEventoStandsActivo } from "@/lib/evento-stands";
+import { isFiestaActiva } from "@/lib/fiesta";
 import sociosaLogo from "@/assets/sociosa-color.png";
 import sociosaIcon from "@/assets/icono-estrella.png";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
@@ -62,6 +63,9 @@ const colaboradoresMenuItem: MenuGroup = {
   children: [
     { id: "colaboradores-ventas", label: "Ventas" },
     { id: "colaboradores-aplicaciones", label: "Aplicaciones FSA" },
+    ...(isFiestaActiva()
+      ? [{ id: "colaboradores-fiesta" as const, label: "Evento de Fin de Año" }]
+      : []),
   ],
 };
 

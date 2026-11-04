@@ -15,6 +15,7 @@ import { ProfileViewSkeleton } from "@/components/organisms/loading/ViewSkeleton
 import { ProfileField } from "@/components/molecules/home/ProfileField";
 import { ProfileDataRow } from "@/components/molecules/home/ProfileDataRow";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
+import { trackEvent } from "@/lib/analytics";
 import {
   formatPortalProfileDate,
   formatAddress,
@@ -749,6 +750,7 @@ export function ProfileView({
 
   const handleDomicilioCreated = async () => {
     setIsDomicilioModalOpen(false);
+    trackEvent("perfil_guardado", { seccion: "domicilio" });
     setProfileFeedback({
       type: "success",
       message: "Tu domicilio se guardo correctamente.",
@@ -963,6 +965,7 @@ export function ProfileView({
         affiliateNumber: affiliationForm.affiliateNumber.trim(),
         planName: selectedPlan?.nombre ?? null,
       });
+      trackEvent("perfil_guardado", { seccion: "obra_social" });
       setProfileFeedback({
         type: "success",
         message: "La afiliacion se guardo correctamente.",
@@ -1113,6 +1116,7 @@ export function ProfileView({
         verificado: false,
       });
       setActiveContactEditorType(null);
+      trackEvent("perfil_guardado", { seccion: "contacto" });
       setProfileFeedback({
         type: "success",
         message: `${getContactTypeLabel(contactForm.tipo)} guardado como principal correctamente.`,
@@ -1200,6 +1204,7 @@ export function ProfileView({
       replacePerfil(updatedPerfil);
       setEditableProfile(buildProfileData(updatedPerfil));
       setIsEditingPersonalData(false);
+      trackEvent("perfil_guardado", { seccion: "datos_personales" });
       setProfileFeedback({
         type: "success",
         message: "Tus datos personales se actualizaron correctamente.",
