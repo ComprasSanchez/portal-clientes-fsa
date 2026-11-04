@@ -130,7 +130,7 @@ const viewContent: Record<
     description: "Accedé a las herramientas que usás en tu día a día.",
   },
   "colaboradores-fiesta": {
-    title: "Fiesta fin de año",
+    title: "Evento de Fin de Año",
     description: "Jugá, sumá puntos y canjealos por premios.",
   },
 };

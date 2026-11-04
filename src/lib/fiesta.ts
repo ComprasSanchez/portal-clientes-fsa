@@ -23,7 +23,7 @@ export function extraerCodigoIngreso(texto: string): string | null {
 }
 
 const TIPOS: Record<string, string> = {
-  ingreso: "Ingreso a la fiesta",
+  ingreso: "Ingreso al evento",
   puntualidad: "Llegaste a tiempo",
   reconocimiento: "Reconocimiento",
   actividad: "Actividad",
@@ -86,13 +86,13 @@ export const NIVELES_PREMIO: Record<string, string> = {
 export function mensajeErrorFiesta(code: string | null | undefined): string {
   switch (code) {
     case "EVENTO_FIESTA_INACTIVO":
-      return "La fiesta todavía no está habilitada.";
+      return "El evento todavía no está habilitado.";
     case "EVENTO_FIESTA_NO_COLABORADOR":
       return "Esta sección es solo para colaboradores de Sánchez Antoniolli.";
     case "EVENTO_FIESTA_CODIGO_INGRESO_INVALIDO":
       return "El código de la entrada venció. Volvé a escanear el QR de la entrada.";
     case "EVENTO_FIESTA_CLIENTE_REQUERIDO":
-      return "Necesitamos que confirmes tu identidad en el portal para entrar a la fiesta.";
+      return "Necesitamos que confirmes tu identidad en el portal para entrar al evento.";
     default:
       return "No pudimos completar la acción. Probá de nuevo en un momento.";
   }
