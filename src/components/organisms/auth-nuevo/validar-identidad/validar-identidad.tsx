@@ -11,6 +11,7 @@ import EmptyState from "@/components/molecules/empty-state/empty-state";
 import MetodoOption from "@/components/molecules/auth/metodo-option/metodo-option";
 import { OtpCodeInput } from "@/components/molecules/input-otp/input-otp";
 import { Skeleton } from "@/components/ui/skeleton";
+import { trackEvent } from "@/lib/analytics";
 import { getSafeRedirectPath } from "@/lib/auth";
 import {
   completarAlta,
@@ -53,6 +54,7 @@ export default function ValidarIdentidad() {
   const pollRef = useRef<number | null>(null);
 
   const terminar = useCallback(() => {
+    trackEvent("identidad_validada");
     limpiarFlow({ alSalir: true });
     window.location.assign(destinoFinal);
   }, [destinoFinal]);

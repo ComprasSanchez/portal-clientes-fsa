@@ -8,6 +8,7 @@ import PortalButton from "@/components/atoms/button/button";
 import Checkbox from "@/components/atoms/checkbox/checkbox";
 import TextField from "@/components/atoms/text-field/text-field";
 import AuthCard from "@/components/molecules/auth/auth-card/auth-card";
+import { trackEvent } from "@/lib/analytics";
 import {
   AuthNuevoError,
   capturarParametrosDeEntrada,
@@ -67,6 +68,7 @@ export default function RegistroForm() {
     setError(null);
     try {
       const result = await registrarse(datos, leerFlow().origen);
+      trackEvent("sign_up_start");
       guardarFlow({
         email: datos.email.trim().toLowerCase(),
         recordar,

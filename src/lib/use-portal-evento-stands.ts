@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 import { leerCodigoError, mensajeErrorEvento } from "@/lib/evento-stands";
 import type {
   PortalAvanceEvento,
@@ -78,6 +79,7 @@ export const usePortalEventoStands = (): UsePortalEventoStandsResult => {
         ?.escaneado;
       setAvance(r.data.avance);
       setError(null);
+      if (!yaEscaneado) trackEvent("stand_escaneado", { stand: numero });
       return {
         ok: true,
         standNumero: numero,
@@ -96,6 +98,7 @@ export const usePortalEventoStands = (): UsePortalEventoStandsResult => {
         dni ? { pin, dni } : { pin },
       );
       if (!r.ok) return r;
+      trackEvent("evento_premio_entregado");
       setAvance(r.data);
       return { ok: true };
     } catch {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 import { leerCodigoError, mensajeErrorFiesta } from "@/lib/fiesta";
 import type { PortalMiFiesta } from "@/types/portal-fiesta";
 
@@ -62,6 +63,7 @@ export const usePortalFiesta = (): UsePortalFiestaResult => {
         }
         setFiesta(data as PortalMiFiesta);
         setError(null);
+        trackEvent("fiesta_asistencia");
         return { ok: true };
       } catch {
         return { ok: false, message: mensajeErrorFiesta(null) };

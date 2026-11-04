@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Script from "next/script";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { BotmakerChat } from "../components/BotmakerChat";
 import { GlobalToastProvider } from "../components/ui/global-toast";
 import { ScrollToTop } from "../components/ScrollToTop";
+import { GA_ID } from "../lib/analytics";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -60,6 +62,7 @@ export default function RootLayout({
           {`window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__fsaInstallPrompt=e;});`}
         </Script>
       </body>
+      {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
     </html>
   );
 }

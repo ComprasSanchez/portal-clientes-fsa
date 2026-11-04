@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Checkbox from "@/components/atoms/checkbox/checkbox";
 import CodigoStep from "@/components/organisms/auth-nuevo/codigo-step/codigo-step";
+import { trackEvent } from "@/lib/analytics";
 import {
   confirmarCodigoDeIngreso,
   confirmarCodigoPorEmail,
@@ -37,6 +38,7 @@ export function IngresarCodigoClient() {
     } else {
       await confirmarCodigoPorEmail(challenge.id, code, recordar);
     }
+    trackEvent("login", { method: challenge.tipo === "mfa" ? "password_codigo" : "codigo_email" });
     await irDespuesDelIngreso();
   };
 
