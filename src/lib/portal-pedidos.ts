@@ -167,3 +167,12 @@ export const getPedidoHref = (idPedido: string) =>
   `/socios?view=pedidos&pedido=${encodeURIComponent(idPedido)}`;
 
 export const PEDIDOS_LIST_HREF = "/socios?view=pedidos";
+
+/** Lee ?canal=farma|breve|cora|todos (cualquier otro valor se ignora). */
+export function parsePedidoCanalTab(value: string | null): PedidoCanalTab | null {
+  const canal = value?.toUpperCase();
+  return PEDIDO_CANAL_TAB_OPTIONS.find((o) => o.value === canal)?.value ?? null;
+}
+
+export const getPedidosListHref = (canal: PedidoCanalTab) =>
+  canal === "TODOS" ? PEDIDOS_LIST_HREF : `${PEDIDOS_LIST_HREF}&canal=${canal.toLowerCase()}`;
