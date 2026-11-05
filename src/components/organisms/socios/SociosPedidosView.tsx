@@ -23,7 +23,8 @@ import {
   matchesPedidoSearch,
   PEDIDO_CANAL_TAB_OPTIONS,
   PEDIDO_ESTADO_FILTERS,
-  PEDIDOS_LIST_HREF,
+  getPedidosListHref,
+  parsePedidoCanalTab,
   type PedidoCanalTab,
   type PedidoEstadoFilter,
 } from "@/lib/portal-pedidos";
@@ -37,8 +38,9 @@ export function SociosPedidosView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pedidoId = searchParams.get("pedido");
+  const canalParam = parsePedidoCanalTab(searchParams.get("canal"));
 
-  const [activeCanal, setActiveCanal] = useState<PedidoCanalTab>("TODOS");
+  const [activeCanal, setActiveCanal] = useState<PedidoCanalTab>(canalParam ?? "TODOS");
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<PedidoEstadoFilter>("todos");
   const [page, setPage] = useState(0);
@@ -49,6 +51,17 @@ export function SociosPedidosView() {
     canal: activeCanal === "TODOS" ? undefined : activeCanal,
   });
   const detalle = usePortalPedido(pedidoId);
+
+  // Si llega un link con ?canal= estando ya en la vista, cambiar de pestaña.
+  const [prevCanalParam, setPrevCanalParam] = useState(canalParam);
+  if (canalParam !== prevCanalParam) {
+    setPrevCanalParam(canalParam);
+    if (canalParam) {
+      setActiveCanal(canalParam);
+      setActiveFilter("todos");
+      setPage(0);
+    }
+  }
 
   // En escritorio el detalle reemplaza a la lista: llevar al inicio de la página.
   useEffect(() => {
@@ -76,7 +89,7 @@ export function SociosPedidosView() {
   const pagedPedidos = filteredPedidos.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const groups = groupPedidosPorFecha(pagedPedidos);
 
-  const closeDetalle = () => router.push(PEDIDOS_LIST_HREF, { scroll: false });
+  const closeDetalle = () => router.push(getPedidosListHref(activeCanal), { scroll: false });
 
   const titlebar = (
     <PageTitlebar
@@ -131,6 +144,7 @@ export function SociosPedidosView() {
             setActiveCanal(canal);
             setActiveFilter("todos");
             setPage(0);
+            router.replace(getPedidosListHref(canal), { scroll: false });
           }}
         />
 
