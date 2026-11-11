@@ -2,6 +2,7 @@
 // pura y llamadas a /api/v2/web/* (proxy al gateway), sin UI.
 
 import { getSafeRedirectPath } from "@/lib/auth";
+import { errorFechaNacimiento } from "@/lib/mayoria-de-edad";
 
 /** Se prende con NEXT_PUBLIC_LOGIN_NUEVO=true; apagado, el portal usa el login de siempre. */
 export const isLoginNuevoActivo = () => process.env.NEXT_PUBLIC_LOGIN_NUEVO === "true";
@@ -202,6 +203,8 @@ export type RegistroDatos = {
   nombre: string;
   apellido: string;
   nro_documento: string;
+  /** 'YYYY-MM-DD' (input de tipo fecha). */
+  fecha_nacimiento: string;
 };
 
 export type ErroresRegistro = Partial<Record<keyof RegistroDatos | "politica", string>>;
@@ -213,6 +216,8 @@ export function validarRegistro(d: RegistroDatos, politica: boolean): ErroresReg
   if (!d.nombre.trim()) e.nombre = "Ingresá tu nombre.";
   if (!d.apellido.trim()) e.apellido = "Ingresá tu apellido.";
   if (!dniValido(d.nro_documento)) e.nro_documento = "Ingresá tu DNI sin puntos (7 u 8 números).";
+  const fecha = errorFechaNacimiento(d.fecha_nacimiento);
+  if (fecha) e.fecha_nacimiento = fecha;
   if (!emailValido(d.email)) e.email = "Ingresá un email válido.";
   if (d.password.length < 8) e.password = "La contraseña tiene que tener al menos 8 caracteres.";
   if (!politica) e.politica = "Tenés que aceptar la política de privacidad.";
@@ -262,7 +267,12 @@ export const consultarValidacion = () =>
 export const confirmarCodigoDeIdentidad = (code: string) =>
   call<{ status: "LINKED" }>("POST", "me/identidad/validacion/codigo", { code });
 
-export const completarAlta = (datos: { nombre: string; apellido: string; nro_documento: string }) =>
+export const completarAlta = (datos: {
+  nombre: string;
+  apellido: string;
+  nro_documento: string;
+  fecha_nacimiento: string;
+}) =>
   call<{ identity_linked: boolean }>("POST", "me/alta", {
     ...datos,
     acepta_politica_privacidad: true,
@@ -332,6 +342,8 @@ function toAuthError(status: number, body: ApiErrorBody): AuthNuevoError {
     AUTH_REGISTER_DOCUMENTO_ALREADY_LINKED: maskedEmail
       ? `Ese DNI ya está asociado a la cuenta ${maskedEmail}. Cerrá sesión y entrá con esa cuenta.`
       : "Ya existe una cuenta con ese DNI. Iniciá sesión con tu email.",
+    AUTH_REGISTER_MENOR_DE_EDAD: "Para crear una cuenta tenés que ser mayor de 18 años.",
+    AUTH_REGISTER_FECHA_NACIMIENTO_INVALIDA: "Revisá la fecha de nacimiento.",
     AUTH_REGISTER_EMAIL_SEND_FAILED: "No pudimos enviarte el código. Revisá el email y probá de nuevo.",
     AUTH_REGISTER_CODE_INVALID: codigoIncorrecto(attempts),
     AUTH_REGISTER_CODE_EXPIRED: "El código venció. Pedí uno nuevo.",
