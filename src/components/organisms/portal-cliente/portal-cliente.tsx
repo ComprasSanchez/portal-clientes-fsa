@@ -24,6 +24,9 @@ import type {
   Sucursal,
 } from "@/types/magic-link-type";
 import { SUCURSALES_OCULTAS } from "@/lib/use-portal-sucursales";
+import { usePedidoVigente } from "@/lib/use-pedido-vigente";
+import { esCicloCerrado } from "@/lib/pedido-vigente";
+import PedidoVigente from "@/components/molecules/pedido-vigente/pedido-vigente";
 import styles from "./portal-cliente.module.scss";
 
 type PortalClienteProps = {
@@ -306,6 +309,7 @@ export default function PortalCliente({
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("idle");
+  const { pedidoVigente, refetchPedidoVigente } = usePedidoVigente(token);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1119,6 +1123,10 @@ export default function PortalCliente({
       trackEvent("pago_iniciado", { canal: "magic_link", reintento: false });
       window.location.assign(pago.initPoint);
     } catch (requestError) {
+      if (esCicloCerrado(requestError)) {
+        await refetchPedidoVigente();
+        return;
+      }
       setError(
         requestError instanceof Error
           ? requestError.message
@@ -1180,6 +1188,20 @@ export default function PortalCliente({
   };
 
   const hasLoadFailed = Boolean(error) && !expediente;
+
+  if (pedidoVigente && !pedidoVigente.cicloAbierto) {
+    return (
+      <div className={styles.root}>
+        <Header showBackButton={false} showCart={false} onMenuClick={onOpenSidebar} />
+        <main className={styles.content}>
+          <PedidoVigente
+            pedido={pedidoVigente.pedido}
+            onHablarConAsesor={redirectToWhatsApp}
+          />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.root}>
