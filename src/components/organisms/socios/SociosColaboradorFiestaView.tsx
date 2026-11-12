@@ -7,12 +7,6 @@ import Alert from "@/components/atoms/alert/alert";
 import Badge from "@/components/atoms/badge/badge";
 import PortalButton from "@/components/atoms/button/button";
 import Card from "@/components/atoms/card/card";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import EmptyState from "@/components/molecules/empty-state/empty-state";
 import QrScanner from "@/components/molecules/evento-stands/qr-scanner/qr-scanner";
 import FiestaCredencialQr from "./FiestaCredencialQr";
@@ -40,10 +34,19 @@ const hora = (iso: string) =>
     minute: "2-digit",
   }).format(new Date(iso));
 
-const agruparPorNivel = (premios: PortalFiestaPremio[]) =>
+/** Una tarjeta por categoría (cada premio es una bolsa sorpresa de esa categoría). */
+const porCategoria = (premios: PortalFiestaPremio[]) =>
   ["A", "B", "C", "D"]
-    .map((nivel) => ({ nivel, items: premios.filter((p) => p.nivel === nivel) }))
-    .filter((g) => g.items.length > 0);
+    .map((nivel) => {
+      const items = premios.filter((p) => p.nivel === nivel);
+      return {
+        nivel,
+        hay: items.length > 0,
+        puntos: items.length ? Math.min(...items.map((p) => p.puntos)) : 0,
+        disponibles: items.reduce((s, p) => s + Math.max(0, p.disponibles), 0),
+      };
+    })
+    .filter((c) => c.hay);
 
 export function SociosColaboradorFiestaView() {
   const router = useRouter();
@@ -233,49 +236,36 @@ export function SociosColaboradorFiestaView() {
             text="Estamos cargando los premios."
           />
         ) : (
-          <Accordion type="multiple" className={styles.acordeon}>
-            {agruparPorNivel(fiesta.premios).map((grupo) => {
-              const puntos = Math.min(...grupo.items.map((p) => p.puntos));
-              const disponibles = grupo.items.filter((p) => p.disponibles > 0).length;
-              const alcanza = !!asistencia && fiesta.saldo >= puntos && disponibles > 0;
-              return (
-                <AccordionItem key={grupo.nivel} value={grupo.nivel}>
-                  <AccordionTrigger className={styles.nivelTrigger}>
-                    <span className={styles.nivelTitulo}>
-                      {NIVELES_PREMIO[grupo.nivel] ?? grupo.nivel}
-                      <span className={styles.nivelPuntos}>
-                        {formatPuntosFiesta(puntos)} pts
-                        {grupo.nivel === NIVEL_UNO_POR_PERSONA && " · Máximo uno por persona"}
-                      </span>
+          <>
+            <p className={styles.nota}>
+              Cada premio es una bolsa sorpresa. Elegís la categoría y en el puesto de canje te dan una bolsa de esa categoría.
+            </p>
+            <ul className={styles.bolsas}>
+              {porCategoria(fiesta.premios).map((cat) => {
+                const alcanza = !!asistencia && fiesta.saldo >= cat.puntos && cat.disponibles > 0;
+                return (
+                  <li
+                    key={cat.nivel}
+                    className={`${styles.bolsa} ${styles[`bolsa${cat.nivel}`] ?? ""} ${cat.disponibles <= 0 ? styles.agotado : ""}`}
+                  >
+                    <span className={styles.bolsaNombre}>{NIVELES_PREMIO[cat.nivel] ?? cat.nivel}</span>
+                    <span className={styles.bolsaPuntos}>{formatPuntosFiesta(cat.puntos)} pts</span>
+                    <span className={styles.bolsaInfo}>
+                      {cat.disponibles > 0
+                        ? `Quedan ${formatPuntosFiesta(cat.disponibles)} ${cat.disponibles === 1 ? "bolsa" : "bolsas"}`
+                        : "Agotadas"}
                     </span>
-                    <span className={styles.nivelInfo}>
-                      {disponibles > 0
-                        ? `${disponibles} ${disponibles === 1 ? "premio" : "premios"}`
-                        : "Agotados"}
-                      {alcanza && (
-                        <Badge color="success" size="sm">Te alcanza</Badge>
-                      )}
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <ul className={styles.lista}>
-                      {grupo.items.map((p) => (
-                        <li
-                          key={p.id}
-                          className={`${styles.fila} ${p.disponibles <= 0 ? styles.agotado : ""}`}
-                        >
-                          <span>{p.nombre}</span>
-                          {p.disponibles <= 0 && (
-                            <Badge color="neutral" size="sm">Agotado</Badge>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
-              );
-            })}
-          </Accordion>
+                    {cat.nivel === NIVEL_UNO_POR_PERSONA && (
+                      <span className={styles.bolsaNota}>Máximo una por persona</span>
+                    )}
+                    {alcanza && (
+                      <Badge color="success" size="sm">Te alcanza</Badge>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </>
         )}
       </Card>
 

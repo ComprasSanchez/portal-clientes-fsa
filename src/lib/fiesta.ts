@@ -76,10 +76,10 @@ export function textoCredencial(impresion: string | null): {
 export const NIVEL_UNO_POR_PERSONA = "D";
 
 export const NIVELES_PREMIO: Record<string, string> = {
-  A: "Categoría 1",
-  B: "Categoría 2",
-  C: "Categoría 3",
-  D: "Categoría 4",
+  A: "Categoría A",
+  B: "Categoría B",
+  C: "Categoría C",
+  D: "Categoría D",
 };
 
 /** Texto para el colaborador según el código de error del backend. */
