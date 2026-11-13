@@ -45,6 +45,8 @@ export function textoProgresoPremio(avance: PortalAvanceEvento): string {
  * Se elige por lo que falta para el premio (no por el número de escaneos),
  * así sigue teniendo sentido si cambia la meta.
  */
+
+
 function fraseMotivacional(escaneados: number, minimo: number): string {
   const faltan = minimo - escaneados;
   if (faltan < 0) return "¡Seguí descubriendo! Tu regalo ya está asegurado.";

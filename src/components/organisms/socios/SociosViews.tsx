@@ -50,7 +50,7 @@ import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPro
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
 import { BannerSocioMobileCarousel } from "@/components/molecules/socios/BannerSocioMobileCarousel";
 import { BeneficiosCarousel } from "@/components/molecules/socios/BeneficiosCarousel";
-import cuotasBanner from "@/assets/sociosa-img/cuotas-banner.jpg";
+import cuotasBanner from "@/assets/sociosa-img/cuotas-banner.jpeg";
 import { CuotasMobileCarousel } from "@/components/molecules/socios/CuotasMobileCarousel";
 import {
   formatPortalCurrency,

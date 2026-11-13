@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import remeraPromo from "@/assets/sociosa-img/remera-promo.jpg";
+import remeraPromo from "@/assets/sociosa-img/remera-promo.jpeg";
 import bannerPrinciapl from "@/assets/sociosa-img/banner-principal.jpeg";
 import breveMarket from "@/assets/sociosa-img/banner-breve.jpeg";
 import sorteoBanner from "@/assets/sociosa-img/sorte-banner.jpg";
@@ -15,17 +15,19 @@ import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [
   {
+    src: remeraPromo,
+    alt: "Sucursales — Sucursales Farmacia Sanchez Antoniolli",
+    href: "/socios?view=sucursales",
+    externalSystem: undefined,
+  },
+  {
     src: breveMarket,
     alt: "Breve Market — Farmacias & Market",
     href: null,
-    externalSystem: "BREVE" as const,
-  },
-  {
-    src: remeraPromo,
-    alt: "Sorteo Socio SA — Gana una remera exclusiva de Socio SA",
-    href: null,
+    // externalSystem: "BREVE" as const,
     externalSystem: undefined,
   },
+
   {
     src: bannerPrinciapl,
     alt: "Sorteo Socio SA — Beauty Days",
@@ -43,7 +45,12 @@ type HandoffSlideProps = {
   priority: boolean;
 };
 
-function HandoffSlide({ src, alt, externalSystem, priority }: HandoffSlideProps) {
+function HandoffSlide({
+  src,
+  alt,
+  externalSystem,
+  priority,
+}: HandoffSlideProps) {
   const { loading, handleClick } = useExternalHandoff(externalSystem);
 
   return (
