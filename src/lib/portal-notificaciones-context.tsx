@@ -11,6 +11,8 @@ import { useIdentidad } from "@/lib/portal-identidad-context";
 const PortalNotificacionesContext =
   createContext<UsePortalNotificacionesResult | null>(null);
 
+const MAX_TOASTS_INDIVIDUALES = 3;
+
 const isDesktopViewport = (): boolean =>
   typeof window !== "undefined" &&
   window.matchMedia("(min-width: 1024px)").matches;
@@ -29,11 +31,16 @@ export const PortalNotificacionesProvider = ({
   const seenIdsRef = useRef<Set<string> | null>(null);
 
   useEffect(() => {
-    if (value.isLoading) return;
+    // Mientras se consulta la identidad la campanita está apagada y la lista
+    // viene vacía: tomarla como base hacía que al prenderse todo pareciera nuevo.
+    if (!value.hasLoaded) {
+      seenIdsRef.current = null;
+      return;
+    }
 
     const currentIds = new Set(value.notificaciones.map((item) => item.id));
 
-    // Primer fetch: solo establece la base, no avisa de nada "nuevo" (no es
+    // Primera respuesta: solo establece la base, no avisa de nada "nuevo" (no es
     // nuevo, ya existía antes de que se abriera el portal).
     if (seenIdsRef.current === null) {
       seenIdsRef.current = currentIds;
@@ -48,6 +55,18 @@ export const PortalNotificacionesProvider = ({
 
     if (newItems.length === 0 || !isDesktopViewport()) return;
 
+    // Muchas juntas: un solo aviso en vez de una pila.
+    if (newItems.length > MAX_TOASTS_INDIVIDUALES) {
+      pushToast({
+        id: "notificaciones-nuevas",
+        title: `Tenés ${newItems.length} notificaciones nuevas`,
+        description: "Miralas en la campanita.",
+        variant: "info",
+        duration: 5000,
+      });
+      return;
+    }
+
     for (const item of newItems) {
       pushToast({
         id: `notificacion-${item.id}`,
@@ -57,7 +76,7 @@ export const PortalNotificacionesProvider = ({
         duration: 5000,
       });
     }
-  }, [value.notificaciones, value.isLoading, pushToast]);
+  }, [value.notificaciones, value.hasLoaded, pushToast]);
 
   return (
     <PortalNotificacionesContext.Provider value={value}>

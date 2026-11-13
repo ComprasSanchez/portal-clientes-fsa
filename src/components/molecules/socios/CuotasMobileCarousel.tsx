@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
-import mobile1 from "@/assets/sociosa-img/mobile-1.jpg";
-import mobile2 from "@/assets/sociosa-img/mobile-2.jpg";
+import mobile1 from "@/assets/sociosa-img/mobile-1.jpeg";
+import mobile2 from "@/assets/sociosa-img/mobile-2.jpeg";
 import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [

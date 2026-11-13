@@ -4,15 +4,19 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
-import bannerSocio1 from "@/assets/sociosa-img/banner-socio1.jpg";
+import bannerSocio1 from "@/assets/sociosa-img/banner-socio1.jpeg";
 import bannerSocio2 from "@/assets/sociosa-img/banner-mobile-beauty.jpeg";
 import bannerMarket from "@/assets/sociosa-img/banner-market-mobile.jpeg";
 import sorteoMobile from "@/assets/sociosa-img/sorteo-mobile.jpeg";
 import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [
+  {
+    src: bannerSocio1,
+    alt: "Banner SocioSA — promo 1",
+    href: "/socios?view=sucursales",
+  },
   { src: bannerMarket, alt: "Breve & Market Mobile", href: null },
-  { src: bannerSocio1, alt: "Banner SocioSA — promo 1", href: null },
   {
     src: bannerSocio2,
     alt: "Banner SocioSA — Beauty Days",
