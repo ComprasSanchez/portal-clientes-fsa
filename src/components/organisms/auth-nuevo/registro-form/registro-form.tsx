@@ -20,12 +20,20 @@ import {
   type ErroresRegistro,
   type RegistroDatos,
 } from "@/lib/auth-nuevo";
+import { hoyEnArgentina } from "@/lib/mayoria-de-edad";
 import { useAuthFlow } from "@/lib/use-auth-flow";
 import styles from "./registro-form.module.scss";
 
-const VACIO: RegistroDatos = { nombre: "", apellido: "", nro_documento: "", email: "", password: "" };
+const VACIO: RegistroDatos = {
+  nombre: "",
+  apellido: "",
+  nro_documento: "",
+  fecha_nacimiento: "",
+  email: "",
+  password: "",
+};
 
-/** Registro corto: nombre, apellido, DNI, email y contraseña. El resto se completa adentro. */
+/** Registro corto: nombre, apellido, DNI, nacimiento (18 o más), email y contraseña. El resto se completa adentro. */
 export default function RegistroForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -128,6 +136,16 @@ export default function RegistroForm() {
           value={datos.nro_documento}
           onChange={set("nro_documento")}
           error={errores.nro_documento}
+        />
+        <TextField
+          id="registro-fecha-nacimiento"
+          label="Fecha de nacimiento"
+          type="date"
+          autoComplete="bday"
+          max={hoyEnArgentina()}
+          value={datos.fecha_nacimiento}
+          onChange={set("fecha_nacimiento")}
+          error={errores.fecha_nacimiento}
         />
         <TextField
           id="registro-email"

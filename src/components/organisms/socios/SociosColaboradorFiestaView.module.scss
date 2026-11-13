@@ -160,48 +160,59 @@
   color: #5f7c85;
 }
 
-.acordeon {
-  margin-top: 0.25rem;
-}
-
-.nivelTrigger {
-  align-items: center;
+.bolsas {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
-  padding: 0.85rem 0;
-  font-size: 1rem;
-  color: #17343d;
 
-  &:hover {
-    text-decoration: none;
-  }
-
-  // La info del nivel va pegada a la flecha, contra el borde derecho.
-  [data-slot="accordion-trigger-icon"] {
-    margin-left: 0;
+  @media (min-width: 900px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-.nivelTitulo {
+.bolsa {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid #d5e4e8;
+  border-top: 6px solid var(--bolsa-color, #007c98);
+  background: #f3f8f9;
+  color: #17343d;
+}
+
+// Colores de la campaña: jugá (naranja), conectá (amarillo), disfrutá (verde) y el azul SA.
+.bolsaA { --bolsa-color: #50a57a; }
+.bolsaB { --bolsa-color: #ffcb3f; }
+.bolsaC { --bolsa-color: #d4673d; }
+.bolsaD { --bolsa-color: #007c98; }
+
+.bolsaNombre {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.bolsaPuntos {
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: #007c98;
+  line-height: 1.1;
+}
+
+.bolsaInfo {
+  font-size: 0.85rem;
+  color: #5f7c85;
+}
+
+.bolsaNota {
+  font-size: 0.8rem;
   font-weight: 600;
-}
-
-.nivelPuntos {
-  font-weight: 400;
-  font-size: 0.85rem;
-  color: #5f7c85;
-}
-
-.nivelInfo {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-left: auto;
-  font-size: 0.85rem;
-  color: #5f7c85;
-  white-space: nowrap;
+  color: #d4673d;
 }
 
 .horaMov {

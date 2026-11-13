@@ -12,6 +12,8 @@ export type UsePortalNotificacionesResult = {
   notificaciones: PortalNotificacionItem[];
   unreadCount: number;
   isLoading: boolean;
+  /** Ya llegó al menos una respuesta con la campanita prendida (la lista es real, no la vacía inicial). */
+  hasLoaded: boolean;
   markAsRead: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -23,6 +25,7 @@ export const usePortalNotificaciones = (
     PortalNotificacionItem[]
   >([]);
   const [isLoading, setIsLoading] = useState(enabled);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const load = useCallback(async () => {
@@ -37,6 +40,7 @@ export const usePortalNotificaciones = (
 
       const data = (await response.json()) as PortalNotificacionesResponse;
       setNotificaciones(data.items ?? []);
+      setHasLoaded(true);
     } catch {
       // Silencioso: la campanita no debe romper el resto del portal si
       // notificaciones-fsa está caído.
@@ -48,6 +52,7 @@ export const usePortalNotificaciones = (
   useEffect(() => {
     if (!enabled) {
       setIsLoading(false);
+      setHasLoaded(false);
       setNotificaciones([]);
       return;
     }
@@ -71,8 +76,11 @@ export const usePortalNotificaciones = (
     );
 
     try {
+      // keepalive: si la notificación tiene link, la página navega enseguida y
+      // sin esto el navegador corta el pedido (queda sin leer).
       await fetch(`/api/portal/me/notificaciones/${id}/leida`, {
         method: "PATCH",
+        keepalive: true,
       });
     } catch {
       // Si falla, la próxima recarga (polling) va a corregir el estado real.
@@ -88,6 +96,7 @@ export const usePortalNotificaciones = (
     notificaciones,
     unreadCount,
     isLoading,
+    hasLoaded,
     markAsRead,
     refresh: load,
   };
