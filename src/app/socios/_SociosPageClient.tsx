@@ -9,6 +9,7 @@ import { SociosViews } from "@/components/organisms/socios/SociosViews";
 import { ConvenioVerificacionModal } from "@/components/organisms/convenio/ConvenioVerificacionModal";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { usePortalColaborador } from "@/lib/use-portal-colaborador";
+import { usePortalInvitadoEvento } from "@/lib/use-portal-invitado-evento";
 import { isFiestaActiva } from "@/lib/fiesta";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import {
@@ -65,14 +66,22 @@ export function SociosPageClient() {
 
   const { perfil, summary, isLoading } = usePortalPerfilContext();
   const { esColaborador, isLoading: isColaboradorLoading } = usePortalColaborador();
+  const { invitadoEvento, isLoading: isInvitadoLoading } = usePortalInvitadoEvento(
+    esColaborador,
+    isColaboradorLoading,
+  );
+  // Los invitados al evento (ej. PPP) ven solo la vista del evento, no el resto de Colaboradores.
+  const puedeVerVista = (view: SociosView) =>
+    !isColaboradoresView(view) || esColaborador || (view === "colaboradores-fiesta" && invitadoEvento);
   const { pushToast } = useGlobalToast();
 
   // Acceso directo por URL a una vista de colaboradores sin ser colaborador activo: volver a Inicio.
   useEffect(() => {
-    if (!isColaboradoresView(currentView) || isColaboradorLoading || esColaborador) return;
+    if (isColaboradorLoading || isInvitadoLoading || puedeVerVista(currentView)) return;
     setCurrentView(DEFAULT_VIEW);
     router.replace("/socios", { scroll: false });
-  }, [currentView, esColaborador, isColaboradorLoading, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- puedeVerVista depende de estos mismos valores
+  }, [currentView, esColaborador, invitadoEvento, isColaboradorLoading, isInvitadoLoading, router]);
 
   const principalPhone =
     perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
@@ -190,13 +199,12 @@ export function SociosPageClient() {
         onLogout={handleLogout}
         userName={summary.displayName}
         esColaborador={esColaborador}
+        invitadoEvento={invitadoEvento}
       />
 
       <div className="flex min-h-dvh flex-col pt-16 transition-all duration-300 lg:ml-64 lg:pt-0">
         <SociosViews
-          currentView={
-            isColaboradoresView(currentView) && !esColaborador ? DEFAULT_VIEW : currentView
-          }
+          currentView={puedeVerVista(currentView) ? currentView : DEFAULT_VIEW}
           onNavigate={handleNavigate}
           userName={summary.displayName}
           affiliateNumber={summary.affiliateNumber}
