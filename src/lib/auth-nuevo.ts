@@ -281,6 +281,21 @@ export const completarAlta = (datos: { nombre: string; apellido: string; nro_doc
     acepta_politica_privacidad: true,
   });
 
+// ---- Colaboradores habilitados: contraseña nueva para un socio ----
+
+export type CuentaSocio = { nombre: string | null; email_masked: string | null };
+
+export const consultarPermisoClaves = () =>
+  call<{ habilitado: boolean }>("GET", "me/soporte/clave");
+
+export const buscarCuentaSocio = (nroDocumento: string) =>
+  call<{ cuenta: CuentaSocio }>("POST", "me/soporte/clave/cuenta", { nro_documento: nroDocumento });
+
+export const generarClaveSocio = (nroDocumento: string) =>
+  call<{ cuenta: CuentaSocio; password: string }>("POST", "me/soporte/clave", {
+    nro_documento: nroDocumento,
+  });
+
 /**
  * Después de iniciar sesión, al destino (ej. el stand escaneado). Si la cuenta
  * no está vinculada, el portal entra en modo limitado y ahí ofrece validar la
@@ -364,6 +379,12 @@ function toAuthError(status: number, body: ApiErrorBody): AuthNuevoError {
     AUTH_IDENTITY_PHONE_INVALID:
       "Revisá el número: ingresá la característica y el número, sin el 0 ni el 15.",
     AUTH_IDENTITY_CHANNEL_NOT_AVAILABLE: "Esta opción ya no está disponible. Volvé a cargar la página.",
+    AUTH_SOPORTE_FORBIDDEN: "No tenés permiso para cambiar contraseñas de socios.",
+    AUTH_SOPORTE_CLIENTE_NOT_FOUND: "No encontramos ningún socio con ese DNI.",
+    AUTH_SOPORTE_CUENTA_NOT_FOUND: "Ese socio todavía no tiene cuenta en el portal. Puede crearla desde el registro.",
+    AUTH_SOPORTE_CUENTA_PROPIA: "Es tu propia cuenta. Cambiá tu contraseña desde el ingreso, con \"¿Olvidaste tu contraseña?\".",
+    AUTH_SOPORTE_CUENTA_COLABORADOR: "Es la cuenta de un colaborador. Desde acá solo se pueden cambiar contraseñas de socios.",
+    AUTH_SOPORTE_CLAVE_FAILED: "No pudimos cambiar la contraseña. Probá de nuevo en unos minutos.",
   };
 
   if (status === 401 && !code) {

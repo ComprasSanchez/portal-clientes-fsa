@@ -1,0 +1,100 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  font-family: var(--font-socios, "Poppins", "BD Supper", Arial, Helvetica, sans-serif);
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pageTitle {
+  font-size: var(--fs-socios-title-page, var(--fs-page-title));
+  font-weight: var(--fw-socios-title-page, 700);
+  color: #17343d;
+}
+
+.pageSubtitle {
+  max-width: 42rem;
+  font-size: var(--fs-socios-read, var(--fs-description));
+  font-weight: var(--fw-socios-read, 400);
+  color: #5f7c85;
+}
+
+.panel {
+  max-width: 32rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.texto {
+  font-size: 0.875rem;
+  color: var(--tone-muted);
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.datos {
+  display: grid;
+  gap: 0.75rem;
+
+  dt {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--tone-muted);
+  }
+
+  dd {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--tone-text);
+    overflow-wrap: anywhere;
+  }
+}
+
+.clave {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px dashed var(--tone-border);
+  border-radius: 0.75rem;
+  background: var(--tone-soft);
+}
+
+.claveValor {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--tone-text);
+  overflow-wrap: anywhere;
+}
+
+.copiar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--tone-primary);
+  background: #fff;
+  border: 1px solid var(--tone-border);
+  cursor: pointer;
+}
