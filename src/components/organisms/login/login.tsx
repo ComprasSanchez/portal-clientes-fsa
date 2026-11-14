@@ -44,7 +44,6 @@ import { getErrorMessage } from "@/helpers/error-message";
 import { trackEvent } from "@/lib/analytics";
 import { getSafeRedirectPath } from "@/lib/auth";
 import { mapAuthError } from "@/lib/authErrors";
-import { errorFechaNacimiento } from "@/lib/mayoria-de-edad";
 import Link from "next/link";
 
 const SOCIOS_BENEFITS = [
@@ -142,13 +141,7 @@ const customerIdentityShape = {
     .trim()
     .required("Ingresá tu número de documento."),
   sex: Yup.string().trim().required("Seleccioná tu sexo."),
-  birthDate: Yup.string()
-    .trim()
-    .required("Ingresá tu fecha de nacimiento.")
-    .test("mayor-de-edad", "", function (value) {
-      const error = errorFechaNacimiento(value ?? "");
-      return error ? this.createError({ message: error }) : true;
-    }),
+  birthDate: Yup.string().trim().required("Ingresá tu fecha de nacimiento."),
   phone: Yup.string()
     .trim()
     .required("Ingresá tu teléfono.")
