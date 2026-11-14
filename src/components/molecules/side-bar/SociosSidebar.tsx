@@ -22,6 +22,7 @@ import {
   PackageCheck,
   BadgeCheck,
   QrCode,
+  PartyPopper,
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
 import { isEventoStandsActivo } from "@/lib/evento-stands";
@@ -37,6 +38,8 @@ interface SociosSidebarProps {
   userName: string;
   onLogout: () => void;
   esColaborador?: boolean;
+  /** Invitado al Evento de Fin de Año sin ser colaborador (ej. PPP). */
+  invitadoEvento?: boolean;
 }
 
 type MenuLeaf = {
@@ -91,6 +94,7 @@ export function SociosSidebar({
   userName,
   onLogout,
   esColaborador = false,
+  invitadoEvento = false,
 }: SociosSidebarProps) {
   const router = useRouter();
   const visibleMenuItems = esColaborador
@@ -99,7 +103,13 @@ export function SociosSidebar({
         colaboradoresMenuItem,
         ...menuItems.filter((item) => item.id === "cora"),
       ]
-    : menuItems;
+    : invitadoEvento && isFiestaActiva()
+      ? [
+          ...menuItems.filter((item) => item.id !== "cora"),
+          { id: "colaboradores-fiesta" as const, label: "Evento de Fin de Año", icon: PartyPopper },
+          ...menuItems.filter((item) => item.id === "cora"),
+        ]
+      : menuItems;
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   // Grupos desplegados. El grupo de la vista actual se muestra abierto

@@ -24,7 +24,6 @@ import {
   mensajeDeError,
   type IdentidadCanal,
 } from "@/lib/auth-nuevo";
-import { errorFechaNacimiento, hoyEnArgentina } from "@/lib/mayoria-de-edad";
 import styles from "./validar-identidad.module.scss";
 
 type Vista =
@@ -42,7 +41,7 @@ const POLL_MS = 4000;
 /**
  * La cuenta inició sesión pero todavía no está vinculada a su DNI. Según el caso:
  * validar con WhatsApp o un código al email que ya tenía el cliente, completar
- * nombre/apellido/DNI/nacimiento, o acercarse a una sucursal.
+ * nombre/apellido/DNI, o acercarse a una sucursal.
  */
 export default function ValidarIdentidad() {
   const searchParams = useSearchParams();
@@ -51,12 +50,7 @@ export default function ValidarIdentidad() {
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [code, setCode] = useState("");
-  const [alta, setAlta] = useState({
-    nombre: "",
-    apellido: "",
-    nro_documento: "",
-    fecha_nacimiento: "",
-  });
+  const [alta, setAlta] = useState({ nombre: "", apellido: "", nro_documento: "" });
   const pollRef = useRef<number | null>(null);
 
   const terminar = useCallback(() => {
@@ -149,11 +143,6 @@ export default function ValidarIdentidad() {
       setError("Completá tu nombre, apellido y DNI (sin puntos).");
       return;
     }
-    const errorFecha = errorFechaNacimiento(alta.fecha_nacimiento);
-    if (errorFecha) {
-      setError(errorFecha);
-      return;
-    }
     setEnviando(true);
     setError(null);
     try {
@@ -221,15 +210,6 @@ export default function ValidarIdentidad() {
             onChange={(e) =>
               setAlta((a) => ({ ...a, nro_documento: e.target.value.replace(/\D/g, "") }))
             }
-          />
-          <TextField
-            id="alta-fecha-nacimiento"
-            label="Fecha de nacimiento"
-            type="date"
-            autoComplete="bday"
-            max={hoyEnArgentina()}
-            value={alta.fecha_nacimiento}
-            onChange={(e) => setAlta((a) => ({ ...a, fecha_nacimiento: e.target.value }))}
           />
           {error && <Alert color="warning">{error}</Alert>}
           <PortalButton type="submit" tone="socios" disabled={enviando}>
