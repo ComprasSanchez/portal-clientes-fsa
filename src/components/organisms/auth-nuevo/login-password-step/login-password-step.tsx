@@ -25,6 +25,7 @@ export default function LoginPasswordStep() {
   const flow = useAuthFlow();
   const email = flow?.email;
   const recordar = flow?.recordar === true;
+  const claveCambiada = flow?.claveCambiada === true;
   const [password, setPassword] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<{ texto: string; sinConfirmar?: boolean } | null>(null);
@@ -42,6 +43,7 @@ export default function LoginPasswordStep() {
     }
     setEnviando(true);
     setError(null);
+    if (claveCambiada) guardarFlow({ claveCambiada: undefined });
     try {
       const result = await ingresarConContrasena(email, password, recordar);
       if (result.mfa_required && result.challenge) {
@@ -80,8 +82,7 @@ export default function LoginPasswordStep() {
           id="ingresar-password"
           label="Contraseña"
           labelAction={
-            // Recuperar la contraseña sigue en el ingreso de siempre.
-            <Link href="/?login=clasico" className={styles.link}>
+            <Link href="/ingresar/recuperar" className={styles.link}>
               ¿Olvidaste tu contraseña?
             </Link>
           }
@@ -92,6 +93,9 @@ export default function LoginPasswordStep() {
           onChange={(e) => setPassword(e.target.value)}
           autoFocus
         />
+        {claveCambiada && !error && (
+          <Alert color="success">Listo, cambiaste tu contraseña. Ingresá con la nueva.</Alert>
+        )}
         {error && (
           <Alert color="warning">
             <span>{error.texto}</span>
