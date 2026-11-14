@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Check, Copy, KeyRound, Search } from "lucide-react";
+import { Check, Copy, KeyRound, Search, ShieldCheck } from "lucide-react";
 import Alert from "@/components/atoms/alert/alert";
 import PortalButton from "@/components/atoms/button/button";
 import Card from "@/components/atoms/card/card";
@@ -85,6 +85,11 @@ export function SociosColaboradorClavesView() {
         </p>
       </header>
 
+      <Alert color="info" icon={<ShieldCheck size={18} />} className={styles.panel}>
+        Cada cambio queda registrado: quién lo hizo, a qué cuenta y cuándo. Usalo solo cuando la persona te lo
+        pida.
+      </Alert>
+
       <Card tone="socios" className={styles.panel}>
         {paso.tipo === "buscar" && (
           <form className={styles.form} onSubmit={buscar} noValidate>
@@ -112,7 +117,7 @@ export function SociosColaboradorClavesView() {
             <DatosCuenta dni={paso.dni} cuenta={paso.cuenta} />
             <p className={styles.texto}>
               Confirmá con la persona que estos datos son suyos antes de generar la contraseña. La que tenía deja
-              de funcionar.
+              de funcionar y el cambio queda registrado a tu nombre.
             </p>
             {error && <Alert color="error">{error}</Alert>}
             <div className={styles.acciones}>
