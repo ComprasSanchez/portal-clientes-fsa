@@ -31,6 +31,7 @@ import type {
   PortalPerfilDomicilio,
   PortalPerfilResponse,
 } from "@/types/portal-profile";
+import { OtpCodeInput } from "@/components/molecules/input-otp/input-otp";
 import { DomicilioFormModal } from "./DomicilioFormModal";
 import styles from "./ProfileView.module.scss";
 
@@ -147,8 +148,9 @@ const buildContactFormData = (
   id: contacto?.id ?? null,
   tipo,
   valor:
+    // Los de Plex vienen sin el 9 (+54...): sin sacar también ese prefijo se guardaba "+54954...".
     tipo === "TELEFONO"
-      ? (contacto?.valor ?? "").replace(PHONE_PREFIX, "")
+      ? (contacto?.valor ?? "").replace(/^\+549/, "").replace(/^\+54/, "")
       : (contacto?.valor ?? ""),
   regionIso2: contacto?.regionIso2 ?? "AR",
   principal: contacto?.principal ?? false,
@@ -566,6 +568,9 @@ export function ProfileView({
     "idle" | "sending" | "waiting_whatsapp"
   >("idle");
   const [otpError, setOtpError] = useState<string | null>(null);
+  // El email llega con un código de 6 dígitos (no con un botón como el WhatsApp).
+  const [otpCode, setOtpCode] = useState("");
+  const [isConfirmingOtp, setIsConfirmingOtp] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -604,7 +609,13 @@ export function ProfileView({
   }, [profile]);
 
   useEffect(() => {
-    if (otpStep !== "waiting_whatsapp" || !verificandoContacto?.id) return;
+    // Solo WhatsApp se confirma desde afuera (botón Validar); el email, con el código.
+    if (
+      otpStep !== "waiting_whatsapp" ||
+      !verificandoContacto?.id ||
+      verificandoContacto.tipo === "EMAIL"
+    )
+      return;
 
     const contactoId = verificandoContacto.id;
 
@@ -632,7 +643,7 @@ export function ProfileView({
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [otpStep, verificandoContacto?.id, refresh]);
+  }, [otpStep, verificandoContacto?.id, verificandoContacto?.tipo, refresh]);
 
   useEffect(() => {
     const dni = summary.documentNumber;
@@ -775,24 +786,57 @@ export function ProfileView({
     setVerificandoContacto(contacto);
     setOtpStep("idle");
     setOtpError(null);
+    setOtpCode("");
     setIsVerificacionModalOpen(true);
   };
 
   const handleCloseVerificacionModal = () => {
-    if (otpStep === "sending") return;
+    if (otpStep === "sending" || isConfirmingOtp) return;
     if (pollingRef.current) clearInterval(pollingRef.current);
     if (cooldownRef.current) clearInterval(cooldownRef.current);
     setIsVerificacionModalOpen(false);
     setVerificandoContacto(null);
     setOtpStep("idle");
     setOtpError(null);
+    setOtpCode("");
     setResendCooldown(0);
+  };
+
+  const handleConfirmarOtp = async () => {
+    if (!verificandoContacto?.id || otpCode.length !== 6 || isConfirmingOtp) return;
+    setIsConfirmingOtp(true);
+    setOtpError(null);
+    try {
+      const res = await fetch(
+        `/api/portal/me/contactos/${verificandoContacto.id}/verificar/confirmar`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codigo: otpCode }),
+        },
+      );
+      if (!res.ok) {
+        setOtpError("El código no es correcto o ya venció. Revisalo o pedí uno nuevo.");
+        setOtpCode("");
+        return;
+      }
+      setIsVerificacionModalOpen(false);
+      setVerificandoContacto(null);
+      setOtpStep("idle");
+      setOtpCode("");
+      void refresh();
+    } catch {
+      setOtpError("Error de red. Intenta de nuevo.");
+    } finally {
+      setIsConfirmingOtp(false);
+    }
   };
 
   const handleSolicitarOtp = async () => {
     if (!verificandoContacto?.id) return;
     setOtpStep("sending");
     setOtpError(null);
+    setOtpCode("");
     try {
       if (
         verificandoContacto.tipo === "TELEFONO" &&
@@ -2156,11 +2200,11 @@ export function ProfileView({
                   <p className={styles.fieldLabel}>
                     {verificandoContacto?.tipo === "EMAIL" ? (
                       <>
-                        Te enviamos un mensaje a{" "}
+                        Te enviamos un código de 6 dígitos a{" "}
                         <strong>
                           {verificandoContacto.valor ?? "tu email"}
                         </strong>
-                        . Segui las instrucciones para confirmar este contacto.
+                        . Ingresalo para confirmar tu email.
                       </>
                     ) : (
                       <>
@@ -2173,16 +2217,27 @@ export function ProfileView({
                       </>
                     )}
                   </p>
-                  <p
-                    className={styles.fieldLabel}
-                    style={{
-                      marginTop: "0.5rem",
-                      opacity: 0.6,
-                      fontSize: "0.85em",
-                    }}
-                  >
-                    Esperando confirmacion...
-                  </p>
+                  {verificandoContacto?.tipo === "EMAIL" ? (
+                    <div style={{ marginTop: "0.75rem" }}>
+                      <OtpCodeInput
+                        value={otpCode}
+                        onChange={setOtpCode}
+                        isInvalid={!!otpError}
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <p
+                      className={styles.fieldLabel}
+                      style={{
+                        marginTop: "0.5rem",
+                        opacity: 0.6,
+                        fontSize: "0.85em",
+                      }}
+                    >
+                      Esperando confirmacion...
+                    </p>
+                  )}
                   {otpError ? (
                     <p className={styles.profileFeedbackError}>{otpError}</p>
                   ) : null}
@@ -2218,7 +2273,9 @@ export function ProfileView({
                   >
                     {resendCooldown > 0
                       ? `Reenviar en ${resendCooldown}s`
-                      : "Reenviar mensaje"}
+                      : verificandoContacto?.tipo === "EMAIL"
+                        ? "Reenviar código"
+                        : "Reenviar mensaje"}
                   </button>
                 ) : (
                   <button
@@ -2230,6 +2287,17 @@ export function ProfileView({
                     {otpStep === "sending" ? "Enviando..." : "Enviar mensaje"}
                   </button>
                 )}
+                {otpStep === "waiting_whatsapp" &&
+                verificandoContacto?.tipo === "EMAIL" ? (
+                  <button
+                    type="button"
+                    className={styles.primaryAction}
+                    onClick={() => void handleConfirmarOtp()}
+                    disabled={otpCode.length !== 6 || isConfirmingOtp}
+                  >
+                    {isConfirmingOtp ? "Confirmando..." : "Confirmar"}
+                  </button>
+                ) : null}
               </div>
             </div>
           </div>
