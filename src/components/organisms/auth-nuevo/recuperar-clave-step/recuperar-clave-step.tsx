@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound } from "lucide-react";
 import Alert from "@/components/atoms/alert/alert";
@@ -33,8 +33,11 @@ export default function RecuperarClaveStep() {
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [ahora, setAhora] = useState(() => Date.now());
+  // Ya se cambió: no volver a pedir el código aunque se haya borrado del flujo.
+  const cambiada = useRef(false);
 
   useEffect(() => {
+    if (cambiada.current) return;
     if (flow && (!flow.email || !flow.recuperacion)) router.replace("/ingresar/recuperar");
   }, [flow, router]);
 
@@ -63,6 +66,7 @@ export default function RecuperarClaveStep() {
     setError(null);
     try {
       await cambiarContrasenaConCodigo(recuperacion.challengeId, code, nueva);
+      cambiada.current = true;
       guardarFlow({ recuperacion: undefined, claveCambiada: true });
       router.replace("/ingresar/contrasena");
     } catch (err) {
