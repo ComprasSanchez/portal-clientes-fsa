@@ -246,8 +246,21 @@ export const reenviarCodigoDeRegistro = (flowId: string) =>
 export type IdentidadStatus = "LINKED" | "PENDING" | "ONBOARDING_REQUIRED" | "UNAVAILABLE";
 export type IdentidadCanal = { channel: "whatsapp" | "email"; destination_masked: string };
 
+type ValidacionEnCurso = { channel: "whatsapp" | "email"; destination_masked: string };
+
 export const consultarIdentidad = () =>
-  call<{ status: IdentidadStatus; channels?: IdentidadCanal[] }>("GET", "me/identidad");
+  call<{
+    status: IdentidadStatus;
+    channels?: IdentidadCanal[];
+    /** UNAVAILABLE con ficha sin contactos: puede validar con un contacto propio. */
+    self_contact?: { email_masked: string | null };
+    validation?: ValidacionEnCurso;
+  }>("GET", "me/identidad");
+
+/** Ficha sin contactos: código al email de la cuenta o WhatsApp a un celular propio. */
+export const iniciarValidacionConContactoPropio = (
+  datos: { channel: "email" } | { channel: "whatsapp"; telefono: string },
+) => call<{ validation: ValidacionEnCurso }>("POST", "me/identidad/contacto", datos);
 
 export const iniciarValidacion = (channel: "whatsapp" | "email") =>
   call<{ validation: { channel: string; destination_masked: string } }>(
@@ -348,6 +361,9 @@ function toAuthError(status: number, body: ApiErrorBody): AuthNuevoError {
     AUTH_IDENTITY_LINK_CONFLICT:
       "Estos datos ya están asociados a otra cuenta. Acercate a una sucursal con tu DNI para resolverlo.",
     AUTH_IDENTITY_ALREADY_LINKED: "Tu identidad ya está validada.",
+    AUTH_IDENTITY_PHONE_INVALID:
+      "Revisá el número: ingresá la característica y el número, sin el 0 ni el 15.",
+    AUTH_IDENTITY_CHANNEL_NOT_AVAILABLE: "Esta opción ya no está disponible. Volvé a cargar la página.",
   };
 
   if (status === 401 && !code) {
