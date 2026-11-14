@@ -22,6 +22,7 @@ const ALLOWED: Record<string, ReadonlyArray<"GET" | "POST">> = {
   "me/identidad": ["GET"],
   "me/identidad/validacion": ["GET", "POST"],
   "me/identidad/validacion/codigo": ["POST"],
+  "me/identidad/contacto": ["POST"],
   "me/alta": ["POST"],
 };
 
