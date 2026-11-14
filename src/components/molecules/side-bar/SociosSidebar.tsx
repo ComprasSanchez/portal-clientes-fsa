@@ -38,7 +38,7 @@ interface SociosSidebarProps {
   userName: string;
   onLogout: () => void;
   esColaborador?: boolean;
-  /** Personal habilitado para darle una contraseña nueva a un socio. */
+  /** Puede darle una contraseña nueva a un cliente o colaborador. */
   puedeCambiarClaves?: boolean;
   /** Invitado al Evento de Fin de Año sin ser colaborador (ej. PPP). */
   invitadoEvento?: boolean;
@@ -69,7 +69,7 @@ const colaboradoresMenuItem = (puedeCambiarClaves: boolean): MenuGroup => ({
     { id: "colaboradores-ventas", label: "Ventas" },
     { id: "colaboradores-aplicaciones", label: "Aplicaciones FSA" },
     ...(puedeCambiarClaves
-      ? [{ id: "colaboradores-claves" as const, label: "Contraseñas de socios" }]
+      ? [{ id: "colaboradores-claves" as const, label: "Cambiar contraseñas" }]
       : []),
     ...(isFiestaActiva()
       ? [{ id: "colaboradores-fiesta" as const, label: "Evento de Fin de Año" }]

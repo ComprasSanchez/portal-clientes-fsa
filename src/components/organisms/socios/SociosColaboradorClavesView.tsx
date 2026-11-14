@@ -38,7 +38,7 @@ export function SociosColaboradorClavesView() {
     e.preventDefault();
     const limpio = dni.replace(/\D/g, "");
     if (!dniValido(limpio)) {
-      setError("Ingresá el DNI del socio, sin puntos.");
+      setError("Ingresá el DNI de la persona, sin puntos.");
       return;
     }
     setError(null);
@@ -78,9 +78,9 @@ export function SociosColaboradorClavesView() {
   return (
     <div className={styles.view}>
       <header className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Contraseñas de socios</h1>
+        <h1 className={styles.pageTitle}>Cambiar contraseñas</h1>
         <p className={styles.pageSubtitle}>
-          Generá una contraseña nueva para un socio que no puede entrar a su cuenta. Al socio no le llega
+          Generá una contraseña nueva para un cliente o un colaborador que no puede entrar a su cuenta. A la persona no le llega
           ningún mensaje: pasale la contraseña vos.
         </p>
       </header>
@@ -90,7 +90,7 @@ export function SociosColaboradorClavesView() {
           <form className={styles.form} onSubmit={buscar} noValidate>
             <TextField
               id="claves-dni"
-              label="DNI del socio"
+              label="DNI"
               inputMode="numeric"
               autoComplete="off"
               maxLength={10}
@@ -111,7 +111,7 @@ export function SociosColaboradorClavesView() {
           <div className={styles.form}>
             <DatosCuenta dni={paso.dni} cuenta={paso.cuenta} />
             <p className={styles.texto}>
-              Confirmá con el socio que estos datos son suyos antes de generar la contraseña. La que tenía deja
+              Confirmá con la persona que estos datos son suyos antes de generar la contraseña. La que tenía deja
               de funcionar.
             </p>
             {error && <Alert color="error">{error}</Alert>}
@@ -134,7 +134,7 @@ export function SociosColaboradorClavesView() {
         {paso.tipo === "lista" && (
           <div className={styles.form}>
             <Alert color="success">
-              Listo. {paso.cuenta.nombre ?? "El socio"} ya puede entrar con su email
+              Listo. {paso.cuenta.nombre ?? "La persona"} ya puede entrar con su email
               {paso.cuenta.email_masked ? ` (${paso.cuenta.email_masked})` : ""} y esta contraseña.
             </Alert>
             <div className={styles.clave}>
@@ -150,11 +150,11 @@ export function SociosColaboradorClavesView() {
               </button>
             </div>
             <p className={styles.texto}>
-              Anotala o pasásela ahora: cuando salgas de esta pantalla no se vuelve a mostrar. Recomendale al
-              socio cambiarla por una propia.
+              Anotala o pasásela ahora: cuando salgas de esta pantalla no se vuelve a mostrar. Recomendale
+              cambiarla por una propia.
             </p>
             <PortalButton tone="socios" variant="secondary" onClick={empezarDeNuevo}>
-              Cambiar la de otro socio
+              Cambiar la de otra persona
             </PortalButton>
           </div>
         )}
@@ -167,7 +167,7 @@ function DatosCuenta({ dni, cuenta }: { dni: string; cuenta: CuentaSocio }) {
   return (
     <dl className={styles.datos}>
       <div>
-        <dt>Socio</dt>
+        <dt>Nombre</dt>
         <dd>{cuenta.nombre ?? "Sin nombre cargado"}</dd>
       </div>
       <div>

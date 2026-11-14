@@ -309,7 +309,7 @@ export const completarAlta = (datos: { nombre: string; apellido: string; nro_doc
     acepta_politica_privacidad: true,
   });
 
-// ---- Colaboradores habilitados: contraseña nueva para un socio ----
+// ---- Colaboradores habilitados: contraseña nueva para un cliente o colaborador ----
 
 export type CuentaSocio = { nombre: string | null; email_masked: string | null };
 
@@ -416,11 +416,10 @@ function toAuthError(status: number, body: ApiErrorBody): AuthNuevoError {
     AUTH_RESET_LOCKED: "Hiciste demasiados intentos. Esperá unos minutos y pedí un código nuevo.",
     AUTH_RESET_PASSWORD_FAILED:
       "No pudimos guardar la contraseña nueva. Probá con otra o intentá de nuevo en unos minutos.",
-    AUTH_SOPORTE_FORBIDDEN: "No tenés permiso para cambiar contraseñas de socios.",
-    AUTH_SOPORTE_CLIENTE_NOT_FOUND: "No encontramos ningún socio con ese DNI.",
-    AUTH_SOPORTE_CUENTA_NOT_FOUND: "Ese socio todavía no tiene cuenta en el portal. Puede crearla desde el registro.",
+    AUTH_SOPORTE_FORBIDDEN: "No tenés permiso para cambiar contraseñas.",
+    AUTH_SOPORTE_CLIENTE_NOT_FOUND: "No encontramos a nadie con ese DNI.",
+    AUTH_SOPORTE_CUENTA_NOT_FOUND: "Esa persona todavía no tiene cuenta en el portal. Puede crearla desde el registro.",
     AUTH_SOPORTE_CUENTA_PROPIA: "Es tu propia cuenta. Cambiá tu contraseña desde el ingreso, con \"¿Olvidaste tu contraseña?\".",
-    AUTH_SOPORTE_CUENTA_COLABORADOR: "Es la cuenta de un colaborador. Desde acá solo se pueden cambiar contraseñas de socios.",
     AUTH_SOPORTE_CLAVE_FAILED: "No pudimos cambiar la contraseña. Probá de nuevo en unos minutos.",
   };
 

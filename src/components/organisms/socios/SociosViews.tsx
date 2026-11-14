@@ -131,8 +131,8 @@ const viewContent: Record<
     description: "Accedé a las herramientas que usás en tu día a día.",
   },
   "colaboradores-claves": {
-    title: "Contraseñas de socios",
-    description: "Generá una contraseña nueva para la cuenta de un socio.",
+    title: "Cambiar contraseñas",
+    description: "Generá una contraseña nueva para un cliente o un colaborador.",
   },
   "colaboradores-fiesta": {
     title: "Evento de Fin de Año",
