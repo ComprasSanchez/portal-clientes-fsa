@@ -20,6 +20,7 @@ import {
   consultarValidacion,
   dniValido,
   iniciarValidacion,
+  iniciarValidacionConContactoPropio,
   limpiarFlow,
   mensajeDeError,
   type IdentidadCanal,
@@ -29,6 +30,9 @@ import styles from "./validar-identidad.module.scss";
 type Vista =
   | { tipo: "cargando" }
   | { tipo: "elegir"; canales: IdentidadCanal[] }
+  /** Ficha sin contactos: valida con el email de la cuenta o un celular propio. */
+  | { tipo: "propio"; email: string | null }
+  | { tipo: "celular"; email: string | null }
   | { tipo: "whatsapp"; destino: string }
   | { tipo: "codigo"; destino: string }
   | { tipo: "alta" }
@@ -41,7 +45,8 @@ const POLL_MS = 4000;
 /**
  * La cuenta inició sesión pero todavía no está vinculada a su DNI. Según el caso:
  * validar con WhatsApp o un código al email que ya tenía el cliente, completar
- * nombre/apellido/DNI, o acercarse a una sucursal.
+ * nombre/apellido/DNI, validar con un contacto propio si la ficha no tiene, o
+ * acercarse a una sucursal.
  */
 export default function ValidarIdentidad() {
   const searchParams = useSearchParams();
@@ -50,6 +55,7 @@ export default function ValidarIdentidad() {
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [code, setCode] = useState("");
+  const [celular, setCelular] = useState("");
   const [alta, setAlta] = useState({ nombre: "", apellido: "", nro_documento: "" });
   const pollRef = useRef<number | null>(null);
 
@@ -59,13 +65,22 @@ export default function ValidarIdentidad() {
     window.location.assign(destinoFinal);
   }, [destinoFinal]);
 
-  const cargar = useCallback(async () => {
+  /** `retomar`: si hay un envío vigente, vuelve a esa pantalla (false al tocar "volver"). */
+  const cargar = useCallback(async (retomar = true) => {
     setError(null);
     try {
       const r = await consultarIdentidad();
       if (r.status === "LINKED") return terminar();
       if (r.status === "PENDING") return setVista({ tipo: "elegir", canales: r.channels ?? [] });
       if (r.status === "ONBOARDING_REQUIRED") return setVista({ tipo: "alta" });
+      if (r.self_contact) {
+        // Si ya había pedido el mensaje o el código, sigue donde quedó.
+        if (retomar && r.validation?.channel === "whatsapp")
+          return setVista({ tipo: "whatsapp", destino: r.validation.destination_masked });
+        if (retomar && r.validation?.channel === "email")
+          return setVista({ tipo: "codigo", destino: r.validation.destination_masked });
+        return setVista({ tipo: "propio", email: r.self_contact.email_masked });
+      }
       setVista({ tipo: "sucursal" });
     } catch (err) {
       setError(mensajeDeError(err));
@@ -114,6 +129,38 @@ export default function ValidarIdentidad() {
           ? { tipo: "whatsapp", destino: r.validation.destination_masked }
           : { tipo: "codigo", destino: r.validation.destination_masked },
       );
+    } catch (err) {
+      setError(mensajeDeError(err));
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const validarConEmailPropio = async () => {
+    setEnviando(true);
+    setError(null);
+    try {
+      const r = await iniciarValidacionConContactoPropio({ channel: "email" });
+      setVista({ tipo: "codigo", destino: r.validation.destination_masked });
+    } catch (err) {
+      setError(mensajeDeError(err));
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const validarConCelular = async (e: FormEvent) => {
+    e.preventDefault();
+    if (enviando) return;
+    if (celular.replace(/\D/g, "").length < 10) {
+      setError("Ingresá la característica y el número, sin el 0 ni el 15.");
+      return;
+    }
+    setEnviando(true);
+    setError(null);
+    try {
+      const r = await iniciarValidacionConContactoPropio({ channel: "whatsapp", telefono: celular });
+      setVista({ tipo: "whatsapp", destino: r.validation.destination_masked });
     } catch (err) {
       setError(mensajeDeError(err));
     } finally {
@@ -251,6 +298,76 @@ export default function ValidarIdentidad() {
     );
   }
 
+  if (vista.tipo === "propio") {
+    const { email } = vista;
+    return (
+      <AuthCard
+        title="Validá tu identidad"
+        subtitle="Ya tenemos tus datos como cliente. Para mostrarte tus puntos, compras y pedidos, confirmá que sos vos."
+        footer={pie}
+      >
+        {email && (
+          <MetodoOption
+            icon={<Mail size={22} />}
+            title="Con un código por email"
+            text={`A ${email}`}
+            onClick={() => void validarConEmailPropio()}
+            disabled={enviando}
+            tone="socios"
+          />
+        )}
+        <MetodoOption
+          icon={<MessageCircle size={22} />}
+          title="Por WhatsApp"
+          text="Te pedimos tu celular"
+          onClick={() => {
+            setError(null);
+            setVista({ tipo: "celular", email });
+          }}
+          disabled={enviando}
+          tone="socios"
+        />
+        {error && <Alert color="warning">{error}</Alert>}
+        <PortalButton tone="socios" variant="secondary" onClick={irAlPortal}>
+          Ahora no, ir al portal
+        </PortalButton>
+      </AuthCard>
+    );
+  }
+
+  if (vista.tipo === "celular") {
+    return (
+      <AuthCard
+        title="Tu celular"
+        subtitle="Te mandamos un WhatsApp para confirmar que sos vos."
+        onBack={() => {
+          setError(null);
+          setVista({ tipo: "propio", email: vista.email });
+        }}
+        footer={pie}
+      >
+        <form className={styles.form} onSubmit={validarConCelular} noValidate>
+          <TextField
+            id="validar-celular"
+            label="Celular"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel-national"
+            placeholder="Ej: 351 6620601"
+            hint="Característica y número, sin el 0 ni el 15."
+            value={celular}
+            onChange={(e) => setCelular(e.target.value)}
+            autoFocus
+          />
+          {error && <Alert color="warning">{error}</Alert>}
+          <PortalButton type="submit" tone="socios" disabled={enviando}>
+            {enviando ? "Enviando…" : "Enviarme el WhatsApp"}
+          </PortalButton>
+        </form>
+      </AuthCard>
+    );
+  }
+
   if (vista.tipo === "whatsapp") {
     return (
       <AuthCard
@@ -261,7 +378,7 @@ export default function ValidarIdentidad() {
             en el mensaje y volvé a esta pantalla.
           </>
         }
-        onBack={() => void cargar()}
+        onBack={() => void cargar(false)}
         footer={pie}
       >
         <Alert color="info">Esperando la validación… Se actualiza sola.</Alert>
@@ -279,7 +396,7 @@ export default function ValidarIdentidad() {
             Te mandamos un código de 6 dígitos a <strong>{vista.destino}</strong>.
           </>
         }
-        onBack={() => void cargar()}
+        onBack={() => void cargar(false)}
         footer={pie}
       >
         <form className={styles.form} onSubmit={confirmarCodigo} noValidate>

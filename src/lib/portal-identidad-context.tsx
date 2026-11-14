@@ -45,7 +45,8 @@ export const PortalIdentidadProvider = ({ children }: { children: React.ReactNod
           window.location.assign(`/validar-identidad?redirectTo=${encodeURIComponent(volverA)}`);
           return;
         }
-        setStatus(r.status);
+        // Ficha sin contactos: puede validar con un contacto propio, no hace falta la sucursal.
+        setStatus(r.status === "UNAVAILABLE" && r.self_contact ? "PENDING" : r.status);
       })
       .catch(() => {
         // Si no se puede consultar, el portal se comporta como siempre (los
