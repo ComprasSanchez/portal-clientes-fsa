@@ -38,6 +38,8 @@ interface SociosSidebarProps {
   userName: string;
   onLogout: () => void;
   esColaborador?: boolean;
+  /** Puede darle una contraseña nueva a un cliente o colaborador. */
+  puedeCambiarClaves?: boolean;
   /** Invitado al Evento de Fin de Año sin ser colaborador (ej. PPP). */
   invitadoEvento?: boolean;
 }
@@ -59,18 +61,21 @@ type MenuItem = MenuLeaf | MenuGroup;
 
 const isMenuGroup = (item: MenuItem): item is MenuGroup => "children" in item;
 
-const colaboradoresMenuItem: MenuGroup = {
+const colaboradoresMenuItem = (puedeCambiarClaves: boolean): MenuGroup => ({
   id: "colaboradores",
   label: "Colaboradores",
   icon: BadgeCheck,
   children: [
     { id: "colaboradores-ventas", label: "Ventas" },
     { id: "colaboradores-aplicaciones", label: "Aplicaciones FSA" },
+    ...(puedeCambiarClaves
+      ? [{ id: "colaboradores-claves" as const, label: "Cambiar contraseñas" }]
+      : []),
     ...(isFiestaActiva()
       ? [{ id: "colaboradores-fiesta" as const, label: "Evento de Fin de Año" }]
       : []),
   ],
-};
+});
 
 const menuItems: MenuItem[] = [
   { id: "dashboard", label: "Inicio", icon: LayoutGrid },
@@ -94,13 +99,14 @@ export function SociosSidebar({
   userName,
   onLogout,
   esColaborador = false,
+  puedeCambiarClaves = false,
   invitadoEvento = false,
 }: SociosSidebarProps) {
   const router = useRouter();
   const visibleMenuItems = esColaborador
     ? [
         ...menuItems.filter((item) => item.id !== "cora"),
-        colaboradoresMenuItem,
+        colaboradoresMenuItem(puedeCambiarClaves),
         ...menuItems.filter((item) => item.id === "cora"),
       ]
     : invitadoEvento && isFiestaActiva()

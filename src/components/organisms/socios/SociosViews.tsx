@@ -45,6 +45,7 @@ import { NotificacionesView } from "@/components/organisms/notificaciones/Notifi
 import { SociosColaboradorVentasView } from "./SociosColaboradorVentasView";
 import { SociosColaboradorAplicacionesView } from "./SociosColaboradorAplicacionesView";
 import { SociosColaboradorFiestaView } from "./SociosColaboradorFiestaView";
+import { SociosColaboradorClavesView } from "./SociosColaboradorClavesView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
@@ -128,6 +129,10 @@ const viewContent: Record<
   "colaboradores-aplicaciones": {
     title: "Aplicaciones FSA",
     description: "Accedé a las herramientas que usás en tu día a día.",
+  },
+  "colaboradores-claves": {
+    title: "Cambiar contraseñas",
+    description: "Generá una contraseña nueva para un cliente o un colaborador.",
   },
   "colaboradores-fiesta": {
     title: "Evento de Fin de Año",
@@ -393,6 +398,14 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <SociosColaboradorAplicacionesView />
+      </main>
+    );
+  }
+
+  if (currentView === "colaboradores-claves") {
+    return (
+      <main className={styles.container}>
+        <SociosColaboradorClavesView />
       </main>
     );
   }

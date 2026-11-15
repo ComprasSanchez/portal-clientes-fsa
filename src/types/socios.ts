@@ -11,6 +11,8 @@ export type SociosView =
   | "evento"
   | "colaboradores-ventas"
   | "colaboradores-aplicaciones"
+  /** Contraseña nueva para un socio (solo personal habilitado). */
+  | "colaboradores-claves"
   /** Fiesta de fin de año de colaboradores (temporal). */
   | "colaboradores-fiesta";
 
@@ -18,6 +20,7 @@ export type SociosView =
 export const COLABORADORES_VIEWS = [
   "colaboradores-ventas",
   "colaboradores-aplicaciones",
+  "colaboradores-claves",
   "colaboradores-fiesta",
 ] as const satisfies readonly SociosView[];
 

@@ -20,6 +20,10 @@ export type AuthFlow = {
   /** Cuándo se pidió el último código por email (ms), para la espera entre pedidos. */
   codigoPedidoAt?: number;
   registro?: { flowId: string; destination: string };
+  /** "Olvidé mi contraseña": código pedido al email. */
+  recuperacion?: { challengeId: string; pedidoAt: number };
+  /** Se acaba de cambiar la contraseña: el paso de contraseña lo avisa. */
+  claveCambiada?: boolean;
   redirectTo?: string;
   origen?: AuthOrigen;
 };
@@ -138,10 +142,13 @@ type ApiErrorBody = {
   message?: string;
 };
 
-async function call<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<T> {
+const call = <T>(method: "GET" | "POST", path: string, body?: unknown) =>
+  request<T>(method, `/api/v2/web/${path}`, body);
+
+async function request<T>(method: "GET" | "POST", url: string, body?: unknown): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(`/api/v2/web/${path}`, {
+    res = await fetch(url, {
       method,
       cache: "no-store",
       credentials: "include",
@@ -241,6 +248,27 @@ export const reenviarCodigoDeRegistro = (flowId: string) =>
     { flow_id: flowId },
   );
 
+// ---- Olvidé mi contraseña (mismo servicio que el ingreso de siempre) ----
+
+/** Responde igual exista o no la cuenta: no revela qué emails están registrados. */
+export const pedirCodigoDeRecuperacion = (email: string) =>
+  request<{ challenge?: { id?: string; expiresAt?: number } }>("POST", "/api/auth/forgot-password", {
+    identifier: email.trim().toLowerCase(),
+  });
+
+export const cambiarContrasenaConCodigo = (challengeId: string, code: string, nueva: string) =>
+  request<{ ok?: boolean }>("POST", "/api/auth/reset-password", {
+    challengeId,
+    code,
+    newPassword: nueva,
+  });
+
+export function validarContrasenaNueva(nueva: string, repetida: string): string | null {
+  if (nueva.length < 8) return "La contraseña tiene que tener al menos 8 caracteres.";
+  if (nueva !== repetida) return "Las contraseñas no coinciden.";
+  return null;
+}
+
 // ---- Validar identidad (cuenta sin vincular al cliente) ----
 
 export type IdentidadStatus = "LINKED" | "PENDING" | "ONBOARDING_REQUIRED" | "UNAVAILABLE";
@@ -281,6 +309,21 @@ export const completarAlta = (datos: { nombre: string; apellido: string; nro_doc
     acepta_politica_privacidad: true,
   });
 
+// ---- Colaboradores habilitados: contraseña nueva para un cliente o colaborador ----
+
+export type CuentaSocio = { nombre: string | null; email_masked: string | null };
+
+export const consultarPermisoClaves = () =>
+  call<{ habilitado: boolean }>("GET", "me/soporte/clave");
+
+export const buscarCuentaSocio = (nroDocumento: string) =>
+  call<{ cuenta: CuentaSocio }>("POST", "me/soporte/clave/cuenta", { nro_documento: nroDocumento });
+
+export const generarClaveSocio = (nroDocumento: string) =>
+  call<{ cuenta: CuentaSocio; password: string }>("POST", "me/soporte/clave", {
+    nro_documento: nroDocumento,
+  });
+
 /**
  * Después de iniciar sesión, al destino (ej. el stand escaneado). Si la cuenta
  * no está vinculada, el portal entra en modo limitado y ahí ofrece validar la
@@ -311,9 +354,11 @@ function toAuthError(status: number, body: ApiErrorBody): AuthNuevoError {
   const err = typeof body.error === "object" ? body.error : undefined;
   const code = err?.code;
   const details = err?.details ?? {};
-  const seconds = typeof details.retry_after_sec === "number" ? details.retry_after_sec : undefined;
-  const attempts =
-    typeof details.remaining_attempts === "number" ? details.remaining_attempts : undefined;
+  // El servicio de contraseña de siempre manda los detalles en camelCase.
+  const retry = details.retry_after_sec ?? details.retryAfterSec;
+  const restantes = details.remaining_attempts ?? details.remainingAttempts;
+  const seconds = typeof retry === "number" ? retry : undefined;
+  const attempts = typeof restantes === "number" ? restantes : undefined;
   const maskedEmail = typeof details.masked_email === "string" ? details.masked_email : undefined;
 
   const rawMessage = typeof body.message === "string" ? body.message : "";
@@ -364,6 +409,18 @@ function toAuthError(status: number, body: ApiErrorBody): AuthNuevoError {
     AUTH_IDENTITY_PHONE_INVALID:
       "Revisá el número: ingresá la característica y el número, sin el 0 ni el 15.",
     AUTH_IDENTITY_CHANNEL_NOT_AVAILABLE: "Esta opción ya no está disponible. Volvé a cargar la página.",
+    AUTH_PASSWORD_RECOVERY_SEND_FAILED: "No pudimos enviarte el código. Probá de nuevo en unos minutos.",
+    AUTH_RESET_INVALID_CODE: codigoIncorrecto(attempts),
+    AUTH_RESET_CHALLENGE_EXPIRED: "El código venció. Pedí uno nuevo.",
+    AUTH_RESET_CHALLENGE_INVALID: "El código ya no es válido. Pedí uno nuevo.",
+    AUTH_RESET_LOCKED: "Hiciste demasiados intentos. Esperá unos minutos y pedí un código nuevo.",
+    AUTH_RESET_PASSWORD_FAILED:
+      "No pudimos guardar la contraseña nueva. Probá con otra o intentá de nuevo en unos minutos.",
+    AUTH_SOPORTE_FORBIDDEN: "No tenés permiso para cambiar contraseñas.",
+    AUTH_SOPORTE_CLIENTE_NOT_FOUND: "No encontramos a nadie con ese DNI.",
+    AUTH_SOPORTE_CUENTA_NOT_FOUND: "Esa persona todavía no tiene cuenta en el portal. Puede crearla desde el registro.",
+    AUTH_SOPORTE_CUENTA_PROPIA: "Es tu propia cuenta. Cambiá tu contraseña desde el ingreso, con \"¿Olvidaste tu contraseña?\".",
+    AUTH_SOPORTE_CLAVE_FAILED: "No pudimos cambiar la contraseña. Probá de nuevo en unos minutos.",
   };
 
   if (status === 401 && !code) {
