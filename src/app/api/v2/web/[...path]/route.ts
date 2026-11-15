@@ -24,6 +24,8 @@ const ALLOWED: Record<string, ReadonlyArray<"GET" | "POST">> = {
   "me/identidad/validacion/codigo": ["POST"],
   "me/identidad/contacto": ["POST"],
   "me/alta": ["POST"],
+  "me/soporte/clave": ["GET", "POST"],
+  "me/soporte/clave/cuenta": ["POST"],
 };
 
 type RouteContext = { params: Promise<{ path: string[] }> };

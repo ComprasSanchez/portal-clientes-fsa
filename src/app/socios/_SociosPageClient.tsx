@@ -10,6 +10,7 @@ import { ConvenioVerificacionModal } from "@/components/organisms/convenio/Conve
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { usePortalColaborador } from "@/lib/use-portal-colaborador";
 import { usePortalInvitadoEvento } from "@/lib/use-portal-invitado-evento";
+import { usePermisoClaves } from "@/lib/use-permiso-claves";
 import { isFiestaActiva } from "@/lib/fiesta";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import {
@@ -70,18 +71,24 @@ export function SociosPageClient() {
     esColaborador,
     isColaboradorLoading,
   );
+  const { puedeCambiarClaves, isLoading: isPermisoClavesLoading } = usePermisoClaves(
+    esColaborador,
+    isColaboradorLoading,
+  );
   // Los invitados al evento (ej. PPP) ven solo la vista del evento, no el resto de Colaboradores.
   const puedeVerVista = (view: SociosView) =>
-    !isColaboradoresView(view) || esColaborador || (view === "colaboradores-fiesta" && invitadoEvento);
+    view === "colaboradores-claves"
+      ? esColaborador && puedeCambiarClaves
+      : !isColaboradoresView(view) || esColaborador || (view === "colaboradores-fiesta" && invitadoEvento);
   const { pushToast } = useGlobalToast();
 
   // Acceso directo por URL a una vista de colaboradores sin ser colaborador activo: volver a Inicio.
   useEffect(() => {
-    if (isColaboradorLoading || isInvitadoLoading || puedeVerVista(currentView)) return;
+    if (isColaboradorLoading || isInvitadoLoading || isPermisoClavesLoading || puedeVerVista(currentView)) return;
     setCurrentView(DEFAULT_VIEW);
     router.replace("/socios", { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- puedeVerVista depende de estos mismos valores
-  }, [currentView, esColaborador, invitadoEvento, isColaboradorLoading, isInvitadoLoading, router]);
+  }, [currentView, esColaborador, invitadoEvento, puedeCambiarClaves, isColaboradorLoading, isInvitadoLoading, isPermisoClavesLoading, router]);
 
   const principalPhone =
     perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
@@ -199,6 +206,7 @@ export function SociosPageClient() {
         onLogout={handleLogout}
         userName={summary.displayName}
         esColaborador={esColaborador}
+        puedeCambiarClaves={puedeCambiarClaves}
         invitadoEvento={invitadoEvento}
       />
 
