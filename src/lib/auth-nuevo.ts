@@ -203,6 +203,15 @@ export const confirmarCodigoPorEmail = (challengeId: string, code: string, recor
     recordar,
   });
 
+/** Cliente web de Google Cloud; vacío = sin botón de Google. */
+export const googleClientId = () => process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim() ?? "";
+
+export const ingresarConGoogle = (idToken: string) =>
+  call<{ identity_linked: boolean; onboarding_required: boolean }>("POST", "auth/google", {
+    id_token: idToken,
+    recordar: false,
+  });
+
 export type RegistroDatos = {
   email: string;
   password: string;
@@ -416,6 +425,11 @@ function toAuthError(status: number, body: ApiErrorBody): AuthNuevoError {
     AUTH_RESET_LOCKED: "Hiciste demasiados intentos. Esperá unos minutos y pedí un código nuevo.",
     AUTH_RESET_PASSWORD_FAILED:
       "No pudimos guardar la contraseña nueva. Probá con otra o intentá de nuevo en unos minutos.",
+    AUTH_SOCIAL_TOKEN_INVALID: "No pudimos confirmar tu cuenta de Google. Probá de nuevo.",
+    AUTH_SOCIAL_EMAIL_NOT_VERIFIED:
+      "Tu cuenta de Google no tiene el email confirmado. Ingresá con tu email y contraseña.",
+    AUTH_SOCIAL_PROVIDER_DISABLED: "Por ahora no se puede ingresar con Google. Ingresá con tu email.",
+    AUTH_SOCIAL_LOGIN_FAILED: "No pudimos ingresar con Google. Probá de nuevo en unos minutos.",
     AUTH_SOPORTE_FORBIDDEN: "No tenés permiso para cambiar contraseñas.",
     AUTH_SOPORTE_CLIENTE_NOT_FOUND: "No encontramos a nadie con ese DNI.",
     AUTH_SOPORTE_CUENTA_NOT_FOUND: "Esa persona todavía no tiene cuenta en el portal. Puede crearla desde el registro.",

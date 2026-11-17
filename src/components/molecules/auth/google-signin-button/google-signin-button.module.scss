@@ -1,0 +1,43 @@
+.wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.button {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.blocked {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--tone-muted, #555);
+}
+
+.spinner {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
