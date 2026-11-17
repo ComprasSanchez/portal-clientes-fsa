@@ -30,6 +30,7 @@ import { isFiestaActiva } from "@/lib/fiesta";
 import sociosaLogo from "@/assets/sociosa-color.png";
 import sociosaIcon from "@/assets/icono-estrella.png";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
+import { useOcultarChat } from "@/lib/use-ocultar-chat";
 import { NotificationBell } from "./NotificationBell";
 
 interface SociosSidebarProps {
@@ -118,6 +119,7 @@ export function SociosSidebar({
       : menuItems;
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  useOcultarChat(isMobileOpen);
   // Grupos desplegados. El grupo de la vista actual se muestra abierto
   // aunque el usuario no lo haya abierto a mano.
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
@@ -185,7 +187,7 @@ export function SociosSidebar({
       )}
 
       <aside
-        className={`fixed left-0 z-40 h-[calc(100vh-4rem)] border-r border-[#d3dee2] bg-[#f2f5f6] transition-all duration-300 ${isCollapsed ? "w-24" : "w-64"} lg:top-0 lg:h-screen ${isMobileOpen ? "top-16" : "top-16 -translate-x-full lg:translate-x-0"}`}
+        className={`fixed left-0 z-40 h-[calc(100dvh-4rem)] border-r border-[#d3dee2] bg-[#f2f5f6] transition-all duration-300 ${isCollapsed ? "w-24" : "w-64"} lg:top-0 lg:h-screen ${isMobileOpen ? "top-16" : "top-16 -translate-x-full lg:translate-x-0"}`}
       >
         <div className="flex h-full flex-col overflow-hidden">
           <div
@@ -340,35 +342,36 @@ export function SociosSidebar({
                 );
               })}
             </ul>
-
-            <div className="mt-auto px-3 pt-3 lg:hidden">
-              <button
-                onClick={handleLogoutClick}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[#dd3f62] transition-colors hover:bg-[#fff0c2]"
-                type="button"
-              >
-                <LogOut size={18} className="shrink-0" />
-                <span className="text-[15px] font-semibold">
-                  Cerrar sesion
-                </span>
-              </button>
-            </div>
           </nav>
+
+          {/* Fuera del área con scroll: en mobile siempre queda a la vista. */}
+          <div className="shrink-0 border-t border-[#d3dee2] px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
+            <button
+              onClick={handleLogoutClick}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[#dd3f62] transition-colors hover:bg-[#fff0c2]"
+              type="button"
+            >
+              <LogOut size={18} className="shrink-0" />
+              <span className="text-[15px] font-semibold">
+                Cerrar sesión
+              </span>
+            </button>
+          </div>
 
           <div className="hidden shrink-0 border-t border-[#d3dee2] bg-[#f2f5f6] p-3 lg:block lg:bg-transparent">
             <button
               onClick={handleLogoutClick}
               className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[#dd3f62] transition-colors hover:bg-[#fff0c2] lg:justify-start"
-              title={isCollapsed ? "Cerrar sesion" : undefined}
+              title={isCollapsed ? "Cerrar sesión" : undefined}
               type="button"
             >
               <LogOut size={20} className="shrink-0" />
               {!isCollapsed && (
-                <span className="text-sm font-semibold">Cerrar sesion</span>
+                <span className="text-sm font-semibold">Cerrar sesión</span>
               )}
               {isCollapsed && (
                 <span className="text-sm font-semibold lg:hidden">
-                  Cerrar sesion
+                  Cerrar sesión
                 </span>
               )}
             </button>

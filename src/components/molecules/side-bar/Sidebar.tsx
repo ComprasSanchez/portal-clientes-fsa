@@ -22,6 +22,7 @@ import { type HomeView } from "@/types/home";
 import coraWordmark from "@/assets/cora-morado.svg";
 import coraIcon from "@/assets/cora-icono.svg";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
+import { useOcultarChat } from "@/lib/use-ocultar-chat";
 import { NotificationBell } from "./NotificationBell";
 
 interface SidebarProps {
@@ -61,6 +62,7 @@ export function Sidebar({
 }: SidebarProps) {
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  useOcultarChat(isMobileOpen);
 
   const { perfil } = usePortalPerfilContext();
   // En "revision-pendiente" el contenido ya trae su propio header (con
@@ -130,7 +132,7 @@ export function Sidebar({
         className={`fixed left-0 z-40 border-r border-[#e6e1ef] bg-[#f8f7fc] transition-all duration-300
           ${isCollapsed ? "w-20" : "w-64"}
           lg:top-0 lg:h-screen
-          ${showMobileTopBar ? "top-16 h-[calc(100vh-4rem)]" : "top-0 h-screen"}
+          ${showMobileTopBar ? "top-16 h-[calc(100dvh-4rem)]" : "top-0 h-dvh"}
           ${isMobileOpen ? "" : "-translate-x-full lg:translate-x-0"}`}
       >
         <div className="flex h-full flex-col">
@@ -227,33 +229,34 @@ export function Sidebar({
                 );
               })}
             </ul>
-
-            <div className="mt-auto px-3 pt-3 lg:hidden">
-              <button
-                onClick={onLogout}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[#dd3f62] transition-colors hover:bg-[#fdecef]"
-              >
-                <LogOut size={18} className="shrink-0" />
-                <span className="text-[15px] font-(--fw-sidebar,600)">
-                  Cerrar sesion
-                </span>
-              </button>
-            </div>
           </nav>
+
+          {/* Fuera del área con scroll: en mobile siempre queda a la vista. */}
+          <div className="shrink-0 border-t border-[#e6e1ef] px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
+            <button
+              onClick={onLogout}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[#dd3f62] transition-colors hover:bg-[#fdecef]"
+            >
+              <LogOut size={18} className="shrink-0" />
+              <span className="text-[15px] font-(--fw-sidebar,600)">
+                Cerrar sesión
+              </span>
+            </button>
+          </div>
 
           <div className="hidden border-t border-[#e6e1ef] p-3 lg:block">
             <button
               onClick={onLogout}
               className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[#dd3f62] transition-colors hover:bg-[#fdecef]"
-              title={isCollapsed ? "Cerrar sesion" : undefined}
+              title={isCollapsed ? "Cerrar sesión" : undefined}
             >
               <LogOut size={20} className="shrink-0" />
               {!isCollapsed && (
-                <span className="text-sm font-(--fw-sidebar,600)">Cerrar sesion</span>
+                <span className="text-sm font-(--fw-sidebar,600)">Cerrar sesión</span>
               )}
               {isCollapsed && (
                 <span className="text-sm font-(--fw-sidebar,600) lg:hidden">
-                  Cerrar sesion
+                  Cerrar sesión
                 </span>
               )}
             </button>
