@@ -365,7 +365,9 @@ body {
    iframe (los wc-* no se alcanzan desde aca); en la pagina solo queda un div
    sin id que envuelve a <iframe name="Botmaker">, asi que se ocultan esos. */
 body[data-hide-botmaker] iframe[name="Botmaker"],
-body[data-hide-botmaker] div:has(> iframe[name="Botmaker"]) {
+body[data-hide-botmaker] div:has(> iframe[name="Botmaker"]),
+body[data-menu-abierto] iframe[name="Botmaker"],
+body[data-menu-abierto] div:has(> iframe[name="Botmaker"]) {
   display: none !important;
 }
 
