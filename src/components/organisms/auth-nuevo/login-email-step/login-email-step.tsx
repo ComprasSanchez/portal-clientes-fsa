@@ -7,13 +7,16 @@ import Alert from "@/components/atoms/alert/alert";
 import PortalButton from "@/components/atoms/button/button";
 import TextField from "@/components/atoms/text-field/text-field";
 import AuthCard from "@/components/molecules/auth/auth-card/auth-card";
+import GoogleSigninButton from "@/components/molecules/auth/google-signin-button/google-signin-button";
 import { trackEvent } from "@/lib/analytics";
 import {
   buscarEmail,
   capturarParametrosDeEntrada,
-  destinoDespuesDelIngreso,
   emailValido,
+  googleClientId,
   guardarFlow,
+  ingresarConGoogle,
+  irDespuesDelIngreso,
   mensajeDeError,
 } from "@/lib/auth-nuevo";
 import { useAuthFlow } from "@/lib/use-auth-flow";
@@ -38,21 +41,11 @@ export default function LoginEmailStep() {
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<Aviso | null>(null);
   const [buscando, setBuscando] = useState(false);
-  const [yendoAGoogle, setYendoAGoogle] = useState(false);
+  const [entrandoConGoogle, setEntrandoConGoogle] = useState(false);
 
   useEffect(() => {
     capturarParametrosDeEntrada(searchParams);
   }, [searchParams]);
-
-  // Si vuelve con "atrás" desde Google, el navegador restaura la página tal
-  // cual quedó: sin esto el botón seguiría cargando para siempre.
-  useEffect(() => {
-    const alVolver = (e: PageTransitionEvent) => {
-      if (e.persisted) setYendoAGoogle(false);
-    };
-    window.addEventListener("pageshow", alVolver);
-    return () => window.removeEventListener("pageshow", alVolver);
-  }, []);
 
   const continuar = async (e: FormEvent) => {
     e.preventDefault();
@@ -98,13 +91,19 @@ export default function LoginEmailStep() {
     }
   };
 
-  const ingresarConGoogle = () => {
-    setYendoAGoogle(true);
+  // Sin cuenta vinculada, el portal entra en modo limitado y ahí pide el alta o la validación.
+  const alRecibirGoogle = async (idToken: string) => {
+    setAviso(null);
+    setEntrandoConGoogle(true);
     trackEvent("login_google_click");
-    const destino = destinoDespuesDelIngreso();
-    window.location.assign(
-      `/api/v2/auth/providers/google/start?redirectTo=${encodeURIComponent(destino)}`,
-    );
+    try {
+      const result = await ingresarConGoogle(idToken);
+      trackEvent("login_google_ok", { vinculada: result.identity_linked });
+      await irDespuesDelIngreso();
+    } catch (err) {
+      setAviso({ color: "warning", texto: mensajeDeError(err) });
+      setEntrandoConGoogle(false);
+    }
   };
 
   return (
@@ -138,7 +137,7 @@ export default function LoginEmailStep() {
             {aviso.accion.label}
           </PortalButton>
         )}
-        <PortalButton type="submit" tone="socios" loading={buscando} disabled={yendoAGoogle}>
+        <PortalButton type="submit" tone="socios" loading={buscando} disabled={entrandoConGoogle}>
           {buscando ? "Continuando…" : "Continuar"}
         </PortalButton>
       </form>
@@ -147,18 +146,20 @@ export default function LoginEmailStep() {
         Hacete socio
       </Link>
 
-      <div className={styles.separator}>
-        <span>o</span>
-      </div>
+      {googleClientId() && (
+        <>
+          <div className={styles.separator}>
+            <span>o</span>
+          </div>
 
-      <PortalButton
-        variant="google"
-        onClick={ingresarConGoogle}
-        disabled={buscando}
-        loading={yendoAGoogle}
-      >
-        {yendoAGoogle ? "Conectando con Google…" : "Continuar con Google"}
-      </PortalButton>
+          <GoogleSigninButton
+            clientId={googleClientId()}
+            onCredential={alRecibirGoogle}
+            loading={entrandoConGoogle}
+            disabled={buscando}
+          />
+        </>
+      )}
     </AuthCard>
   );
 }

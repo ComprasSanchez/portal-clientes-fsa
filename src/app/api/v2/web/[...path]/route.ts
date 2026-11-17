@@ -16,6 +16,7 @@ const ALLOWED: Record<string, ReadonlyArray<"GET" | "POST">> = {
   "auth/mfa/resend": ["POST"],
   "auth/login/email-code": ["POST"],
   "auth/login/email-code/verify": ["POST"],
+  "auth/google": ["POST"],
   "auth/register": ["POST"],
   "auth/register/verify": ["POST"],
   "auth/register/resend": ["POST"],
