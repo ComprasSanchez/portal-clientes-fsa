@@ -10,7 +10,7 @@ import planZNaranjaX from "@/assets/sociosa-img/mobile-3.jpeg";
 import ProductCard from "@/components/molecules/product-card/product-card";
 import SectionHeading from "@/components/molecules/section-heading/section-heading";
 import SegmentedControl from "@/components/molecules/segmented-control/segmented-control";
-import { BEAUTY_SECCIONES, productosDeSeccion } from "@/lib/beauty-catalogo";
+import { BEAUTY_EVENTO, BEAUTY_SECCIONES, productosDeSeccion } from "@/lib/beauty-catalogo";
 import { toneClass } from "@/types/ui-tone";
 import styles from "./beauty-catalogo.module.scss";
 
@@ -34,6 +34,8 @@ export default function BeautyCatalogo() {
       <BeautyHero
         marcas={["Serendipity", "Accurato"]}
         bajada="Maquillaje + dermo para vos"
+        fecha={BEAUTY_EVENTO.fecha}
+        lugar={BEAUTY_EVENTO.sucursal}
       />
 
       <nav className={styles.filtros} aria-label="Categorías">

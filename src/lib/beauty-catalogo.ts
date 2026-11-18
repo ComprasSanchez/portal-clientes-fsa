@@ -22,6 +22,12 @@ export type BeautySeccion = {
   descuentoPct: number;
 };
 
+/** Fecha y sucursal de la promo (columnas FECHA y SUCU del Excel). */
+export const BEAUTY_EVENTO = {
+  fecha: "Viernes 20/11",
+  sucursal: "Solo en Sucursal 25",
+};
+
 export const BEAUTY_SECCIONES: BeautySeccion[] = [
   { id: "dermo", marca: "accurato", categoria: "Dermo", marcaLabel: "Accurato", descuentoPct: 30 },
   { id: "maquillaje", marca: "serendipity", categoria: "Maquillaje", marcaLabel: "Serendipity", descuentoPct: 25 },

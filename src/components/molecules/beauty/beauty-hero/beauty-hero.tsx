@@ -1,12 +1,15 @@
+import { CalendarDays, MapPin } from "lucide-react";
 import styles from "./beauty-hero.module.scss";
 
 type BeautyHeroProps = {
   marcas: string[];
   bajada: string;
+  fecha?: string;
+  lugar?: string;
 };
 
-/** Banner bordó del catálogo: "AutoBeauty junto a ..." y bajada en pastilla. */
-export default function BeautyHero({ marcas, bajada }: BeautyHeroProps) {
+/** Banner bordó del catálogo: "AutoBeauty junto a ...", bajada en pastilla, fecha y lugar. */
+export default function BeautyHero({ marcas, bajada, fecha, lugar }: BeautyHeroProps) {
   return (
     <section className={styles.hero} aria-labelledby="beauty-hero-title">
       <div className={styles.inner}>
@@ -26,6 +29,22 @@ export default function BeautyHero({ marcas, bajada }: BeautyHeroProps) {
           ))}
         </p>
         <p className={styles.bajada}>{bajada}</p>
+        {(fecha || lugar) && (
+          <p className={styles.detalle}>
+            {fecha && (
+              <span className={styles.dato}>
+                <CalendarDays size={16} aria-hidden="true" />
+                {fecha}
+              </span>
+            )}
+            {lugar && (
+              <span className={styles.dato}>
+                <MapPin size={16} aria-hidden="true" />
+                {lugar}
+              </span>
+            )}
+          </p>
+        )}
       </div>
     </section>
   );

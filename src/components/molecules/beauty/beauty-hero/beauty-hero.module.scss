@@ -58,6 +58,25 @@
   font-weight: 400;
 }
 
+.detalle {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 1.25rem;
+  font-size: clamp(0.85rem, 0.8rem + 0.3vw, 1rem);
+  font-weight: 700;
+}
+
+.dato {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  svg {
+    color: var(--tone-highlight, #f2b705);
+  }
+}
+
 .bajada {
   margin-top: 0.4rem;
   padding: 0.35rem 1.25rem;
