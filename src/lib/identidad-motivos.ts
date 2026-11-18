@@ -17,6 +17,7 @@ const MOTIVOS_SOCIOS: Partial<Record<SociosView, string>> = {
   "colaboradores-ventas": "esta sección",
   "colaboradores-aplicaciones": "esta sección",
   "colaboradores-fiesta": "el evento de fin de año",
+  dosis: "tu invitación a Dosis de Conexión",
 };
 
 export const motivoSocios = (view: SociosView) => MOTIVOS_SOCIOS[view] ?? MOTIVO_GENERAL;

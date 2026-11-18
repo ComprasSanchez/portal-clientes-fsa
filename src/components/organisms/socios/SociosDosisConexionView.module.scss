@@ -1,0 +1,333 @@
+// "Dosis de Conexión": colores de la invitación (azul Sánchez Antoniolli, dorado y crema).
+$azul: #007c98;
+$azul-oscuro: #0c4f5f;
+$dorado: #f2bd00;
+$crema: #f3f2e6;
+$texto: #17343d;
+$muted: #5f7c85;
+$borde: #d3dee2;
+
+// La tipografía de la invitación ("04 DE DICIEMBRE", "21 HS").
+@font-face {
+  font-family: "Dosis Futura";
+  src: url("/dosis/futura-medium.ttf") format("truetype");
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Dosis Futura";
+  src: url("/dosis/futura-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: swap;
+}
+
+.view {
+  font-family: "Dosis Futura", var(--font-socios, "Poppins"), Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  color: $texto;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2.25rem 1.25rem 2rem;
+  border-radius: 28px;
+  background: $crema;
+  text-align: center;
+  isolation: isolate;
+  animation: aparecer 0.6s ease-out both;
+}
+
+.skeleton {
+  min-height: 320px;
+  animation: latido 1.4s ease-in-out infinite;
+}
+
+.brillos {
+  position: absolute;
+  top: -10%;
+  right: -12%;
+  width: min(55%, 360px);
+  opacity: 0.55;
+  z-index: -1;
+  pointer-events: none;
+  animation: titilar 4s ease-in-out infinite;
+}
+
+.copas {
+  position: absolute;
+  left: -2%;
+  bottom: -8%;
+  width: min(30%, 190px);
+  opacity: 0.9;
+  z-index: -1;
+  pointer-events: none;
+  transform: rotate(-6deg);
+}
+
+.eyebrow {
+  margin: 0;
+  color: $azul;
+  font-weight: 500;
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.titulo {
+  width: min(100%, 560px);
+  height: auto;
+}
+
+.datos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.25rem;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: $azul-oscuro;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    color: $dorado;
+    stroke-width: 2.4;
+  }
+}
+
+.grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 22px;
+  border: 1px solid $borde;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(23, 52, 61, 0.06);
+  animation: aparecer 0.6s ease-out both;
+}
+
+.cardTitulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: $azul;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    color: $dorado;
+  }
+}
+
+.texto {
+  margin: 0;
+  color: $muted;
+  font-family: var(--font-socios, "Poppins", Arial, sans-serif);
+  font-size: 0.95rem;
+}
+
+.adentro {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  background: $azul;
+  color: #fff;
+  font-weight: 500;
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    color: $dorado;
+    flex-shrink: 0;
+  }
+}
+
+.qrBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.qr {
+  width: min(100%, 240px);
+  height: auto;
+  padding: 0.5rem;
+  border-radius: 16px;
+  border: 3px solid $dorado;
+  background: #fff;
+}
+
+.qrPendiente {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  border: 2px dashed rgba($azul, 0.35);
+  border-radius: 16px;
+  background: $crema;
+  text-align: center;
+
+  svg {
+    width: 2rem;
+    height: 2rem;
+    color: $dorado;
+  }
+
+  p {
+    margin: 0;
+    color: $azul-oscuro;
+    font-weight: 500;
+  }
+}
+
+.regalo {
+  border-color: rgba($dorado, 0.6);
+  background: linear-gradient(160deg, #fff 55%, rgba($dorado, 0.14));
+}
+
+.regaloListo {
+  border-color: rgba($azul, 0.35);
+  background: linear-gradient(160deg, #fff 55%, rgba($azul, 0.1));
+}
+
+.regaloTitulo {
+  margin: 0;
+  color: $azul-oscuro;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.mapa {
+  width: 100%;
+  height: 240px;
+  border: 0;
+  border-radius: 16px;
+  background: $crema;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  background: $azul;
+  color: #fff;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s;
+
+  &:hover {
+    background: $azul-oscuro;
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.sponsors {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+
+  img {
+    max-height: 56px;
+    width: auto;
+  }
+}
+
+// En el celu las copas van más chicas y suaves, para no tapar la fecha y el lugar.
+@media (max-width: 640px) {
+  .copas {
+    width: 24%;
+    left: -6%;
+    bottom: -12%;
+    opacity: 0.35;
+  }
+
+  .datos li {
+    font-size: 0.95rem;
+  }
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes titilar {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes latido {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero,
+  .card,
+  .brillos,
+  .skeleton {
+    animation: none;
+  }
+}
