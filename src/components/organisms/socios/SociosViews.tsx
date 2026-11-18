@@ -45,6 +45,7 @@ import { NotificacionesView } from "@/components/organisms/notificaciones/Notifi
 import { SociosColaboradorVentasView } from "./SociosColaboradorVentasView";
 import { SociosColaboradorAplicacionesView } from "./SociosColaboradorAplicacionesView";
 import { SociosColaboradorFiestaView } from "./SociosColaboradorFiestaView";
+import { SociosDosisConexionView } from "./SociosDosisConexionView";
 import { SociosColaboradorClavesView } from "./SociosColaboradorClavesView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
@@ -137,6 +138,10 @@ const viewContent: Record<
   "colaboradores-fiesta": {
     title: "Evento de Fin de Año",
     description: "Jugá, sumá puntos y canjealos por premios.",
+  },
+  dosis: {
+    title: "Dosis de Conexión",
+    description: "Tu invitación a una noche para vos.",
   },
 };
 
@@ -406,6 +411,14 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <SociosColaboradorClavesView />
+      </main>
+    );
+  }
+
+  if (currentView === "dosis") {
+    return (
+      <main className={styles.container}>
+        <SociosDosisConexionView />
       </main>
     );
   }

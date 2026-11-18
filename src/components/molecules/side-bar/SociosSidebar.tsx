@@ -23,6 +23,7 @@ import {
   BadgeCheck,
   QrCode,
   PartyPopper,
+  Wine,
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
 import { isEventoStandsActivo } from "@/lib/evento-stands";
@@ -43,6 +44,8 @@ interface SociosSidebarProps {
   puedeCambiarClaves?: boolean;
   /** Invitado al Evento de Fin de Año sin ser colaborador (ej. PPP). */
   invitadoEvento?: boolean;
+  /** Invitado/a a "Dosis de Conexión" (médicos, farmacéuticos y visitadores). */
+  invitadoDosis?: boolean;
 }
 
 type MenuLeaf = {
@@ -102,9 +105,10 @@ export function SociosSidebar({
   esColaborador = false,
   puedeCambiarClaves = false,
   invitadoEvento = false,
+  invitadoDosis = false,
 }: SociosSidebarProps) {
   const router = useRouter();
-  const visibleMenuItems = esColaborador
+  const menuBase = esColaborador
     ? [
         ...menuItems.filter((item) => item.id !== "cora"),
         colaboradoresMenuItem(puedeCambiarClaves),
@@ -117,6 +121,14 @@ export function SociosSidebar({
           ...menuItems.filter((item) => item.id === "cora"),
         ]
       : menuItems;
+  // "Dosis de Conexión" va justo antes de CORA (o al final), solo para invitados.
+  const visibleMenuItems: MenuItem[] = invitadoDosis
+    ? [
+        ...menuBase.filter((item) => item.id !== "cora"),
+        { id: "dosis" as const, label: "Dosis de Conexión", icon: Wine },
+        ...menuBase.filter((item) => item.id === "cora"),
+      ]
+    : menuBase;
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   useOcultarChat(isMobileOpen);
