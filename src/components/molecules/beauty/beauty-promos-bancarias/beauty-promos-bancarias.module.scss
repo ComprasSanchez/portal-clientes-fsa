@@ -18,12 +18,13 @@
   font-weight: 900;
 }
 
-/* Celular: apilados. Desde tablet: de a dos; los apaisados ocupan la fila entera. */
+/* Celular: apilados. Desde tablet: todos en una fila (--columnas);
+   los apaisados ocupan la fila entera. */
 .lista {
   display: grid;
 
   @media (min-width: 640px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--columnas, 2), minmax(0, 1fr));
   }
 }
 
