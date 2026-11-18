@@ -48,11 +48,16 @@ const buildProductos = (item: PortalComprasItem): PortalComprasProducto[] => {
   ];
 };
 
-export const formatPortalCurrency = (amount: number, currency = "ARS") => {
+export const formatPortalCurrency = (
+  amount: number,
+  currency = "ARS",
+  sinDecimales = false,
+) => {
   return new Intl.NumberFormat("es-AR", {
     style: "currency",
     currency,
-    maximumFractionDigits: 2,
+    ...(sinDecimales ? { minimumFractionDigits: 0 } : {}),
+    maximumFractionDigits: sinDecimales ? 0 : 2,
   }).format(amount);
 };
 

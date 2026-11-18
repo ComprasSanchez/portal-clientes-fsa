@@ -10,7 +10,8 @@ export type BadgeColor =
   | "danger"
   | "warning"
   | "neutral"
-  | "breve";
+  | "breve"
+  | "sale";
 
 type BadgeProps = {
   children: ReactNode;

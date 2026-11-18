@@ -23,6 +23,7 @@ import {
   BadgeCheck,
   QrCode,
   PartyPopper,
+  Sparkles,
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
 import { isEventoStandsActivo } from "@/lib/evento-stands";
@@ -85,6 +86,7 @@ const menuItems: MenuItem[] = [
   { id: "facturas", label: "Mis compras", icon: ShoppingBag },
   { id: "puntos", label: "Puntos", icon: Star },
   { id: "sorteos", label: "Sorteos", icon: Ticket },
+  { id: "beauty", label: "AutoBeauty", icon: Sparkles },
   ...(isEventoStandsActivo()
     ? [{ id: "evento" as const, label: "Juego de stands", icon: QrCode }]
     : []),

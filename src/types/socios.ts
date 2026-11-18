@@ -9,6 +9,8 @@ export type SociosView =
   | "notificaciones"
   /** Juego de stands con QR del evento de Breve (temporal). */
   | "evento"
+  /** Catálogo AutoBeauty (Serendipity + Accurato). */
+  | "beauty"
   | "colaboradores-ventas"
   | "colaboradores-aplicaciones"
   /** Contraseña nueva para un socio (solo personal habilitado). */

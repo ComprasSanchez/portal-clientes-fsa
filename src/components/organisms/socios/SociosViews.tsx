@@ -24,6 +24,7 @@ import PerfilCompletoCard from "@/components/molecules/perfil-completo-card/perf
 import { usePerfilCompleto } from "@/lib/use-perfil-completo";
 import IdentityGate from "@/components/molecules/identity-gate/identity-gate";
 import { useIdentidad } from "@/lib/portal-identidad-context";
+import BeautyCatalogo from "@/components/organisms/beauty/beauty-catalogo/beauty-catalogo";
 import { MOTIVO_GENERAL, motivoSocios } from "@/lib/identidad-motivos";
 import Pagination from "@/components/molecules/pagination/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -117,6 +118,10 @@ const viewContent: Record<
     title: "Sucursales",
     description:
       "Encontrá la sucursal más cercana, consultá horarios y accedé a indicaciones.",
+  },
+  beauty: {
+    title: "AutoBeauty",
+    description: "Maquillaje Serendipity y dermo Accurato con descuento.",
   },
   evento: {
     title: "Juego de stands",
@@ -308,7 +313,7 @@ export function SociosViews({
     );
   }
 
-  if (!identidad.vinculada && currentView !== "evento") {
+  if (!identidad.vinculada && currentView !== "evento" && currentView !== "beauty") {
     const gate = (
       <IdentityGate
         tone="socios"
@@ -371,6 +376,14 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <NotificacionesView tone="socios" onBack={() => onNavigate("dashboard")} />
+      </main>
+    );
+  }
+
+  if (currentView === "beauty") {
+    return (
+      <main className={styles.container}>
+        <BeautyCatalogo />
       </main>
     );
   }

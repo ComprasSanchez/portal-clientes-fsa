@@ -8,8 +8,8 @@ import mobile2 from "@/assets/sociosa-img/mobile-2.jpeg";
 import styles from "./BannerCarousel.module.scss";
 
 const SLIDES = [
-  { src: mobile1, alt: "Cordobesa — 4 cuotas sin interés en todas tus compras" },
-  { src: mobile2, alt: "NaranjaX Plan Z — sin interés en todas tus compras" },
+  { src: mobile1, alt: "Naranja X — 6 cuotas sin interés en compras superiores a $50.000" },
+  { src: mobile2, alt: "Cordobesa — 6 cuotas sin interés en todas tus compras" },
 ];
 
 const AUTOPLAY_MS = 4000;
