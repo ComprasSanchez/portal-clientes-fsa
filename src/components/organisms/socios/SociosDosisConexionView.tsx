@@ -69,6 +69,10 @@ export function SociosDosisConexionView() {
         <img className={styles.copas} src="/dosis/copas-amarillo.png" alt="" aria-hidden />
         <p className={styles.eyebrow}>{nombre ? `${nombre}, estás invitado/a` : "Estás invitado/a"}</p>
         <img className={styles.titulo} src="/dosis/titulo.png" alt={`${DOSIS.nombre}: ${DOSIS.bajada}`} />
+        <p className={styles.bajada}>
+          Esta vez, <strong>la fórmula es diferente</strong>: una noche para reencontrarnos, compartir y disfrutar.
+          Porque la conexión es lo que <mark>hace la diferencia</mark>.
+        </p>
         <ul className={styles.datos}>
           <li>
             <CalendarDays aria-hidden />
