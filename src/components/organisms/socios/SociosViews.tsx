@@ -24,6 +24,7 @@ import PerfilCompletoCard from "@/components/molecules/perfil-completo-card/perf
 import { usePerfilCompleto } from "@/lib/use-perfil-completo";
 import IdentityGate from "@/components/molecules/identity-gate/identity-gate";
 import { useIdentidad } from "@/lib/portal-identidad-context";
+import BeautyCatalogo from "@/components/organisms/beauty/beauty-catalogo/beauty-catalogo";
 import { MOTIVO_GENERAL, motivoSocios } from "@/lib/identidad-motivos";
 import Pagination from "@/components/molecules/pagination/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -45,6 +46,7 @@ import { NotificacionesView } from "@/components/organisms/notificaciones/Notifi
 import { SociosColaboradorVentasView } from "./SociosColaboradorVentasView";
 import { SociosColaboradorAplicacionesView } from "./SociosColaboradorAplicacionesView";
 import { SociosColaboradorFiestaView } from "./SociosColaboradorFiestaView";
+import { SociosDosisConexionView } from "./SociosDosisConexionView";
 import { SociosColaboradorClavesView } from "./SociosColaboradorClavesView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
@@ -118,6 +120,10 @@ const viewContent: Record<
     description:
       "Encontrá la sucursal más cercana, consultá horarios y accedé a indicaciones.",
   },
+  beauty: {
+    title: "AutoBeauty",
+    description: "Maquillaje Serendipity y dermo Accurato con descuento.",
+  },
   evento: {
     title: "Juego de stands",
     description: "Escaneá los stands del evento y retirá tu premio.",
@@ -137,6 +143,10 @@ const viewContent: Record<
   "colaboradores-fiesta": {
     title: "Evento de Fin de Año",
     description: "Jugá, sumá puntos y canjealos por premios.",
+  },
+  dosis: {
+    title: "Dosis de Conexión",
+    description: "Tu invitación a una noche para vos.",
   },
 };
 
@@ -308,7 +318,7 @@ export function SociosViews({
     );
   }
 
-  if (!identidad.vinculada && currentView !== "evento") {
+  if (!identidad.vinculada && currentView !== "evento" && currentView !== "beauty") {
     const gate = (
       <IdentityGate
         tone="socios"
@@ -375,6 +385,14 @@ export function SociosViews({
     );
   }
 
+  if (currentView === "beauty") {
+    return (
+      <main className={styles.container}>
+        <BeautyCatalogo />
+      </main>
+    );
+  }
+
   if (currentView === "evento") {
     return (
       <main className={styles.container}>
@@ -406,6 +424,14 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <SociosColaboradorClavesView />
+      </main>
+    );
+  }
+
+  if (currentView === "dosis") {
+    return (
+      <main className={styles.container}>
+        <SociosDosisConexionView />
       </main>
     );
   }

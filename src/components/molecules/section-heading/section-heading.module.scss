@@ -1,0 +1,25 @@
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 2px solid var(--tone-primary);
+}
+
+.title {
+  color: var(--tone-text);
+  font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2rem);
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.strong {
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.light {
+  color: var(--tone-muted);
+  font-weight: 400;
+}

@@ -7,10 +7,10 @@ import {
   readJsonBody,
 } from "@/app/api/_lib/proxy";
 
-/** Proxy común de la fiesta de fin de año de colaboradores (temporal). */
+/** Proxy común de los eventos de fin de año (temporal): fiesta de colaboradores y Dosis de Conexión. */
 export async function forwardFiesta(
   req: NextRequest,
-  path: "" | "/asistencia",
+  path: "" | "/asistencia" | "/invitacion",
   method: "GET" | "POST",
 ) {
   try {

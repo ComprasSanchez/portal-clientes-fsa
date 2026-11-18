@@ -10,6 +10,7 @@ import { ConvenioVerificacionModal } from "@/components/organisms/convenio/Conve
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { usePortalColaborador } from "@/lib/use-portal-colaborador";
 import { usePortalInvitadoEvento } from "@/lib/use-portal-invitado-evento";
+import { usePortalInvitacion } from "@/lib/use-portal-invitacion";
 import { usePermisoClaves } from "@/lib/use-permiso-claves";
 import { isFiestaActiva } from "@/lib/fiesta";
 import { useGlobalToast } from "@/components/ui/global-toast";
@@ -20,7 +21,7 @@ import {
 } from "@/types/socios";
 
 const DEFAULT_VIEW: SociosView = "dashboard";
-const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", "notificaciones", "evento", ...COLABORADORES_VIEWS];
+const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", "notificaciones", "evento", "beauty", "dosis", ...COLABORADORES_VIEWS];
 // Links viejos (?view=colaboradores) de antes de separar Ventas / Aplicaciones FSA.
 const VIEW_ALIASES: Record<string, SociosView> = {
   colaboradores: "colaboradores-ventas",
@@ -71,24 +72,28 @@ export function SociosPageClient() {
     esColaborador,
     isColaboradorLoading,
   );
+  // "Dosis de Conexión": la ve solo quien está en la lista de invitados (por DNI).
+  const { invitado: invitadoDosis, isLoading: isDosisLoading } = usePortalInvitacion();
   const { puedeCambiarClaves, isLoading: isPermisoClavesLoading } = usePermisoClaves(
     esColaborador,
     isColaboradorLoading,
   );
   // Los invitados al evento (ej. PPP) ven solo la vista del evento, no el resto de Colaboradores.
   const puedeVerVista = (view: SociosView) =>
-    view === "colaboradores-claves"
+    view === "dosis"
+      ? invitadoDosis
+      : view === "colaboradores-claves"
       ? esColaborador && puedeCambiarClaves
       : !isColaboradoresView(view) || esColaborador || (view === "colaboradores-fiesta" && invitadoEvento);
   const { pushToast } = useGlobalToast();
 
   // Acceso directo por URL a una vista de colaboradores sin ser colaborador activo: volver a Inicio.
   useEffect(() => {
-    if (isColaboradorLoading || isInvitadoLoading || isPermisoClavesLoading || puedeVerVista(currentView)) return;
+    if (isColaboradorLoading || isInvitadoLoading || isPermisoClavesLoading || isDosisLoading || puedeVerVista(currentView)) return;
     setCurrentView(DEFAULT_VIEW);
     router.replace("/socios", { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- puedeVerVista depende de estos mismos valores
-  }, [currentView, esColaborador, invitadoEvento, puedeCambiarClaves, isColaboradorLoading, isInvitadoLoading, isPermisoClavesLoading, router]);
+  }, [currentView, esColaborador, invitadoEvento, invitadoDosis, puedeCambiarClaves, isColaboradorLoading, isInvitadoLoading, isPermisoClavesLoading, isDosisLoading, router]);
 
   const principalPhone =
     perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
@@ -208,6 +213,7 @@ export function SociosPageClient() {
         esColaborador={esColaborador}
         puedeCambiarClaves={puedeCambiarClaves}
         invitadoEvento={invitadoEvento}
+        invitadoDosis={invitadoDosis}
       />
 
       <div className="flex min-h-dvh flex-col pt-16 transition-all duration-300 lg:ml-64 lg:pt-0">
@@ -224,13 +230,6 @@ export function SociosPageClient() {
           convenio={convenio}
           convenioLocked={convenioLocked}
         />
-
-        <footer className="relative left-1/2 mt-auto -translate-x-1/2 border-t border-[#d3dee2] bg-white py-6">
-          <div className="mx-auto max-w-7xl px-4 text-center text-sm text-[#627880] sm:px-6 lg:px-8">
-            <p className="mb-2">© 2026 Farmacias Sanchez Antoniolli - Todos los derechos reservados</p>
-            {/* <p className="text-xs text-[#8a9aa0]">Atencion clara · Gestion simple · Acceso rapido</p> */}
-          </div>
-        </footer>
       </div>
     </div>
   );

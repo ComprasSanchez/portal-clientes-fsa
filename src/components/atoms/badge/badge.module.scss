@@ -70,6 +70,12 @@
   color: #4b5f66;
 }
 
+/* Oferta: rojo relleno ("-30%", "30% OFF"). */
+.sale {
+  background: var(--tone-sale, #e2342d);
+  color: #ffffff;
+}
+
 /* Colores de marca Breve (sacados de banner-breve.jpeg) */
 .breve {
   background: #282828;

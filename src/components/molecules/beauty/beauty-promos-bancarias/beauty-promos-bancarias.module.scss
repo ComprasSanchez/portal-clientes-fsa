@@ -1,0 +1,38 @@
+.promos {
+  background: var(--tone-primary, #4b2432);
+}
+
+.title {
+  padding: 1.5rem 1rem;
+  color: #ffffff;
+  font-size: clamp(1.35rem, 1.1rem + 1vw, 1.9rem);
+  font-weight: 400;
+  text-align: center;
+
+  @media (min-width: 1024px) {
+    padding: 2rem;
+  }
+}
+
+.strong {
+  font-weight: 900;
+}
+
+/* Celular: apilados. Desde tablet: de a dos; los apaisados ocupan la fila entera. */
+.lista {
+  display: grid;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.ancho {
+  grid-column: 1 / -1;
+}
+
+.banner {
+  display: block;
+  width: 100%;
+  height: auto;
+}
