@@ -355,6 +355,24 @@
   --tone-shadow: rgba(40, 40, 40, 0.06);
 }
 
+/* Catálogo AutoBeauty: bordó, crema y rojo de oferta.
+   --tone-sale: color de descuentos y precio anterior (opcional). */
+.tone-beauty {
+  --tone-primary: #4b2432;
+  --tone-primary-hover: #3b1b27;
+  --tone-soft: #f6ebe9;
+  --tone-soft-hover: #f1e0de;
+  --tone-border: #e8d6d3;
+  --tone-border-hover: #cfa9a6;
+  --tone-text: #3a1c27;
+  --tone-muted: #7d6168;
+  --tone-placeholder: #b39a9f;
+  --tone-focus-ring: rgba(75, 36, 50, 0.18);
+  --tone-shadow: rgba(75, 36, 50, 0.08);
+  --tone-sale: #e2342d;
+  --tone-highlight: #f2b705;
+}
+
 body {
   font-family: "BD Supper", "Filson Pro", Arial, Helvetica, sans-serif;
   /* line-height: calc(1em + 2pt); */

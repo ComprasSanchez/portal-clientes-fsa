@@ -23,8 +23,15 @@ $badge-bg: rgba(30, 122, 82, 0.14);
 .base {
   color: $muted;
   font-size: 0.82rem;
-  text-decoration: line-through;
   white-space: nowrap;
+
+  s {
+    text-decoration: line-through;
+  }
+}
+
+.basePrefix {
+  text-decoration: none;
 }
 
 .final {
@@ -32,6 +39,33 @@ $badge-bg: rgba(30, 122, 82, 0.14);
   font-weight: 700;
   font-size: 0.95rem;
   white-space: nowrap;
+}
+
+/* Catálogo: precio final grande. */
+.lg {
+  gap: 0;
+
+  .base {
+    font-size: 0.78rem;
+  }
+
+  .final {
+    font-size: clamp(1.15rem, 1rem + 0.8vw, 1.45rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+}
+
+/* Con tema: colores de var(--tone-*). */
+.toned {
+  .base {
+    color: var(--tone-sale, var(--tone-muted));
+  }
+
+  .final {
+    color: var(--tone-text);
+  }
 }
 
 .badge {

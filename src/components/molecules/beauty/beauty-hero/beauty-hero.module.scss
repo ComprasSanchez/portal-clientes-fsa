@@ -1,0 +1,90 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 140% at 85% 0%, rgba(255, 255, 255, 0.08), transparent 55%),
+    var(--tone-primary, #4b2432);
+  color: #ffffff;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.75rem 1rem 1.5rem;
+  text-align: center;
+
+  @media (min-width: 1024px) {
+    padding: 3rem 2rem 2.5rem;
+    gap: 0.9rem;
+  }
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: clamp(2rem, 1.4rem + 3vw, 3.75rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.spark {
+  color: var(--tone-highlight, #f2b705);
+  font-size: 0.6em;
+}
+
+.partners {
+  font-size: clamp(0.85rem, 0.75rem + 0.5vw, 1.15rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.junto {
+  font-weight: 700;
+}
+
+.marca + .marca {
+  margin-left: 0.3rem;
+}
+
+.plus {
+  font-weight: 400;
+}
+
+.detalle {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 1.25rem;
+  font-size: clamp(0.85rem, 0.8rem + 0.3vw, 1rem);
+  font-weight: 700;
+}
+
+.dato {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  svg {
+    color: var(--tone-highlight, #f2b705);
+  }
+}
+
+.bajada {
+  margin-top: 0.4rem;
+  padding: 0.35rem 1.25rem;
+  border-radius: 9999px;
+  background: var(--tone-highlight, #f2b705);
+  color: var(--tone-text, #3a1c27);
+  font-size: clamp(0.7rem, 0.65rem + 0.3vw, 0.9rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

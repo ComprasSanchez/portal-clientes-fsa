@@ -1,0 +1,67 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 1px 2px var(--tone-shadow), 0 6px 18px var(--tone-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 4px var(--tone-shadow), 0 12px 28px var(--tone-shadow);
+    }
+  }
+}
+
+.media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--tone-soft);
+}
+
+.image {
+  object-fit: contain;
+  padding: 14%;
+  mix-blend-mode: multiply;
+}
+
+.discount {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem 0.85rem 0.9rem;
+}
+
+.name {
+  color: var(--tone-text);
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.presentation {
+  color: var(--tone-muted);
+  font-size: 0.75rem;
+}
+
+/* El precio queda abajo aunque el nombre ocupe 1, 2 o 3 líneas. */
+.price {
+  margin-top: auto;
+  padding-top: 0.6rem;
+}
