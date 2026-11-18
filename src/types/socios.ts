@@ -16,7 +16,9 @@ export type SociosView =
   /** Contraseña nueva para un socio (solo personal habilitado). */
   | "colaboradores-claves"
   /** Fiesta de fin de año de colaboradores (temporal). */
-  | "colaboradores-fiesta";
+  | "colaboradores-fiesta"
+  /** "Dosis de Conexión": fiesta de médicos, farmacéuticos y visitadores (solo invitados, temporal). */
+  | "dosis";
 
 /** Vistas de la sección Colaboradores: solo para colaboradores activos. */
 export const COLABORADORES_VIEWS = [
