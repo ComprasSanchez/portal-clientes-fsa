@@ -86,6 +86,33 @@ $borde: #d3dee2;
   height: auto;
 }
 
+// Bajada de la propuesta conceptual, con los mismos destaques que la presentación.
+.bajada {
+  max-width: 34rem;
+  margin: 0;
+  color: $azul-oscuro;
+  font-size: 1.02rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+
+  strong {
+    color: darken($dorado, 6%);
+    font-weight: 700;
+  }
+
+  mark {
+    padding: 0.05em 0.35em;
+    border-radius: 3px;
+    background: #7b9a4c;
+    color: #fff;
+    font-weight: 700;
+    white-space: nowrap;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+}
+
 .datos {
   display: flex;
   flex-wrap: wrap;
