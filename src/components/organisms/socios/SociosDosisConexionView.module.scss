@@ -293,17 +293,30 @@ $borde: #d3dee2;
   }
 }
 
-.sponsors {
+// Colaboración (ej. Dr. Call): banner 3:1, a lo ancho en el celu y como mucho 720 px en la compu.
+.colaboracion {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.5rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  animation: aparecer 0.6s ease-out both;
+
+  a,
+  img {
+    display: block;
+    width: 100%;
+    max-width: 720px;
+  }
 
   img {
-    max-height: 56px;
-    width: auto;
+    height: auto;
+    aspect-ratio: 3 / 1;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(23, 52, 61, 0.08);
   }
 }
+
 
 // En el celu las copas van más chicas y suaves, para no tapar la fecha y el lugar.
 @media (max-width: 640px) {
