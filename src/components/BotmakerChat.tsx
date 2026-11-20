@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { CHAT_DNI_ENABLED } from "@/lib/feature-flags";
+import { useChatAtencionDni } from "@/lib/use-chat-atencion-dni";
 
 const BOTMAKER_SCRIPT_ID = "botmaker-webchat-loader";
 const BOTMAKER_SCRIPT_SRC =
@@ -16,6 +18,9 @@ const SHOW_BOTMAKER_CHAT = process.env.NEXT_PUBLIC_SHOW_BOTMAKER_CHAT !== "false
 export function BotmakerChat() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // Va antes de cargar el script: registra el onload del chat.
+  useChatAtencionDni(pathname, SHOW_BOTMAKER_CHAT && CHAT_DNI_ENABLED);
 
   useEffect(() => {
     if (!SHOW_BOTMAKER_CHAT || document.getElementById(BOTMAKER_SCRIPT_ID)) {
