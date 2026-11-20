@@ -12,10 +12,13 @@ declare global {
 
 // Páginas que exigen sesión (ver middleware.ts): ahí se le pasa el DNI al bot.
 const RUTAS_CON_SESION = ["/socios", "/cora"];
-const ESPERA_CHAT_ID_MS = 1000;
-const INTENTOS_CHAT_ID = 30;
+const ESPERA_CONTACTO_MS = 1000;
+const INTENTOS_CONTACTO = 30;
+// El chat recién existe en Botmaker cuando la persona escribe: se reintenta ~5 min.
+const ESPERA_CHAT_MS = 15000;
+const INTENTOS_CHAT = 20;
 
-function leerChatId(): string | null {
+function leerContactId(): string | null {
   try {
     return window.bmInfo?.()?.platformContactId || null;
   } catch {
@@ -56,31 +59,39 @@ export function useChatAtencionDni(pathname: string, activo: boolean) {
 
     let cancelado = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const reintentar = (fn: () => Promise<void>, ms: number) => {
+      timer = setTimeout(() => void fn(), ms);
+    };
 
-    const vincular = async (intento: number) => {
+    const vincular = async (intentoContacto: number, intentoChat: number) => {
       if (cancelado) return;
-      const chatId = leerChatId();
-      if (!chatId) {
-        if (intento < INTENTOS_CHAT_ID) {
-          timer = setTimeout(() => void vincular(intento + 1), ESPERA_CHAT_ID_MS);
+      const contactId = leerContactId();
+      if (!contactId) {
+        if (intentoContacto < INTENTOS_CONTACTO) {
+          reintentar(() => vincular(intentoContacto + 1, intentoChat), ESPERA_CONTACTO_MS);
         }
         return;
       }
-      if (vinculadoRef.current === chatId) return;
+      if (vinculadoRef.current === contactId) return;
 
       try {
         const res = await fetch("/api/portal/me/chat-atencion", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chatId }),
+          body: JSON.stringify({ contactId }),
         });
-        if (res.ok && !cancelado) vinculadoRef.current = chatId;
+        if (cancelado) return;
+        if (res.ok) {
+          vinculadoRef.current = contactId;
+        } else if (res.status === 404 && intentoChat < INTENTOS_CHAT) {
+          reintentar(() => vincular(intentoContacto, intentoChat + 1), ESPERA_CHAT_MS);
+        }
       } catch {
         // Si falla, el chat sigue como siempre (pide el DNI).
       }
     };
 
-    void vincular(0);
+    void vincular(0, 0);
 
     return () => {
       cancelado = true;

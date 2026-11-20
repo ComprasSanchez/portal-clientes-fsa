@@ -14,8 +14,8 @@ export async function PUT(req: NextRequest) {
       return jsonError("missing_upstream_base", 500);
     }
 
-    const body = await readJsonBody<{ chatId?: unknown }>(req);
-    if (!body || typeof body.chatId !== "string" || !body.chatId) {
+    const body = await readJsonBody<{ contactId?: unknown }>(req);
+    if (!body || typeof body.contactId !== "string" || !body.contactId) {
       return jsonError("invalid_body", 400);
     }
 
@@ -30,7 +30,7 @@ export async function PUT(req: NextRequest) {
       url: `${base}/portal/me/chat-atencion`,
       method: "PUT",
       headers,
-      body: { chatId: body.chatId },
+      body: { contactId: body.contactId },
     });
 
     if (!result.ok) {
