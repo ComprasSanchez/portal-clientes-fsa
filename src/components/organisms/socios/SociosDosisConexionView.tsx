@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import QRCode from "qrcode";
 import { CalendarDays, Clock, ExternalLink, Gift, MapPin, PartyPopper, Ticket } from "lucide-react";
-import { DOSIS, DOSIS_SPONSORS, horaCorta } from "@/lib/dosis";
+import { DOSIS, DOSIS_COLABORACION, horaCorta } from "@/lib/dosis";
 import { usePortalInvitacion } from "@/lib/use-portal-invitacion";
 import styles from "./SociosDosisConexionView.module.scss";
 
@@ -154,15 +154,16 @@ export function SociosDosisConexionView() {
         </article>
       </div>
 
-      {DOSIS_SPONSORS.length > 0 && (
-        <article className={styles.card}>
-          <h2 className={styles.cardTitulo}>Nos acompañan</h2>
-          <div className={styles.sponsors}>
-            {DOSIS_SPONSORS.map((s) => (
-              <img key={s.nombre} src={s.logo} alt={s.nombre} />
-            ))}
-          </div>
-        </article>
+      {DOSIS_COLABORACION && (
+        <aside className={styles.colaboracion}>
+          {DOSIS_COLABORACION.url ? (
+            <a href={DOSIS_COLABORACION.url} target="_blank" rel="noopener noreferrer">
+              <img src={DOSIS_COLABORACION.imagen} alt={DOSIS_COLABORACION.nombre} width={1080} height={360} />
+            </a>
+          ) : (
+            <img src={DOSIS_COLABORACION.imagen} alt={DOSIS_COLABORACION.nombre} width={1080} height={360} />
+          )}
+        </aside>
       )}
     </section>
   );

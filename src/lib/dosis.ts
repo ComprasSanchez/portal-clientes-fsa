@@ -12,8 +12,12 @@ export const DOSIS = {
   mapsEmbed: "https://www.google.com/maps?q=Driving+de+Villa+Allende,+C%C3%B3rdoba&output=embed",
 } as const;
 
-/** Logos de sponsors (vacío = no se muestra el bloque). */
-export const DOSIS_SPONSORS: Array<{ nombre: string; logo: string; url?: string }> = [];
+/**
+ * Banner de la colaboración (ej. Dr. Call). Imagen de 1080 × 360 px (3:1),
+ * pensada para el celu; en la compu se frena en 720 px de ancho.
+ * null = no se muestra el bloque.
+ */
+export const DOSIS_COLABORACION: { nombre: string; imagen: string; url?: string } | null = { nombre: "Dr. Call", imagen: "/dosis/colaboracion-ejemplo.png" };
 
 const PERFILES: Record<string, string> = {
   medico: "Médico/a",

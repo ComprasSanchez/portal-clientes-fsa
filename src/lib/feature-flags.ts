@@ -15,3 +15,7 @@ export const MERCADOPAGO_PAGO_ENABLED =
  * tarjeta de /socios funcionan como siempre (datos del CRM + botón). */
 export const SORTEO_BREVE_ENABLED =
   process.env.NEXT_PUBLIC_SORTEO_BREVE_ACTIVO === "true";
+
+/** Chat de Botmaker: le pasa al bot el DNI del cliente logueado para que lo salude por nombre. */
+export const CHAT_DNI_ENABLED =
+  process.env.NEXT_PUBLIC_CHAT_DNI_ACTIVO === "true";
