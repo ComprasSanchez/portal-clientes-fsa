@@ -15,9 +15,9 @@ export class CalendarioAccionError extends Error {
   }
 }
 
-async function pedir<T>(url: string, body?: unknown): Promise<T> {
+async function pedir<T>(url: string, body?: unknown, method?: "DELETE"): Promise<T> {
   const res = await fetch(url, {
-    method: body === undefined ? "GET" : "POST",
+    method: method ?? (body === undefined ? "GET" : "POST"),
     cache: "no-store",
     headers: body === undefined ? undefined : { "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -99,5 +99,11 @@ export function usePortalCalendario({ enabled }: { enabled: boolean }) {
     [refresh],
   );
 
-  return { calendario, isLoading, error, refresh, abrir, responderTrivia, retirar };
+  // Solo pruebas: vuelve a cerrar todas las casillas.
+  const reiniciar = useCallback(async () => {
+    await pedir<{ borradas: number }>("/api/portal/me/calendario/aperturas", undefined, "DELETE");
+    await refresh();
+  }, [refresh]);
+
+  return { calendario, isLoading, error, refresh, abrir, responderTrivia, retirar, reiniciar };
 }

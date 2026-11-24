@@ -42,14 +42,16 @@ export default function SucursalFavoritaPicker({
   return (
     <div className={styles.picker}>
       <p className={styles.bajada}>{bajada}</p>
-      <SearchInput
-        value={busqueda}
-        onChange={setBusqueda}
-        onClear={() => setBusqueda("")}
-        placeholder="Buscá por nombre, calle o número"
-        ariaLabel="Buscar sucursal"
-        tone="socios"
-      />
+      <div className={styles.buscador}>
+        <SearchInput
+          value={busqueda}
+          onChange={setBusqueda}
+          onClear={() => setBusqueda("")}
+          placeholder="Buscá por nombre, calle o número"
+          ariaLabel="Buscar sucursal"
+          tone="socios"
+        />
+      </div>
 
       {error && <Alert color="error">{error}</Alert>}
       <ul className={styles.lista}>
@@ -78,10 +80,12 @@ export default function SucursalFavoritaPicker({
         {!isLoading && !lista.length && <li className={styles.vacio}>No encontramos sucursales con esa búsqueda.</li>}
       </ul>
 
-      {errorGuardar && <Alert color="error">{errorGuardar}</Alert>}
-      <PortalButton tone="socios" onClick={guardar} disabled={!elegida} loading={guardando}>
-        {textoBoton}
-      </PortalButton>
+      <div className={styles.acciones}>
+        {errorGuardar && <Alert color="error">{errorGuardar}</Alert>}
+        <PortalButton tone="socios" onClick={guardar} disabled={!elegida} loading={guardando}>
+          {textoBoton}
+        </PortalButton>
+      </div>
     </div>
   );
 }

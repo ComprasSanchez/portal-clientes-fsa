@@ -316,6 +316,7 @@ const MENSAJES_ERROR: Record<string, string> = {
   CALENDARIO_TRIVIA_RESPUESTAS_INVALIDAS: "Respondé todas las preguntas.",
   CALENDARIO_QR_INVALIDO: "Ese código no es de una sucursal. Probá de nuevo.",
   CALENDARIO_SIN_REGALOS_PARA_RETIRAR: "No tenés regalos para retirar.",
+  CALENDARIO_REINICIO_DESHABILITADO: "Reiniciar no está habilitado en este ambiente.",
 };
 
 export const mensajeErrorCalendario = (code: string | null) =>

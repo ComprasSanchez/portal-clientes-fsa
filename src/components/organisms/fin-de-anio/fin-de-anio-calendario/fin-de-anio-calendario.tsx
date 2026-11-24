@@ -25,6 +25,7 @@ import {
   fechaDelDia,
   fechaLegible,
   hoyArgentina,
+  isModoPruebaCalendario,
   textosDeCasilla,
   type CalendarioDia as Dia,
 } from "@/lib/fin-de-anio";
@@ -55,6 +56,8 @@ export default function FinDeAnioCalendario() {
   const [escaneando, setEscaneando] = useState(false);
   const [retirando, setRetirando] = useState(false);
   const [abriendo, setAbriendo] = useState(false);
+  const [reiniciando, setReiniciando] = useState(false);
+  const modoPrueba = isModoPruebaCalendario();
   const cerrarRevelado = useCallback(() => setRevelado(null), []);
 
   const hoy = cal.calendario?.hoy ?? hoyArgentina();
@@ -147,6 +150,18 @@ export default function FinDeAnioCalendario() {
     }
   };
 
+  const reiniciar = async () => {
+    setReiniciando(true);
+    try {
+      await cal.reiniciar();
+      pushToast({ variant: "success", title: "Listo", description: "Todas las casillas quedaron cerradas otra vez." });
+    } catch (e) {
+      avisar("No se pudo reiniciar", e instanceof Error ? e.message : "Probá de nuevo.");
+    } finally {
+      setReiniciando(false);
+    }
+  };
+
   if (!imagenesListas || (identidad.vinculada && cal.isLoading)) return <CalendarioSkeleton />;
 
   const regalosPendientes = cal.calendario?.regalosPendientes.length ?? 0;
@@ -171,6 +186,14 @@ export default function FinDeAnioCalendario() {
         </p>
       )}
 
+      {modoPrueba && identidad.vinculada && (
+        <Alert color="warning">
+          Modo prueba: podés abrir cualquier día.{" "}
+          <button type="button" className={styles.link} onClick={() => void reiniciar()} disabled={reiniciando}>
+            {reiniciando ? "Cerrando…" : "Cerrar todas otra vez"}
+          </button>
+        </Alert>
+      )}
       {cal.error && (
         <Alert color="warning">
           {cal.error}{" "}
@@ -216,7 +239,7 @@ export default function FinDeAnioCalendario() {
           extra={
             revelado.casilla.contenido?.tipo === "TRIVIA" &&
             !revelado.casilla.trivia?.respondida &&
-            revelado.casilla.fecha === hoy ? (
+            (revelado.casilla.fecha === hoy || modoPrueba) ? (
               <TriviaPreguntas
                 preguntas={revelado.casilla.contenido.preguntas}
                 onResponder={(respuestas) => responderTrivia(revelado.casilla.fecha, respuestas)}

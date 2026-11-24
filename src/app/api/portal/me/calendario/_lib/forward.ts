@@ -13,7 +13,7 @@ const FECHA_RE = /^\d{4}-\d{2}-\d{2}$/;
 export async function forwardCalendario(
   req: NextRequest,
   path: string,
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "DELETE",
 ) {
   try {
     const base = getRequiredBaseUrl("NEXT_PUBLIC_FSA_SOCIOSA");
