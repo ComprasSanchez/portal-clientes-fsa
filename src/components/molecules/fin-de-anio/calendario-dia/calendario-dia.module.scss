@@ -1,0 +1,247 @@
+@use "../paleta" as *;
+
+.dia {
+  @include paleta;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(8px, 7%, 16px);
+  border: 0;
+  border-radius: 18px;
+  background-color: var(--cal-bg);
+  color: var(--cal-fg);
+  text-align: left;
+  cursor: pointer;
+  container-type: size;
+  grid-row: var(--m-fila) / span var(--m-alto);
+  grid-column: var(--m-col) / span var(--m-ancho);
+  transition: filter 0.18s ease;
+
+  // El organismo declara el contenedor "calendario" y decide cuándo pasa a 6 columnas.
+  @container calendario (min-width: 600px) {
+    grid-row: var(--e-fila) / span var(--e-alto);
+    grid-column: var(--e-col) / span var(--e-ancho);
+  }
+
+  &:hover {
+    filter: brightness(0.96);
+  }
+
+  &:focus-visible {
+    outline: 3px solid #f0b91c;
+    outline-offset: 2px;
+  }
+}
+
+// Hoy: se puede abrir.
+.hoy {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 6px #f0b91c, 0 10px 24px rgba(240, 185, 28, 0.45);
+  animation: latido 1.6s ease-in-out infinite;
+}
+
+@keyframes latido {
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 0 3px #fff, 0 0 0 6px #f0b91c, 0 0 28px rgba(240, 185, 28, 0.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hoy {
+    animation: none;
+  }
+}
+
+.chipHoy {
+  position: absolute;
+  top: 8cqmin;
+  right: 8cqmin;
+  z-index: 1;
+  padding: 0.2em 0.6em;
+  border-radius: 999px;
+  background: #fff;
+  color: #b3302a;
+  font-size: clamp(0.6rem, 9cqmin, 0.85rem);
+  font-weight: 800;
+}
+
+// No se abrió en su día: queda tachada y apagada.
+.vencido {
+  cursor: default;
+  filter: grayscale(0.85);
+  opacity: 0.45;
+
+  .numero {
+    text-decoration: line-through;
+    text-decoration-thickness: 0.06em;
+  }
+
+  &:hover {
+    filter: grayscale(0.85);
+  }
+}
+
+// Dónde va el número según el dibujo.
+.numero-abajo {
+  justify-content: flex-end;
+}
+.numero-centro {
+  align-items: center;
+  justify-content: center;
+}
+.numero-abajo-centro {
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.fecha {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.numero {
+  font-family: $serif;
+  font-size: clamp(1.6rem, 36cqmin, 4.4rem);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  transform: scaleX(0.78);
+}
+
+.mes {
+  margin-top: 0.15rem;
+  font-family: $serif;
+  font-size: clamp(0.62rem, 10cqmin, 1.2rem);
+  transform: scaleX(0.8);
+}
+
+.candado {
+  @include candado("/fin-de-anio/candado-cerrado.png");
+  position: absolute;
+  z-index: 1;
+  width: 13cqmin;
+}
+.candado-arriba {
+  top: 9cqmin;
+  right: 9cqmin;
+}
+.candado-abajo-der {
+  right: 9cqmin;
+  bottom: 9cqmin;
+}
+.candado-abajo-izq {
+  left: 9cqmin;
+  bottom: 9cqmin;
+}
+
+.ilustracion {
+  position: absolute;
+  pointer-events: none;
+}
+
+// Recortes de cada dibujo, como en el diseño.
+.ilus-campana {
+  top: -8cqmin;
+  right: -16cqmin;
+  width: 88cqmin;
+}
+.ilus-reno {
+  right: -24cqi;
+  bottom: -6cqb;
+  width: 100cqi;
+}
+.ilus-regalo {
+  left: -12cqi;
+  bottom: -4cqb;
+  width: 104cqi;
+}
+.ilus-mono {
+  top: -60cqmin;
+  left: 50%;
+  width: 100cqmin;
+  transform: translateX(-50%);
+}
+.ilus-galleta {
+  right: -22cqmin;
+  bottom: -26cqmin;
+  width: 92cqmin;
+}
+.ilus-baston {
+  top: -10cqb;
+  right: -6cqi;
+  height: 112cqb;
+}
+.ilus-corona {
+  top: -18cqb;
+  right: 6cqi;
+  height: 136cqb;
+}
+.ilus-acebo {
+  right: -20cqmin;
+  bottom: -14cqmin;
+  width: 96cqmin;
+}
+
+.textoNavidad {
+  position: absolute;
+  right: 10cqmin;
+  bottom: 10cqmin;
+  z-index: 1;
+  font-family: $serif;
+  font-size: clamp(0.8rem, 15cqmin, 1.9rem);
+  line-height: 1;
+  text-align: center;
+  color: #f6f1e6;
+
+  &::first-line {
+    color: #f0b91c;
+  }
+}
+
+// Celular (grilla de 3 columnas): números más grandes.
+@container calendario (max-width: 599px) {
+  .numero {
+    font-size: 42cqmin;
+  }
+  // Dibujos un poco más chicos y contra el borde para no pisar el número.
+  .ilus-campana {
+    top: -12cqmin;
+    right: -18cqmin;
+    width: 76cqmin;
+  }
+  .ilus-mono {
+    top: -68cqmin;
+    width: 96cqmin;
+  }
+  .ilus-galleta {
+    right: -26cqmin;
+    bottom: -30cqmin;
+    width: 82cqmin;
+  }
+  .ilus-baston {
+    right: -14cqi;
+    height: 104cqb;
+  }
+  .ilus-acebo {
+    right: -26cqmin;
+    bottom: -18cqmin;
+    width: 86cqmin;
+  }
+  .ilus-corona {
+    right: 2cqi;
+  }
+  .mes {
+    font-size: 13cqmin;
+  }
+  .candado {
+    width: 15cqmin;
+  }
+  .textoNavidad {
+    font-size: 17cqmin;
+  }
+}

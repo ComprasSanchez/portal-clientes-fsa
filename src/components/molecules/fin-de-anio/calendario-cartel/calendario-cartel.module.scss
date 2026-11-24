@@ -1,0 +1,137 @@
+.cartel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 14px;
+  border-radius: 18px;
+  color: #f6f1e6;
+  text-align: center;
+  container-type: size;
+}
+
+.titulo {
+  background: #0b7690;
+}
+
+.logo {
+  width: auto;
+  height: 20cqb;
+  max-width: 50cqi;
+}
+
+.calendario {
+  margin: 0;
+  font-family: "Playfair Display", "Bodoni 72", Georgia, "Times New Roman", serif;
+  font-size: min(42cqb, 17cqi);
+  font-weight: 500;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  transform: scaleX(0.8);
+}
+
+.pill {
+  margin-top: -0.15rem;
+  padding: 0.15rem 0.9rem;
+  border-radius: 999px;
+  background: #b3302a;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(0.6rem, 10cqb, 1.25rem);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.anioNuevo {
+  position: relative;
+  background-color: #075c6b;
+  // Rombos como el diseño.
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='100' viewBox='0 0 60 100'%3E%3Cpath d='M30 0L60 50L30 100L0 50Z' fill='%230a7a93'/%3E%3C/svg%3E");
+  background-size: auto 62%;
+  background-position: center;
+}
+
+.logoFarmacia {
+  position: absolute;
+  top: 12%;
+  right: 7%;
+  width: min(30cqi, 70cqb);
+  height: auto;
+}
+
+.estrella {
+  position: absolute;
+  top: 52%;
+  right: 3%;
+  width: min(18cqb, 9cqi);
+  height: auto;
+  transform: translateY(-50%);
+}
+
+.saludo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 10cqb;
+  margin-right: 8cqi;
+}
+
+.feliz {
+  margin-left: 2cqi;
+  font-family: "Edwardian Script ITC", "Palace Script MT", "Brush Script MT", "Segoe Script", cursive;
+  font-size: min(40cqb, 17cqi);
+  font-style: italic;
+  line-height: 0.9;
+}
+
+.filaNuevo {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5cqi;
+  margin-top: -3cqb;
+}
+
+.nuevo {
+  font-family: "Playfair Display", "Bodoni 72", Georgia, "Times New Roman", serif;
+  font-size: min(38cqb, 15cqi);
+  line-height: 0.85;
+  text-transform: uppercase;
+  transform: scaleX(0.85);
+  transform-origin: left bottom;
+}
+
+.pillChica {
+  margin-bottom: 1.5cqb;
+  padding: 0.15em 0.8em;
+  border-radius: 999px;
+  background: #f0b91c;
+  color: #f6f1e6;
+  font-size: clamp(0.5rem, min(9cqb, 3.2cqi), 1.1rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+// Celular (grilla de 3 columnas): título y cierre más grandes.
+@container calendario (max-width: 599px) {
+  .logo {
+    height: 22cqb;
+  }
+  .calendario {
+    font-size: min(52cqb, 19.5cqi);
+  }
+  .pill {
+    font-size: 12cqb;
+  }
+  .feliz {
+    font-size: min(40cqb, 19cqi);
+  }
+  .nuevo {
+    font-size: min(42cqb, 17cqi);
+  }
+  .pillChica {
+    font-size: min(10cqb, 4cqi);
+  }
+}

@@ -13,15 +13,18 @@ import { usePortalInvitadoEvento } from "@/lib/use-portal-invitado-evento";
 import { usePortalInvitacion } from "@/lib/use-portal-invitacion";
 import { usePermisoClaves } from "@/lib/use-permiso-claves";
 import { isFiestaActiva } from "@/lib/fiesta";
+import { isFinDeAnioActivo } from "@/lib/fin-de-anio";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import {
   COLABORADORES_VIEWS,
+  FIN_DE_ANIO_VIEWS,
   isColaboradoresView,
+  isFinDeAnioView,
   type SociosView,
 } from "@/types/socios";
 
 const DEFAULT_VIEW: SociosView = "dashboard";
-const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", "notificaciones", "evento", "beauty", "dosis", ...COLABORADORES_VIEWS];
+const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", "notificaciones", "evento", "beauty", "dosis", ...COLABORADORES_VIEWS, ...FIN_DE_ANIO_VIEWS];
 // Links viejos (?view=colaboradores) de antes de separar Ventas / Aplicaciones FSA.
 const VIEW_ALIASES: Record<string, SociosView> = {
   colaboradores: "colaboradores-ventas",
@@ -32,6 +35,7 @@ const parseView = (value: string | null): SociosView | null => {
   const view = VIEW_ALIASES[value] ?? value;
   // Con la fiesta apagada, el link directo o el QR llevan a Inicio.
   if (view === "colaboradores-fiesta" && !isFiestaActiva()) return null;
+  if (isFinDeAnioView(view as SociosView) && !isFinDeAnioActivo()) return null;
   return VALID_VIEWS.includes(view as SociosView) ? (view as SociosView) : null;
 };
 

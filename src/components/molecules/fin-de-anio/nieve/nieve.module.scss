@@ -1,0 +1,33 @@
+.nieve {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.copo {
+  position: absolute;
+  top: -10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(246, 241, 230, 0.75);
+  animation: caer linear infinite;
+}
+
+@keyframes caer {
+  from {
+    transform: translateY(0) scale(var(--escala, 1));
+  }
+  to {
+    transform: translateY(110vh) scale(var(--escala, 1));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copo {
+    animation: none;
+    top: auto;
+    display: none;
+  }
+}

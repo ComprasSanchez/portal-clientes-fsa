@@ -1,8 +1,10 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
+  Camera,
   ChevronDown,
   CreditCard,
+  Gift,
   Star,
   Heart,
   History,
@@ -25,6 +27,7 @@ import { usePerfilCompleto } from "@/lib/use-perfil-completo";
 import IdentityGate from "@/components/molecules/identity-gate/identity-gate";
 import { useIdentidad } from "@/lib/portal-identidad-context";
 import BeautyCatalogo from "@/components/organisms/beauty/beauty-catalogo/beauty-catalogo";
+import FinDeAnioCalendario from "@/components/organisms/fin-de-anio/fin-de-anio-calendario/fin-de-anio-calendario";
 import { MOTIVO_GENERAL, motivoSocios } from "@/lib/identidad-motivos";
 import Pagination from "@/components/molecules/pagination/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -67,7 +70,7 @@ import { usePortalPuntosHistorial } from "@/lib/use-portal-puntos-historial";
 import { useGlobalToast } from "../../ui/global-toast";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 import type { PortalComprasProducto } from "@/types/portal-compras";
-import { type SociosView } from "@/types/socios";
+import { isFinDeAnioView, type SociosView } from "@/types/socios";
 import styles from "./SociosViews.module.scss";
 
 interface SociosViewsProps {
@@ -147,6 +150,18 @@ const viewContent: Record<
   dosis: {
     title: "Dosis de Conexión",
     description: "Tu invitación a una noche para vos.",
+  },
+  "fin-de-anio-calendario": {
+    title: "Calendario de regalos",
+    description: "Un regalo nuevo cada día de diciembre.",
+  },
+  "fin-de-anio-tour": {
+    title: "Tour Papá Noel",
+    description: "Papá Noel recorre nuestras sucursales.",
+  },
+  "fin-de-anio-fotos": {
+    title: "Mis fotos",
+    description: "Tus fotos de las fiestas.",
   },
 };
 
@@ -310,7 +325,8 @@ export function SociosViews({
 
   // Modo limitado (login nuevo): la cuenta todavía no está vinculada a su DNI.
   // Solo el Inicio reducido y el juego de stands; el resto pide validar.
-  if (identidad.cargando) {
+  // Fin de año no depende de la identidad: muestra su propio skeleton.
+  if (identidad.cargando && !isFinDeAnioView(currentView)) {
     return (
       <main className={styles.container}>
         <SociosDashboardSkeleton />
@@ -318,7 +334,8 @@ export function SociosViews({
     );
   }
 
-  if (!identidad.vinculada && currentView !== "evento" && currentView !== "beauty") {
+  // Fin de año tampoco pide validar identidad: en los eventos anteriores fue la mayor traba.
+  if (!identidad.vinculada && currentView !== "evento" && currentView !== "beauty" && !isFinDeAnioView(currentView)) {
     const gate = (
       <IdentityGate
         tone="socios"
@@ -389,6 +406,28 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <BeautyCatalogo />
+      </main>
+    );
+  }
+
+  if (currentView === "fin-de-anio-calendario") {
+    return (
+      <main className={styles.container}>
+        <FinDeAnioCalendario cuenta={email ?? documentNumber ?? "sin-cuenta"} />
+      </main>
+    );
+  }
+
+  if (currentView === "fin-de-anio-tour" || currentView === "fin-de-anio-fotos") {
+    const { title } = viewContent[currentView];
+    return (
+      <main className={styles.container}>
+        <EmptyState
+          icon={currentView === "fin-de-anio-tour" ? Gift : Camera}
+          title={title}
+          text="Muy pronto vas a encontrar novedades acá."
+          variant="dashed"
+        />
       </main>
     );
   }
