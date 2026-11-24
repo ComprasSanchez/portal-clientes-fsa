@@ -1,98 +1,203 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import Alert from "@/components/atoms/alert/alert";
+import PortalButton from "@/components/atoms/button/button";
+import BottomSheet from "@/components/molecules/bottom-sheet/bottom-sheet";
+import QrScanner from "@/components/molecules/evento-stands/qr-scanner/qr-scanner";
 import CalendarioCartel from "@/components/molecules/fin-de-anio/calendario-cartel/calendario-cartel";
 import CalendarioDia from "@/components/molecules/fin-de-anio/calendario-dia/calendario-dia";
 import CalendarioRegalo from "@/components/molecules/fin-de-anio/calendario-regalo/calendario-regalo";
 import CalendarioSkeleton from "@/components/molecules/fin-de-anio/calendario-skeleton/calendario-skeleton";
-import BottomSheet from "@/components/molecules/bottom-sheet/bottom-sheet";
-import PortalButton from "@/components/atoms/button/button";
+import RegalosPendientes from "@/components/molecules/fin-de-anio/regalos-pendientes/regalos-pendientes";
+import TriviaPreguntas from "@/components/molecules/fin-de-anio/trivia-preguntas/trivia-preguntas";
+import IdentityGate from "@/components/molecules/identity-gate/identity-gate";
 import CalendarioRevelado from "@/components/organisms/fin-de-anio/calendario-revelado/calendario-revelado";
-import Alert from "@/components/atoms/alert/alert";
+import SucursalFavoritaPicker from "@/components/organisms/sucursal-favorita-picker/sucursal-favorita-picker";
 import { useGlobalToast } from "@/components/ui/global-toast";
-import { usePrecargaImagenes } from "@/lib/use-precarga-imagenes";
-import { useCalendarioAperturas } from "@/lib/use-calendario-aperturas";
 import {
   BASES_CALENDARIO,
   CALENDARIO_DIAS,
   CALENDARIO_IMAGENES,
-  estadoDelDia,
+  casillaSinDatos,
+  estadoCerrado,
+  extraerCodigoRetiro,
+  fechaDelDia,
   fechaLegible,
-  fechaSimulada,
   hoyArgentina,
-  isModoPruebaCalendario,
+  textosDeCasilla,
   type CalendarioDia as Dia,
 } from "@/lib/fin-de-anio";
+import { useIdentidad } from "@/lib/portal-identidad-context";
+import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
+import { guardarSucursalFavorita, nombreSucursalFavorita } from "@/lib/sucursal-favorita";
+import { usePortalCalendario } from "@/lib/use-portal-calendario";
+import { usePortalSucursales } from "@/lib/use-portal-sucursales";
+import { usePrecargaImagenes } from "@/lib/use-precarga-imagenes";
+import type { CalendarioCasilla } from "@/types/portal-calendario";
 import styles from "./fin-de-anio-calendario.module.scss";
 
-type FinDeAnioCalendarioProps = {
-  /** Separa lo abierto de cada cuenta en el mismo navegador. */
-  cuenta: string;
-};
+type Revelado = { dia: Dia; casilla: CalendarioCasilla; animado: boolean };
 
-/** Calendario de regalos de diciembre: cada casilla se abre solo en su día. */
-export default function FinDeAnioCalendario({ cuenta }: FinDeAnioCalendarioProps) {
-  const searchParams = useSearchParams();
-  const [hoyReal] = useState(() => hoyArgentina());
-  const hoy = fechaSimulada(searchParams.get("fecha")) ?? hoyReal;
-  const [revelado, setRevelado] = useState<{ dia: Dia; animado: boolean } | null>(null);
-  const [verBases, setVerBases] = useState(false);
-  const { pushToast } = useGlobalToast();
+/** Calendario de regalos de diciembre: cada casilla se abre solo en su día y una vez. */
+export default function FinDeAnioCalendario() {
+  const identidad = useIdentidad();
+  const { perfil, refresh: refrescarPerfil } = usePortalPerfilContext();
+  const cal = usePortalCalendario({ enabled: identidad.vinculada });
   const imagenesListas = usePrecargaImagenes(CALENDARIO_IMAGENES);
-  const { abiertos, cargado, marcarAbierto, reiniciar } = useCalendarioAperturas(cuenta);
+  const { pushToast } = useGlobalToast();
+
+  const [revelado, setRevelado] = useState<Revelado | null>(null);
+  const [verBases, setVerBases] = useState(false);
+  const [verValidar, setVerValidar] = useState(false);
+  // Día que quedó esperando a que elija sucursal (o "cambiar" desde el link).
+  const [eligiendoSucursal, setEligiendoSucursal] = useState<Dia | "cambiar" | null>(null);
+  const [escaneando, setEscaneando] = useState(false);
+  const [retirando, setRetirando] = useState(false);
+  const [abriendo, setAbriendo] = useState(false);
   const cerrarRevelado = useCallback(() => setRevelado(null), []);
 
-  const estado = (dia: Dia) => estadoDelDia(dia.dia, hoy, abiertos.includes(dia.dia));
+  const hoy = cal.calendario?.hoy ?? hoyArgentina();
+  const casillaDe = (dia: Dia): CalendarioCasilla =>
+    cal.calendario?.casillas.find((c) => c.fecha === fechaDelDia(dia.dia)) ?? casillaSinDatos(dia.dia, hoy);
+  const sucursalFavorita = perfil?.sucursalFavorita ?? null;
+  const { sucursales } = usePortalSucursales();
+  const avisar = (title: string, description: string) => pushToast({ variant: "info", title, description });
 
-  const handleDia = (dia: Dia) => {
-    switch (estado(dia)) {
-      case "hoy":
-        marcarAbierto(dia.dia);
-        setRevelado({ dia, animado: true });
-        return;
-      case "abierto":
-        setRevelado({ dia, animado: false });
-        return;
-      case "vencido":
-        pushToast({ variant: "info", title: "Este día ya pasó", description: "¡Volvé mañana por la próxima casilla!" });
-        return;
-      default:
-        pushToast({ variant: "info", title: "Todavía no", description: `Esta casilla se abre el ${fechaLegible(dia.dia)}.` });
+  const abrirDia = async (dia: Dia) => {
+    if (abriendo) return;
+    setAbriendo(true);
+    try {
+      const casilla = await cal.abrir(fechaDelDia(dia.dia));
+      setRevelado({ dia, casilla, animado: true });
+    } catch (e) {
+      const code = (e as { code?: string | null }).code ?? null;
+      if (code === "CALENDARIO_DIA_YA_ABIERTO") {
+        // Ya estaba abierta (otro celular o doble toque): se muestra directo.
+        await cal.refresh();
+      }
+      avisar("No pudimos abrir el día", e instanceof Error ? e.message : "Probá de nuevo en un rato.");
+    } finally {
+      setAbriendo(false);
     }
   };
 
-  if (!imagenesListas || !cargado) return <CalendarioSkeleton />;
+  const handleDia = (dia: Dia) => {
+    const casilla = casillaDe(dia);
+    switch (casilla.estado) {
+      case "ABIERTA":
+        setRevelado({ dia, casilla, animado: false });
+        return;
+      case "VENCIDA":
+        avisar("Este día ya pasó", "¡Volvé mañana por la próxima casilla!");
+        return;
+      case "FUTURA":
+        avisar("Todavía no", `Esta casilla se abre el ${fechaLegible(dia.dia)}.`);
+        return;
+      default:
+        if (!identidad.vinculada) setVerValidar(true);
+        else if (!sucursalFavorita) setEligiendoSucursal(dia);
+        else void abrirDia(dia);
+    }
+  };
+
+  const guardarSucursal = async (codigo: string): Promise<string | null> => {
+    try {
+      await guardarSucursalFavorita(codigo);
+      await refrescarPerfil();
+      const pendiente = eligiendoSucursal;
+      setEligiendoSucursal(null);
+      if (pendiente && pendiente !== "cambiar") void abrirDia(pendiente);
+      return null;
+    } catch (e) {
+      return e instanceof Error ? e.message : "No pudimos guardar tu sucursal.";
+    }
+  };
+
+  const responderTrivia = async (fecha: string, respuestas: Record<string, string>): Promise<string | null> => {
+    try {
+      const casilla = await cal.responderTrivia(fecha, respuestas);
+      setRevelado((prev) => (prev ? { ...prev, casilla, animado: false } : prev));
+      return null;
+    } catch (e) {
+      return e instanceof Error ? e.message : "No pudimos enviar tu respuesta.";
+    }
+  };
+
+  const leerQr = async (texto: string) => {
+    if (retirando) return;
+    const codigo = extraerCodigoRetiro(texto);
+    if (!codigo) {
+      avisar("Ese QR no es de una sucursal", "Escaneá el QR del calendario que está en la sucursal.");
+      return;
+    }
+    setRetirando(true);
+    try {
+      const { retirados, sucursal } = await cal.retirar(codigo);
+      setEscaneando(false);
+      pushToast({
+        variant: "success",
+        title: retirados.length === 1 ? "¡Listo! Retiraste tu regalo" : `¡Listo! Retiraste ${retirados.length} regalos`,
+        description: `Sucursal N° ${sucursal}. Mostrale esta pantalla al personal.`,
+      });
+    } catch (e) {
+      avisar("No pudimos registrar el retiro", e instanceof Error ? e.message : "Probá de nuevo.");
+    } finally {
+      setRetirando(false);
+    }
+  };
+
+  if (!imagenesListas || (identidad.vinculada && cal.isLoading)) return <CalendarioSkeleton />;
+
+  const regalosPendientes = cal.calendario?.regalosPendientes.length ?? 0;
 
   return (
     <section className={styles.page}>
       <p className={styles.bajada}>
         Abrí una casilla por día: cada una tiene una sorpresa y solo se puede abrir en su fecha. ¡No te la pierdas!
       </p>
+      {identidad.vinculada && (
+        <p className={styles.sucursal}>
+          {sucursalFavorita ? (
+            <>
+              Tu sucursal favorita: <strong>{nombreSucursalFavorita(sucursales, sucursalFavorita)}</strong>{" "}
+            </>
+          ) : (
+            "Todavía no elegiste tu sucursal favorita. "
+          )}
+          <button type="button" className={styles.link} onClick={() => setEligiendoSucursal("cambiar")}>
+            {sucursalFavorita ? "Cambiar" : "Elegir"}
+          </button>
+        </p>
+      )}
 
-      {isModoPruebaCalendario() && (
+      {cal.error && (
         <Alert color="warning">
-          Modo prueba: todas las casillas se pueden abrir ahora.{" "}
-          <button type="button" className={styles.basesLink} onClick={reiniciar}>
-            Cerrar todas otra vez
+          {cal.error}{" "}
+          <button type="button" className={styles.link} onClick={() => void cal.refresh()}>
+            Reintentar
           </button>
         </Alert>
+      )}
+      {regalosPendientes > 0 && (
+        <RegalosPendientes cantidad={regalosPendientes} onRetirar={() => setEscaneando(true)} />
       )}
 
       <div className={styles.grilla}>
         <CalendarioCartel variante="titulo" className={styles.titulo} />
         {CALENDARIO_DIAS.map((dia) => {
-          const e = estado(dia);
-          return e === "abierto" ? (
+          const casilla = casillaDe(dia);
+          return casilla.estado === "ABIERTA" ? (
             <CalendarioRegalo
               key={dia.dia}
               dia={dia}
+              lineas={textosDeCasilla(casilla, dia.dia).lineas}
               enGrilla
-              esHoy={estadoDelDia(dia.dia, hoy, false) === "hoy"}
+              esHoy={casilla.fecha === hoy}
               onClick={() => handleDia(dia)}
             />
           ) : (
-            <CalendarioDia key={dia.dia} dia={dia} estado={e} onClick={() => handleDia(dia)} />
+            <CalendarioDia key={dia.dia} dia={dia} estado={estadoCerrado(casilla.estado)} onClick={() => handleDia(dia)} />
           );
         })}
         <CalendarioCartel variante="anio-nuevo" className={styles.anioNuevo} />
@@ -105,18 +210,58 @@ export default function FinDeAnioCalendario({ cuenta }: FinDeAnioCalendarioProps
       {revelado && (
         <CalendarioRevelado
           dia={revelado.dia}
+          textos={textosDeCasilla(revelado.casilla, revelado.dia.dia)}
           animado={revelado.animado}
-          esHoy={estadoDelDia(revelado.dia.dia, hoy, false) === "hoy"}
+          esHoy={revelado.casilla.fecha === hoy}
+          extra={
+            revelado.casilla.contenido?.tipo === "TRIVIA" &&
+            !revelado.casilla.trivia?.respondida &&
+            revelado.casilla.fecha === hoy ? (
+              <TriviaPreguntas
+                preguntas={revelado.casilla.contenido.preguntas}
+                onResponder={(respuestas) => responderTrivia(revelado.casilla.fecha, respuestas)}
+              />
+            ) : null
+          }
           onCerrar={cerrarRevelado}
           onVerBases={() => setVerBases(true)}
         />
       )}
 
       <BottomSheet
+        open={eligiendoSucursal !== null}
+        onClose={() => setEligiendoSucursal(null)}
+        title="¿Cuál es tu sucursal favorita?"
+      >
+        <SucursalFavoritaPicker actual={sucursalFavorita} onGuardar={guardarSucursal} />
+      </BottomSheet>
+
+      <BottomSheet open={escaneando} onClose={() => setEscaneando(false)} title="Retirar mis regalos">
+        <QrScanner
+          onDetect={(texto) => void leerQr(texto)}
+          onClose={() => setEscaneando(false)}
+          paused={retirando}
+          hint="Apuntá al QR del calendario que está en la sucursal"
+        />
+      </BottomSheet>
+
+      <BottomSheet open={verValidar} onClose={() => setVerValidar(false)} title="Validá tu identidad">
+        <IdentityGate
+          tone="socios"
+          status={identidad.status}
+          motivo="Para abrir las casillas del calendario necesitamos confirmar que esta cuenta es tuya."
+        />
+      </BottomSheet>
+
+      <BottomSheet
         open={verBases}
         onClose={() => setVerBases(false)}
         title="Bases y condiciones"
-        footer={<PortalButton tone="socios" onClick={() => setVerBases(false)}>Cerrar</PortalButton>}
+        footer={
+          <PortalButton tone="socios" onClick={() => setVerBases(false)}>
+            Cerrar
+          </PortalButton>
+        }
       >
         <ul className={styles.basesLista}>
           {BASES_CALENDARIO.map((punto) => (

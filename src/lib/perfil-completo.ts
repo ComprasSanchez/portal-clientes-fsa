@@ -3,15 +3,16 @@
 
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 
-export type PerfilPendiente = "telefono" | "fechaNacimiento" | "domicilio" | "obraSocial";
+export type PerfilPendiente = "telefono" | "fechaNacimiento" | "domicilio" | "obraSocial" | "sucursalFavorita";
 
-export const PERFIL_ITEMS_TOTAL = 4;
+export const PERFIL_ITEMS_TOTAL = 5;
 
 export const PERFIL_PENDIENTE_TEXTO: Record<PerfilPendiente, { label: string; accion: string }> = {
   telefono: { label: "Celular verificado", accion: "Verificar celular" },
   fechaNacimiento: { label: "Fecha de nacimiento", accion: "Agregar" },
   domicilio: { label: "Domicilio", accion: "Agregar" },
   obraSocial: { label: "Obra social", accion: "Agregar" },
+  sucursalFavorita: { label: "Sucursal favorita", accion: "Elegir" },
 };
 
 export function perfilPendientes(perfil: PortalPerfilResponse | null | undefined): PerfilPendiente[] {
@@ -24,6 +25,7 @@ export function perfilPendientes(perfil: PortalPerfilResponse | null | undefined
   if (!perfil.fechaNacimiento) pendientes.push("fechaNacimiento");
   if (!perfil.domicilios?.length) pendientes.push("domicilio");
   if (!perfil.afiliaciones?.length) pendientes.push("obraSocial");
+  if (!perfil.sucursalFavorita) pendientes.push("sucursalFavorita");
   return pendientes;
 }
 

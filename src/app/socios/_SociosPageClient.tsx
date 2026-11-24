@@ -13,7 +13,7 @@ import { usePortalInvitadoEvento } from "@/lib/use-portal-invitado-evento";
 import { usePortalInvitacion } from "@/lib/use-portal-invitacion";
 import { usePermisoClaves } from "@/lib/use-permiso-claves";
 import { isFiestaActiva } from "@/lib/fiesta";
-import { isFinDeAnioActivo } from "@/lib/fin-de-anio";
+import { isFinDeAnioVisible } from "@/lib/fin-de-anio";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import {
   COLABORADORES_VIEWS,
@@ -35,7 +35,7 @@ const parseView = (value: string | null): SociosView | null => {
   const view = VIEW_ALIASES[value] ?? value;
   // Con la fiesta apagada, el link directo o el QR llevan a Inicio.
   if (view === "colaboradores-fiesta" && !isFiestaActiva()) return null;
-  if (isFinDeAnioView(view as SociosView) && !isFinDeAnioActivo()) return null;
+  if (isFinDeAnioView(view as SociosView) && !isFinDeAnioVisible()) return null;
   return VALID_VIEWS.includes(view as SociosView) ? (view as SociosView) : null;
 };
 

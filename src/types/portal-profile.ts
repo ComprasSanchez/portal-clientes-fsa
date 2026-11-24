@@ -48,6 +48,8 @@ export type PortalPerfilResponse = {
   apellido?: string | null;
   razonSocial?: string | null;
   fechaNacimiento?: string | null;
+  /** Elegida para el calendario de fin de año (número de sucursal). */
+  sucursalFavorita?: string | null;
   contactos?: PortalPerfilContacto[];
   afiliaciones?: PortalPerfilAfiliacion[];
   domicilios?: PortalPerfilDomicilio[];

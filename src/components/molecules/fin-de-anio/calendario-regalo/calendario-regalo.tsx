@@ -3,13 +3,15 @@ import {
   diaConCero,
   fechaLegible,
   posicionComoVariables,
-  regaloDelDia,
+  type CalendarioRegaloLinea,
   type CalendarioDia as Dia,
 } from "@/lib/fin-de-anio";
 import styles from "./calendario-regalo.module.scss";
 
 type CalendarioRegaloProps = {
   dia: Dia;
+  /** Texto del regalo (sale de `textosDeCasilla`). */
+  lineas: CalendarioRegaloLinea[];
   /** En la grilla: casilla ya abierta (oscurecida, como el diseño) que se toca para verla. */
   enGrilla?: boolean;
   esHoy?: boolean;
@@ -17,14 +19,14 @@ type CalendarioRegaloProps = {
 };
 
 /** Tarjeta del regalo de un día ya desbloqueado. */
-export default function CalendarioRegalo({ dia, enGrilla = false, esHoy = false, onClick }: CalendarioRegaloProps) {
+export default function CalendarioRegalo({ dia, lineas, enGrilla = false, esHoy = false, onClick }: CalendarioRegaloProps) {
   const clases = `${styles.regalo} ${styles[dia.color]} ${enGrilla ? styles.enGrilla : styles.detalle}`;
   const contenido = (
     <>
       <span className={styles.diaTexto}>DÍA {diaConCero(dia.dia)}</span>
       <span className={styles.pill}>Regalo desbloqueado</span>
       <span className={styles.lineas}>
-        {regaloDelDia(dia.dia).map((linea) => (
+        {lineas.map((linea) => (
           <span
             key={linea.texto}
             className={`${styles.linea} ${styles[`tam-${linea.tamano}`]} ${linea.fuente === "marca" ? styles.marca : ""}`}

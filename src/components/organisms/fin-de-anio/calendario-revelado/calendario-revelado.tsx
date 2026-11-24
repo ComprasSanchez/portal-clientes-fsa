@@ -1,28 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import PortalButton from "@/components/atoms/button/button";
 import Nieve from "@/components/molecules/fin-de-anio/nieve/nieve";
 import ReveladoFichas from "@/components/molecules/fin-de-anio/revelado-fichas/revelado-fichas";
 import ReveladoPuertas from "@/components/molecules/fin-de-anio/revelado-puertas/revelado-puertas";
-import { contenidoDelDia, fechaLegible, type CalendarioDia as Dia } from "@/lib/fin-de-anio";
+import { fechaLegible, type CalendarioDia as Dia, type CalendarioTextos } from "@/lib/fin-de-anio";
 import styles from "./calendario-revelado.module.scss";
 
 const DURACION_CIERRE_MS = 300;
 
 type CalendarioReveladoProps = {
   dia: Dia;
+  textos: CalendarioTextos;
   /** Primera vez: puertas, fichas que caen y textos escalonados. Si ya la abrió, va directo. */
   animado: boolean;
   esHoy: boolean;
+  /** Algo más debajo del texto (ej. las preguntas de la trivia). */
+  extra?: ReactNode;
   onCerrar: () => void;
   onVerBases: () => void;
 };
 
 /** La sorpresa del día a pantalla completa (en la compu, tarjeta centrada). */
-export default function CalendarioRevelado({ dia, animado, esHoy, onCerrar, onVerBases }: CalendarioReveladoProps) {
+export default function CalendarioRevelado({ dia, textos, animado, esHoy, extra, onCerrar, onVerBases }: CalendarioReveladoProps) {
   const [cerrando, setCerrando] = useState(false);
-  const contenido = contenidoDelDia(dia.dia);
   const sorpresa = esHoy ? "Tu sorpresa de hoy" : `Tu sorpresa del ${fechaLegible(dia.dia)}`;
 
   useEffect(() => {
@@ -57,12 +59,15 @@ export default function CalendarioRevelado({ dia, animado, esHoy, onCerrar, onVe
         <div className={styles.contenido}>
           <ReveladoFichas dia={dia.dia} animado={animado} />
           <p className={styles.kicker}>{animado ? sorpresa : `Ya abriste esta casilla · ${sorpresa}`}</p>
-          <h2 className={styles.titulo}>{contenido.titulo}</h2>
-          <p className={styles.detalle}>{contenido.detalle}</p>
-          <div className={styles.recuadro}>
-            <span>{contenido.recuadro.etiqueta}</span>
-            <b>{contenido.recuadro.valor}</b>
-          </div>
+          <h2 className={styles.titulo}>{textos.titulo}</h2>
+          {textos.detalle && <p className={styles.detalle}>{textos.detalle}</p>}
+          {textos.recuadro && (
+            <div className={styles.recuadro}>
+              <span>{textos.recuadro.etiqueta}</span>
+              <b>{textos.recuadro.valor}</b>
+            </div>
+          )}
+          {extra && <div className={styles.extra}>{extra}</div>}
 
           <div className={styles.acciones}>
             <PortalButton variant="claro" onClick={() => setCerrando(true)}>

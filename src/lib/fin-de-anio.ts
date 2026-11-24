@@ -1,13 +1,25 @@
 // Fin de año (temporal): calendario de regalos de diciembre. Lógica pura, sin UI.
+// Los datos (qué abrió, stock, trivia, retiros) vienen de eventos-back vía /api/portal/me/calendario.
+
+import type { CalendarioCasilla, CalendarioEstadoCasilla, CalendarioTipoDia } from "@/types/portal-calendario";
 
 /** Se prende con NEXT_PUBLIC_FIN_DE_ANIO_ACTIVO=true; apagado, la sección no aparece. */
 export const isFinDeAnioActivo = () => process.env.NEXT_PUBLIC_FIN_DE_ANIO_ACTIVO === "true";
 
-/** Solo para probar (NUNCA en prod): todas las casillas se pueden abrir sin esperar su día. */
+/** Solo para probar (nunca en prod): muestra la sección antes del 1/12. */
 export const isModoPruebaCalendario = () => process.env.NEXT_PUBLIC_FIN_DE_ANIO_MODO_PRUEBA === "true";
 
 export const CALENDARIO_ANIO = 2026;
+export const CALENDARIO_DESDE = `${CALENDARIO_ANIO}-12-01`;
 const ZONA_HORARIA = "America/Argentina/Cordoba";
+
+/** Fecha de hoy en Córdoba como "YYYY-MM-DD". */
+export const hoyArgentina = (ahora = new Date()): string =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: ZONA_HORARIA }).format(ahora);
+
+/** Regla de Marketing: la sección aparece desde el 1/12 (antes, solo en modo prueba). */
+export const isFinDeAnioVisible = () =>
+  isFinDeAnioActivo() && (isModoPruebaCalendario() || hoyArgentina() >= CALENDARIO_DESDE);
 
 export type CalendarioColor = "teal" | "rojo" | "amarillo" | "crema" | "navidad";
 export type CalendarioIlustracion =
@@ -46,71 +58,21 @@ export const CALENDARIO_IMAGENES: readonly string[] = [
   "/fin-de-anio/candado-abierto.png",
 ];
 
-/** Una línea del regalo: `fuente` "marca" es para nombres de marca (ej. VICHY). */
-export type CalendarioRegaloLinea = { texto: string; tamano: "s" | "m" | "l"; fuente?: "serif" | "marca" };
-
-// Contenido de ejemplo del prototipo (Marketing define el real). Todo esto viaja al navegador:
-// cupones y códigos reales tienen que salir de un back.
-const DIAS_SEMANA = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-const PORCENTAJES = [10, 15, 20, 15];
-const REGALOS_EJEMPLO = [
-  "1 shampoo de 50 ml",
-  "1 protector labial",
-  "1 crema de manos de 30 ml",
-  "1 alcohol en gel de 60 ml",
-  "1 jabón líquido de 250 ml",
-  "1 protector solar de 50 ml",
-  "1 desodorante en aerosol",
-];
-
-export type CalendarioContenido = {
-  tipo: "descuento" | "regalo";
-  titulo: string;
-  detalle: string;
-  /** Texto del recuadro (en el prototipo, el código para la caja). */
-  recuadro: { etiqueta: string; valor: string };
-  /** Cómo se ve en la casilla abierta. */
-  lineas: CalendarioRegaloLinea[];
-};
-
-/** Martes y jueves: descuento. El resto de los días: regalo. */
-export function contenidoDelDia(dia: number): CalendarioContenido {
-  const diaSemana = new Date(CALENDARIO_ANIO, 11, dia).getDay();
-  if (diaSemana === 2 || diaSemana === 4) {
-    const pct = PORCENTAJES[dia % PORCENTAJES.length];
-    return {
-      tipo: "descuento",
-      titulo: `¡${pct}% OFF en [Marca]!`,
-      detalle: `Exclusivo para socios. Válido el ${DIAS_SEMANA[diaSemana]} ${dia}/12, solo en sucursal. No acumulable con otras promociones.`,
-      recuadro: { etiqueta: "Mostrá este código en caja", valor: "[CÓDIGO]" },
-      lineas: [
-        { texto: `${pct}% off en`, tamano: "l" },
-        { texto: "[Marca]", tamano: "m" },
-      ],
-    };
-  }
-  const regalo = REGALOS_EJEMPLO[dia % REGALOS_EJEMPLO.length];
-  return {
-    tipo: "regalo",
-    titulo: `¡Ganaste ${regalo}!`,
-    detalle: "Regalo de [Marca]. Retiralo en tu sucursal presentando el código.",
-    recuadro: { etiqueta: "Retiralo con este código", valor: "[CÓDIGO]" },
-    lineas: [
-      { texto: "Ganaste", tamano: "s" },
-      { texto: regalo, tamano: "m" },
-    ],
-  };
-}
-
-export const regaloDelDia = (dia: number) => contenidoDelDia(dia).lineas;
-
 export const BASES_CALENDARIO = [
   "Vigencia: del 1 al 31 de diciembre de 2026.",
-  "Participan socios SocioSA con cuenta en el portal.",
-  "Se abre una casilla por día, solo en su fecha. Si no la abrís ese día, se pierde.",
-  "Martes y jueves: descuento. El resto de los días: regalo, hasta agotar el stock del día.",
-  "Descuentos y regalos válidos solo en sucursal, presentando el código.",
+  "Participan socios con su cuenta del portal validada.",
+  "Antes de empezar elegís tu sucursal favorita; queda guardada en tu perfil.",
+  "Se abre una casilla por día, solo en su fecha y una sola vez. Si no la abrís ese día, se pierde.",
+  "Lunes y sábados: trivia. Si respondés bien, sumás puntos.",
+  "Martes y jueves: descuento de una marca. Domingos: descuento general.",
+  "Miércoles: sorteo de regalos sorpresa; el resultado se ve al día siguiente.",
+  "Viernes: regalo sorpresa hasta agotar los del día.",
+  "Los regalos se retiran en sucursal escaneando el QR de la sucursal desde el portal.",
+  "Descuentos válidos solo en sucursal, mostrando la pantalla en caja.",
 ];
+
+/** Una línea del texto de la casilla abierta: `fuente` "marca" es para nombres de marca. */
+export type CalendarioRegaloLinea = { texto: string; tamano: "s" | "m" | "l"; fuente?: "serif" | "marca" };
 
 /** Lugar en la grilla (1-based). */
 export type CalendarioPosicion = { fila: number; columna: number; alto: number; ancho: number };
@@ -185,31 +147,189 @@ export const posicionComoVariables = ({ movil: m, escritorio: e }: Pick<Calendar
   "--e-ancho": e.ancho,
 });
 
-/** Fecha de hoy en Córdoba como "YYYY-MM-DD". */
-export const hoyArgentina = (ahora = new Date()): string =>
-  new Intl.DateTimeFormat("en-CA", { timeZone: ZONA_HORARIA }).format(ahora);
-
-const fechaDelDia = (dia: number) => `${CALENDARIO_ANIO}-12-${String(dia).padStart(2, "0")}`;
-
-export const estaDesbloqueado = (dia: number, hoy: string) => hoy >= fechaDelDia(dia);
-
-/** futuro: todavía no llega · hoy: se puede abrir · abierto: ya la abrió · vencido: no la abrió en su día. */
-export type CalendarioEstado = "futuro" | "hoy" | "abierto" | "vencido";
-
-export function estadoDelDia(dia: number, hoy: string, abierto: boolean): CalendarioEstado {
-  if (abierto) return "abierto";
-  if (isModoPruebaCalendario()) return "hoy";
-  const fecha = fechaDelDia(dia);
-  if (fecha > hoy) return "futuro";
-  return fecha === hoy ? "hoy" : "vencido";
-}
-export const esHoy = (dia: number, hoy: string) => hoy === fechaDelDia(dia);
-
+export const fechaDelDia = (dia: number) => `${CALENDARIO_ANIO}-12-${String(dia).padStart(2, "0")}`;
 export const diaConCero = (dia: number) => String(dia).padStart(2, "0");
 export const fechaLegible = (dia: number) => `${dia} de diciembre`;
 
-const FECHA_RE = /^\d{4}-\d{2}-\d{2}$/;
+// Mismo reparto que el back, para mostrar la grilla mientras carga o sin cuenta validada.
+const TIPO_POR_DIA_SEMANA: CalendarioTipoDia[] = [
+  "DESCUENTO_GENERAL",
+  "TRIVIA",
+  "DESCUENTO_MARCA",
+  "SORTEO",
+  "DESCUENTO_MARCA",
+  "PREMIO",
+  "TRIVIA",
+];
 
-/** Solo fuera de prod: `?fecha=2026-12-10` simula el día para probar el desbloqueo. */
-export const fechaSimulada = (valor: string | null): string | null =>
-  process.env.NODE_ENV !== "production" && valor && FECHA_RE.test(valor) ? valor : null;
+/** Grilla sin datos del socio: todo cerrado según la fecha de hoy. */
+export function casillaSinDatos(dia: number, hoy: string): CalendarioCasilla {
+  const fecha = fechaDelDia(dia);
+  const estado: CalendarioEstadoCasilla = fecha > hoy ? "FUTURA" : fecha === hoy ? "DISPONIBLE" : "VENCIDA";
+  return {
+    fecha,
+    tipo: TIPO_POR_DIA_SEMANA[new Date(`${fecha}T12:00:00Z`).getUTCDay()],
+    estado,
+    contenido: null,
+    resultado: null,
+    mensaje: null,
+    trivia: null,
+    sorteo: null,
+  };
+}
+
+/** Estado de la casilla cerrada (la abierta se muestra con otro componente). */
+export const estadoCerrado = (estado: CalendarioEstadoCasilla): "futuro" | "hoy" | "vencido" =>
+  estado === "DISPONIBLE" ? "hoy" : estado === "VENCIDA" ? "vencido" : "futuro";
+
+const FRASE_POR_DEFECTO = "Cada día trae su magia. Y mañana puede ser tu día…";
+
+export type CalendarioTextos = {
+  titulo: string;
+  detalle: string | null;
+  recuadro: { etiqueta: string; valor: string } | null;
+  /** Lo que se ve en la casilla abierta de la grilla. */
+  lineas: CalendarioRegaloLinea[];
+};
+
+/** Textos de un día ya abierto, según su tipo y lo que le tocó al socio. */
+export function textosDeCasilla(casilla: CalendarioCasilla, dia: number): CalendarioTextos {
+  const c = casilla.contenido;
+  const r = casilla.resultado;
+  const enCaja = { etiqueta: "Mostrá esta pantalla en caja", valor: `Válido el ${fechaLegible(dia)}` };
+
+  if (c?.tipo === "DESCUENTO_MARCA") {
+    return {
+      titulo: `¡${c.porcentaje}% OFF en ${c.marca}!`,
+      detalle: c.condiciones ?? "Exclusivo para socios, solo en sucursal.",
+      recuadro: enCaja,
+      lineas: [
+        { texto: `${c.porcentaje}% off en`, tamano: "l" },
+        { texto: c.marca, tamano: "m" },
+      ],
+    };
+  }
+  if (c?.tipo === "DESCUENTO_GENERAL") {
+    return {
+      titulo: c.titulo,
+      detalle: c.detalle ?? c.condiciones ?? "Exclusivo para socios, solo en sucursal.",
+      recuadro: enCaja,
+      lineas: [{ texto: c.titulo, tamano: "m" }],
+    };
+  }
+  if (r?.tipo === "PREMIO") {
+    return r.gano
+      ? {
+          titulo: "¡Ganaste un regalo sorpresa!",
+          detalle: "Retiralo en cualquier sucursal escaneando el QR de la sucursal desde acá.",
+          recuadro: { etiqueta: "Regalos de hoy", valor: `Quedan ${r.quedan} de ${r.total}` },
+          lineas: [
+            { texto: "¡Ganaste!", tamano: "l" },
+            { texto: "regalo sorpresa", tamano: "s" },
+          ],
+        }
+      : {
+          titulo: casilla.mensaje ?? FRASE_POR_DEFECTO,
+          detalle: null,
+          recuadro: null,
+          lineas: [
+            { texto: "Mañana", tamano: "m" },
+            { texto: "puede ser tu día", tamano: "s" },
+          ],
+        };
+  }
+  if (r?.tipo === "SORTEO") {
+    if (casilla.sorteo === "GANASTE") {
+      return {
+        titulo: "¡Ganaste el sorteo!",
+        detalle: "Te llevás un regalo sorpresa. Retiralo en cualquier sucursal escaneando el QR desde acá.",
+        recuadro: null,
+        lineas: [
+          { texto: "¡Ganaste!", tamano: "l" },
+          { texto: "el sorteo", tamano: "s" },
+        ],
+      };
+    }
+    if (casilla.sorteo === "NO_GANASTE") {
+      return {
+        titulo: "Esta vez no salió",
+        detalle: FRASE_POR_DEFECTO,
+        recuadro: null,
+        lineas: [
+          { texto: "Sorteo", tamano: "m" },
+          { texto: "mañana hay más", tamano: "s" },
+        ],
+      };
+    }
+    return {
+      titulo: "¡Ya estás participando!",
+      detalle: "El resultado sale mañana. Volvé a ver si ganaste.",
+      recuadro: { etiqueta: "Regalos sorpresa en juego", valor: String(r.cantidadRegalos) },
+      lineas: [
+        { texto: "Sorteo", tamano: "l" },
+        { texto: `${r.cantidadRegalos} regalos`, tamano: "s" },
+      ],
+    };
+  }
+  if (c?.tipo === "TRIVIA") {
+    const t = casilla.trivia;
+    if (t?.respondida) {
+      return t.correcta
+        ? {
+            titulo: "¡Respuesta correcta!",
+            detalle: `Sumaste ${t.puntos} puntos.`,
+            recuadro: null,
+            lineas: [
+              { texto: "Trivia", tamano: "l" },
+              { texto: "¡correcta!", tamano: "s" },
+            ],
+          }
+        : {
+            titulo: "Casi…",
+            detalle: "Esta vez no fue, pero mañana hay otra sorpresa.",
+            recuadro: null,
+            lineas: [
+              { texto: "Trivia", tamano: "l" },
+              { texto: "respondida", tamano: "s" },
+            ],
+          };
+    }
+    return {
+      titulo: "Trivia del día",
+      detalle: `Respondé bien y sumá ${c.puntos} puntos.`,
+      recuadro: null,
+      lineas: [{ texto: "Trivia", tamano: "l" }],
+    };
+  }
+  return { titulo: "¡Sorpresa!", detalle: null, recuadro: null, lineas: [{ texto: "¡Sorpresa!", tamano: "l" }] };
+}
+
+// Mensajes de error para el socio (sin jerga técnica).
+const MENSAJES_ERROR: Record<string, string> = {
+  CALENDARIO_DIA_YA_ABIERTO: "Ya abriste este día.",
+  CALENDARIO_DIA_FUTURO: "Este día todavía no se puede abrir.",
+  CALENDARIO_DIA_VENCIDO: "Este día ya pasó.",
+  CALENDARIO_DIA_SIN_CONTENIDO: "La sorpresa de hoy todavía no está lista. Probá en un rato.",
+  CALENDARIO_FUERA_DE_PERIODO: "Esa fecha no es parte del calendario.",
+  CALENDARIO_DIA_NO_ABIERTO: "Primero abrí el día.",
+  CALENDARIO_TRIVIA_YA_RESPONDIDA: "Ya respondiste la trivia de hoy.",
+  CALENDARIO_TRIVIA_RESPUESTAS_INVALIDAS: "Respondé todas las preguntas.",
+  CALENDARIO_QR_INVALIDO: "Ese código no es de una sucursal. Probá de nuevo.",
+  CALENDARIO_SIN_REGALOS_PARA_RETIRAR: "No tenés regalos para retirar.",
+};
+
+export const mensajeErrorCalendario = (code: string | null) =>
+  (code && MENSAJES_ERROR[code]) || "No pudimos completar la acción. Probá de nuevo en un rato.";
+
+const CODIGO_QR_RE = /^[A-Za-z0-9-]{4,64}$/;
+
+/** Del texto del QR de la sucursal saca el código (acepta el link `/…/retiro/<codigo>` o el código solo). */
+export function extraerCodigoRetiro(texto: string): string | null {
+  const limpio = texto.trim();
+  try {
+    const match = new URL(limpio).pathname.match(/\/retiro\/([A-Za-z0-9-]{4,64})\/?$/);
+    return match ? match[1] : null;
+  } catch {
+    return CODIGO_QR_RE.test(limpio) ? limpio : null;
+  }
+}

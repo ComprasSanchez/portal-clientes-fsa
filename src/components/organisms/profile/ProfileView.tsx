@@ -8,12 +8,17 @@ import {
   Mail,
   Phone,
   Search,
+  Store,
   UserRound,
   X,
 } from "lucide-react";
 import { ProfileViewSkeleton } from "@/components/organisms/loading/ViewSkeletons";
 import { ProfileField } from "@/components/molecules/home/ProfileField";
 import { ProfileDataRow } from "@/components/molecules/home/ProfileDataRow";
+import BottomSheet from "@/components/molecules/bottom-sheet/bottom-sheet";
+import SucursalFavoritaPicker from "@/components/organisms/sucursal-favorita-picker/sucursal-favorita-picker";
+import { guardarSucursalFavorita, nombreSucursalFavorita } from "@/lib/sucursal-favorita";
+import { usePortalSucursales } from "@/lib/use-portal-sucursales";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { trackEvent } from "@/lib/analytics";
 import {
@@ -535,6 +540,8 @@ export function ProfileView({
   const [activeContactEditorType, setActiveContactEditorType] =
     useState<ContactType | null>(null);
   const [isDomicilioModalOpen, setIsDomicilioModalOpen] = useState(false);
+  const [isSucursalFavoritaOpen, setIsSucursalFavoritaOpen] = useState(false);
+  const { sucursales } = usePortalSucursales();
   const [isDomicilioPickerModalOpen, setIsDomicilioPickerModalOpen] =
     useState(false);
   const [affiliationForm, setAffiliationForm] = useState<AffiliationFormData>(
@@ -1321,12 +1328,14 @@ export function ProfileView({
                         icon={UserRound}
                         value={profileValues.fullName || "Sin dato"}
                         label="Nombre y apellido"
+                        status={profileValues.fullName ? undefined : "pending"}
                         onClick={handleStartEditingPersonalData}
                       />
                       <ProfileDataRow
                         icon={CalendarDays}
                         value={profileValues.birthDate || "Sin dato"}
                         label="Fecha de nacimiento"
+                        status={profileValues.birthDateValue ? undefined : "pending"}
                         onClick={handleStartEditingPersonalData}
                       />
                       <ProfileDataRow
@@ -1347,11 +1356,7 @@ export function ProfileView({
                         value={preferredPhone?.valor ?? "Sin dato"}
                         label="Telefono principal"
                         status={
-                          preferredPhone
-                            ? preferredPhone.verificado
-                              ? "verified"
-                              : "pending"
-                            : undefined
+                          preferredPhone?.verificado ? "verified" : "pending"
                         }
                         onClick={() =>
                           handleOpenContactoModal(
@@ -1365,11 +1370,7 @@ export function ProfileView({
                         value={preferredEmail?.valor ?? "Sin dato"}
                         label="Correo electrónico"
                         status={
-                          preferredEmail
-                            ? preferredEmail.verificado
-                              ? "verified"
-                              : "pending"
-                            : undefined
+                          preferredEmail?.verificado ? "verified" : "pending"
                         }
                         onClick={() =>
                           handleOpenContactoModal(
@@ -1386,7 +1387,20 @@ export function ProfileView({
                             : "Sin dato"
                         }
                         label="Domicilio"
+                        status={preferredDomicilio ? undefined : "pending"}
                         onClick={handleOpenDomicilioPickerModal}
+                      />
+                      <ProfileDataRow
+                        icon={Store}
+                        value={
+                          nombreSucursalFavorita(
+                            sucursales,
+                            perfil?.sucursalFavorita,
+                          ) ?? "Sin dato"
+                        }
+                        label="Sucursal favorita"
+                        status={perfil?.sucursalFavorita ? undefined : "pending"}
+                        onClick={() => setIsSucursalFavoritaOpen(true)}
                       />
                     </div>
 
@@ -1549,6 +1563,30 @@ export function ProfileView({
           />
         </div> */}
       </article>
+
+      <BottomSheet
+        open={isSucursalFavoritaOpen}
+        onClose={() => setIsSucursalFavoritaOpen(false)}
+        title="Tu sucursal favorita"
+      >
+        <SucursalFavoritaPicker
+          actual={perfil?.sucursalFavorita ?? null}
+          bajada="Es la sucursal donde vas a retirar tus regalos y usar tus descuentos."
+          textoBoton="Guardar"
+          onGuardar={async (codigo) => {
+            try {
+              await guardarSucursalFavorita(codigo);
+              await refresh();
+              setIsSucursalFavoritaOpen(false);
+              return null;
+            } catch (e) {
+              return e instanceof Error
+                ? e.message
+                : "No pudimos guardar tu sucursal.";
+            }
+          }}
+        />
+      </BottomSheet>
 
       {isDomicilioModalOpen ? (
         <DomicilioFormModal

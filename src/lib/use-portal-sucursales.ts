@@ -64,6 +64,7 @@ function toSucursal(s: PortalSucursalOption, horariosMap: Map<number, PortalHora
   if (!s.latitud || !s.longitud) return null;
   return {
     id: String(s.id),
+    codigo: s.cod_sucursal != null ? String(s.cod_sucursal) : undefined,
     nombre: NOMBRE_OVERRIDES[s.id] ?? s.nombre,
     direccion: s.direccion,
     ciudad: "",

@@ -413,7 +413,7 @@ export function SociosViews({
   if (currentView === "fin-de-anio-calendario") {
     return (
       <main className={styles.container}>
-        <FinDeAnioCalendario cuenta={email ?? documentNumber ?? "sin-cuenta"} />
+        <FinDeAnioCalendario />
       </main>
     );
   }
