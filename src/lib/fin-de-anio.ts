@@ -61,7 +61,6 @@ export const CALENDARIO_IMAGENES: readonly string[] = [
 export const BASES_CALENDARIO = [
   "Vigencia: del 1 al 31 de diciembre de 2026.",
   "Participan socios con su cuenta del portal validada.",
-  "Antes de empezar elegís tu sucursal favorita; queda guardada en tu perfil.",
   "Se abre una casilla por día, solo en su fecha y una sola vez. Si no la abrís ese día, se pierde.",
   "Lunes y sábados: trivia. Si respondés bien, sumás puntos.",
   "Martes y jueves: descuento de una marca. Domingos: descuento general.",

@@ -13,7 +13,6 @@ import RegalosPendientes from "@/components/molecules/fin-de-anio/regalos-pendie
 import TriviaPreguntas from "@/components/molecules/fin-de-anio/trivia-preguntas/trivia-preguntas";
 import IdentityGate from "@/components/molecules/identity-gate/identity-gate";
 import CalendarioRevelado from "@/components/organisms/fin-de-anio/calendario-revelado/calendario-revelado";
-import SucursalFavoritaPicker from "@/components/organisms/sucursal-favorita-picker/sucursal-favorita-picker";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import {
   BASES_CALENDARIO,
@@ -30,10 +29,7 @@ import {
   type CalendarioDia as Dia,
 } from "@/lib/fin-de-anio";
 import { useIdentidad } from "@/lib/portal-identidad-context";
-import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
-import { guardarSucursalFavorita, nombreSucursalFavorita } from "@/lib/sucursal-favorita";
 import { usePortalCalendario } from "@/lib/use-portal-calendario";
-import { usePortalSucursales } from "@/lib/use-portal-sucursales";
 import { usePrecargaImagenes } from "@/lib/use-precarga-imagenes";
 import type { CalendarioCasilla } from "@/types/portal-calendario";
 import styles from "./fin-de-anio-calendario.module.scss";
@@ -43,7 +39,6 @@ type Revelado = { dia: Dia; casilla: CalendarioCasilla; animado: boolean };
 /** Calendario de regalos de diciembre: cada casilla se abre solo en su día y una vez. */
 export default function FinDeAnioCalendario() {
   const identidad = useIdentidad();
-  const { perfil, refresh: refrescarPerfil } = usePortalPerfilContext();
   const cal = usePortalCalendario({ enabled: identidad.vinculada });
   const imagenesListas = usePrecargaImagenes(CALENDARIO_IMAGENES);
   const { pushToast } = useGlobalToast();
@@ -51,8 +46,6 @@ export default function FinDeAnioCalendario() {
   const [revelado, setRevelado] = useState<Revelado | null>(null);
   const [verBases, setVerBases] = useState(false);
   const [verValidar, setVerValidar] = useState(false);
-  // Día que quedó esperando a que elija sucursal (o "cambiar" desde el link).
-  const [eligiendoSucursal, setEligiendoSucursal] = useState<Dia | "cambiar" | null>(null);
   const [escaneando, setEscaneando] = useState(false);
   const [retirando, setRetirando] = useState(false);
   const [abriendo, setAbriendo] = useState(false);
@@ -63,8 +56,6 @@ export default function FinDeAnioCalendario() {
   const hoy = cal.calendario?.hoy ?? hoyArgentina();
   const casillaDe = (dia: Dia): CalendarioCasilla =>
     cal.calendario?.casillas.find((c) => c.fecha === fechaDelDia(dia.dia)) ?? casillaSinDatos(dia.dia, hoy);
-  const sucursalFavorita = perfil?.sucursalFavorita ?? null;
-  const { sucursales } = usePortalSucursales();
   const avisar = (title: string, description: string) => pushToast({ variant: "info", title, description });
 
   const abrirDia = async (dia: Dia) => {
@@ -99,21 +90,7 @@ export default function FinDeAnioCalendario() {
         return;
       default:
         if (!identidad.vinculada) setVerValidar(true);
-        else if (!sucursalFavorita) setEligiendoSucursal(dia);
         else void abrirDia(dia);
-    }
-  };
-
-  const guardarSucursal = async (codigo: string): Promise<string | null> => {
-    try {
-      await guardarSucursalFavorita(codigo);
-      await refrescarPerfil();
-      const pendiente = eligiendoSucursal;
-      setEligiendoSucursal(null);
-      if (pendiente && pendiente !== "cambiar") void abrirDia(pendiente);
-      return null;
-    } catch (e) {
-      return e instanceof Error ? e.message : "No pudimos guardar tu sucursal.";
     }
   };
 
@@ -171,20 +148,6 @@ export default function FinDeAnioCalendario() {
       <p className={styles.bajada}>
         Abrí una casilla por día: cada una tiene una sorpresa y solo se puede abrir en su fecha. ¡No te la pierdas!
       </p>
-      {identidad.vinculada && (
-        <p className={styles.sucursal}>
-          {sucursalFavorita ? (
-            <>
-              Tu sucursal favorita: <strong>{nombreSucursalFavorita(sucursales, sucursalFavorita)}</strong>{" "}
-            </>
-          ) : (
-            "Todavía no elegiste tu sucursal favorita. "
-          )}
-          <button type="button" className={styles.link} onClick={() => setEligiendoSucursal("cambiar")}>
-            {sucursalFavorita ? "Cambiar" : "Elegir"}
-          </button>
-        </p>
-      )}
 
       {modoPrueba && identidad.vinculada && (
         <Alert color="warning">
@@ -251,13 +214,6 @@ export default function FinDeAnioCalendario() {
         />
       )}
 
-      <BottomSheet
-        open={eligiendoSucursal !== null}
-        onClose={() => setEligiendoSucursal(null)}
-        title="¿Cuál es tu sucursal favorita?"
-      >
-        <SucursalFavoritaPicker actual={sucursalFavorita} onGuardar={guardarSucursal} />
-      </BottomSheet>
 
       <BottomSheet open={escaneando} onClose={() => setEscaneando(false)} title="Retirar mis regalos">
         <QrScanner

@@ -22,8 +22,8 @@ type SucursalFavoritaPickerProps = {
 export default function SucursalFavoritaPicker({
   actual,
   onGuardar,
-  bajada = "La guardamos en tu perfil. Es la sucursal donde vas a usar tus regalos y descuentos del calendario.",
-  textoBoton = "Guardar y seguir",
+  bajada = "Es la sucursal a la que solés ir.",
+  textoBoton = "Guardar",
 }: SucursalFavoritaPickerProps) {
   const { sucursales, isLoading, error } = usePortalSucursales();
   const [busqueda, setBusqueda] = useState("");

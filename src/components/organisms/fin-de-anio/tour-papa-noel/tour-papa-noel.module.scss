@@ -1,0 +1,89 @@
+@use "../../../molecules/fin-de-anio/paleta" as *;
+
+.page {
+  overflow: hidden;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  border-radius: 24px;
+  background: #f3eee2;
+}
+
+// Portada teal con rombos como el diseño.
+.portada {
+  padding: 32px 24px 88px;
+  background-color: #0b7690;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='200' viewBox='0 0 120 200'%3E%3Cpath d='M60 0L120 100L60 200L0 100Z' fill='%230a6c84'/%3E%3C/svg%3E");
+  background-size: 120px 200px;
+  color: #f6f1e6;
+  text-align: center;
+}
+
+.volanta {
+  margin: 0 0 10px;
+  font-family: $futura;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.titulo {
+  margin: 0;
+  font-family: $serif;
+  font-size: clamp(2rem, 8vw, 3rem);
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.bajada {
+  margin: 14px 0 0;
+  font-family: $futura;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+}
+
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: -64px;
+  padding: 0 16px 24px;
+
+  @media (min-width: 600px) {
+    padding: 0 28px 32px;
+  }
+}
+
+.recorrido {
+  padding: 8px 4px 0;
+}
+
+.subtitulo {
+  margin: 0 0 20px;
+  color: #0b7690;
+  font-family: $serif;
+  font-size: clamp(1.8rem, 7vw, 2.4rem);
+  font-weight: 400;
+}
+
+.cardSkeleton {
+  height: 130px;
+  border-radius: 22px;
+}
+
+.mapaSkeleton {
+  height: clamp(320px, 60vw, 460px);
+  border-radius: 22px;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}

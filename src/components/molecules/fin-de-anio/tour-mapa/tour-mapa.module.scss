@@ -1,0 +1,35 @@
+.mapa {
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  height: clamp(320px, 60vw, 460px);
+  border-radius: 22px;
+  background: #0a5e73;
+}
+
+.pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #0b7690;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.pinDestacado {
+  background: #f0b91c;
+  color: #3d2f05;
+}
+
+.papaNoel {
+  display: block;
+  width: 56px;
+  height: auto;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}

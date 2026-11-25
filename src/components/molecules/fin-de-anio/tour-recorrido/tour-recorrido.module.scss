@@ -1,0 +1,83 @@
+@use "../paleta" as *;
+
+.recorrido {
+  --marca: 44px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #0b7690;
+}
+
+.parada {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--marca) 1fr;
+  gap: 14px;
+  padding-bottom: 28px;
+
+  // Línea que une las paradas.
+  &:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: 14px;
+    bottom: -14px;
+    left: calc(var(--marca) / 2 - 1px);
+    width: 2px;
+    background: #0b7690;
+  }
+}
+
+.pasada .datos {
+  opacity: 0.55;
+}
+
+.marca {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+}
+
+.punto {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0b7690;
+  box-shadow: 0 0 0 4px #f3eee2;
+}
+
+.papaNoel {
+  width: var(--marca);
+  height: auto;
+  margin-top: -14px;
+}
+
+.datos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: $futura;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+
+  p {
+    margin: 0;
+  }
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-bottom: 4px;
+}
+
+.nombre {
+  margin: 0;
+  font-family: $serif;
+  font-size: clamp(1.6rem, 6vw, 2rem);
+  font-weight: 400;
+  line-height: 1.1;
+}

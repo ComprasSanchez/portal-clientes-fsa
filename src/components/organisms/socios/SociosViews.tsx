@@ -4,7 +4,6 @@ import {
   Camera,
   ChevronDown,
   CreditCard,
-  Gift,
   Star,
   Heart,
   History,
@@ -28,6 +27,7 @@ import IdentityGate from "@/components/molecules/identity-gate/identity-gate";
 import { useIdentidad } from "@/lib/portal-identidad-context";
 import BeautyCatalogo from "@/components/organisms/beauty/beauty-catalogo/beauty-catalogo";
 import FinDeAnioCalendario from "@/components/organisms/fin-de-anio/fin-de-anio-calendario/fin-de-anio-calendario";
+import TourPapaNoel from "@/components/organisms/fin-de-anio/tour-papa-noel/tour-papa-noel";
 import { MOTIVO_GENERAL, motivoSocios } from "@/lib/identidad-motivos";
 import Pagination from "@/components/molecules/pagination/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -418,12 +418,20 @@ export function SociosViews({
     );
   }
 
-  if (currentView === "fin-de-anio-tour" || currentView === "fin-de-anio-fotos") {
+  if (currentView === "fin-de-anio-tour") {
+    return (
+      <main className={styles.container}>
+        <TourPapaNoel />
+      </main>
+    );
+  }
+
+  if (currentView === "fin-de-anio-fotos") {
     const { title } = viewContent[currentView];
     return (
       <main className={styles.container}>
         <EmptyState
-          icon={currentView === "fin-de-anio-tour" ? Gift : Camera}
+          icon={Camera}
           title={title}
           text="Muy pronto vas a encontrar novedades acá."
           variant="dashed"
