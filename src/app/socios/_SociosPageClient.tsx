@@ -11,7 +11,7 @@ import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { usePortalColaborador } from "@/lib/use-portal-colaborador";
 import { usePortalInvitadoEvento } from "@/lib/use-portal-invitado-evento";
 import { usePortalInvitacion } from "@/lib/use-portal-invitacion";
-import { usePermisoClaves } from "@/lib/use-permiso-claves";
+import { usePermisoCalendario, usePermisoClaves, usePermisoIdentidad } from "@/lib/use-permiso-claves";
 import { isFiestaActiva } from "@/lib/fiesta";
 import { isFinDeAnioVisible } from "@/lib/fin-de-anio";
 import { useGlobalToast } from "@/components/ui/global-toast";
@@ -82,22 +82,43 @@ export function SociosPageClient() {
     esColaborador,
     isColaboradorLoading,
   );
+  const { puedeValidarIdentidades, isLoading: isPermisoIdentidadLoading } = usePermisoIdentidad(
+    esColaborador,
+    isColaboradorLoading,
+  );
+  const { puedeCargarCalendario, isLoading: isPermisoCalendarioLoading } = usePermisoCalendario(
+    esColaborador,
+    isColaboradorLoading,
+  );
   // Los invitados al evento (ej. PPP) ven solo la vista del evento, no el resto de Colaboradores.
   const puedeVerVista = (view: SociosView) =>
     view === "dosis"
       ? invitadoDosis
-      : view === "colaboradores-claves" || view === "colaboradores-identidad"
+      : view === "colaboradores-claves"
       ? esColaborador && puedeCambiarClaves
+      : view === "colaboradores-identidad"
+      ? esColaborador && puedeValidarIdentidades
+      : view === "colaboradores-calendario"
+      ? esColaborador && puedeCargarCalendario
       : !isColaboradoresView(view) || esColaborador || (view === "colaboradores-fiesta" && invitadoEvento);
   const { pushToast } = useGlobalToast();
 
   // Acceso directo por URL a una vista de colaboradores sin ser colaborador activo: volver a Inicio.
   useEffect(() => {
-    if (isColaboradorLoading || isInvitadoLoading || isPermisoClavesLoading || isDosisLoading || puedeVerVista(currentView)) return;
+    if (
+      isColaboradorLoading ||
+      isInvitadoLoading ||
+      isPermisoClavesLoading ||
+      isPermisoIdentidadLoading ||
+      isPermisoCalendarioLoading ||
+      isDosisLoading ||
+      puedeVerVista(currentView)
+    )
+      return;
     setCurrentView(DEFAULT_VIEW);
     router.replace("/socios", { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- puedeVerVista depende de estos mismos valores
-  }, [currentView, esColaborador, invitadoEvento, invitadoDosis, puedeCambiarClaves, isColaboradorLoading, isInvitadoLoading, isPermisoClavesLoading, isDosisLoading, router]);
+  }, [currentView, esColaborador, invitadoEvento, invitadoDosis, puedeCambiarClaves, puedeValidarIdentidades, puedeCargarCalendario, isColaboradorLoading, isInvitadoLoading, isPermisoClavesLoading, isPermisoIdentidadLoading, isPermisoCalendarioLoading, isDosisLoading, router]);
 
   const principalPhone =
     perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
@@ -216,6 +237,8 @@ export function SociosPageClient() {
         userName={summary.displayName}
         esColaborador={esColaborador}
         puedeCambiarClaves={puedeCambiarClaves}
+        puedeValidarIdentidades={puedeValidarIdentidades}
+        puedeCargarCalendario={puedeCargarCalendario}
         invitadoEvento={invitadoEvento}
         invitadoDosis={invitadoDosis}
       />

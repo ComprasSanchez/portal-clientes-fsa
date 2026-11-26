@@ -1,7 +1,7 @@
 // Fin de año (temporal): calendario de regalos de diciembre. Lógica pura, sin UI.
 // Los datos (qué abrió, stock, trivia, retiros) vienen de eventos-back vía /api/portal/me/calendario.
 
-import type { CalendarioCasilla, CalendarioEstadoCasilla, CalendarioTipoDia } from "@/types/portal-calendario";
+import type { CalendarioCasilla, CalendarioEstadoCasilla } from "@/types/portal-calendario";
 
 /** Se prende con NEXT_PUBLIC_FIN_DE_ANIO_ACTIVO=true; apagado, la sección no aparece. */
 export const isFinDeAnioActivo = () => process.env.NEXT_PUBLIC_FIN_DE_ANIO_ACTIVO === "true";
@@ -62,10 +62,8 @@ export const BASES_CALENDARIO = [
   "Vigencia: del 1 al 31 de diciembre de 2026.",
   "Participan socios con su cuenta del portal validada.",
   "Se abre una casilla por día, solo en su fecha y una sola vez. Si no la abrís ese día, se pierde.",
-  "Lunes y sábados: trivia. Si respondés bien, sumás puntos.",
-  "Martes y jueves: descuento de una marca. Domingos: descuento general.",
-  "Miércoles: sorteo de regalos sorpresa; el resultado se ve al día siguiente.",
-  "Viernes: regalo sorpresa hasta agotar los del día.",
+  "Cada día puede traer una trivia (si respondés bien, sumás puntos), un descuento, un sorteo o un regalo hasta agotar los del día.",
+  "En los sorteos, el resultado se ve al día siguiente.",
   "Los regalos se retiran en sucursal escaneando el QR de la sucursal desde el portal.",
   "Descuentos válidos solo en sucursal, mostrando la pantalla en caja.",
 ];
@@ -150,24 +148,13 @@ export const fechaDelDia = (dia: number) => `${CALENDARIO_ANIO}-12-${String(dia)
 export const diaConCero = (dia: number) => String(dia).padStart(2, "0");
 export const fechaLegible = (dia: number) => `${dia} de diciembre`;
 
-// Mismo reparto que el back, para mostrar la grilla mientras carga o sin cuenta validada.
-const TIPO_POR_DIA_SEMANA: CalendarioTipoDia[] = [
-  "DESCUENTO_GENERAL",
-  "TRIVIA",
-  "DESCUENTO_MARCA",
-  "SORTEO",
-  "DESCUENTO_MARCA",
-  "PREMIO",
-  "TRIVIA",
-];
-
 /** Grilla sin datos del socio: todo cerrado según la fecha de hoy. */
 export function casillaSinDatos(dia: number, hoy: string): CalendarioCasilla {
   const fecha = fechaDelDia(dia);
   const estado: CalendarioEstadoCasilla = fecha > hoy ? "FUTURA" : fecha === hoy ? "DISPONIBLE" : "VENCIDA";
   return {
     fecha,
-    tipo: TIPO_POR_DIA_SEMANA[new Date(`${fecha}T12:00:00Z`).getUTCDay()],
+    tipo: null,
     estado,
     contenido: null,
     resultado: null,
@@ -216,15 +203,17 @@ export function textosDeCasilla(casilla: CalendarioCasilla, dia: number): Calend
       lineas: [{ texto: c.titulo, tamano: "m" }],
     };
   }
+  // Qué se gana (premio o sorteo); sin cargar es sorpresa.
+  const premio = (c?.tipo === "PREMIO" || c?.tipo === "SORTEO" ? c.queSeGana : null) || null;
   if (r?.tipo === "PREMIO") {
     return r.gano
       ? {
-          titulo: "¡Ganaste un regalo sorpresa!",
+          titulo: premio ? `¡Ganaste ${premio}!` : "¡Ganaste un regalo sorpresa!",
           detalle: "Retiralo en cualquier sucursal escaneando el QR de la sucursal desde acá.",
           recuadro: { etiqueta: "Regalos de hoy", valor: `Quedan ${r.quedan} de ${r.total}` },
           lineas: [
             { texto: "¡Ganaste!", tamano: "l" },
-            { texto: "regalo sorpresa", tamano: "s" },
+            { texto: premio ?? "regalo sorpresa", tamano: "s" },
           ],
         }
       : {
@@ -241,7 +230,7 @@ export function textosDeCasilla(casilla: CalendarioCasilla, dia: number): Calend
     if (casilla.sorteo === "GANASTE") {
       return {
         titulo: "¡Ganaste el sorteo!",
-        detalle: "Te llevás un regalo sorpresa. Retiralo en cualquier sucursal escaneando el QR desde acá.",
+        detalle: `Te llevás ${premio ?? "un regalo sorpresa"}. Retiralo en cualquier sucursal escaneando el QR desde acá.`,
         recuadro: null,
         lineas: [
           { texto: "¡Ganaste!", tamano: "l" },
@@ -262,8 +251,10 @@ export function textosDeCasilla(casilla: CalendarioCasilla, dia: number): Calend
     }
     return {
       titulo: "¡Ya estás participando!",
-      detalle: "El resultado sale mañana. Volvé a ver si ganaste.",
-      recuadro: { etiqueta: "Regalos sorpresa en juego", valor: String(r.cantidadRegalos) },
+      detalle: premio
+        ? `Se sortea ${premio}. El resultado sale mañana: volvé a ver si ganaste.`
+        : "El resultado sale mañana. Volvé a ver si ganaste.",
+      recuadro: { etiqueta: premio ? "Ganadores" : "Regalos sorpresa en juego", valor: String(r.cantidadRegalos) },
       lineas: [
         { texto: "Sorteo", tamano: "l" },
         { texto: `${r.cantidadRegalos} regalos`, tamano: "s" },
@@ -316,6 +307,11 @@ const MENSAJES_ERROR: Record<string, string> = {
   CALENDARIO_QR_INVALIDO: "Ese código no es de una sucursal. Probá de nuevo.",
   CALENDARIO_SIN_REGALOS_PARA_RETIRAR: "No tenés regalos para retirar.",
   CALENDARIO_REINICIO_DESHABILITADO: "Reiniciar no está habilitado en este ambiente.",
+  CALENDARIO_DIA_PASADO: "Ese día ya pasó y no se puede cambiar.",
+  CALENDARIO_CONTENIDO_INVALIDO: "Revisá los datos del día: hay algo incompleto o fuera de rango.",
+  CALENDARIO_DIA_CON_PARTICIPANTES: "Ese día ya lo abrieron socios y no se puede cambiar.",
+  CALENDARIO_SORTEO_YA_EJECUTADO: "El sorteo de ese día ya se hizo.",
+  CALENDARIO_SIN_PERMISO: "No tenés permiso para cargar el calendario.",
 };
 
 export const mensajeErrorCalendario = (code: string | null) =>

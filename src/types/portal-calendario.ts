@@ -18,8 +18,8 @@ export type CalendarioPregunta = {
 export type CalendarioContenido =
   | { tipo: "TRIVIA"; puntos: number; preguntas: CalendarioPregunta[] }
   | { tipo: "DESCUENTO_MARCA"; marca: string; porcentaje: number; condiciones: string | null; imagenUrl: string | null }
-  | { tipo: "SORTEO"; cantidadRegalos: number }
-  | { tipo: "PREMIO"; stockTotal: number }
+  | { tipo: "SORTEO"; cantidadRegalos: number; queSeGana?: string | null }
+  | { tipo: "PREMIO"; stockTotal: number; queSeGana?: string | null }
   | { tipo: "DESCUENTO_GENERAL"; titulo: string; detalle: string | null; condiciones: string | null };
 
 export type CalendarioResultado =
@@ -31,7 +31,8 @@ export type CalendarioResultado =
 
 export type CalendarioCasilla = {
   fecha: string;
-  tipo: CalendarioTipoDia;
+  /** null = el día todavía no tiene contenido cargado. */
+  tipo: CalendarioTipoDia | null;
   estado: CalendarioEstadoCasilla;
   /** Solo viene si la abrió. */
   contenido: CalendarioContenido | null;

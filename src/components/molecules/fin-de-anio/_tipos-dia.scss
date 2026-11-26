@@ -1,0 +1,18 @@
+// Color de cada tipo de día en la carga del calendario (celda y referencias).
+$tipos-dia: (
+  "TRIVIA": (#6941c6, #f4f0ff),
+  "DESCUENTO_MARCA": (#007c98, #e6f6f9),
+  "DESCUENTO_GENERAL": (#067647, #ecfdf3),
+  "SORTEO": (#c4320a, #fff4ed),
+  "PREMIO": (#b42318, #fef3f2),
+);
+
+@mixin colores-por-tipo {
+  @each $tipo, $colores in $tipos-dia {
+    &[data-tipo="#{$tipo}"] {
+      --color: #{nth($colores, 1)};
+      --fondo: #{nth($colores, 2)};
+      border-color: color-mix(in srgb, #{nth($colores, 1)} 35%, transparent);
+    }
+  }
+}

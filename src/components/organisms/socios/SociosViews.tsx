@@ -52,6 +52,7 @@ import { SociosColaboradorFiestaView } from "./SociosColaboradorFiestaView";
 import { SociosDosisConexionView } from "./SociosDosisConexionView";
 import { SociosColaboradorClavesView } from "./SociosColaboradorClavesView";
 import { SociosColaboradorIdentidadView } from "./SociosColaboradorIdentidadView";
+import CalendarioContenidoEditor from "@/components/organisms/fin-de-anio/calendario-contenido-editor/calendario-contenido-editor";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
@@ -147,6 +148,10 @@ const viewContent: Record<
   "colaboradores-identidad": {
     title: "Validar identidades",
     description: "Validá en la sucursal a quien ya no tiene el celular o el email de su ficha.",
+  },
+  "colaboradores-calendario": {
+    title: "Calendario de regalos",
+    description: "Cargá qué trae cada día del calendario de fin de año.",
   },
   "colaboradores-fiesta": {
     title: "Evento de Fin de Año",
@@ -484,6 +489,14 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <SociosColaboradorIdentidadView />
+      </main>
+    );
+  }
+
+  if (currentView === "colaboradores-calendario") {
+    return (
+      <main className={styles.container}>
+        <CalendarioContenidoEditor />
       </main>
     );
   }

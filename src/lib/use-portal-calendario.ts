@@ -15,13 +15,15 @@ export class CalendarioAccionError extends Error {
   }
 }
 
-async function pedir<T>(url: string, body?: unknown, method?: "DELETE"): Promise<T> {
+export async function pedir<T>(url: string, body?: unknown, method?: "DELETE" | "PUT"): Promise<T> {
   const res = await fetch(url, {
     method: method ?? (body === undefined ? "GET" : "POST"),
     cache: "no-store",
     headers: body === undefined ? undefined : { "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
+  // 204: sin cuerpo (ej. vaciar un día).
+  if (res.status === 204) return undefined as T;
   const data = (await res.json().catch(() => null)) as (T & { code?: unknown }) | null;
   if (!res.ok || !data) {
     const code = data && typeof data.code === "string" ? data.code : null;

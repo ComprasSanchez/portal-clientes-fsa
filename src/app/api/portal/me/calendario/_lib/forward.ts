@@ -13,14 +13,15 @@ const FECHA_RE = /^\d{4}-\d{2}-\d{2}$/;
 export async function forwardCalendario(
   req: NextRequest,
   path: string,
-  method: "GET" | "POST" | "DELETE",
+  method: "GET" | "POST" | "PUT" | "DELETE",
+  raiz = "/portal/me/calendario",
 ) {
   try {
     const base = getRequiredBaseUrl("NEXT_PUBLIC_FSA_SOCIOSA");
     if (!base) return jsonError("missing_upstream_base", 500);
 
     let body: Record<string, unknown> | undefined;
-    if (method === "POST") {
+    if (method === "POST" || method === "PUT") {
       const parsed = await readJsonBody<Record<string, unknown>>(req);
       body = parsed && typeof parsed === "object" ? parsed : {};
     }
@@ -33,12 +34,13 @@ export async function forwardCalendario(
     };
 
     const result = await fetchUpstream<unknown>({
-      url: `${base}/portal/me/calendario${path}`,
+      url: `${base}${raiz}${path}`,
       method,
       headers,
       body,
     });
     if (!result.ok) return result.response;
+    if (result.status === 204) return new NextResponse(null, { status: 204 });
     return NextResponse.json(result.data, { status: result.status });
   } catch (error) {
     return jsonError("proxy_failure", 500, String(error));

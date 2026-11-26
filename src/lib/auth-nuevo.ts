@@ -342,6 +342,9 @@ export type BusquedaIdentidad =
   | { estado: "VINCULADA"; cuenta: Omit<CuentaIdentidad, "cuentaId"> }
   | { estado: "SIN_CUENTA" };
 
+export const consultarPermisoIdentidad = () =>
+  call<{ habilitado: boolean }>("GET", "me/soporte/identidad");
+
 export const buscarIdentidadSocio = (nroDocumento: string) =>
   call<BusquedaIdentidad>("POST", "me/soporte/identidad/cuentas", { nroDocumento });
 

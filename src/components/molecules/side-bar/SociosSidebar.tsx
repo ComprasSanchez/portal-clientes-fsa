@@ -45,6 +45,10 @@ interface SociosSidebarProps {
   esColaborador?: boolean;
   /** Puede darle una contraseña nueva a un cliente o colaborador. */
   puedeCambiarClaves?: boolean;
+  /** Puede validar la identidad de un socio en la sucursal. */
+  puedeValidarIdentidades?: boolean;
+  /** Puede cargar el contenido del calendario de fin de año. */
+  puedeCargarCalendario?: boolean;
   /** Invitado al Evento de Fin de Año sin ser colaborador (ej. PPP). */
   invitadoEvento?: boolean;
   /** Invitado/a a "Dosis de Conexión" (médicos, farmacéuticos y visitadores). */
@@ -68,7 +72,11 @@ type MenuItem = MenuLeaf | MenuGroup;
 
 const isMenuGroup = (item: MenuItem): item is MenuGroup => "children" in item;
 
-const colaboradoresMenuItem = (puedeCambiarClaves: boolean): MenuGroup => ({
+const colaboradoresMenuItem = (
+  puedeCambiarClaves: boolean,
+  puedeValidarIdentidades: boolean,
+  puedeCargarCalendario: boolean,
+): MenuGroup => ({
   id: "colaboradores",
   label: "Colaboradores",
   icon: BadgeCheck,
@@ -76,10 +84,13 @@ const colaboradoresMenuItem = (puedeCambiarClaves: boolean): MenuGroup => ({
     { id: "colaboradores-ventas", label: "Ventas" },
     { id: "colaboradores-aplicaciones", label: "Aplicaciones FSA" },
     ...(puedeCambiarClaves
-      ? [
-          { id: "colaboradores-claves" as const, label: "Cambiar contraseñas" },
-          { id: "colaboradores-identidad" as const, label: "Validar identidades" },
-        ]
+      ? [{ id: "colaboradores-claves" as const, label: "Cambiar contraseñas" }]
+      : []),
+    ...(puedeValidarIdentidades
+      ? [{ id: "colaboradores-identidad" as const, label: "Validar identidades" }]
+      : []),
+    ...(puedeCargarCalendario
+      ? [{ id: "colaboradores-calendario" as const, label: "Calendario de regalos" }]
       : []),
     ...(isFiestaActiva()
       ? [{ id: "colaboradores-fiesta" as const, label: "Evento de Fin de Año" }]
@@ -123,6 +134,8 @@ export function SociosSidebar({
   onLogout,
   esColaborador = false,
   puedeCambiarClaves = false,
+  puedeValidarIdentidades = false,
+  puedeCargarCalendario = false,
   invitadoEvento = false,
   invitadoDosis = false,
 }: SociosSidebarProps) {
@@ -130,7 +143,7 @@ export function SociosSidebar({
   const menuBase = esColaborador
     ? [
         ...menuItems.filter((item) => item.id !== "cora"),
-        colaboradoresMenuItem(puedeCambiarClaves),
+        colaboradoresMenuItem(puedeCambiarClaves, puedeValidarIdentidades, puedeCargarCalendario),
         ...menuItems.filter((item) => item.id === "cora"),
       ]
     : invitadoEvento && isFiestaActiva()
