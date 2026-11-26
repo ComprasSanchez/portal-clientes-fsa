@@ -1,0 +1,46 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  font-family: var(--font-socios, "Poppins", "BD Supper", Arial, Helvetica, sans-serif);
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pageTitle {
+  font-size: var(--fs-socios-title-page, var(--fs-page-title));
+  font-weight: var(--fw-socios-title-page, 700);
+  color: #17343d;
+}
+
+.pageSubtitle {
+  max-width: 42rem;
+  font-size: var(--fs-socios-read, var(--fs-description));
+  font-weight: var(--fw-socios-read, 400);
+  color: #5f7c85;
+}
+
+.panel {
+  max-width: 32rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.texto {
+  font-size: 0.875rem;
+  color: var(--tone-muted);
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}

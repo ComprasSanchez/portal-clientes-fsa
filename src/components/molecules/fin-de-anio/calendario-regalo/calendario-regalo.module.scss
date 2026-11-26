@@ -1,0 +1,137 @@
+@use "../paleta" as *;
+
+.regalo {
+  @include paleta;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3cqmin;
+  padding: clamp(10px, 7%, 18px);
+  border: 0;
+  border-radius: 18px;
+  background-color: var(--cal-bg);
+  color: var(--cal-texto-regalo, var(--cal-fg));
+  text-align: center;
+  container-type: size;
+}
+
+// Casilla abierta dentro de la grilla: más oscura, como el diseño.
+.enGrilla {
+  cursor: pointer;
+  grid-row: var(--m-fila) / span var(--m-alto);
+  grid-column: var(--m-col) / span var(--m-ancho);
+  background-color: color-mix(in srgb, var(--cal-bg) 45%, #000);
+  // Texto claro en todos los colores: sobre el fondo oscurecido el original no se lee.
+  color: rgba(246, 241, 230, 0.88);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  @container calendario (min-width: 600px) {
+    grid-row: var(--e-fila) / span var(--e-alto);
+    grid-column: var(--e-col) / span var(--e-ancho);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(11, 60, 74, 0.25);
+  }
+
+  &:focus-visible {
+    outline: 3px solid #f0b91c;
+    outline-offset: 2px;
+  }
+}
+
+
+// Ventana de detalle: tarjeta grande con los colores del diseño.
+.detalle {
+  width: min(100%, 420px);
+  aspect-ratio: 1183 / 1408;
+  margin: 0 auto;
+  border-radius: 28px;
+}
+
+.diaTexto {
+  align-self: flex-start;
+  font-family: $futura;
+  font-size: clamp(0.4rem, 7cqmin, 1.4rem);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+}
+
+.pill {
+  padding: 0.1em 0.8em;
+  border-radius: 999px;
+  background: var(--cal-pill);
+  color: #f6f1e6;
+  font-family: $futura;
+  font-size: clamp(0.34rem, 6.5cqmin, 1.25rem);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.lineas {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.linea {
+  font-family: $serif;
+  line-height: 1;
+  transform: scaleX(0.82);
+}
+
+.tam-s {
+  font-size: clamp(0.8rem, 11cqmin, 2.4rem);
+}
+.tam-m {
+  font-size: clamp(0.9rem, 13cqmin, 2.8rem);
+}
+.tam-l {
+  font-size: clamp(1.1rem, 19cqmin, 4.2rem);
+}
+
+.marca {
+  font-family: $futura;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  transform: none;
+  color: #f6f1e6;
+}
+
+.candado {
+  @include candado("/fin-de-anio/candado-abierto.png");
+  flex-shrink: 0;
+  width: 11cqmin;
+}
+
+// Casillas chicas (celular): sin la pastilla, que no entra; el resto más grande.
+// La consulta mira el tamaño de la propia casilla, así las altas y anchas conservan la pastilla.
+@container (max-width: 170px) and (max-height: 170px) {
+  .pill {
+    display: none;
+  }
+  .diaTexto {
+    font-size: 11cqmin;
+  }
+  .tam-s {
+    font-size: 14cqmin;
+  }
+  .tam-m {
+    font-size: 15cqmin;
+  }
+  .tam-l {
+    font-size: 19cqmin;
+  }
+  .candado {
+    width: 15cqmin;
+  }
+}

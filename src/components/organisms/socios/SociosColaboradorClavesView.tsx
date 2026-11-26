@@ -6,6 +6,7 @@ import Alert from "@/components/atoms/alert/alert";
 import PortalButton from "@/components/atoms/button/button";
 import Card from "@/components/atoms/card/card";
 import TextField from "@/components/atoms/text-field/text-field";
+import DataList from "@/components/molecules/data-list/data-list";
 import {
   buscarCuentaSocio,
   dniValido,
@@ -114,7 +115,13 @@ export function SociosColaboradorClavesView() {
 
         {paso.tipo === "confirmar" && (
           <div className={styles.form}>
-            <DatosCuenta dni={paso.dni} cuenta={paso.cuenta} />
+            <DataList
+              items={[
+                { label: "Nombre", value: paso.cuenta.nombre ?? "Sin nombre cargado" },
+                { label: "DNI", value: paso.dni },
+                { label: "Email de la cuenta", value: paso.cuenta.email_masked ?? "Sin email" },
+              ]}
+            />
             <p className={styles.texto}>
               Confirmá con la persona que estos datos son suyos antes de generar la contraseña. La que tenía deja
               de funcionar y el cambio queda registrado a tu nombre.
@@ -165,24 +172,5 @@ export function SociosColaboradorClavesView() {
         )}
       </Card>
     </div>
-  );
-}
-
-function DatosCuenta({ dni, cuenta }: { dni: string; cuenta: CuentaSocio }) {
-  return (
-    <dl className={styles.datos}>
-      <div>
-        <dt>Nombre</dt>
-        <dd>{cuenta.nombre ?? "Sin nombre cargado"}</dd>
-      </div>
-      <div>
-        <dt>DNI</dt>
-        <dd>{dni}</dd>
-      </div>
-      <div>
-        <dt>Email de la cuenta</dt>
-        <dd>{cuenta.email_masked ?? "Sin email"}</dd>
-      </div>
-    </dl>
   );
 }

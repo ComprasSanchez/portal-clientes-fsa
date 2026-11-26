@@ -1,0 +1,88 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 64rem;
+  font-family: var(--font-socios, "Poppins", "BD Supper", Arial, Helvetica, sans-serif);
+}
+
+.encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.titulo {
+  font-size: var(--fs-socios-title-page, var(--fs-page-title));
+  font-weight: var(--fw-socios-title-page, 700);
+  color: #17343d;
+}
+
+.bajada {
+  font-size: var(--fs-socios-read, var(--fs-description));
+  color: #5f7c85;
+}
+
+.skeleton {
+  height: 22rem;
+  border-radius: 1rem;
+}
+
+.soloVer {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #17343d;
+}
+
+.hoja {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.tipos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+// Las 5 opciones a la vista (sin scroll de costado).
+.tipos .tiposOpciones {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.tiposEtiqueta {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tone-text);
+}
+
+.elegi {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--tone-muted);
+}
+
+.vaciar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem;
+  border: 0;
+  background: none;
+  color: #b42318;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}

@@ -1,0 +1,61 @@
+@use "../tipos-dia" as *;
+
+.mes {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.grilla {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.3rem;
+
+  @media (min-width: 600px) {
+    gap: 0.5rem;
+  }
+}
+
+.diaSemana {
+  padding-bottom: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--tone-muted);
+}
+
+.referencias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.referencia {
+  --color: var(--tone-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color);
+
+  @include colores-por-tipo;
+}
+
+.refVacia {
+  &::before {
+    content: "";
+    width: 0.8rem;
+    height: 0.8rem;
+    border: 1.5px dashed #e3b341;
+    border-radius: 0.2rem;
+    background: #fffaeb;
+  }
+
+  color: #a06b00;
+}

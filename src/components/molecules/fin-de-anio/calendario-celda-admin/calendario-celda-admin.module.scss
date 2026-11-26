@@ -1,0 +1,126 @@
+@use "../tipos-dia" as *;
+
+.celda {
+  --color: var(--tone-muted);
+  --fondo: #fff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 3.75rem;
+  padding: 0.375rem;
+  border: 1px solid var(--tone-border);
+  border-radius: 0.625rem;
+  background: var(--fondo);
+  color: #17343d;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+
+  @include colores-por-tipo;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(23, 52, 61, 0.12);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--tone-primary);
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 600px) {
+    min-height: 5.5rem;
+    padding: 0.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    min-height: 6.75rem;
+  }
+}
+
+.vacia {
+  border: 1.5px dashed #e3b341;
+  background: #fffaeb;
+}
+
+.bloqueada {
+  opacity: 0.55;
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.numero {
+  font-size: 0.85rem;
+  font-weight: 700;
+
+  @media (min-width: 600px) {
+    font-size: 0.95rem;
+  }
+}
+
+.candado {
+  color: var(--tone-muted);
+}
+
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  color: var(--color);
+}
+
+.icono {
+  display: inline-flex;
+}
+
+// Celular: solo número + ícono. Tablet suma el tipo; compu, el resumen.
+.tipo,
+.resumen {
+  display: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tipo {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+
+  @media (min-width: 600px) {
+    display: block;
+    white-space: nowrap;
+  }
+}
+
+.resumen {
+  font-size: 0.75rem;
+  line-height: 1.25;
+  color: #17343d;
+
+  @media (min-width: 1024px) {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+.sinCargar {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #a06b00;
+
+  @media (max-width: 599px) {
+    display: none;
+  }
+}

@@ -1,0 +1,29 @@
+.previa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.875rem 1rem;
+  border: 1px dashed var(--tone-border);
+  border-radius: 0.75rem;
+  background: var(--tone-soft);
+  font-size: 0.875rem;
+  color: var(--tone-muted);
+  overflow-wrap: anywhere;
+}
+
+.etiqueta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.titulo {
+  font-size: 1.1rem;
+  color: var(--tone-text);
+}
+
+.extra {
+  font-weight: 700;
+  color: var(--tone-text);
+}

@@ -1,0 +1,95 @@
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bajada {
+  margin: 0;
+  color: #48636b;
+  font-size: 0.92rem;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// Buscador y botón quedan a la vista mientras se scrollea la lista (un solo scroll).
+.buscador,
+.acciones {
+  position: sticky;
+  z-index: 1;
+  background: #fff;
+}
+
+.buscador {
+  top: 0;
+  padding-bottom: 4px;
+}
+
+.acciones {
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  box-shadow: 0 -10px 12px -8px rgba(23, 52, 61, 0.15);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #d3dee2;
+  border-radius: 12px;
+  background: #fff;
+  color: #17343d;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: #f2f7f8;
+  }
+}
+
+.itemElegido {
+  border-color: #007c98;
+  background: #e6f3f6;
+}
+
+.datos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  font-size: 0.85rem;
+  color: #48636b;
+
+  strong {
+    color: #17343d;
+    font-size: 0.95rem;
+  }
+}
+
+.check {
+  flex-shrink: 0;
+  color: #007c98;
+}
+
+.skeleton {
+  height: 56px;
+  border-radius: 12px;
+  background: #e2eaec;
+}
+
+.vacio {
+  padding: 16px;
+  color: #48636b;
+  text-align: center;
+}

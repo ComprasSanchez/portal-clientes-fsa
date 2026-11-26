@@ -25,6 +25,7 @@ import {
   PartyPopper,
   Sparkles,
   Wine,
+  Gift,
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
 import { isEventoStandsActivo } from "@/lib/evento-stands";
@@ -43,6 +44,12 @@ interface SociosSidebarProps {
   esColaborador?: boolean;
   /** Puede darle una contraseña nueva a un cliente o colaborador. */
   puedeCambiarClaves?: boolean;
+  /** Puede validar la identidad de un socio en la sucursal. */
+  puedeValidarIdentidades?: boolean;
+  /** Puede cargar el contenido del calendario de fin de año. */
+  puedeCargarCalendario?: boolean;
+  /** Ve la sección "Fin de año" (puede estar limitada a algunos DNIs). */
+  verFinDeAnio?: boolean;
   /** Invitado al Evento de Fin de Año sin ser colaborador (ej. PPP). */
   invitadoEvento?: boolean;
   /** Invitado/a a "Dosis de Conexión" (médicos, farmacéuticos y visitadores). */
@@ -66,7 +73,11 @@ type MenuItem = MenuLeaf | MenuGroup;
 
 const isMenuGroup = (item: MenuItem): item is MenuGroup => "children" in item;
 
-const colaboradoresMenuItem = (puedeCambiarClaves: boolean): MenuGroup => ({
+const colaboradoresMenuItem = (
+  puedeCambiarClaves: boolean,
+  puedeValidarIdentidades: boolean,
+  puedeCargarCalendario: boolean,
+): MenuGroup => ({
   id: "colaboradores",
   label: "Colaboradores",
   icon: BadgeCheck,
@@ -76,11 +87,28 @@ const colaboradoresMenuItem = (puedeCambiarClaves: boolean): MenuGroup => ({
     ...(puedeCambiarClaves
       ? [{ id: "colaboradores-claves" as const, label: "Cambiar contraseñas" }]
       : []),
+    ...(puedeValidarIdentidades
+      ? [{ id: "colaboradores-identidad" as const, label: "Validar identidades" }]
+      : []),
+    ...(puedeCargarCalendario
+      ? [{ id: "colaboradores-calendario" as const, label: "Calendario de regalos" }]
+      : []),
     ...(isFiestaActiva()
       ? [{ id: "colaboradores-fiesta" as const, label: "Evento de Fin de Año" }]
       : []),
   ],
 });
+
+const finDeAnioMenuItem: MenuGroup = {
+  id: "fin-de-anio",
+  label: "Fin de año",
+  icon: Gift,
+  children: [
+    { id: "fin-de-anio-calendario", label: "Calendario" },
+    { id: "fin-de-anio-tour", label: "Tour Papá Noel" },
+    { id: "fin-de-anio-fotos", label: "Mis fotos" },
+  ],
+};
 
 const menuItems: MenuItem[] = [
   { id: "dashboard", label: "Inicio", icon: LayoutGrid },
@@ -106,23 +134,30 @@ export function SociosSidebar({
   onLogout,
   esColaborador = false,
   puedeCambiarClaves = false,
+  puedeValidarIdentidades = false,
+  puedeCargarCalendario = false,
+  verFinDeAnio = false,
   invitadoEvento = false,
   invitadoDosis = false,
 }: SociosSidebarProps) {
   const router = useRouter();
+  // "Fin de año" va antes de Sucursales, solo para quien la puede ver.
+  const items = verFinDeAnio
+    ? menuItems.flatMap((item) => (item.id === "sucursales" ? [finDeAnioMenuItem, item] : [item]))
+    : menuItems;
   const menuBase = esColaborador
     ? [
-        ...menuItems.filter((item) => item.id !== "cora"),
-        colaboradoresMenuItem(puedeCambiarClaves),
-        ...menuItems.filter((item) => item.id === "cora"),
+        ...items.filter((item) => item.id !== "cora"),
+        colaboradoresMenuItem(puedeCambiarClaves, puedeValidarIdentidades, puedeCargarCalendario),
+        ...items.filter((item) => item.id === "cora"),
       ]
     : invitadoEvento && isFiestaActiva()
       ? [
-          ...menuItems.filter((item) => item.id !== "cora"),
+          ...items.filter((item) => item.id !== "cora"),
           { id: "colaboradores-fiesta" as const, label: "Evento de Fin de Año", icon: PartyPopper },
-          ...menuItems.filter((item) => item.id === "cora"),
+          ...items.filter((item) => item.id === "cora"),
         ]
-      : menuItems;
+      : items;
   // "Dosis de Conexión" va justo antes de CORA (o al final), solo para invitados.
   const visibleMenuItems: MenuItem[] = invitadoDosis
     ? [

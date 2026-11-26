@@ -1,0 +1,85 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  container: calendario / inline-size;
+}
+
+.bajada {
+  margin: 0;
+  color: #48636b;
+  font-size: 0.95rem;
+}
+
+// Celular: 3 columnas como el diseño; desde 600px de ancho (tablet, notebook, compu): 6.
+.grilla {
+  --cols: 3;
+  --gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  grid-auto-rows: calc((100cqi - (var(--cols) - 1) * var(--gap)) / var(--cols));
+  gap: var(--gap);
+
+  @container calendario (min-width: 600px) {
+    --cols: 6;
+    --gap: 12px;
+  }
+
+  @container calendario (min-width: 960px) {
+    --gap: 16px;
+  }
+}
+
+.titulo {
+  grid-row: 1;
+  grid-column: 1 / span 2;
+
+  @container calendario (min-width: 600px) {
+    grid-column: 1 / span 4;
+  }
+}
+
+.anioNuevo {
+  grid-row: 15;
+  grid-column: 1 / span 2;
+
+  @container calendario (min-width: 600px) {
+    grid-row: 8;
+    grid-column: 4 / span 3;
+  }
+}
+
+.basesLink {
+  align-self: center;
+  border: 0;
+  background: none;
+  color: #0b7690;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.basesLista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #32505a;
+  font-size: 0.95rem;
+  list-style: disc;
+}
+
+.link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: #007c98;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}

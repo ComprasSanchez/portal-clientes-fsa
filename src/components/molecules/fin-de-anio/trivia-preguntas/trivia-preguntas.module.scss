@@ -1,0 +1,66 @@
+// Va sobre el color del día: textos claros y opciones translúcidas.
+.trivia {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  text-align: left;
+}
+
+.pregunta {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.texto {
+  margin-bottom: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.opcion {
+  width: 100%;
+  padding: 12px 14px;
+  // Bordes y fondo según el color del texto: se ven en cualquier casilla.
+  border: 1.5px solid color-mix(in srgb, currentColor 40%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  color: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: color-mix(in srgb, currentColor 16%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 3px solid #f0b91c;
+    outline-offset: 2px;
+  }
+}
+
+.elegida,
+.elegida:hover {
+  border-color: #f0b91c;
+  background: #f0b91c;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.error {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.9rem;
+}

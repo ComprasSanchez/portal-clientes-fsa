@@ -1,0 +1,18 @@
+.list {
+  display: grid;
+  gap: 0.75rem;
+
+  dt {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--tone-muted);
+  }
+
+  dd {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--tone-text);
+    overflow-wrap: anywhere;
+  }
+}

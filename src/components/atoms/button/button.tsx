@@ -9,8 +9,8 @@ import styles from "./button.module.scss";
 type PortalButtonProps = {
   children: React.ReactNode;
   type?: "button" | "submit" | "reset";
-  /** `google`: blanco con el logo de Google (botón "Continuar con Google"). */
-  variant?: "primary" | "secondary" | "mercadopago" | "google";
+  /** `google`: blanco con el logo de Google (botón "Continuar con Google"). `claro`: blanco, para fondos de color. */
+  variant?: "primary" | "secondary" | "mercadopago" | "google" | "claro";
   onClick?: () => void;
   disabled?: boolean;
   withChatIcon?: boolean;
@@ -27,6 +27,7 @@ const VARIANT_STYLES = {
   secondary: styles.secondary,
   mercadopago: styles.mercadopago,
   google: styles.google,
+  claro: styles.claro,
 };
 
 export default function PortalButton({
