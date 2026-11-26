@@ -1,5 +1,7 @@
 export type Sucursal = {
   id: string;
+  /** Número de sucursal (cod_sucursal), el de la cartelería. */
+  codigo?: string;
   nombre: string;
   direccion: string;
   barrio?: string;

@@ -529,6 +529,11 @@
     padding: 1.25rem 0.75rem;
   }
 
+  // Vistas que en el celular van de borde a borde (ej. Tour Papá Noel).
+  .container.sinBordeMovil {
+    padding: 0;
+  }
+
   .facturasViewSection {
     gap: 0.5rem;
   }

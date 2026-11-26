@@ -333,6 +333,24 @@ export const generarClaveSocio = (nroDocumento: string) =>
     nro_documento: nroDocumento,
   });
 
+// ---- Colaboradores habilitados: validar la identidad de un socio en la sucursal ----
+
+export type CuentaIdentidad = { cuentaId: string; nombre: string | null; emailMasked: string | null };
+
+export type BusquedaIdentidad =
+  | { estado: "PENDIENTE"; cuentas: CuentaIdentidad[] }
+  | { estado: "VINCULADA"; cuenta: Omit<CuentaIdentidad, "cuentaId"> }
+  | { estado: "SIN_CUENTA" };
+
+export const consultarPermisoIdentidad = () =>
+  call<{ habilitado: boolean }>("GET", "me/soporte/identidad");
+
+export const buscarIdentidadSocio = (nroDocumento: string) =>
+  call<BusquedaIdentidad>("POST", "me/soporte/identidad/cuentas", { nroDocumento });
+
+export const validarIdentidadSocio = (nroDocumento: string, cuentaId: string) =>
+  call<{ cuenta: CuentaIdentidad }>("POST", "me/soporte/identidad", { nroDocumento, cuentaId });
+
 /**
  * Después de iniciar sesión, al destino (ej. el stand escaneado). Si la cuenta
  * no está vinculada, el portal entra en modo limitado y ahí ofrece validar la
@@ -435,6 +453,9 @@ function toAuthError(status: number, body: ApiErrorBody): AuthNuevoError {
     AUTH_SOPORTE_CUENTA_NOT_FOUND: "Esa persona todavía no tiene cuenta en el portal. Puede crearla desde el registro.",
     AUTH_SOPORTE_CUENTA_PROPIA: "Es tu propia cuenta. Cambiá tu contraseña desde el ingreso, con \"¿Olvidaste tu contraseña?\".",
     AUTH_SOPORTE_CLAVE_FAILED: "No pudimos cambiar la contraseña. Probá de nuevo en unos minutos.",
+    AUTH_SOPORTE_IDENTIDAD_FORBIDDEN: "No tenés permiso para validar identidades.",
+    AUTH_SOPORTE_IDENTIDAD_CUENTA_PROPIA: "Es tu propia cuenta. Pedile a un compañero que valide tu identidad.",
+    AUTH_SOPORTE_IDENTIDAD_YA_VINCULADA: "Este DNI ya quedó validado con una cuenta. Buscalo de nuevo para ver cuál.",
   };
 
   if (status === 401 && !code) {

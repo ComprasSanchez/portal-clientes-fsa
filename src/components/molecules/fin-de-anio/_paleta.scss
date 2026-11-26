@@ -1,0 +1,55 @@
+// Colores del calendario de fin de año (los usan la casilla y el regalo).
+@mixin paleta {
+  &.teal {
+    --cal-bg: #0b7690;
+    --cal-fg: #f6f1e6;
+    --cal-pill: #f0b91c;
+    --cal-candado: #f0b91c;
+  }
+  &.rojo {
+    --cal-bg: #b3302a;
+    --cal-fg: #f6f1e6;
+    --cal-pill: #f0b91c;
+    --cal-candado: #f0b91c;
+  }
+  &.amarillo {
+    --cal-bg: #f0b91c;
+    --cal-fg: #f6f1e6;
+    --cal-texto-regalo: #3d2f05;
+    --cal-pill: #b3302a;
+    --cal-candado: #fff;
+  }
+  &.crema {
+    --cal-bg: #f3eee2;
+    --cal-fg: #0b7690;
+    --cal-pill: #f0b91c;
+    --cal-candado: #f0b91c;
+  }
+  &.navidad {
+    --cal-bg: #a82a25;
+    --cal-fg: #f6f1e6;
+    --cal-pill: #f0b91c;
+    --cal-candado: #f0b91c;
+    // Rombos como el diseño.
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='100' viewBox='0 0 60 100'%3E%3Cpath d='M30 0L60 50L30 100L0 50Z' fill='%23b8352f'/%3E%3C/svg%3E");
+    background-size: auto 45%;
+  }
+}
+
+@font-face {
+  font-family: "Fin Futura";
+  src: url("/fin-de-anio/futura-light.ttf") format("truetype");
+  font-weight: 300;
+  font-display: swap;
+}
+
+$serif: "Playfair Display", "Bodoni 72", Georgia, "Times New Roman", serif;
+$futura: "Fin Futura", "Futura", "Century Gothic", sans-serif;
+
+// Candado a partir de la imagen (así toma el color de cada casilla).
+@mixin candado($archivo) {
+  display: block;
+  aspect-ratio: 927 / 1299;
+  background-color: var(--cal-candado);
+  mask: url($archivo) center / contain no-repeat;
+}

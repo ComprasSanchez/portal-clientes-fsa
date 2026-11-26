@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
+  Camera,
   ChevronDown,
   CreditCard,
   Star,
@@ -25,6 +26,8 @@ import { usePerfilCompleto } from "@/lib/use-perfil-completo";
 import IdentityGate from "@/components/molecules/identity-gate/identity-gate";
 import { useIdentidad } from "@/lib/portal-identidad-context";
 import BeautyCatalogo from "@/components/organisms/beauty/beauty-catalogo/beauty-catalogo";
+import FinDeAnioCalendario from "@/components/organisms/fin-de-anio/fin-de-anio-calendario/fin-de-anio-calendario";
+import TourPapaNoel from "@/components/organisms/fin-de-anio/tour-papa-noel/tour-papa-noel";
 import { MOTIVO_GENERAL, motivoSocios } from "@/lib/identidad-motivos";
 import Pagination from "@/components/molecules/pagination/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,6 +51,8 @@ import { SociosColaboradorAplicacionesView } from "./SociosColaboradorAplicacion
 import { SociosColaboradorFiestaView } from "./SociosColaboradorFiestaView";
 import { SociosDosisConexionView } from "./SociosDosisConexionView";
 import { SociosColaboradorClavesView } from "./SociosColaboradorClavesView";
+import { SociosColaboradorIdentidadView } from "./SociosColaboradorIdentidadView";
+import CalendarioContenidoEditor from "@/components/organisms/fin-de-anio/calendario-contenido-editor/calendario-contenido-editor";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
@@ -67,7 +72,7 @@ import { usePortalPuntosHistorial } from "@/lib/use-portal-puntos-historial";
 import { useGlobalToast } from "../../ui/global-toast";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 import type { PortalComprasProducto } from "@/types/portal-compras";
-import { type SociosView } from "@/types/socios";
+import { isFinDeAnioView, type SociosView } from "@/types/socios";
 import styles from "./SociosViews.module.scss";
 
 interface SociosViewsProps {
@@ -140,6 +145,14 @@ const viewContent: Record<
     title: "Cambiar contraseñas",
     description: "Generá una contraseña nueva para un cliente o un colaborador.",
   },
+  "colaboradores-identidad": {
+    title: "Validar identidades",
+    description: "Validá en la sucursal a quien ya no tiene el celular o el email de su ficha.",
+  },
+  "colaboradores-calendario": {
+    title: "Calendario de regalos",
+    description: "Cargá qué trae cada día del calendario de fin de año.",
+  },
   "colaboradores-fiesta": {
     title: "Evento de Fin de Año",
     description: "Jugá, sumá puntos y canjealos por premios.",
@@ -147,6 +160,18 @@ const viewContent: Record<
   dosis: {
     title: "Dosis de Conexión",
     description: "Tu invitación a una noche para vos.",
+  },
+  "fin-de-anio-calendario": {
+    title: "Calendario de regalos",
+    description: "Un regalo nuevo cada día de diciembre.",
+  },
+  "fin-de-anio-tour": {
+    title: "Tour Papá Noel",
+    description: "Papá Noel recorre nuestras sucursales.",
+  },
+  "fin-de-anio-fotos": {
+    title: "Mis fotos",
+    description: "Tus fotos de las fiestas.",
   },
 };
 
@@ -310,7 +335,8 @@ export function SociosViews({
 
   // Modo limitado (login nuevo): la cuenta todavía no está vinculada a su DNI.
   // Solo el Inicio reducido y el juego de stands; el resto pide validar.
-  if (identidad.cargando) {
+  // Fin de año no depende de la identidad: muestra su propio skeleton.
+  if (identidad.cargando && !isFinDeAnioView(currentView)) {
     return (
       <main className={styles.container}>
         <SociosDashboardSkeleton />
@@ -318,7 +344,8 @@ export function SociosViews({
     );
   }
 
-  if (!identidad.vinculada && currentView !== "evento" && currentView !== "beauty") {
+  // Fin de año tampoco pide validar identidad: en los eventos anteriores fue la mayor traba.
+  if (!identidad.vinculada && currentView !== "evento" && currentView !== "beauty" && !isFinDeAnioView(currentView)) {
     const gate = (
       <IdentityGate
         tone="socios"
@@ -393,6 +420,36 @@ export function SociosViews({
     );
   }
 
+  if (currentView === "fin-de-anio-calendario") {
+    return (
+      <main className={styles.container}>
+        <FinDeAnioCalendario />
+      </main>
+    );
+  }
+
+  if (currentView === "fin-de-anio-tour") {
+    return (
+      <main className={`${styles.container} ${styles.sinBordeMovil}`}>
+        <TourPapaNoel />
+      </main>
+    );
+  }
+
+  if (currentView === "fin-de-anio-fotos") {
+    const { title } = viewContent[currentView];
+    return (
+      <main className={styles.container}>
+        <EmptyState
+          icon={Camera}
+          title={title}
+          text="Muy pronto vas a encontrar novedades acá."
+          variant="dashed"
+        />
+      </main>
+    );
+  }
+
   if (currentView === "evento") {
     return (
       <main className={styles.container}>
@@ -424,6 +481,22 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <SociosColaboradorClavesView />
+      </main>
+    );
+  }
+
+  if (currentView === "colaboradores-identidad") {
+    return (
+      <main className={styles.container}>
+        <SociosColaboradorIdentidadView />
+      </main>
+    );
+  }
+
+  if (currentView === "colaboradores-calendario") {
+    return (
+      <main className={styles.container}>
+        <CalendarioContenidoEditor />
       </main>
     );
   }

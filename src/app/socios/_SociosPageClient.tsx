@@ -11,17 +11,21 @@ import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { usePortalColaborador } from "@/lib/use-portal-colaborador";
 import { usePortalInvitadoEvento } from "@/lib/use-portal-invitado-evento";
 import { usePortalInvitacion } from "@/lib/use-portal-invitacion";
-import { usePermisoClaves } from "@/lib/use-permiso-claves";
+import { usePermisoCalendario, usePermisoClaves, usePermisoIdentidad } from "@/lib/use-permiso-claves";
 import { isFiestaActiva } from "@/lib/fiesta";
+import { isFinDeAnioVisible } from "@/lib/fin-de-anio";
+import { useFinDeAnioAcceso } from "@/lib/use-fin-de-anio-acceso";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import {
   COLABORADORES_VIEWS,
+  FIN_DE_ANIO_VIEWS,
   isColaboradoresView,
+  isFinDeAnioView,
   type SociosView,
 } from "@/types/socios";
 
 const DEFAULT_VIEW: SociosView = "dashboard";
-const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", "notificaciones", "evento", "beauty", "dosis", ...COLABORADORES_VIEWS];
+const VALID_VIEWS: SociosView[] = ["dashboard", "mi-cuenta", "facturas", "puntos", "sorteos", "sucursales", "pedidos", "notificaciones", "evento", "beauty", "dosis", ...COLABORADORES_VIEWS, ...FIN_DE_ANIO_VIEWS];
 // Links viejos (?view=colaboradores) de antes de separar Ventas / Aplicaciones FSA.
 const VIEW_ALIASES: Record<string, SociosView> = {
   colaboradores: "colaboradores-ventas",
@@ -32,6 +36,7 @@ const parseView = (value: string | null): SociosView | null => {
   const view = VIEW_ALIASES[value] ?? value;
   // Con la fiesta apagada, el link directo o el QR llevan a Inicio.
   if (view === "colaboradores-fiesta" && !isFiestaActiva()) return null;
+  if (isFinDeAnioView(view as SociosView) && !isFinDeAnioVisible()) return null;
   return VALID_VIEWS.includes(view as SociosView) ? (view as SociosView) : null;
 };
 
@@ -78,22 +83,47 @@ export function SociosPageClient() {
     esColaborador,
     isColaboradorLoading,
   );
+  const { puedeValidarIdentidades, isLoading: isPermisoIdentidadLoading } = usePermisoIdentidad(
+    esColaborador,
+    isColaboradorLoading,
+  );
+  const { puedeCargarCalendario, isLoading: isPermisoCalendarioLoading } = usePermisoCalendario(
+    esColaborador,
+    isColaboradorLoading,
+  );
+  const { verFinDeAnio, isLoading: isFinDeAnioLoading } = useFinDeAnioAcceso();
   // Los invitados al evento (ej. PPP) ven solo la vista del evento, no el resto de Colaboradores.
   const puedeVerVista = (view: SociosView) =>
-    view === "dosis"
+    isFinDeAnioView(view)
+      ? verFinDeAnio
+      : view === "dosis"
       ? invitadoDosis
       : view === "colaboradores-claves"
       ? esColaborador && puedeCambiarClaves
+      : view === "colaboradores-identidad"
+      ? esColaborador && puedeValidarIdentidades
+      : view === "colaboradores-calendario"
+      ? esColaborador && puedeCargarCalendario
       : !isColaboradoresView(view) || esColaborador || (view === "colaboradores-fiesta" && invitadoEvento);
   const { pushToast } = useGlobalToast();
 
   // Acceso directo por URL a una vista de colaboradores sin ser colaborador activo: volver a Inicio.
   useEffect(() => {
-    if (isColaboradorLoading || isInvitadoLoading || isPermisoClavesLoading || isDosisLoading || puedeVerVista(currentView)) return;
+    if (
+      isColaboradorLoading ||
+      isInvitadoLoading ||
+      isPermisoClavesLoading ||
+      isPermisoIdentidadLoading ||
+      isPermisoCalendarioLoading ||
+      isFinDeAnioLoading ||
+      isDosisLoading ||
+      puedeVerVista(currentView)
+    )
+      return;
     setCurrentView(DEFAULT_VIEW);
     router.replace("/socios", { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- puedeVerVista depende de estos mismos valores
-  }, [currentView, esColaborador, invitadoEvento, invitadoDosis, puedeCambiarClaves, isColaboradorLoading, isInvitadoLoading, isPermisoClavesLoading, isDosisLoading, router]);
+  }, [currentView, esColaborador, invitadoEvento, invitadoDosis, puedeCambiarClaves, puedeValidarIdentidades, puedeCargarCalendario, verFinDeAnio, isColaboradorLoading, isInvitadoLoading, isPermisoClavesLoading, isPermisoIdentidadLoading, isPermisoCalendarioLoading, isFinDeAnioLoading, isDosisLoading, router]);
 
   const principalPhone =
     perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
@@ -212,6 +242,9 @@ export function SociosPageClient() {
         userName={summary.displayName}
         esColaborador={esColaborador}
         puedeCambiarClaves={puedeCambiarClaves}
+        puedeValidarIdentidades={puedeValidarIdentidades}
+        puedeCargarCalendario={puedeCargarCalendario}
+        verFinDeAnio={verFinDeAnio}
         invitadoEvento={invitadoEvento}
         invitadoDosis={invitadoDosis}
       />

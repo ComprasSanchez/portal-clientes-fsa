@@ -1,0 +1,43 @@
+@use "../paleta" as *;
+
+.fichas {
+  display: flex;
+  gap: 8px;
+}
+
+.ficha {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 92px;
+  border-radius: 12px;
+  background: #f6f1e6;
+  color: #0b5f73;
+  font-family: $serif;
+  font-size: 62px;
+  line-height: 1;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
+.animado .ficha {
+  transform: translateY(-260px);
+  animation: caer 0.6s cubic-bezier(0.3, 1.5, 0.5, 1) 0.65s forwards;
+
+  &:nth-child(2) {
+    animation-delay: 0.77s;
+  }
+}
+
+@keyframes caer {
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animado .ficha {
+    transform: none;
+    animation: none;
+  }
+}

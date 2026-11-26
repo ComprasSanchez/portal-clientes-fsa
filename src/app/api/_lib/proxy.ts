@@ -68,7 +68,7 @@ export const withQueryParams = (request: NextRequest, upstreamPath: string) => {
 
 export const fetchUpstream = async <T>(options: {
   url: string;
-  method?: "GET" | "POST" | "PUT" | "PATCH";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   headers?: HeadersInit;
   redirect?: RequestRedirect;
