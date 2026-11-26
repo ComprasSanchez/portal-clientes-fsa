@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
+  Handshake,
   Home,
   IdCard,
   Mail,
@@ -1343,6 +1344,13 @@ export function ProfileView({
                         value={profileValues.identification || "Sin dato"}
                         label="Número de documento"
                       />
+                      {crmConvenio ? (
+                        <ProfileDataRow
+                          icon={Handshake}
+                          value={crmConvenio}
+                          label="Convenio"
+                        />
+                      ) : null}
                     </div>
                   </div>
 
@@ -1403,14 +1411,6 @@ export function ProfileView({
                         onClick={() => setIsSucursalFavoritaOpen(true)}
                       />
                     </div>
-
-                    {crmConvenio ? (
-                      <ProfileField
-                        label="Convenio"
-                        value={crmConvenio}
-                        readOnly
-                      />
-                    ) : null}
                   </div>
                 </div>
               </section>

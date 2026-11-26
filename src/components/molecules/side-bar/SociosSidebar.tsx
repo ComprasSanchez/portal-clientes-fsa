@@ -30,7 +30,6 @@ import {
 import { type SociosView } from "@/types/socios";
 import { isEventoStandsActivo } from "@/lib/evento-stands";
 import { isFiestaActiva } from "@/lib/fiesta";
-import { isFinDeAnioVisible } from "@/lib/fin-de-anio";
 import sociosaLogo from "@/assets/sociosa-color.png";
 import sociosaIcon from "@/assets/icono-estrella.png";
 import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
@@ -49,6 +48,8 @@ interface SociosSidebarProps {
   puedeValidarIdentidades?: boolean;
   /** Puede cargar el contenido del calendario de fin de año. */
   puedeCargarCalendario?: boolean;
+  /** Ve la sección "Fin de año" (puede estar limitada a algunos DNIs). */
+  verFinDeAnio?: boolean;
   /** Invitado al Evento de Fin de Año sin ser colaborador (ej. PPP). */
   invitadoEvento?: boolean;
   /** Invitado/a a "Dosis de Conexión" (médicos, farmacéuticos y visitadores). */
@@ -120,7 +121,6 @@ const menuItems: MenuItem[] = [
   ...(isEventoStandsActivo()
     ? [{ id: "evento" as const, label: "Juego de stands", icon: QrCode }]
     : []),
-  ...(isFinDeAnioVisible() ? [finDeAnioMenuItem] : []),
   { id: "sucursales", label: "Sucursales", icon: MapPin },
   ...(process.env.NEXT_PUBLIC_CORA_ACTIVE === "true"
     ? [{ id: "cora" as const, label: "CORA", icon: Heart }]
@@ -136,23 +136,28 @@ export function SociosSidebar({
   puedeCambiarClaves = false,
   puedeValidarIdentidades = false,
   puedeCargarCalendario = false,
+  verFinDeAnio = false,
   invitadoEvento = false,
   invitadoDosis = false,
 }: SociosSidebarProps) {
   const router = useRouter();
+  // "Fin de año" va antes de Sucursales, solo para quien la puede ver.
+  const items = verFinDeAnio
+    ? menuItems.flatMap((item) => (item.id === "sucursales" ? [finDeAnioMenuItem, item] : [item]))
+    : menuItems;
   const menuBase = esColaborador
     ? [
-        ...menuItems.filter((item) => item.id !== "cora"),
+        ...items.filter((item) => item.id !== "cora"),
         colaboradoresMenuItem(puedeCambiarClaves, puedeValidarIdentidades, puedeCargarCalendario),
-        ...menuItems.filter((item) => item.id === "cora"),
+        ...items.filter((item) => item.id === "cora"),
       ]
     : invitadoEvento && isFiestaActiva()
       ? [
-          ...menuItems.filter((item) => item.id !== "cora"),
+          ...items.filter((item) => item.id !== "cora"),
           { id: "colaboradores-fiesta" as const, label: "Evento de Fin de Año", icon: PartyPopper },
-          ...menuItems.filter((item) => item.id === "cora"),
+          ...items.filter((item) => item.id === "cora"),
         ]
-      : menuItems;
+      : items;
   // "Dosis de Conexión" va justo antes de CORA (o al final), solo para invitados.
   const visibleMenuItems: MenuItem[] = invitadoDosis
     ? [

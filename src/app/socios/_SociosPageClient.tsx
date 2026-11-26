@@ -14,6 +14,7 @@ import { usePortalInvitacion } from "@/lib/use-portal-invitacion";
 import { usePermisoCalendario, usePermisoClaves, usePermisoIdentidad } from "@/lib/use-permiso-claves";
 import { isFiestaActiva } from "@/lib/fiesta";
 import { isFinDeAnioVisible } from "@/lib/fin-de-anio";
+import { useFinDeAnioAcceso } from "@/lib/use-fin-de-anio-acceso";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import {
   COLABORADORES_VIEWS,
@@ -90,9 +91,12 @@ export function SociosPageClient() {
     esColaborador,
     isColaboradorLoading,
   );
+  const { verFinDeAnio, isLoading: isFinDeAnioLoading } = useFinDeAnioAcceso();
   // Los invitados al evento (ej. PPP) ven solo la vista del evento, no el resto de Colaboradores.
   const puedeVerVista = (view: SociosView) =>
-    view === "dosis"
+    isFinDeAnioView(view)
+      ? verFinDeAnio
+      : view === "dosis"
       ? invitadoDosis
       : view === "colaboradores-claves"
       ? esColaborador && puedeCambiarClaves
@@ -111,6 +115,7 @@ export function SociosPageClient() {
       isPermisoClavesLoading ||
       isPermisoIdentidadLoading ||
       isPermisoCalendarioLoading ||
+      isFinDeAnioLoading ||
       isDosisLoading ||
       puedeVerVista(currentView)
     )
@@ -118,7 +123,7 @@ export function SociosPageClient() {
     setCurrentView(DEFAULT_VIEW);
     router.replace("/socios", { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- puedeVerVista depende de estos mismos valores
-  }, [currentView, esColaborador, invitadoEvento, invitadoDosis, puedeCambiarClaves, puedeValidarIdentidades, puedeCargarCalendario, isColaboradorLoading, isInvitadoLoading, isPermisoClavesLoading, isPermisoIdentidadLoading, isPermisoCalendarioLoading, isDosisLoading, router]);
+  }, [currentView, esColaborador, invitadoEvento, invitadoDosis, puedeCambiarClaves, puedeValidarIdentidades, puedeCargarCalendario, verFinDeAnio, isColaboradorLoading, isInvitadoLoading, isPermisoClavesLoading, isPermisoIdentidadLoading, isPermisoCalendarioLoading, isFinDeAnioLoading, isDosisLoading, router]);
 
   const principalPhone =
     perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
@@ -239,6 +244,7 @@ export function SociosPageClient() {
         puedeCambiarClaves={puedeCambiarClaves}
         puedeValidarIdentidades={puedeValidarIdentidades}
         puedeCargarCalendario={puedeCargarCalendario}
+        verFinDeAnio={verFinDeAnio}
         invitadoEvento={invitadoEvento}
         invitadoDosis={invitadoDosis}
       />
