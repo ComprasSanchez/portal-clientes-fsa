@@ -86,7 +86,7 @@ export const puntosDelMapa = (paradas: ParadaConSucursal[], destacada: number | 
  * Por dónde va Papá Noel medido en paradas del mapa: 0 = primera, 1.5 = mitad
  * entre la segunda y la tercera. null si no se puede ubicar.
  */
-export function avancePapaNoel(tour: TourPapaNoel, puntos: PuntoMapa[]): number | null {
+export function avancePapaNoel(tour: TourPapaNoel, puntos: Array<{ orden: number }>): number | null {
   const u = tour.ubicacion;
   if (!u || !puntos.length) return null;
   const desde = puntos.findIndex((p) => p.orden === u.desde);
@@ -105,4 +105,14 @@ export function puntoDelAvance(puntos: PuntoMapa[], avance: number): { lat: numb
     lat: puntos[i].lat + (puntos[j].lat - puntos[i].lat) * t,
     lng: puntos[i].lng + (puntos[j].lng - puntos[i].lng) * t,
   };
+}
+
+/** Pasa el avance del mapa (solo paradas con ubicación) a la lista completa de paradas. */
+export function avanceEnParadas(avance: number, puntos: PuntoMapa[], paradas: ParadaConSucursal[]): number {
+  if (!puntos.length) return 0;
+  const i = Math.max(0, Math.min(puntos.length - 1, Math.floor(avance)));
+  const j = Math.min(puntos.length - 1, i + 1);
+  const a = paradas.findIndex((p) => p.orden === puntos[i].orden);
+  const b = paradas.findIndex((p) => p.orden === puntos[j].orden);
+  return a + (b - a) * Math.max(0, Math.min(1, avance - i));
 }

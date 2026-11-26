@@ -86,7 +86,7 @@ export function SociosPageClient() {
   const puedeVerVista = (view: SociosView) =>
     view === "dosis"
       ? invitadoDosis
-      : view === "colaboradores-claves"
+      : view === "colaboradores-claves" || view === "colaboradores-identidad"
       ? esColaborador && puedeCambiarClaves
       : !isColaboradoresView(view) || esColaborador || (view === "colaboradores-fiesta" && invitadoEvento);
   const { pushToast } = useGlobalToast();

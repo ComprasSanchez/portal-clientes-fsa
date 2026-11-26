@@ -7,6 +7,13 @@
   margin: 0 auto;
   border-radius: 24px;
   background: #f3eee2;
+
+  // Celular: ocupa toda la pantalla (la vista no le pone margen, ver `sinBordeMovil`).
+  @media (max-width: 639px) {
+    max-width: none;
+    min-height: calc(100dvh - 4rem);
+    border-radius: 0;
+  }
 }
 
 // Portada teal con rombos como el diseño.

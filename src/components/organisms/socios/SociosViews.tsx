@@ -51,6 +51,7 @@ import { SociosColaboradorAplicacionesView } from "./SociosColaboradorAplicacion
 import { SociosColaboradorFiestaView } from "./SociosColaboradorFiestaView";
 import { SociosDosisConexionView } from "./SociosDosisConexionView";
 import { SociosColaboradorClavesView } from "./SociosColaboradorClavesView";
+import { SociosColaboradorIdentidadView } from "./SociosColaboradorIdentidadView";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
@@ -142,6 +143,10 @@ const viewContent: Record<
   "colaboradores-claves": {
     title: "Cambiar contraseñas",
     description: "Generá una contraseña nueva para un cliente o un colaborador.",
+  },
+  "colaboradores-identidad": {
+    title: "Validar identidades",
+    description: "Validá en la sucursal a quien ya no tiene el celular o el email de su ficha.",
   },
   "colaboradores-fiesta": {
     title: "Evento de Fin de Año",
@@ -420,7 +425,7 @@ export function SociosViews({
 
   if (currentView === "fin-de-anio-tour") {
     return (
-      <main className={styles.container}>
+      <main className={`${styles.container} ${styles.sinBordeMovil}`}>
         <TourPapaNoel />
       </main>
     );
@@ -471,6 +476,14 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <SociosColaboradorClavesView />
+      </main>
+    );
+  }
+
+  if (currentView === "colaboradores-identidad") {
+    return (
+      <main className={styles.container}>
+        <SociosColaboradorIdentidadView />
       </main>
     );
   }

@@ -8,6 +8,7 @@ import TourRecorrido from "@/components/molecules/fin-de-anio/tour-recorrido/tou
 import TourSimulador from "@/components/molecules/fin-de-anio/tour-simulador/tour-simulador";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  avanceEnParadas,
   avancePapaNoel,
   conSucursales,
   horarioParada,
@@ -61,6 +62,9 @@ export default function TourPapaNoel() {
     setReproduciendo(true);
   };
   const avance = simulado ?? avanceReal;
+  // En la línea de tiempo van todas las paradas (también las que no están en el mapa).
+  const avanceLista =
+    simulado !== null ? avanceEnParadas(simulado, puntos, paradas) : tour ? avancePapaNoel(tour, paradas) : null;
 
   const cargando = isLoading || cargandoSucursales;
 
@@ -127,7 +131,7 @@ export default function TourPapaNoel() {
               {paradas.length > 0 && (
                 <div className={styles.recorrido}>
                   <h3 className={styles.subtitulo}>Recorrido completo</h3>
-                  <TourRecorrido paradas={paradas} destacada={destacada?.orden ?? null} />
+                  <TourRecorrido paradas={paradas} avance={avanceLista} />
                 </div>
               )}
             </>

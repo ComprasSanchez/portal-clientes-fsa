@@ -15,6 +15,8 @@ export type SociosView =
   | "colaboradores-aplicaciones"
   /** Contraseña nueva para un socio (solo personal habilitado). */
   | "colaboradores-claves"
+  /** Validar la identidad de un socio que ya no tiene los contactos de su ficha (solo personal habilitado). */
+  | "colaboradores-identidad"
   /** Fiesta de fin de año de colaboradores (temporal). */
   | "colaboradores-fiesta"
   /** "Dosis de Conexión": fiesta de médicos, farmacéuticos y visitadores (solo invitados, temporal). */
@@ -38,6 +40,7 @@ export const COLABORADORES_VIEWS = [
   "colaboradores-ventas",
   "colaboradores-aplicaciones",
   "colaboradores-claves",
+  "colaboradores-identidad",
   "colaboradores-fiesta",
 ] as const satisfies readonly SociosView[];
 

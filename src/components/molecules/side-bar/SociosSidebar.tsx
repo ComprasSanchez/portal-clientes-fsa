@@ -76,7 +76,10 @@ const colaboradoresMenuItem = (puedeCambiarClaves: boolean): MenuGroup => ({
     { id: "colaboradores-ventas", label: "Ventas" },
     { id: "colaboradores-aplicaciones", label: "Aplicaciones FSA" },
     ...(puedeCambiarClaves
-      ? [{ id: "colaboradores-claves" as const, label: "Cambiar contraseñas" }]
+      ? [
+          { id: "colaboradores-claves" as const, label: "Cambiar contraseñas" },
+          { id: "colaboradores-identidad" as const, label: "Validar identidades" },
+        ]
       : []),
     ...(isFiestaActiva()
       ? [{ id: "colaboradores-fiesta" as const, label: "Evento de Fin de Año" }]
