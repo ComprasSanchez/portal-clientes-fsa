@@ -23,11 +23,12 @@ import {
   BadgeCheck,
   QrCode,
   PartyPopper,
-  Sparkles,
   Wine,
   Gift,
+  Sparkles,
 } from "lucide-react";
 import { type SociosView } from "@/types/socios";
+import { isBeautyActivo } from "@/lib/beauty-catalogo";
 import { isEventoStandsActivo } from "@/lib/evento-stands";
 import { isFiestaActiva } from "@/lib/fiesta";
 import sociosaLogo from "@/assets/sociosa-color.png";
@@ -117,7 +118,7 @@ const menuItems: MenuItem[] = [
   { id: "facturas", label: "Mis compras", icon: ShoppingBag },
   { id: "puntos", label: "Puntos", icon: Star },
   { id: "sorteos", label: "Sorteos", icon: Ticket },
-  { id: "beauty", label: "AutoBeauty", icon: Sparkles },
+  ...(isBeautyActivo() ? [{ id: "beauty" as const, label: "AutoBeauty", icon: Sparkles }] : []),
   ...(isEventoStandsActivo()
     ? [{ id: "evento" as const, label: "Juego de stands", icon: QrCode }]
     : []),
