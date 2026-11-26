@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildForwardHeaders, fetchUpstream, getRequiredBaseUrl, jsonError } from "@/app/api/_lib/proxy";
+import { isFinDeAnioVisible } from "@/lib/fin-de-anio";
 import type { PortalPerfilResponse } from "@/types/portal-profile";
 
 /**
  * Si la persona ve la sección "Fin de año". FIN_DE_ANIO_DNIS (solo servidor, DNIs con
- * coma) la limita a esas personas mientras se prueba; vacía = todos.
+ * coma) la limita a esas personas, que la ven aunque no sea 1/12; vacía = todos desde el 1/12.
  */
 export async function GET(req: NextRequest) {
   const dnis = (process.env.FIN_DE_ANIO_DNIS ?? "")
     .split(",")
     .map((v) => v.replace(/\D/g, ""))
     .filter(Boolean);
-  if (!dnis.length) return NextResponse.json({ visible: true });
+  if (!dnis.length) return NextResponse.json({ visible: isFinDeAnioVisible() });
 
   try {
     const base = getRequiredBaseUrl("NEXT_PUBLIC_FSA_SOCIOSA");

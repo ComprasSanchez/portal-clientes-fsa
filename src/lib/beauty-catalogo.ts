@@ -1,6 +1,9 @@
 // Catálogo AutoBeauty (Serendipity + Accurato). Datos fijos sacados de
 // public/SERENDIPITY - ACCURATO.xlsx; precios redondeados a pesos enteros.
 
+/** Se muestra en el menú solo con NEXT_PUBLIC_BEAUTY_ACTIVO=true. */
+export const isBeautyActivo = () => process.env.NEXT_PUBLIC_BEAUTY_ACTIVO === "true";
+
 export type BeautyMarca = "accurato" | "serendipity";
 
 export type BeautyProducto = {

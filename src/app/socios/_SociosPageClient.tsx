@@ -13,7 +13,8 @@ import { usePortalInvitadoEvento } from "@/lib/use-portal-invitado-evento";
 import { usePortalInvitacion } from "@/lib/use-portal-invitacion";
 import { usePermisoCalendario, usePermisoClaves, usePermisoIdentidad } from "@/lib/use-permiso-claves";
 import { isFiestaActiva } from "@/lib/fiesta";
-import { isFinDeAnioVisible } from "@/lib/fin-de-anio";
+import { isBeautyActivo } from "@/lib/beauty-catalogo";
+import { isFinDeAnioActivo } from "@/lib/fin-de-anio";
 import { useFinDeAnioAcceso } from "@/lib/use-fin-de-anio-acceso";
 import { useGlobalToast } from "@/components/ui/global-toast";
 import {
@@ -36,7 +37,9 @@ const parseView = (value: string | null): SociosView | null => {
   const view = VIEW_ALIASES[value] ?? value;
   // Con la fiesta apagada, el link directo o el QR llevan a Inicio.
   if (view === "colaboradores-fiesta" && !isFiestaActiva()) return null;
-  if (isFinDeAnioView(view as SociosView) && !isFinDeAnioVisible()) return null;
+  if (isFinDeAnioView(view as SociosView) && !isFinDeAnioActivo()) return null;
+  // AutoBeauty apagado: el link directo lleva a Inicio.
+  if (view === "beauty" && !isBeautyActivo()) return null;
   return VALID_VIEWS.includes(view as SociosView) ? (view as SociosView) : null;
 };
 
