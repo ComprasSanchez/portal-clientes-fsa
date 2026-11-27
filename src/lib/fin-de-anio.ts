@@ -267,9 +267,7 @@ export function textosDeCasilla(casilla: CalendarioCasilla, dia: number): Calend
       return t.correcta
         ? {
             titulo: "¡Respuesta correcta!",
-            detalle: t.sinCuentaPuntos
-              ? "Para sumar puntos, adherite al programa de puntos en tu sucursal."
-              : `Sumaste ${t.puntos} puntos.`,
+            detalle: `Sumaste ${t.puntos} puntos.`,
             recuadro: null,
             lineas: [
               { texto: "Trivia", tamano: "l" },

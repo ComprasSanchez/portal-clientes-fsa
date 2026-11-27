@@ -10,7 +10,7 @@ import {
 /** Proxy común de los eventos de fin de año (temporal): fiesta de colaboradores y Dosis de Conexión. */
 export async function forwardFiesta(
   req: NextRequest,
-  path: "" | "/asistencia" | "/invitacion" | "/invitacion/drcall",
+  path: "" | "/asistencia" | "/invitacion",
   method: "GET" | "POST",
 ) {
   try {

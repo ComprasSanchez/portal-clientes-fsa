@@ -17,7 +17,7 @@ export const DOSIS = {
  * pensada para el celu; en la compu se frena en 720 px de ancho.
  * null = no se muestra el bloque.
  */
-export const DOSIS_COLABORACION: { nombre: string; imagen: string; url?: string } | null = { nombre: "Dr. Call", imagen: "/dosis/colaboracion-ejemplo.png" };
+export const DOSIS_COLABORACION: { nombre: string; imagen: string; url?: string } | null = null;
 
 const PERFILES: Record<string, string> = {
   medico: "Médico/a",
