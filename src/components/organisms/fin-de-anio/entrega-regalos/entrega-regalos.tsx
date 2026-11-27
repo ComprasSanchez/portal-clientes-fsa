@@ -5,12 +5,13 @@ import { Gift, MapPin } from "lucide-react";
 import PortalButton from "@/components/atoms/button/button";
 import Card from "@/components/atoms/card/card";
 import BottomSheet from "@/components/molecules/bottom-sheet/bottom-sheet";
-import ListaRegalos from "@/components/molecules/fin-de-anio/lista-regalos/lista-regalos";
+import EntregaSocioCard from "@/components/molecules/fin-de-anio/entrega-socio-card/entrega-socio-card";
 import QrEntregaCard from "@/components/molecules/fin-de-anio/qr-entrega-card/qr-entrega-card";
 import PasosNumerados from "@/components/molecules/pasos-numerados/pasos-numerados";
 import StatTile from "@/components/molecules/stat-tile/stat-tile";
 import SucursalFavoritaPicker from "@/components/organisms/sucursal-favorita-picker/sucursal-favorita-picker";
 import {
+  agruparEntregas,
   guardarSucursalEntrega,
   leerSucursalEntrega,
   listarEntregasRecientes,
@@ -29,7 +30,10 @@ const mensaje = (e: unknown) => (e instanceof Error ? e.message : mensajeErrorCa
 const PASOS = [
   { titulo: "El socio abre su calendario", texto: "En el portal, en Fin de año → Calendario." },
   { titulo: "Toca “Escanear QR” y apunta a tu pantalla", texto: "El QR se renueva solo: no hace falta tocar nada." },
-  { titulo: "Le aparece qué tenés que darle", texto: "Entregale lo que dice su pantalla. Queda registrado a tu nombre." },
+  {
+    titulo: "Le aparece qué tenés que darle",
+    texto: "Entregale lo que dice su pantalla. Queda registrado a tu nombre.",
+  },
 ];
 
 /** Colaboradores: QR que escanea el socio para retirar sus regalos del calendario. */
@@ -145,7 +149,11 @@ export default function EntregaRegalos() {
 
           <Card tone="socios" title="Tus últimas entregas">
             {entregas.length ? (
-              <ListaRegalos regalos={entregas} conHora />
+              <div className={styles.entregas}>
+                {agruparEntregas(entregas).map((e) => (
+                  <EntregaSocioCard key={e.clave} entrega={e} />
+                ))}
+              </div>
             ) : (
               <p className={styles.vacio}>Cuando un socio escanee tu QR, lo vas a ver acá al instante.</p>
             )}

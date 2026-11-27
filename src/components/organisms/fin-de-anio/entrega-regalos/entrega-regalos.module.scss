@@ -92,3 +92,9 @@
   font-size: 0.9rem;
   color: var(--tone-muted);
 }
+
+.entregas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
