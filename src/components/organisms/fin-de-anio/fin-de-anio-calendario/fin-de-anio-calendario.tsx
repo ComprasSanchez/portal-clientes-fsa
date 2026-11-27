@@ -5,6 +5,7 @@ import Alert from "@/components/atoms/alert/alert";
 import PortalButton from "@/components/atoms/button/button";
 import BottomSheet from "@/components/molecules/bottom-sheet/bottom-sheet";
 import QrScanner from "@/components/molecules/evento-stands/qr-scanner/qr-scanner";
+import ListaRegalos from "@/components/molecules/fin-de-anio/lista-regalos/lista-regalos";
 import CalendarioCartel from "@/components/molecules/fin-de-anio/calendario-cartel/calendario-cartel";
 import CalendarioDia from "@/components/molecules/fin-de-anio/calendario-dia/calendario-dia";
 import CalendarioRegalo from "@/components/molecules/fin-de-anio/calendario-regalo/calendario-regalo";
@@ -31,7 +32,7 @@ import {
 import { useIdentidad } from "@/lib/portal-identidad-context";
 import { usePortalCalendario } from "@/lib/use-portal-calendario";
 import { usePrecargaImagenes } from "@/lib/use-precarga-imagenes";
-import type { CalendarioCasilla } from "@/types/portal-calendario";
+import type { CalendarioCasilla, CalendarioRegalo as RegaloDelSocio } from "@/types/portal-calendario";
 import styles from "./fin-de-anio-calendario.module.scss";
 
 type Revelado = { dia: Dia; casilla: CalendarioCasilla; animado: boolean };
@@ -48,6 +49,8 @@ export default function FinDeAnioCalendario() {
   const [verValidar, setVerValidar] = useState(false);
   const [escaneando, setEscaneando] = useState(false);
   const [retirando, setRetirando] = useState(false);
+  // Lo que retiró recién: se muestra para que el personal sepa qué entregar.
+  const [retirados, setRetirados] = useState<RegaloDelSocio[] | null>(null);
   const [abriendo, setAbriendo] = useState(false);
   const [reiniciando, setReiniciando] = useState(false);
   const modoPrueba = isModoPruebaCalendario();
@@ -108,18 +111,14 @@ export default function FinDeAnioCalendario() {
     if (retirando) return;
     const codigo = extraerCodigoRetiro(texto);
     if (!codigo) {
-      avisar("Ese QR no es de una sucursal", "Escaneá el QR del calendario que está en la sucursal.");
+      avisar("Ese QR no es para retirar regalos", "Pedile al personal de la sucursal que te muestre su QR.");
       return;
     }
     setRetirando(true);
     try {
-      const { retirados, sucursal } = await cal.retirar(codigo);
+      const { retirados } = await cal.retirar(codigo);
       setEscaneando(false);
-      pushToast({
-        variant: "success",
-        title: retirados.length === 1 ? "¡Listo! Retiraste tu regalo" : `¡Listo! Retiraste ${retirados.length} regalos`,
-        description: `Sucursal N° ${sucursal}. Mostrale esta pantalla al personal.`,
-      });
+      setRetirados(retirados);
     } catch (e) {
       avisar("No pudimos registrar el retiro", e instanceof Error ? e.message : "Probá de nuevo.");
     } finally {
@@ -220,8 +219,28 @@ export default function FinDeAnioCalendario() {
           onDetect={(texto) => void leerQr(texto)}
           onClose={() => setEscaneando(false)}
           paused={retirando}
-          hint="Apuntá al QR del calendario que está en la sucursal"
+          hint="Apuntá al QR que te muestra el personal"
         />
+      </BottomSheet>
+
+      <BottomSheet
+        open={retirados !== null}
+        onClose={() => setRetirados(null)}
+        title="¡Listo! Mostrale esto al personal"
+        footer={
+          <PortalButton tone="socios" onClick={() => setRetirados(null)}>
+            Entendido
+          </PortalButton>
+        }
+      >
+        {retirados && (
+          <div className={styles.retiro}>
+            <p className={styles.retiroTexto}>
+              {retirados.length === 1 ? "Te tienen que entregar:" : `Te tienen que entregar ${retirados.length} regalos:`}
+            </p>
+            <ListaRegalos regalos={retirados} />
+          </div>
+        )}
       </BottomSheet>
 
       <BottomSheet open={verValidar} onClose={() => setVerValidar(false)} title="Validá tu identidad">

@@ -206,10 +206,11 @@ export const confirmarCodigoPorEmail = (challengeId: string, code: string, recor
 /** Cliente web de Google Cloud; vacío = sin botón de Google. */
 export const googleClientId = () => process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim() ?? "";
 
+// Con Google la sesión siempre queda recordada (30 días sin actividad).
 export const ingresarConGoogle = (idToken: string) =>
   call<{ identity_linked: boolean; onboarding_required: boolean }>("POST", "auth/google", {
     id_token: idToken,
-    recordar: false,
+    recordar: true,
   });
 
 export type RegistroDatos = {

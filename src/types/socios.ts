@@ -19,6 +19,8 @@ export type SociosView =
   | "colaboradores-identidad"
   /** Carga del calendario de fin de año (solo personal habilitado, temporal). */
   | "colaboradores-calendario"
+  /** QR para entregar los regalos del calendario (temporal). */
+  | "colaboradores-entregas"
   /** Fiesta de fin de año de colaboradores (temporal). */
   | "colaboradores-fiesta"
   /** "Dosis de Conexión": fiesta de médicos, farmacéuticos y visitadores (solo invitados, temporal). */
@@ -44,6 +46,7 @@ export const COLABORADORES_VIEWS = [
   "colaboradores-claves",
   "colaboradores-identidad",
   "colaboradores-calendario",
+  "colaboradores-entregas",
   "colaboradores-fiesta",
 ] as const satisfies readonly SociosView[];
 

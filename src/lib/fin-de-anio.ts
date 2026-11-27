@@ -304,7 +304,9 @@ const MENSAJES_ERROR: Record<string, string> = {
   CALENDARIO_DIA_NO_ABIERTO: "Primero abrí el día.",
   CALENDARIO_TRIVIA_YA_RESPONDIDA: "Ya respondiste la trivia de hoy.",
   CALENDARIO_TRIVIA_RESPUESTAS_INVALIDAS: "Respondé todas las preguntas.",
-  CALENDARIO_QR_INVALIDO: "Ese código no es de una sucursal. Probá de nuevo.",
+  CALENDARIO_QR_INVALIDO: "Ese QR no es para retirar regalos. Pedile al personal el suyo.",
+  CALENDARIO_QR_VENCIDO: "El QR ya cambió. Pedile al personal que te lo muestre otra vez.",
+  CALENDARIO_QR_NO_CONFIGURADO: "Todavía no se pueden entregar regalos. Probá en un rato.",
   CALENDARIO_SIN_REGALOS_PARA_RETIRAR: "No tenés regalos para retirar.",
   CALENDARIO_REINICIO_DESHABILITADO: "Reiniciar no está habilitado en este ambiente.",
   CALENDARIO_DIA_PASADO: "Ese día ya pasó y no se puede cambiar.",
@@ -328,4 +330,14 @@ export function extraerCodigoRetiro(texto: string): string | null {
   } catch {
     return CODIGO_QR_RE.test(limpio) ? limpio : null;
   }
+}
+
+/** "Regalo del viernes 4/12: un kit Dermaglós" (o "regalo sorpresa"). */
+export function textoRegalo(r: { fecha: string; origen: "PREMIO" | "SORTEO"; queSeGana?: string | null }): string {
+  const dia = new Intl.DateTimeFormat("es-AR", { timeZone: "UTC", weekday: "long" }).format(
+    new Date(`${r.fecha}T12:00:00Z`),
+  );
+  const [, mes, d] = r.fecha.split("-");
+  const que = r.queSeGana || "regalo sorpresa";
+  return `${r.origen === "SORTEO" ? "Sorteo" : "Regalo"} del ${dia} ${Number(d)}/${Number(mes)}: ${que}`;
 }
