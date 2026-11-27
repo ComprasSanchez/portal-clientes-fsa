@@ -18,7 +18,7 @@ export default function RegalosPendientes({ cantidad, onRetirar }: RegalosPendie
         <strong>
           {cantidad === 1 ? "Tenés 1 regalo para retirar" : `Tenés ${cantidad} regalos para retirar`}
         </strong>
-        <span>En cualquier sucursal, escaneá el QR de la sucursal y te lo entregan.</span>
+        <span>En cualquier sucursal, pedile al personal su QR, escanealo y te lo entregan.</span>
       </div>
       <div className={styles.accion}>
         <PortalButton tone="socios" onClick={onRetirar}>

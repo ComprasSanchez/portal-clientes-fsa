@@ -1,0 +1,43 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--tone-border);
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.icono {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--tone-primary);
+}
+
+.texto {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #17343d;
+  overflow-wrap: anywhere;
+
+  &::first-letter {
+    text-transform: uppercase;
+  }
+}
+
+.hora {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: var(--tone-muted);
+}

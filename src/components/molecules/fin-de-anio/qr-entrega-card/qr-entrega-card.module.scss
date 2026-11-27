@@ -1,0 +1,105 @@
+.card {
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(23, 52, 61, 0.12);
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  background: linear-gradient(135deg, var(--tone-primary), #0b5d72);
+  color: #fff;
+}
+
+.sucursal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.cambiar {
+  flex-shrink: 0;
+  padding: 0.375rem 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+}
+
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1.5rem 1.25rem 1.25rem;
+}
+
+// Grande para que se lea fácil desde otro celular.
+.marco {
+  width: min(100%, 18rem);
+  padding: 0.75rem;
+  border: 1px solid var(--tone-border);
+  border-radius: 1rem;
+}
+
+.tiempo {
+  overflow: hidden;
+  width: min(100%, 18rem);
+  height: 0.3rem;
+  border-radius: 999px;
+  background: var(--tone-soft);
+}
+
+.barra {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--tone-primary);
+  transform-origin: left;
+  animation: vaciar linear forwards;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes vaciar {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.ayuda {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--tone-muted);
+}
+
+.skeleton {
+  width: min(100%, 18rem);
+  aspect-ratio: 1;
+  border-radius: 1rem;
+}

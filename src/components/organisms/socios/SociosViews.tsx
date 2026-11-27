@@ -53,6 +53,7 @@ import { SociosDosisConexionView } from "./SociosDosisConexionView";
 import { SociosColaboradorClavesView } from "./SociosColaboradorClavesView";
 import { SociosColaboradorIdentidadView } from "./SociosColaboradorIdentidadView";
 import CalendarioContenidoEditor from "@/components/organisms/fin-de-anio/calendario-contenido-editor/calendario-contenido-editor";
+import EntregaRegalos from "@/components/organisms/fin-de-anio/entrega-regalos/entrega-regalos";
 import { SorteoCard } from "@/components/molecules/socios/SorteoCard";
 import { SucursalesPromoCard } from "@/components/molecules/socios/SucursalesPromoCard";
 import { BannerCarousel } from "@/components/molecules/socios/BannerCarousel";
@@ -152,6 +153,10 @@ const viewContent: Record<
   "colaboradores-calendario": {
     title: "Calendario de regalos",
     description: "Cargá qué trae cada día del calendario de fin de año.",
+  },
+  "colaboradores-entregas": {
+    title: "Entregar regalos",
+    description: "Mostrá tu QR para entregar los regalos del calendario.",
   },
   "colaboradores-fiesta": {
     title: "Evento de Fin de Año",
@@ -489,6 +494,14 @@ export function SociosViews({
     return (
       <main className={styles.container}>
         <SociosColaboradorIdentidadView />
+      </main>
+    );
+  }
+
+  if (currentView === "colaboradores-entregas") {
+    return (
+      <main className={styles.container}>
+        <EntregaRegalos />
       </main>
     );
   }

@@ -1,0 +1,45 @@
+.pasos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paso {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.numero {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--tone-soft);
+  color: var(--tone-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding-top: 0.2rem;
+}
+
+.titulo {
+  font-size: 0.95rem;
+  color: #17343d;
+}
+
+.texto {
+  font-size: 0.85rem;
+  color: var(--tone-muted);
+}

@@ -115,6 +115,7 @@ export default async function Home({ searchParams }: HomePageProps) {
   ) {
     const params = new URLSearchParams();
     if (rawRedirectTo) params.set("redirectTo", rawRedirectTo);
+    if (sessionExpired) params.set("sessionExpired", "1");
     if (canalParam) params.set("canal", canalParam);
     if (convenioParam) params.set("convenio", convenioParam);
     const sucursal = first(query.sucursalCodigo) ?? first(query.sucursal);
