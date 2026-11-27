@@ -11,7 +11,7 @@ import { usePortalPerfilContext } from "@/lib/portal-perfil-context";
 import { usePortalColaborador } from "@/lib/use-portal-colaborador";
 import { usePortalInvitadoEvento } from "@/lib/use-portal-invitado-evento";
 import { usePortalInvitacion } from "@/lib/use-portal-invitacion";
-import { usePermisoCalendario, usePermisoClaves, usePermisoIdentidad } from "@/lib/use-permiso-claves";
+import { usePermisoCalendario, usePermisoClaves, usePermisoEntrega, usePermisoIdentidad } from "@/lib/use-permiso-claves";
 import { isFiestaActiva } from "@/lib/fiesta";
 import { isBeautyActivo } from "@/lib/beauty-catalogo";
 import { isFinDeAnioActivo } from "@/lib/fin-de-anio";
@@ -94,6 +94,10 @@ export function SociosPageClient() {
     esColaborador,
     isColaboradorLoading,
   );
+  const { puedeEntregarRegalos, isLoading: isPermisoEntregaLoading } = usePermisoEntrega(
+    esColaborador,
+    isColaboradorLoading,
+  );
   const { verFinDeAnio, isLoading: isFinDeAnioLoading } = useFinDeAnioAcceso();
   // Los invitados al evento (ej. PPP) ven solo la vista del evento, no el resto de Colaboradores.
   const puedeVerVista = (view: SociosView) =>
@@ -107,6 +111,8 @@ export function SociosPageClient() {
       ? esColaborador && puedeValidarIdentidades
       : view === "colaboradores-calendario"
       ? esColaborador && puedeCargarCalendario
+      : view === "colaboradores-entregas"
+      ? esColaborador && puedeEntregarRegalos
       : !isColaboradoresView(view) || esColaborador || (view === "colaboradores-fiesta" && invitadoEvento);
   const { pushToast } = useGlobalToast();
 
@@ -119,6 +125,7 @@ export function SociosPageClient() {
       isPermisoIdentidadLoading ||
       isPermisoCalendarioLoading ||
       isFinDeAnioLoading ||
+      isPermisoEntregaLoading ||
       isDosisLoading ||
       puedeVerVista(currentView)
     )
@@ -126,7 +133,7 @@ export function SociosPageClient() {
     setCurrentView(DEFAULT_VIEW);
     router.replace("/socios", { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- puedeVerVista depende de estos mismos valores
-  }, [currentView, esColaborador, invitadoEvento, invitadoDosis, puedeCambiarClaves, puedeValidarIdentidades, puedeCargarCalendario, verFinDeAnio, isColaboradorLoading, isInvitadoLoading, isPermisoClavesLoading, isPermisoIdentidadLoading, isPermisoCalendarioLoading, isFinDeAnioLoading, isDosisLoading, router]);
+  }, [currentView, esColaborador, invitadoEvento, invitadoDosis, puedeCambiarClaves, puedeValidarIdentidades, puedeCargarCalendario, puedeEntregarRegalos, verFinDeAnio, isColaboradorLoading, isInvitadoLoading, isPermisoClavesLoading, isPermisoIdentidadLoading, isPermisoCalendarioLoading, isFinDeAnioLoading, isPermisoEntregaLoading, isDosisLoading, router]);
 
   const principalPhone =
     perfil?.contactos?.find((c) => c.tipo === "TELEFONO" && c.principal) ??
@@ -247,6 +254,7 @@ export function SociosPageClient() {
         puedeCambiarClaves={puedeCambiarClaves}
         puedeValidarIdentidades={puedeValidarIdentidades}
         puedeCargarCalendario={puedeCargarCalendario}
+        puedeEntregarRegalos={puedeEntregarRegalos}
         verFinDeAnio={verFinDeAnio}
         invitadoEvento={invitadoEvento}
         invitadoDosis={invitadoDosis}

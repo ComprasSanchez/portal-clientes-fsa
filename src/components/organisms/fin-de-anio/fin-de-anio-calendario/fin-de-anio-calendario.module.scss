@@ -83,3 +83,16 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+// Confirmación del retiro: qué tiene que entregar el personal.
+.retiro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.retiroTexto {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #17343d;
+}

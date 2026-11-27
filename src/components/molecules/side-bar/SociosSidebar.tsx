@@ -49,6 +49,8 @@ interface SociosSidebarProps {
   puedeValidarIdentidades?: boolean;
   /** Puede cargar el contenido del calendario de fin de año. */
   puedeCargarCalendario?: boolean;
+  /** Puede entregar regalos del calendario con su QR. */
+  puedeEntregarRegalos?: boolean;
   /** Ve la sección "Fin de año" (puede estar limitada a algunos DNIs). */
   verFinDeAnio?: boolean;
   /** Invitado al Evento de Fin de Año sin ser colaborador (ej. PPP). */
@@ -78,6 +80,7 @@ const colaboradoresMenuItem = (
   puedeCambiarClaves: boolean,
   puedeValidarIdentidades: boolean,
   puedeCargarCalendario: boolean,
+  puedeEntregarRegalos: boolean,
 ): MenuGroup => ({
   id: "colaboradores",
   label: "Colaboradores",
@@ -94,6 +97,7 @@ const colaboradoresMenuItem = (
     ...(puedeCargarCalendario
       ? [{ id: "colaboradores-calendario" as const, label: "Calendario de regalos" }]
       : []),
+    ...(puedeEntregarRegalos ? [{ id: "colaboradores-entregas" as const, label: "Entregar regalos" }] : []),
     ...(isFiestaActiva()
       ? [{ id: "colaboradores-fiesta" as const, label: "Evento de Fin de Año" }]
       : []),
@@ -137,6 +141,7 @@ export function SociosSidebar({
   puedeCambiarClaves = false,
   puedeValidarIdentidades = false,
   puedeCargarCalendario = false,
+  puedeEntregarRegalos = false,
   verFinDeAnio = false,
   invitadoEvento = false,
   invitadoDosis = false,
@@ -149,7 +154,7 @@ export function SociosSidebar({
   const menuBase = esColaborador
     ? [
         ...items.filter((item) => item.id !== "cora"),
-        colaboradoresMenuItem(puedeCambiarClaves, puedeValidarIdentidades, puedeCargarCalendario),
+        colaboradoresMenuItem(puedeCambiarClaves, puedeValidarIdentidades, puedeCargarCalendario, puedeEntregarRegalos),
         ...items.filter((item) => item.id === "cora"),
       ]
     : invitadoEvento && isFiestaActiva()

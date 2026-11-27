@@ -48,6 +48,17 @@ export type CalendarioRegalo = {
   origen: "PREMIO" | "SORTEO";
   retiradoAt: string | null;
   sucursalRetiro: string | null;
+  /** Qué se gana (si se cargó); null o ausente = sorpresa. */
+  queSeGana?: string | null;
+  /** Quién lo retiró (solo en las entregas que ve el personal). */
+  socio?: CalendarioSocioRetiro | null;
+};
+
+export type CalendarioSocioRetiro = {
+  nombre: string | null;
+  dni: string | null;
+  telefono: string | null;
+  email: string | null;
 };
 
 export type CalendarioDelSocio = {
