@@ -39,7 +39,13 @@ export type CalendarioCasilla = {
   resultado: CalendarioResultado | null;
   /** Frase cuando el premio se agotó. */
   mensaje: string | null;
-  trivia: { respondida: boolean; correcta: boolean | null; puntos: number } | null;
+  trivia: {
+    respondida: boolean;
+    correcta: boolean | null;
+    puntos: number;
+    /** Acertó pero no tiene cuenta de puntos: no se le acreditan. */
+    sinCuentaPuntos?: boolean;
+  } | null;
   sorteo: "PENDIENTE" | "GANASTE" | "NO_GANASTE" | null;
 };
 
