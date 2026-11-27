@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Gift, MapPin } from "lucide-react";
+import { ChevronDown, ChevronUp, Gift, MapPin } from "lucide-react";
 import PortalButton from "@/components/atoms/button/button";
 import Card from "@/components/atoms/card/card";
 import BottomSheet from "@/components/molecules/bottom-sheet/bottom-sheet";
 import EntregaSocioCard from "@/components/molecules/fin-de-anio/entrega-socio-card/entrega-socio-card";
 import QrEntregaCard from "@/components/molecules/fin-de-anio/qr-entrega-card/qr-entrega-card";
 import PasosNumerados from "@/components/molecules/pasos-numerados/pasos-numerados";
+import SearchInput from "@/components/molecules/search-input/search-input";
 import StatTile from "@/components/molecules/stat-tile/stat-tile";
 import SucursalFavoritaPicker from "@/components/organisms/sucursal-favorita-picker/sucursal-favorita-picker";
 import {
   agruparEntregas,
+  buscarEntregas,
   guardarSucursalEntrega,
   leerSucursalEntrega,
   listarEntregasRecientes,
@@ -25,6 +27,7 @@ import type { CalendarioRegalo } from "@/types/portal-calendario";
 import styles from "./entrega-regalos.module.scss";
 
 const REFRESCO_ENTREGAS_MS = 5000;
+const POR_PAGINA = 5;
 const mensaje = (e: unknown) => (e instanceof Error ? e.message : mensajeErrorCalendario(null));
 
 const PASOS = [
@@ -44,6 +47,10 @@ export default function EntregaRegalos() {
   const [qr, setQr] = useState<(QrEntrega & { restanteMs: number }) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [entregas, setEntregas] = useState<CalendarioRegalo[]>([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [mostrar, setMostrar] = useState(POR_PAGINA);
+  // undefined = la más reciente abierta (la que se acaba de escanear); null = todas cerradas.
+  const [abierta, setAbierta] = useState<string | null | undefined>(undefined);
 
   // Pide el QR y programa el próximo para cuando cambie.
   useEffect(() => {
@@ -78,7 +85,11 @@ export default function EntregaRegalos() {
     const traer = async () => {
       try {
         const { entregas: nuevas } = await listarEntregasRecientes();
-        if (!cancelado) setEntregas(nuevas);
+        if (cancelado) return;
+        setEntregas((prev) => {
+          if (nuevas[0]?.retiradoAt !== prev[0]?.retiradoAt) setAbierta(undefined);
+          return nuevas;
+        });
       } catch {
         // Se reintenta en el próximo ciclo.
       }
@@ -98,6 +109,10 @@ export default function EntregaRegalos() {
     setElegir(false);
     return null;
   };
+
+  const grupos = agruparEntregas(entregas);
+  const filtradas = buscarEntregas(grupos, busqueda);
+  const visibles = filtradas.slice(0, mostrar);
 
   const nombre = sucursal ? (nombreSucursalFavorita(sucursales, sucursal) ?? `Sucursal ${sucursal}`) : "";
 
@@ -141,18 +156,42 @@ export default function EntregaRegalos() {
             icon={<Gift size={18} />}
             label="Entregaste hoy"
             value={entregas.length === 1 ? "1 regalo" : `${entregas.length} regalos`}
+            hint={grupos.length ? `a ${grupos.length} ${grupos.length === 1 ? "socio" : "socios"}` : undefined}
           />
 
           <Card tone="socios" title="Cómo funciona">
             <PasosNumerados pasos={PASOS} />
           </Card>
 
-          <Card tone="socios" title="Tus últimas entregas">
-            {entregas.length ? (
+          <Card tone="socios" title="Tus entregas de hoy">
+            {grupos.length ? (
               <div className={styles.entregas}>
-                {agruparEntregas(entregas).map((e) => (
-                  <EntregaSocioCard key={e.clave} entrega={e} />
+                {grupos.length > POR_PAGINA && (
+                  <SearchInput value={busqueda} onChange={setBusqueda} placeholder="Buscar por nombre o DNI" />
+                )}
+                {visibles.map((e, i) => (
+                  <EntregaSocioCard
+                    key={e.clave}
+                    entrega={e}
+                    abierta={abierta === undefined ? i === 0 && !busqueda : abierta === e.clave}
+                    onToggle={() => setAbierta((prev) => (prev === e.clave ? null : e.clave))}
+                  />
                 ))}
+                {!filtradas.length && <p className={styles.vacio}>No hay entregas con ese nombre o DNI.</p>}
+                {filtradas.length > POR_PAGINA && (
+                  <div className={styles.paginado}>
+                    {filtradas.length > visibles.length && (
+                      <button type="button" className={styles.verMas} onClick={() => setMostrar((m) => m + POR_PAGINA)}>
+                        Ver más ({filtradas.length - visibles.length}) <ChevronDown size={15} aria-hidden />
+                      </button>
+                    )}
+                    {visibles.length > POR_PAGINA && (
+                      <button type="button" className={styles.verMas} onClick={() => setMostrar(POR_PAGINA)}>
+                        Ver menos <ChevronUp size={15} aria-hidden />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               <p className={styles.vacio}>Cuando un socio escanee tu QR, lo vas a ver acá al instante.</p>

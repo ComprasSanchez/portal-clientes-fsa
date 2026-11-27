@@ -51,3 +51,16 @@ export function agruparEntregas(entregas: CalendarioRegalo[]): EntregaAgrupada[]
 
 /** "30.111.222" */
 export const dniConPuntos = (dni: string) => dni.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+/** Filtra por nombre o DNI (sin importar acentos ni puntos). */
+export function buscarEntregas(grupos: EntregaAgrupada[], texto: string): EntregaAgrupada[] {
+  const limpio = (v: string) =>
+    v
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\./g, "")
+      .toLowerCase();
+  const q = limpio(texto.trim());
+  if (!q) return grupos;
+  return grupos.filter((g) => limpio(`${g.socio?.nombre ?? ""} ${g.socio?.dni ?? ""}`).includes(q));
+}
