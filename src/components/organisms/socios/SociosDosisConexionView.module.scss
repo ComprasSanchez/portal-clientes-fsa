@@ -317,6 +317,151 @@ $borde: #d3dee2;
   }
 }
 
+// Dr. Call: activar la cuenta (médico o paciente) con un toque.
+.drcall {
+  border-color: rgba($azul, 0.35);
+  background: linear-gradient(160deg, #fff 60%, rgba($azul, 0.07));
+}
+
+.drcallActiva {
+  border-color: rgba(#7b9a4c, 0.5);
+  background: linear-gradient(160deg, #fff 60%, rgba(#7b9a4c, 0.1));
+}
+
+.drcallOk {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: $azul-oscuro;
+  font-size: 1.2rem;
+  font-weight: 700;
+
+  svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    color: #7b9a4c;
+  }
+}
+
+.drcallForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-family: var(--font-socios, "Poppins", Arial, sans-serif);
+}
+
+.drcallDatos {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  background: $crema;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.9rem;
+  }
+
+  dt {
+    color: $muted;
+  }
+
+  dd {
+    margin: 0;
+    color: $texto;
+    font-weight: 500;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+}
+
+.drcallMedico {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  span {
+    color: $azul-oscuro;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  input,
+  select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid $borde;
+    border-radius: 12px;
+    background: #fff;
+    color: $texto;
+    font: inherit;
+    font-size: 1rem;
+
+    &:focus {
+      outline: 2px solid rgba($azul, 0.4);
+      outline-offset: 1px;
+      border-color: $azul;
+    }
+  }
+}
+
+.linkEditar {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $azul;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+}
+
+.drcallError {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  background: #fdecea;
+  color: #a1281b;
+  font-size: 0.9rem;
+}
+
+.letraChica {
+  margin: 0;
+  color: $muted;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+button.boton {
+  border: 0;
+  font: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+}
 
 // En el celu las copas van más chicas y suaves, para no tapar la fecha y el lugar.
 @media (max-width: 640px) {

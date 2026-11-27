@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import { CalendarDays, Clock, ExternalLink, Gift, MapPin, PartyPopper, Ticket } from "lucide-react";
 import { DOSIS, DOSIS_COLABORACION, horaCorta } from "@/lib/dosis";
 import { usePortalInvitacion } from "@/lib/use-portal-invitacion";
+import { DosisDrCallCard } from "./DosisDrCallCard";
 import styles from "./SociosDosisConexionView.module.scss";
 
 /** Con la vista abierta se refresca, así el ingreso y el regalo aparecen solos. */
@@ -134,6 +135,9 @@ export function SociosDosisConexionView() {
             )}
           </article>
         )}
+
+        {/* Dr. Call: alta como médico o paciente, con un toque */}
+        <DosisDrCallCard />
 
         {/* Cómo llegar */}
         <article className={`${styles.card} ${styles.mapaCard}`}>
